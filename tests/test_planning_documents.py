@@ -12,6 +12,7 @@ FILES = {
     "T1": "T1_核心玩法与玩家操作.md",
     "T2": "T2_战斗系统.md",
     "T3": "T3_可能性_基础属性_成长_死亡.md",
+    "T4": "T4_3天倒计时系统.md",
 }
 
 
@@ -27,7 +28,7 @@ class PlanningDocumentsTests(unittest.TestCase):
                 self.assertNotIn("\ufffd", content)
                 self.assertNotIn("chatgpt-content-reference", content)
                 self.assertNotRegex(content, r"(?i)\b(TODO|TBD)\b|填写此处")
-                self.assertIn("2026-10-07", content)
+                self.assertIn("2026-10-08" if key == "T4" else "2026-10-07", content)
                 headings = re.findall(r"^## (\d+)\.", content, re.M)
                 self.assertEqual(list(map(int, headings)),
                                  list(range(1, len(headings) + 1)))
@@ -126,6 +127,38 @@ class PlanningDocumentsTests(unittest.TestCase):
             self.assertIn(edge, section)
         self.assertIn("不将存在未决边界等同于已经证明无软锁", section)
         self.assertIn("游戏运行验收须在实现后完成", self.docs["T3"])
+
+    def test_t4_clock_and_day_transitions(self):
+        t4 = self.docs["T4"]
+        for rule in ("V0.1一天为半小时", "基础时间自动流逝", "关键事件强制推进日期",
+                     "剧情进行时暂停时间", "打开菜单时暂停时间", "15分钟倒计时",
+                     "结束与7的相遇剧情，并离开7所处区域", "末日临界阶段"):
+            self.assertIn(rule, t4)
+        self.assertIn("三天并非固定一张地图对应一天", t4)
+        self.assertIn("不自动授予战斗胜利", t4)
+
+    def test_t4_accepted_revisions_and_scope_boundaries(self):
+        t4 = self.docs["T4"]
+        for rule in ("暗室侵蚀导致敌人更危险", "不直接Game Over",
+                     "不允许无限刷资源", "普通敌人刷新次数有限",
+                     "时间可感知", "时间推动剧情", "可扩展性"):
+            self.assertIn(rule, t4)
+        section = t4.split("## 9.")[1].split("## 10.")[0]
+        for edge in ("日期推进", "Day2线索BOSS", "临界计时", "超时结算", "刷新额度", "配置与存档"):
+            self.assertIn(edge, section)
+        self.assertIn("本次不擅自新增制作项", section)
+        self.assertIn("T0不做多结局", section)
+        self.assertIn("不推定退出游戏后的现实时间继续计时", section)
+
+    def test_t4_world_changes_and_full_game_separation(self):
+        t4 = self.docs["T4"]
+        for rule in ("单色实体增多，无色实体减少", "更多空缺与陷阱",
+                     "更多可帮助NPC与较低敌人难度", "资源有限",
+                     "更早到来曾有救助机会", "NPC知道时间推进"):
+            self.assertIn(rule, t4)
+        self.assertIn("31天扩展方向（不纳入V0.1制作）", t4)
+        self.assertIn("不能据此给V0.1新增Boss或角色debuff", t4)
+        self.assertIn("不代表上述游戏运行验证已经完成", t4)
 
 
 if __name__ == "__main__":
