@@ -14,6 +14,8 @@ FILES = {
     "T3": "T3_可能性_基础属性_成长_死亡.md",
     "T4": "T4_3天倒计时系统.md",
     "T5.1": "T5.1_地图结构设计规范_V1.0.md",
+    "T5": "T5_区域与空间配置规范.md",
+    "T5.2": "T5.2_区域架构收束规范.md",
 }
 
 
@@ -29,7 +31,7 @@ class PlanningDocumentsTests(unittest.TestCase):
                 self.assertNotIn("\ufffd", content)
                 self.assertNotIn("chatgpt-content-reference", content)
                 self.assertNotRegex(content, r"(?i)\b(TODO|TBD)\b|填写此处")
-                date = {"T4": "2026-10-08", "T5.1": "2026-10-10"}.get(key, "2026-10-07")
+                date = "2026-10-10" if key.startswith("T5") else {"T4": "2026-10-08"}.get(key, "2026-10-07")
                 self.assertIn(date, content)
                 headings = re.findall(r"^## (\d+)\.", content, re.M)
                 self.assertEqual(list(map(int, headings)),
@@ -198,6 +200,56 @@ class PlanningDocumentsTests(unittest.TestCase):
         self.assertIn("不能据此自行新增V0.1 Boss", content)
         self.assertIn("不提前填写区域实例", content)
         self.assertIn("不开展美术、加载系统或程序实现", content)
+
+    def test_t5_preserves_configuration_records(self):
+        content = self.docs["T5"]
+        expected = ((9, "Region", 3), (10, "Scene", 12), (11, "Room", 18), (12, "Node", 9))
+        for number, kind, count in expected:
+            section = content.split(f"## {number}. {kind}原表配置明细", 1)[1].split("\n## ", 1)[0]
+            self.assertEqual(len(re.findall(r"^### \d+\.", section, re.M)), count)
+        for region_id in ("Region_HD", "Region_TY", "Region_NSZC"):
+            self.assertIn(region_id, content)
+        for node in range(10001, 10010):
+            self.assertIn(f"Node_{node}", content)
+        self.assertIn("基础战斗能力提升，即玩家对基础操作和战斗的掌握，不增加攻击力数值", content)
+        self.assertIn("取消原表“每个房间各一个”", content)
+        self.assertIn("不能将其视为已解除T0～T4限制", content)
+
+    def test_t52_connection_and_time_rules(self):
+        content = self.docs["T5.2"]
+        for rule in ("任何层级均可存在Connection", "隐藏属于未发现的Connection",
+                     "Connection表现不决定Connection类型", "开放/关闭/变化",
+                     "结束指定战斗且存活后开放", "Before Day3、Day3 Event、After Day3",
+                     "玩家已完成事件永久保存", "不要求制作三张完整地图"):
+            self.assertIn(rule, content)
+        self.assertIn("已开启连接永久存在，但时间连接仍支持开放/关闭", content)
+
+    def test_t52_checkpoint_does_not_rollback_permanent_progress(self):
+        content = self.docs["T5.2"]
+        for rule in ("最后激活的检查点", "自动激活", "V0.1死亡不额外推进时间",
+                     "非负保留50%，负数清零", "永久成长与已获得物品仍按T3保留"):
+            self.assertIn(rule, content)
+        for field in ("位置", "已激活检查点", "剧情状态", "地图状态", "NPC状态", "能力解锁"):
+            self.assertIn(f"| {field} | 保存 |", content)
+        for field in ("当前生命", "当前可能性"):
+            self.assertIn(f"| {field} | 不保存为复活回档值 |", content)
+        self.assertIn("| 临时状态 | 不保存 |", content)
+
+    def test_t52_node_ownership_and_persistence(self):
+        content = self.docs["T5.2"]
+        for rule in ("Node直接属于Room，不跨级", "需要唯一编号", "Node默认不保存，由类型决定",
+                     "自动、互动、攻击、条件", "检查点、能力门、触发区域"):
+            self.assertIn(rule, content)
+        self.assertIn("| 普通敌人状态 | 否，按重置规则处理 |", content)
+        self.assertIn("| NPC剧情状态 | 是 |", content)
+        self.assertIn("| 机关开启状态 | 是 |", content)
+        self.assertIn("不代表T5.3具体房间与节点已全部设计完成", content)
+
+    def test_planning_document_links_resolve(self):
+        for key, content in self.docs.items():
+            for target in re.findall(r"\]\(([^)]+\.md)\)", content):
+                with self.subTest(document=key, target=target):
+                    self.assertTrue((WORDS / target).is_file())
 
 
 if __name__ == "__main__":
