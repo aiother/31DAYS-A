@@ -13,6 +13,7 @@ FILES = {
     "T2": "T2_战斗系统.md",
     "T3": "T3_可能性_基础属性_成长_死亡.md",
     "T4": "T4_3天倒计时系统.md",
+    "T5.1": "T5.1_地图结构设计规范_V1.0.md",
 }
 
 
@@ -28,7 +29,8 @@ class PlanningDocumentsTests(unittest.TestCase):
                 self.assertNotIn("\ufffd", content)
                 self.assertNotIn("chatgpt-content-reference", content)
                 self.assertNotRegex(content, r"(?i)\b(TODO|TBD)\b|填写此处")
-                self.assertIn("2026-10-08" if key == "T4" else "2026-10-07", content)
+                date = {"T4": "2026-10-08", "T5.1": "2026-10-10"}.get(key, "2026-10-07")
+                self.assertIn(date, content)
                 headings = re.findall(r"^## (\d+)\.", content, re.M)
                 self.assertEqual(list(map(int, headings)),
                                  list(range(1, len(headings) + 1)))
@@ -159,6 +161,43 @@ class PlanningDocumentsTests(unittest.TestCase):
         self.assertIn("31天扩展方向（不纳入V0.1制作）", t4)
         self.assertIn("不能据此给V0.1新增Boss或角色debuff", t4)
         self.assertIn("不代表上述游戏运行验证已经完成", t4)
+
+    def test_map_structure_levels_and_connections(self):
+        content = self.docs["T5.1"]
+        self.assertIn("World → Region → Scene → Room → Node", content)
+        self.assertIn("房间之间支持无缝衔接", content)
+        self.assertIn("数个房间可组成一片较大的连续场景", content)
+        self.assertIn("一个Room可以拥有多个Connection", content)
+        self.assertIn("删除普通房间通用的“固定进入状态”", content)
+        self.assertIn("能力门独立管理", content)
+        self.assertIn("时间会改变地图状态", content)
+
+    def test_map_templates_preserve_all_v1_fields(self):
+        content = self.docs["T5.1"]
+        expected = {
+            "Region": "区域名称 区域编号 所属世界位置 区域规模 核心主题 核心情绪 主要玩法 主要敌人 主要NPC 核心事件 区域奖励 时间影响 可回访价值 连接区域".split(),
+            "Scene": "场景名称 所属区域 场景功能 空间规模 环境主题 玩家首次体验 地形特点 战斗特点 探索特点 NPC分布 敌人分布 隐藏内容 时间变化 与其他Scene关系".split(),
+            "Room": "Room名称 所属Scene Room作用 空间大小 空间形状 地形结构 连接节点数量 加载需求 环境互动 普通敌人 精英敌人 NPC 收集物 解谜 能力门 检查点 剧情触发".split(),
+            "Node": "节点名称 节点类型 触发方式 触发条件 触发结果 是否一次性 是否随时间变化".split(),
+            "Connection": "连接对象 连接类型 当前状态 解锁条件 是否可回访".split(),
+            "Ability Gate": "名称 所在位置 表现形式 玩家首次看到的信息 解锁能力 解锁后奖励 是否影响剧情".split(),
+        }
+        for template, fields in expected.items():
+            with self.subTest(template=template):
+                section = content.split(f"### {template}设计表\n", 1)[1].lstrip().split("\n\n", 1)[0]
+                rows = [line.split("|")[1].strip() for line in section.splitlines()[2:]]
+                self.assertEqual(rows, fields)
+
+    def test_map_entry_rules_and_development_scope(self):
+        content = self.docs["T5.1"]
+        for kind in ("普通Room", "探索区域", "普通战斗", "NPC区域"):
+            self.assertIn(f"| {kind} | 否 |", content)
+        for kind in ("剧情演出房", "Boss区域", "结局区域", "时间事件区域", "能力门后区域"):
+            self.assertIn(f"| {kind} | 是 |", content)
+        self.assertIn("破障仍不纳入V0.1制作范围", content)
+        self.assertIn("不能据此自行新增V0.1 Boss", content)
+        self.assertIn("不提前填写区域实例", content)
+        self.assertIn("不开展美术、加载系统或程序实现", content)
 
 
 if __name__ == "__main__":
