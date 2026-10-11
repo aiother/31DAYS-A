@@ -16,6 +16,7 @@ FILES = {
     "T5.1": "T5.1_地图结构设计规范_V1.0.md",
     "T5": "T5_区域与空间配置规范.md",
     "T5.2": "T5.2_区域架构收束规范.md",
+    "T5.3": "T5.3_Room设计收束规范.md",
 }
 
 
@@ -31,7 +32,7 @@ class PlanningDocumentsTests(unittest.TestCase):
                 self.assertNotIn("\ufffd", content)
                 self.assertNotIn("chatgpt-content-reference", content)
                 self.assertNotRegex(content, r"(?i)\b(TODO|TBD)\b|填写此处")
-                date = "2026-10-10" if key.startswith("T5") else {"T4": "2026-10-08"}.get(key, "2026-10-07")
+                date = "2026-10-11" if key == "T5.3" else ("2026-10-10" if key.startswith("T5") else {"T4": "2026-10-08"}.get(key, "2026-10-07"))
                 self.assertIn(date, content)
                 headings = re.findall(r"^## (\d+)\.", content, re.M)
                 self.assertEqual(list(map(int, headings)),
@@ -250,6 +251,79 @@ class PlanningDocumentsTests(unittest.TestCase):
             for target in re.findall(r"\]\(([^)]+\.md)\)", content):
                 with self.subTest(document=key, target=target):
                     self.assertTrue((WORDS / target).is_file())
+
+    def t53_records(self):
+        section = self.docs["T5.3"].split("## 10. Room冻结配置明细", 1)[1]
+        records = {}
+        for block in re.split(r"\n### \d+\. ", section)[1:]:
+            fields = dict(re.findall(r"^- ([^：\n]+)：(.*)$", block, re.M))
+            records[fields["编号"]] = fields
+        return records
+
+    def test_t53_room_identity_and_scene_membership(self):
+        records = self.t53_records()
+        self.assertEqual(len(records), 18)
+        regions = {"HD": 0, "TY": 0, "NSZC": 0}
+        for room_id, fields in records.items():
+            region, scene, room_number = room_id.split("_")
+            regions[region] += 1
+            self.assertEqual(fields["所属Scene"], f"Region_{region}_Scene_{scene}")
+            self.assertGreater(int(room_number), 0)
+            self.assertEqual(len(fields), 43)
+        self.assertEqual(regions, {"HD": 12, "TY": 2, "NSZC": 4})
+        self.assertEqual(records["HD_20002_2"]["Room名称"], "逃兵营帐")
+        self.assertEqual(records["HD_20003_1"]["Room名称"], "寄生同伴者")
+
+    def test_t53_connections_resolve_and_preserve_parallel_fields(self):
+        records = self.t53_records()
+        for room_id, fields in records.items():
+            targets = fields["连接对象"].split("/")
+            for target in targets:
+                self.assertIn(target, records, f"{room_id} -> {target}")
+            for field in ("连接类型", "表现形式", "是否永久开放", "回访状态"):
+                if room_id == "NSZC_10003_1" and field in ("是否永久开放", "回访状态"):
+                    # 原表单目标附有重复状态，保留原值并在规范中标明，不能虚构连接。
+                    expected_value = "永久/永久" if field == "是否永久开放" else "可/可"
+                    self.assertEqual(fields[field], expected_value)
+                    self.assertIn("不据重复项虚构第二个连接", self.docs["T5.3"])
+                    continue
+                self.assertEqual(len(fields[field].split("/")), len(targets), (room_id, field))
+            # 原表允许两个连接共用一个开启条件。
+            self.assertIn(len(fields["开启条件"].split("/")), (1, len(targets)))
+        self.assertIn("类型与条件不一致项", self.docs["T5.3"])
+        self.assertIn("不静默改型或新增中心战场Boss", self.docs["T5.3"])
+
+    def test_t53_boss_and_gate_scope(self):
+        content = self.docs["T5.3"]
+        records = self.t53_records()
+        bosses = {key: val["BOSS信息"] for key, val in records.items() if val["BOSS信息"] != "未填写"}
+        self.assertEqual(bosses, {"HD_10004_1": "渴望俯视", "HD_20003_1": "寄生同伴者"})
+        self.assertIn("不新增防御+反击的弹反系统", content)
+        self.assertIn("不自动提高攻击力、开放空中闪避或改写T3基础数值", content)
+        gates = [key for key, val in records.items() if val["能力门"] == "是"]
+        self.assertEqual(gates, ["NSZC_10001_1", "NSZC_10002_2"])
+        for key in gates:
+            self.assertEqual(records[key]["解锁条件"], "战斗事件门")
+        self.assertIn("任何必经地形不能要求消耗可能性的滑步", content)
+        self.assertIn("覆盖本版早期“不新增Boss”的记录", self.docs["T0"])
+
+    def test_t53_room_node_state_separation(self):
+        for key, fields in self.t53_records().items():
+            with self.subTest(room=key):
+                self.assertEqual(fields["Room保存"], "不保存")
+                self.assertEqual(fields["Node保存"], "由Node决定")
+                self.assertEqual(fields["敌人状态"], "除保有“不可重置”设定的敌人全部重置")
+                for state in ("NPC状态", "剧情状态", "能力门状态"):
+                    self.assertEqual(fields[state], "保留")
+        self.assertIn("默认不保存，由类型和具体配置决定", self.docs["T5.3"])
+
+    def test_t53_nonblocking_fields_and_stage_status(self):
+        content = self.docs["T5.3"]
+        for term in ("非阻塞补充项", "Connection目标类型", "房间核心目标", "情绪关键词"):
+            self.assertIn(term, content)
+        self.assertIn("未直接填作所有房间最终目标", content)
+        self.assertIn("不等于Node实例、程序、美术或UI制作已完成", content)
+        self.assertIn("黄金麦湖", content)
 
 
 if __name__ == "__main__":
