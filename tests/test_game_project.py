@@ -63,5 +63,17 @@ class GameProjectTests(unittest.TestCase):
         for extension in ('png', 'wav', 'spine', 'skel', 'psd'):
             self.assertIn(f'*.{extension} filter=lfs', attrs)
 
+    def test_basic_combat_uses_frozen_damage_and_debug_targets(self):
+        config = (GAME / 'data/combat/graybox_attack.tres').read_text(encoding='utf-8')
+        self.assertIn('damage = 5', config)
+        lab = (GAME / 'debug/combat_lab.tscn').read_text(encoding='utf-8')
+        self.assertIn('res://debug/combat_target.tscn', lab)
+        self.assertNotIn('colorless_entity', lab)
+        project = (GAME / 'project.godot').read_text(encoding='utf-8')
+        self.assertIn('run/main_scene="res://debug/combat_lab.tscn"', project)
+        receiver = (GAME / 'systems/combat/combat_hurtbox.gd').read_text(encoding='utf-8')
+        self.assertIn('signal hit_received', receiver)
+        self.assertNotIn('current_health', receiver)
+
 if __name__ == '__main__':
     unittest.main()

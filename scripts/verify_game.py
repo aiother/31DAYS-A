@@ -36,4 +36,7 @@ run('main scene 180 frames', ['--quit-after', '180'])
 output = run('player physics regression', ['--script', 'res://tests/test_player.gd'])
 if 'PLAYER_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful physics test summary')
+output = run('basic combat regression', ['--script', 'res://tests/test_combat.gd'])
+if 'COMBAT_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful combat test summary')
 print(f'All engine checks passed. Report: {report}')

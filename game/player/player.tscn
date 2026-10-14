@@ -1,9 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
 [ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/characters/player_placeholder.svg" id="3"]
 [ext_resource type="Script" path="res://player/placeholder_visual.gd" id="4"]
+[ext_resource type="Script" path="res://player/player_combat.gd" id="5"]
+[ext_resource type="Resource" path="res://data/combat/graybox_attack.tres" id="6"]
 
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 22.0
@@ -33,7 +35,8 @@ shape = SubResource("PhysicsBody")
 [node name="GameplayRoot" type="Node2D" parent="."]
 
 [node name="Combat" type="Node" parent="GameplayRoot"]
-metadata/implementation = "Reserved: T2 combat comes next"
+script = ExtResource("5")
+config = ExtResource("6")
 
 [node name="Hitbox" type="Area2D" parent="GameplayRoot"]
 position = Vector2(60, -48)

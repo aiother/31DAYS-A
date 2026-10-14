@@ -5,6 +5,7 @@ signal landed(impact_speed: float, hard: bool)
 signal facing_changed(direction: float)
 
 @export var movement: MovementConfig
+@onready var combat: PlayerCombat = $GameplayRoot/Combat
 var facing: float = 1.0
 var landing_lock_remaining: float = 0.0
 var _turn_remaining: float = 0.0
@@ -34,7 +35,11 @@ func _physics_process(delta: float) -> void:
 	if landing_lock_remaining > 0.0:
 		axis = 0.0
 	_update_facing(axis, delta)
+	combat.tick(delta)
 	var speed: float = movement.run_speed if Input.is_action_pressed("run") else movement.walk_speed
+	if combat.is_attacking():
+		speed *= combat.config.movement_scale
+		velocity.x = clampf(velocity.x, -speed, speed)
 	var target: float = axis * speed
 	if _turn_remaining > 0.0:
 		target = 0.0
@@ -43,7 +48,8 @@ func _physics_process(delta: float) -> void:
 		acceleration = movement.ground_deceleration if is_zero_approx(target) else movement.ground_acceleration
 	velocity.x = move_toward(velocity.x, target, acceleration * delta)
 	var edge_allowed: bool = _edge_remaining > 0.0 and absf(global_position.x - _last_floor_x) <= movement.edge_grace_distance
-	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0:
+	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0 and not combat.is_attacking():
+		combat.reset_combo()
 		velocity.y = -movement.jump_speed
 		_hold_remaining = movement.jump_hold_duration
 		_jump_consumed = true
@@ -70,6 +76,14 @@ func _physics_process(delta: float) -> void:
 		landing_lock_remaining = movement.hard_landing_duration if hard else 0.0
 		_was_descending = false
 		landed.emit(impact_speed, hard)
+	combat.resolve_hits()
+
+func bounce_from_down_attack() -> void:
+	# Same release speed as a tap jump; never hold-extend this hit bounce.
+	velocity.y = -movement.jump_release_speed
+	_hold_remaining = 0.0
+	_jump_consumed = true
+	_edge_remaining = 0.0
 
 func _update_facing(axis: float, delta: float) -> void:
 	var desired: float = signf(axis)
