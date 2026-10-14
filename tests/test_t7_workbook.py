@@ -1,5 +1,8 @@
 """验证T7新模板保留约束、留空决策字段，且不预先宣告验收完成。"""
 from pathlib import Path
+import os
+import subprocess
+import tempfile
 import unittest
 import openpyxl
 
@@ -15,11 +18,21 @@ COUNTS = {
 class T7WorkbookTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.book = openpyxl.load_workbook(FILE, data_only=False)
+        # 模板回归只检查独立生成的模板，允许制作人在原表中填写决策。
+        cls.temp_dir = tempfile.TemporaryDirectory(prefix="31days-t7-template-test-")
+        cls.fixture = Path(cls.temp_dir.name) / "T7.xlsx"
+        env = os.environ.copy()
+        env["T7_OUTPUT_PATH"] = str(cls.fixture)
+        env.pop("T7_PREVIEW_DIR", None)
+        node = Path(os.environ.get("USERPROFILE", "C:/Users/Administrator")) / ".cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe"
+        subprocess.run([str(node), str(FILE.parents[1] / "scripts" / "build_t7.mjs")],
+                       env=env, check=True, capture_output=True, text=True, encoding="utf-8")
+        cls.book = openpyxl.load_workbook(cls.fixture, data_only=False)
 
     @classmethod
     def tearDownClass(cls):
         cls.book.close()
+        cls.temp_dir.cleanup()
 
     def test_all_sections_and_counts(self):
         self.assertEqual(self.book.sheetnames, ["填写说明与Todo", *list(COUNTS)[:6], "T7-E3 死亡加载流程", *list(COUNTS)[6:]])

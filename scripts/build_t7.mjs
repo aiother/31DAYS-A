@@ -118,7 +118,7 @@ const specs=[
 ];
 
 const wb=Workbook.create();
-const out=fileURLToPath(new URL('../Words/T7_UI_UX与存档规格填写模板.xlsx',import.meta.url));
+const out=process.env.T7_OUTPUT_PATH || fileURLToPath(new URL('../Words/T7_UI_UX与存档规格填写模板.xlsx',import.meta.url));
 const col=n=>String.fromCharCode(64+n);
 const endRows=new Map();
 function layout(name, headers, rows, inputCol) {
