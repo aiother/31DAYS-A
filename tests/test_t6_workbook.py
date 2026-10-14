@@ -1,5 +1,8 @@
 """验证T6空白填写模板的覆盖、保留值、下拉及待验收状态。"""
 from pathlib import Path
+import os
+import subprocess
+import tempfile
 import unittest
 import openpyxl
 
@@ -20,11 +23,21 @@ SHEETS = {
 class T6WorkbookTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.book = openpyxl.load_workbook(FILE, data_only=False)
+        # 验证生成器的空白模板，而不是要求用户已经填写的工作簿保持为空。
+        cls.temp_dir = tempfile.TemporaryDirectory(prefix="31days-t6-template-test-")
+        cls.fixture = Path(cls.temp_dir.name) / "T6.xlsx"
+        env = os.environ.copy()
+        env["T6_OUTPUT_PATH"] = str(cls.fixture)
+        env.pop("T6_PREVIEW_DIR", None)
+        node = Path(os.environ.get("USERPROFILE", "C:/Users/Administrator")) / ".cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe"
+        builder = FILE.parents[1] / "scripts" / "build_t6.mjs"
+        subprocess.run([str(node), str(builder)], env=env, check=True, capture_output=True, text=True, encoding="utf-8")
+        cls.book = openpyxl.load_workbook(cls.fixture, data_only=False)
 
     @classmethod
     def tearDownClass(cls):
         cls.book.close()
+        cls.temp_dir.cleanup()
 
     def test_all_sections_and_item_counts(self):
         self.assertEqual(self.book.sheetnames, ["填写说明", *SHEETS])

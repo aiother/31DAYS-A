@@ -66,7 +66,7 @@ const specs = [
 ];
 
 const wb = Workbook.create();
-const out = fileURLToPath(new URL('../Words/T6_资源配置填写模板.xlsx',import.meta.url));
+const out = process.env.T6_OUTPUT_PATH || fileURLToPath(new URL('../Words/T6_资源配置填写模板.xlsx',import.meta.url));
 const previewDir = process.env.T6_PREVIEW_DIR;
 const col = n=>String.fromCharCode(64+n);
 function layout(name, headers, rows, inputs, gradeCol, start=5) {
