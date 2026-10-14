@@ -17,6 +17,7 @@ FILES = {
     "T5": "T5_区域与空间配置规范.md",
     "T5.2": "T5.2_区域架构收束规范.md",
     "T5.3": "T5.3_Room设计收束规范.md",
+    "T5.4": "T5.4_关键Node详细设计策划案.md",
 }
 
 
@@ -32,7 +33,7 @@ class PlanningDocumentsTests(unittest.TestCase):
                 self.assertNotIn("\ufffd", content)
                 self.assertNotIn("chatgpt-content-reference", content)
                 self.assertNotRegex(content, r"(?i)\b(TODO|TBD)\b|填写此处")
-                date = "2026-10-11" if key == "T5.3" else ("2026-10-10" if key.startswith("T5") else {"T4": "2026-10-08"}.get(key, "2026-10-07"))
+                date = {"T5.4": "2026-10-14", "T5.3": "2026-10-11"}.get(key, "2026-10-10" if key.startswith("T5") else {"T4": "2026-10-08"}.get(key, "2026-10-07"))
                 self.assertIn(date, content)
                 headings = re.findall(r"^## (\d+)\.", content, re.M)
                 self.assertEqual(list(map(int, headings)),
@@ -324,6 +325,86 @@ class PlanningDocumentsTests(unittest.TestCase):
         self.assertIn("未直接填作所有房间最终目标", content)
         self.assertIn("不等于Node实例、程序、美术或UI制作已完成", content)
         self.assertIn("黄金麦湖", content)
+
+    def t54_records(self):
+        section = self.docs["T5.4"].split("## 9. Node最终配置明细", 1)[1]
+        records = {}
+        for block in re.split(r"\n### \d+\. ", section)[1:]:
+            fields = dict(re.findall(r"^- ([^：\n]+)：(.*)$", block, re.M))
+            self.assertNotIn(fields["Node编号"], records)
+            records[fields["Node编号"]] = fields
+        return records
+
+    def test_t54_identity_membership_and_complete_fields(self):
+        records = self.t54_records()
+        rooms = self.t53_records()
+        self.assertEqual(len(records), 27)
+        totals = {"HD": 0, "TY": 0, "NSZC": 0}
+        for node_id, fields in records.items():
+            self.assertEqual(len(fields), 20)
+            room_id, serial = node_id.rsplit("_", 1)
+            self.assertRegex(serial, r"^N\d{3}$")
+            self.assertEqual(fields["所属Room"], room_id)
+            self.assertIn(room_id, rooms)
+            region, scene, _ = room_id.split("_")
+            totals[region] += 1
+            self.assertEqual(fields["所属Region"], f"Region_{region}")
+            self.assertEqual(fields["所属Scene"], rooms[room_id]["所属Scene"])
+        self.assertEqual(totals, {"HD": 13, "TY": 5, "NSZC": 9})
+        self.assertEqual(len({f["所属Room"] for f in records.values()}), 11)
+        self.assertNotIn("TY_10001_1_N003", records)
+
+    def test_t54_explicit_node_references_resolve(self):
+        records = self.t54_records()
+        for node_id, fields in records.items():
+            for text in fields.values():
+                for target in re.findall(r"(?:HD|TY|NSZC)_\d{5}_\d+_N\d{3}", text):
+                    self.assertIn(target, records, (node_id, target))
+
+    def test_t54_introduction_and_boss_persistence_are_separate(self):
+        records = self.t54_records()
+        for key in ("HD_10002_1_N001", "NSZC_10002_1_N001"):
+            self.assertEqual(records[key]["是否一次性"], "首次介绍事件一次性")
+            self.assertEqual(records[key]["死亡后状态"], "首次介绍完成状态保留；普通敌人按检查点规则重置")
+        for boss, gate in (("HD_10004_1_N001", "HD_10004_1_N002"),
+                           ("HD_20003_1_N001", "HD_20003_1_N002")):
+            self.assertEqual(records[gate]["触发条件"], f"{boss}节点BOSS被击杀")
+            for rule in ("保存击败状态", "未击败则战斗重置", "首次演出不重复"):
+                self.assertIn(rule, records[boss]["死亡后状态"])
+
+    def test_t54_checkpoints_and_event_days(self):
+        records = self.t54_records()
+        checkpoints = [fields for fields in records.values() if fields["Node类型"] == "检查点"]
+        self.assertEqual(len(checkpoints), 8)
+        for fields in checkpoints:
+            self.assertEqual(fields["触发方式"], "自动")
+            self.assertEqual(fields["Node作用"], "记录复活位置")
+        self.assertIn("强制进入第二日", records["HD_20001_1_N001"]["时间变化"])
+        self.assertIn("强制进入第三日", records["HD_20003_1_N002"]["时间变化"])
+        self.assertIn("不得据原表前一条直接把第三日回退至第二日", self.docs["T5.4"])
+
+    def test_t54_final_battle_and_ending_chain(self):
+        records = self.t54_records()
+        prefix = "NSZC_10003_1_"
+        self.assertEqual(records[prefix + "N002"]["是否一次性"], "是")
+        self.assertEqual(records[prefix + "N002"]["死亡后状态"], "保留")
+        self.assertIn("秒杀当前全部敌人", records[prefix + "N002"]["发生内容"])
+        self.assertIn("玩家死亡后重新进Room", records[prefix + "N004"]["触发条件"])
+        self.assertIn("少于15分钟，则以当前时间为准", records[prefix + "N004"]["时间变化"])
+        for rule in ("进入失败结算", "触发最终增援", "终止倒计时并结算为胜利"):
+            self.assertIn(rule, records[prefix + "N005"]["触发条件"])
+        self.assertIn(prefix + "N001", records[prefix + "N006"]["触发条件"])
+        self.assertIn("执行完毕", records[prefix + "N006"]["触发条件"])
+        self.assertIn("不实现为相互反复调用", self.docs["T5.4"])
+
+    def test_t54_uncertainties_and_scope_remain_visible(self):
+        content = self.docs["T5.4"]
+        for term in ("关键功能逻辑", "普通批量敌人", "每波次重复2次",
+                     "区分首次加入事件与每波增援行为", "不自行建立自动回能系统",
+                     "不把“死亡不额外推进时间”解释为免费重置15分钟",
+                     "不将早期Node示例里的食物任务混入最终配置"):
+            self.assertIn(term, content)
+        self.assertIn("空白显示未填写，不等同于否、无或已完成", content)
 
 
 if __name__ == "__main__":
