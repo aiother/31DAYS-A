@@ -17,4 +17,4 @@ extends Resource
 @export var edge_grace_distance: float = 32.0
 @export var edge_grace_time: float = 0.12
 @export var hard_landing_distance: float = 320.0
-@export var hard_landing_duration: float = 0.22
+@export var hard_landing_duration: float = 0.44

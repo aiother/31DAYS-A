@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
 [ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
@@ -8,6 +8,10 @@
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 22.0
 height = 96.0
+
+[sub_resource type="CapsuleShape2D" id="PhysicsBody"]
+radius = 22.0
+height = 88.0
 
 [sub_resource type="RectangleShape2D" id="Hit"]
 size = Vector2(96, 64)
@@ -23,8 +27,8 @@ script = ExtResource("1")
 movement = ExtResource("2")
 
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
-position = Vector2(0, -48)
-shape = SubResource("Body")
+position = Vector2(0, -44)
+shape = SubResource("PhysicsBody")
 
 [node name="GameplayRoot" type="Node2D" parent="."]
 

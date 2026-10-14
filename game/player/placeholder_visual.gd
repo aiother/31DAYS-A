@@ -22,7 +22,7 @@ func _on_landed(_impact_speed: float, hard: bool) -> void:
 	sprite.scale = Vector2(1.25, 0.72) if hard else Vector2(1.12, 0.87)
 	_pulse = 1.0 if hard else 0.5
 	_feedback = create_tween()
-	_feedback.tween_property(sprite, "scale", Vector2.ONE, 0.22 if hard else 0.12)
+	_feedback.tween_property(sprite, "scale", Vector2.ONE, player.movement.hard_landing_duration if hard else 0.12)
 
 func _draw() -> void:
 	if _pulse > 0.0:

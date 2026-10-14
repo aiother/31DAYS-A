@@ -16,9 +16,13 @@ class GameProjectTests(unittest.TestCase):
     def test_engine_and_screen_baseline(self):
         config = (GAME / 'project.godot').read_text(encoding='utf-8')
         for setting in ('"4.7"', '"gl_compatibility"', 'viewport_width=1920',
-                        'viewport_height=1080', 'physics_ticks_per_second=60',
-                        'max_fps=60', 'window/stretch/aspect="keep"'):
+                        'viewport_height=1080', 'max_fps=60'):
             self.assertIn(setting, config)
+        # Godot removes explicit default values when saving project settings.
+        for key, default in [('common/physics_ticks_per_second', '60'),
+                             ('window/stretch/aspect', '"keep"')]:
+            value = re.search(r'^' + re.escape(key) + r'=(.*)$', config, re.M)
+            self.assertEqual(value.group(1) if value else default, default)
         export = (GAME / 'export_presets.cfg').read_text(encoding='utf-8')
         self.assertIn('binary_format/architecture="x86_64"', export)
 
