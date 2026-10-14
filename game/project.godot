@@ -1,0 +1,109 @@
+; Godot 4.7.2 Stable / Windows x64 / Typed GDScript
+config_version=5
+
+[application]
+config/name="末日前31天 · V0.1 玩家灰盒"
+run/main_scene="res://debug/movement_lab.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/characters/player_placeholder.svg"
+
+[display]
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.075, 0.105, 0.14, 1)
+
+[physics]
+common/physics_ticks_per_second=60
+
+[engine]
+max_fps=60
+
+[layer_names]
+2d_physics/layer_1="World"
+2d_physics/layer_2="PlayerBody"
+2d_physics/layer_3="EnemyBody"
+2d_physics/layer_4="PlayerHitbox"
+2d_physics/layer_5="EnemyHurtbox"
+2d_physics/layer_6="EnemyHitbox"
+2d_physics/layer_7="PlayerHurtbox"
+2d_physics/layer_8="Interaction"
+
+[input]
+
+move_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":65), Object(InputEventKey,"physical_keycode":4194321), Object(InputEventJoypadMotion,"axis":0,"axis_value":-1.0), Object(InputEventJoypadButton,"button_index":13)]
+}
+
+move_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":68), Object(InputEventKey,"physical_keycode":4194323), Object(InputEventJoypadMotion,"axis":0,"axis_value":1.0), Object(InputEventJoypadButton,"button_index":14)]
+}
+
+aim_up={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":87), Object(InputEventKey,"physical_keycode":4194320), Object(InputEventJoypadMotion,"axis":1,"axis_value":-1.0), Object(InputEventJoypadButton,"button_index":11)]
+}
+
+aim_down={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":83), Object(InputEventKey,"physical_keycode":4194322), Object(InputEventJoypadMotion,"axis":1,"axis_value":1.0), Object(InputEventJoypadButton,"button_index":12)]
+}
+
+run={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194325), Object(InputEventJoypadButton,"button_index":9)]
+}
+
+jump={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventJoypadButton,"button_index":0)]
+}
+
+attack={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":74), Object(InputEventJoypadButton,"button_index":2), Object(InputEventMouseButton,"button_index":1)]
+}
+
+dodge={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":75), Object(InputEventJoypadButton,"button_index":1)]
+}
+
+recover={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":76), Object(InputEventJoypadButton,"button_index":3)]
+}
+
+interact={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":69), Object(InputEventJoypadButton,"button_index":10)]
+}
+
+use_item={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":81), Object(InputEventJoypadButton,"button_index":4)]
+}
+
+pause={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194305), Object(InputEventJoypadButton,"button_index":6)]
+}
+
+debug_reset={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":82)]
+}
+
+toggle_fullscreen={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194342)]
+}

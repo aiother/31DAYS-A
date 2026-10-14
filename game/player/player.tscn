@@ -1,0 +1,72 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
+[ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/characters/player_placeholder.svg" id="3"]
+[ext_resource type="Script" path="res://player/placeholder_visual.gd" id="4"]
+
+[sub_resource type="CapsuleShape2D" id="Body"]
+radius = 22.0
+height = 96.0
+
+[sub_resource type="RectangleShape2D" id="Hit"]
+size = Vector2(96, 64)
+
+[sub_resource type="RectangleShape2D" id="Interaction"]
+size = Vector2(144, 128)
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+floor_snap_length = 8.0
+script = ExtResource("1")
+movement = ExtResource("2")
+
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -48)
+shape = SubResource("Body")
+
+[node name="GameplayRoot" type="Node2D" parent="."]
+
+[node name="Combat" type="Node" parent="GameplayRoot"]
+metadata/implementation = "Reserved: T2 combat comes next"
+
+[node name="Hitbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(60, -48)
+collision_layer = 8
+collision_mask = 16
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hitbox"]
+shape = SubResource("Hit")
+disabled = true
+
+[node name="Hurtbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(0, -48)
+collision_layer = 64
+collision_mask = 32
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hurtbox"]
+shape = SubResource("Body")
+disabled = true
+
+[node name="InteractionArea" type="Area2D" parent="GameplayRoot"]
+position = Vector2(0, -48)
+collision_layer = 0
+collision_mask = 128
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/InteractionArea"]
+shape = SubResource("Interaction")
+disabled = true
+
+[node name="VisualRoot" type="Node2D" parent="."]
+script = ExtResource("4")
+
+[node name="PlaceholderSprite" type="Sprite2D" parent="VisualRoot"]
+position = Vector2(0, -48)
+texture = ExtResource("3")

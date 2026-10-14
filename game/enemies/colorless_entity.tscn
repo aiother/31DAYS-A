@@ -1,0 +1,49 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="CapsuleShape2D" id="Body"]
+radius = 24.0
+height = 80.0
+
+[sub_resource type="RectangleShape2D" id="Hit"]
+size = Vector2(72, 56)
+
+[node name="ColorlessEntity" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+metadata/implementation = "Structure only. No AI, attacks, HP or rewards. Not spawned."
+
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -40)
+shape = SubResource("Body")
+
+[node name="GameplayRoot" type="Node2D" parent="."]
+
+[node name="Combat" type="Node" parent="GameplayRoot"]
+
+[node name="Hitbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(48, -40)
+collision_layer = 32
+collision_mask = 64
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hitbox"]
+shape = SubResource("Hit")
+disabled = true
+
+[node name="Hurtbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(0, -40)
+collision_layer = 16
+collision_mask = 8
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hurtbox"]
+shape = SubResource("Body")
+disabled = true
+
+[node name="VisualRoot" type="Node2D" parent="."]
+
+[node name="Placeholder" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(-24, 0, -24, -80, 24, -80, 24, 0)
+color = Color(0.6, 0.64, 0.65, 1)
