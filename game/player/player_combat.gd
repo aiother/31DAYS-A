@@ -48,7 +48,7 @@ func interrupt() -> void:
 
 ## The physical player explicitly calls this; execution order is deterministic.
 func tick(delta: float) -> void:
-	if not player.life.can_control():
+	if not player.life.can_control() or player.possibility.busy():
 		interrupt()
 		return
 	_clock += delta

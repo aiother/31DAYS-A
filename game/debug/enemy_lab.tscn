@@ -26,7 +26,7 @@ coordinator = NodePath("../../AttackCoordinator")
 flying = true
 ranged_only = true
 [node name="Title" parent="Instructions"]
-text = "末日前31天 / V0.1 生命与死亡灰盒"
+text = "末日前31天 / V0.1 可能性与生存灰盒"
 [node name="Help" parent="Instructions"]
 text = "A / D 移动 · Shift 跑步 · 空格跳跃 · J / 鼠标左键攻击 · R 重置 · F11 全屏
 W / ↑ 攻击上方 · 空中 S / ↓ 下攻击命中弹起 · 左右或上攻击可反弹橙色投掷物

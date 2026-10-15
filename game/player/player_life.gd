@@ -24,6 +24,9 @@ func can_control() -> bool:
 	return is_alive() and hurt_remaining <= 0.0
 
 func take_hit(amount: int, impulse: Vector2 = Vector2.ZERO) -> bool:
+	var actions: PlayerPossibility = get_parent().get_node_or_null("Possibility") as PlayerPossibility
+	if actions != null and actions.invincible_remaining > 0.0:
+		return false
 	if not is_alive() or protection_remaining > 0.0 or hurt_remaining > 0.0 or amount <= 0:
 		return false
 	health = maxi(0, health - amount)
@@ -37,6 +40,12 @@ func take_hit(amount: int, impulse: Vector2 = Vector2.ZERO) -> bool:
 	if health == 0:
 		died.emit()
 	return true
+
+func heal(amount: int) -> void:
+	if not is_alive() or amount <= 0:
+		return
+	health = mini(config.max_health, health + amount)
+	health_changed.emit(health, config.max_health)
 
 func tick(delta: float) -> void:
 	protection_remaining = maxf(0.0, protection_remaining - delta)

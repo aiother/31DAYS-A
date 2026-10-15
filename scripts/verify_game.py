@@ -51,4 +51,7 @@ if 'PLAYER_LIFE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('enemy melee approach regression', ['--script', 'res://tests/test_enemy_melee_approach.gd'])
 if 'ENEMY_MELEE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful enemy melee approach test summary')
+output = run('possibility dodge and healing regression', ['--script', 'res://tests/test_possibility.gd'])
+if 'POSSIBILITY_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful possibility test summary')
 print(f'All engine checks passed. Report: {report}')

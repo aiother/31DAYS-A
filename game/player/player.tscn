@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
 [ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://player/player_hurtbox.gd" id="7"]
 [ext_resource type="Script" path="res://player/player_life.gd" id="8"]
 [ext_resource type="Resource" path="res://data/player/graybox_life.tres" id="9"]
+[ext_resource type="Script" path="res://player/player_possibility.gd" id="10"]
+[ext_resource type="Resource" path="res://data/player/graybox_possibility.tres" id="11"]
 
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 22.0
@@ -44,6 +46,10 @@ config = ExtResource("9")
 [node name="Combat" type="Node" parent="GameplayRoot"]
 script = ExtResource("5")
 config = ExtResource("6")
+
+[node name="Possibility" type="Node" parent="GameplayRoot"]
+script = ExtResource("10")
+config = ExtResource("11")
 
 [node name="Hitbox" type="Area2D" parent="GameplayRoot"]
 position = Vector2(60, -48)

@@ -7,7 +7,10 @@ var _hit_sound: AudioStreamPlayer
 var _feedback: Tween
 var _pulse: float = 0.0
 var _hurt_flash: float = 0.0
+var _reward_flash: float = 0.0
+var _last_balance: int = 3
 @onready var life: PlayerLife = get_parent().get_node("GameplayRoot/Life") as PlayerLife
+@onready var actions: PlayerPossibility = get_parent().get_node("GameplayRoot/Possibility") as PlayerPossibility
 
 func _ready() -> void:
 	player.landed.connect(_on_landed)
@@ -20,6 +23,13 @@ func _ready() -> void:
 	life.damaged.connect(_on_damaged)
 	life.died.connect(_on_died)
 	life.respawned.connect(_on_respawned)
+	_last_balance = actions.balance
+	actions.balance_changed.connect(_on_balance_changed)
+
+func _on_balance_changed(current: int, _maximum: int) -> void:
+	if current > _last_balance:
+		_reward_flash = 0.35
+	_last_balance = current
 
 func _on_damaged(_amount: int, _impulse: Vector2) -> void:
 	_hurt_flash = 0.2
@@ -60,8 +70,15 @@ func _on_hit_confirmed(_target: CombatHurtbox, _damage: int, _impulse: Vector2) 
 
 func _process(delta: float) -> void:
 	_hurt_flash = maxf(0.0, _hurt_flash - delta)
+	_reward_flash = maxf(0.0, _reward_flash - delta)
 	sprite.modulate = Color(1, 0.4, 0.35) if _hurt_flash > 0.0 else Color.WHITE
 	sprite.modulate.a = 0.45 if life.is_alive() and life.protection_remaining > 0.0 and int(Time.get_ticks_msec() / 90) % 2 == 0 else 1.0
+	if player.possibility.state == PlayerPossibility.State.HEALING:
+		sprite.modulate = Color(0.5, 1.0, 0.65)
+	elif player.possibility.busy():
+		sprite.modulate = Color(1.0, 0.7, 0.35) if player.possibility.poor_dodge else Color(0.5, 0.85, 1.0)
+		if player.possibility.invincible_remaining > 0.0:
+			sprite.modulate.a = 0.45
 	_pulse = maxf(0.0, _pulse - delta * 2.8)
 	queue_redraw()
 
@@ -79,6 +96,8 @@ func _on_landed(_impact_speed: float, hard: bool) -> void:
 	_feedback.tween_property(sprite, "scale", Vector2.ONE, player.movement.hard_landing_duration if hard else 0.12)
 
 func _draw() -> void:
+	if _reward_flash > 0.0:
+		draw_arc(Vector2(0, -48), 55.0 + (0.35 - _reward_flash) * 100.0, 0, TAU, 32, Color(0.5, 1.0, 0.65, _reward_flash / 0.35), 3.0)
 	if combat != null and combat.is_attacking():
 		var shape: RectangleShape2D = combat.hit_shape.shape as RectangleShape2D
 		var rect: Rect2 = Rect2(combat.hitbox.position - shape.size * 0.5, shape.size)

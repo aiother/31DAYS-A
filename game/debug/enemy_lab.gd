@@ -33,6 +33,6 @@ func _restart_deferred() -> void:
 		tree.remove_meta("graybox_revive_pending")
 		push_error("Could not reload graybox challenge")
 
-func _on_defeated(_reward: int) -> void:
-	# Reward signal is ready; resource credit waits for the possibility phase.
+func _on_defeated(reward: int) -> void:
+	player.possibility.gain(reward)
 	_defeats += 1
