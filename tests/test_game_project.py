@@ -75,15 +75,24 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('signal hit_received', receiver)
         self.assertNotIn('current_health', receiver)
 
-    def test_colorless_baseline_and_diagnostic_player_damage(self):
+    def test_colorless_baseline_and_live_player_damage(self):
         config = (GAME / 'data/enemies/colorless_entity.tres').read_text(encoding='utf-8')
         for setting in ('max_health = 13', 'damage = 1', 'reward = 2'):
             self.assertIn(setting, config)
         lab = (GAME / 'debug/enemy_lab.tscn').read_text(encoding='utf-8')
         self.assertIn('res://enemies/colorless_entity.tscn', lab)
-        self.assertIn('玩家受击仅显示命中，不扣生命', lab)
+        self.assertIn('玩家开场生命3/5', lab)
         self.assertNotIn('单色实体', lab)
         self.assertNotIn('天人战士', lab)
+
+    def test_life_defaults_and_provisional_restart_are_explicit(self):
+        config = (GAME / 'data/player/graybox_life.tres').read_text(encoding='utf-8')
+        for setting in ('max_health = 5', 'initial_health = 3', 'downed_duration = 1.0', 'respawn_protection = 3.0'):
+            self.assertIn(setting, config)
+        ui = (GAME / 'ui/menus/life_ui.gd').read_text(encoding='utf-8')
+        self.assertIn('正式检查点与存档尚未接入', ui)
+        self.assertIn('重新挑战（灰盒出生点）', ui)
+        self.assertIn('Node.PROCESS_MODE_ALWAYS', ui)
 
     def test_oct15_revision_marked_in_related_documents(self):
         for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md', 'T3_可能性_基础属性_成长_死亡.md']:

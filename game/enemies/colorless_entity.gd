@@ -48,6 +48,13 @@ func _physics_process(delta: float) -> void:
 	_remaining = maxf(0.0, _remaining - delta)
 	if not flying:
 		velocity.y = minf(1500.0, velocity.y + config.gravity * delta)
+	if is_instance_valid(target) and target is PlayerController and not (target as PlayerController).life.is_alive():
+		_release_slot()
+		state = State.IDLE
+		_stop_horizontal()
+		move_and_slide()
+		visual.queue_redraw()
+		return
 	match state:
 		State.STUN:
 			velocity.x = move_toward(velocity.x, 0.0, 500.0 * delta)

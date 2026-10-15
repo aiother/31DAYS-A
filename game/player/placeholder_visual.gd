@@ -6,6 +6,8 @@ extends Node2D
 var _hit_sound: AudioStreamPlayer
 var _feedback: Tween
 var _pulse: float = 0.0
+var _hurt_flash: float = 0.0
+@onready var life: PlayerLife = get_parent().get_node("GameplayRoot/Life") as PlayerLife
 
 func _ready() -> void:
 	player.landed.connect(_on_landed)
@@ -15,6 +17,28 @@ func _ready() -> void:
 	_hit_sound.volume_db = -16.0
 	add_child(_hit_sound)
 	combat.hit_confirmed.connect(_on_hit_confirmed)
+	life.damaged.connect(_on_damaged)
+	life.died.connect(_on_died)
+	life.respawned.connect(_on_respawned)
+
+func _on_damaged(_amount: int, _impulse: Vector2) -> void:
+	_hurt_flash = 0.2
+
+func _on_died() -> void:
+	if _feedback != null and _feedback.is_valid():
+		_feedback.kill()
+	sprite.scale = Vector2.ONE
+	_feedback = create_tween()
+	_feedback.tween_property(sprite, "rotation", -PI * 0.5, 0.18)
+	_feedback.parallel().tween_property(sprite, "position:y", -18.0, 0.18)
+
+func _on_respawned() -> void:
+	if _feedback != null and _feedback.is_valid():
+		_feedback.kill()
+	sprite.scale = Vector2.ONE
+	sprite.rotation = 0.0
+	sprite.position = Vector2(0, -48)
+	_hurt_flash = 0.0
 
 func _make_hit_sound() -> AudioStreamWAV:
 	var stream: AudioStreamWAV = AudioStreamWAV.new()
@@ -35,6 +59,9 @@ func _on_hit_confirmed(_target: CombatHurtbox, _damage: int, _impulse: Vector2) 
 	_hit_sound.play()
 
 func _process(delta: float) -> void:
+	_hurt_flash = maxf(0.0, _hurt_flash - delta)
+	sprite.modulate = Color(1, 0.4, 0.35) if _hurt_flash > 0.0 else Color.WHITE
+	sprite.modulate.a = 0.45 if life.is_alive() and life.protection_remaining > 0.0 and int(Time.get_ticks_msec() / 90) % 2 == 0 else 1.0
 	_pulse = maxf(0.0, _pulse - delta * 2.8)
 	queue_redraw()
 
@@ -42,6 +69,8 @@ func _on_facing_changed(direction: float) -> void:
 	sprite.flip_h = direction < 0.0
 
 func _on_landed(_impact_speed: float, hard: bool) -> void:
+	if not life.is_alive():
+		return
 	if _feedback != null and _feedback.is_valid():
 		_feedback.kill()
 	sprite.scale = Vector2(1.25, 0.72) if hard else Vector2(1.12, 0.87)

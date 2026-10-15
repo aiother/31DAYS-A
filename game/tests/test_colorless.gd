@@ -59,6 +59,8 @@ func _clean() -> void:
 	_incoming = 0
 	_incoming_damage = 0
 	await _ticks(8)
+	_player.life.start_new_run()
+	_player.reset_kinematics()
 
 func _on_player_hit(damage: int, _impulse: Vector2, _source: Node2D, _id: int) -> void:
 	_incoming += 1

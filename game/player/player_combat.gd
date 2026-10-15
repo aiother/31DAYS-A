@@ -37,8 +37,20 @@ func reset_combo() -> void:
 	_last_press_time = -1000.0
 	_buffer_remaining = 0.0
 
+func interrupt() -> void:
+	var was_attacking: bool = is_attacking()
+	phase = Phase.IDLE
+	_phase_remaining = 0.0
+	_hit_targets.clear()
+	reset_combo()
+	if was_attacking:
+		attack_finished.emit()
+
 ## The physical player explicitly calls this; execution order is deterministic.
 func tick(delta: float) -> void:
+	if not player.life.can_control():
+		interrupt()
+		return
 	_clock += delta
 	_buffer_remaining = maxf(0.0, _buffer_remaining - delta)
 	if Input.is_action_just_pressed("attack") and player.landing_lock_remaining <= 0.0:
@@ -95,7 +107,7 @@ func _advance_phase() -> void:
 ## Query the Hitbox geometry after move_and_slide, only during active frames.
 ## Area monitoring stays off, avoiding delayed enter/exit signals and stale hits.
 func resolve_hits() -> void:
-	if phase != Phase.ACTIVE:
+	if phase != Phase.ACTIVE or not player.life.can_control():
 		return
 	var query: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
 	query.shape = hit_shape.shape

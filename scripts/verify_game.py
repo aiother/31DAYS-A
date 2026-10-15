@@ -45,4 +45,7 @@ if 'COMBAT_REVISION_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('colorless enemy regression', ['--script', 'res://tests/test_colorless.gd'])
 if 'COLORLESS_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful colorless test summary')
+output = run('player life and death regression', ['--script', 'res://tests/test_player_life.gd'])
+if 'PLAYER_LIFE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful player life test summary')
 print(f'All engine checks passed. Report: {report}')

@@ -6,6 +6,7 @@ signal facing_changed(direction: float)
 
 @export var movement: MovementConfig
 @onready var combat: PlayerCombat = $GameplayRoot/Combat
+@onready var life: PlayerLife = $GameplayRoot/Life
 var facing: float = 1.0
 var landing_lock_remaining: float = 0.0
 var _turn_remaining: float = 0.0
@@ -22,8 +23,16 @@ func _ready() -> void:
 	assert(movement != null, "Assign MovementConfig before running player")
 	_fall_start_y = global_position.y
 	_last_floor_x = global_position.x
+	life.damaged.connect(_on_damaged)
+	life.respawned.connect(reset_kinematics)
 
 func _physics_process(delta: float) -> void:
+	life.tick(delta)
+	if not life.can_control():
+		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta) if life.is_alive() else 0.0
+		velocity.y = minf(velocity.y + movement.gravity * movement.fall_gravity_scale * delta, movement.max_fall_speed)
+		move_and_slide()
+		return
 	var grounded: bool = is_on_floor()
 	landing_lock_remaining = maxf(0.0, landing_lock_remaining - delta)
 	if grounded:
@@ -81,6 +90,8 @@ func _physics_process(delta: float) -> void:
 	combat.resolve_hits()
 
 func bounce_from_down_attack() -> void:
+	if not life.can_control():
+		return
 	# Derive from the full held jump, not the release-cut jump speed.
 	var delta: float = 1.0 / float(Engine.physics_ticks_per_second)
 	var height: float = movement.maximum_jump_height(delta) * combat.config.down_bounce_jump_height_ratio
@@ -89,6 +100,26 @@ func bounce_from_down_attack() -> void:
 	_hold_remaining = 0.0
 	_jump_consumed = true
 	_edge_remaining = 0.0
+
+func _on_damaged(_amount: int, impulse: Vector2) -> void:
+	combat.interrupt()
+	velocity.x = clampf(impulse.x, -life.config.max_knockback, life.config.max_knockback)
+	_hold_remaining = 0.0
+	_bounce_rising = false
+
+func reset_kinematics() -> void:
+	combat.interrupt()
+	velocity = Vector2.ZERO
+	landing_lock_remaining = 0.0
+	_hold_remaining = 0.0
+	_edge_remaining = 0.0
+	_turn_remaining = 0.0
+	_pending_facing = facing
+	_jump_consumed = false
+	_was_descending = false
+	_bounce_rising = false
+	_fall_start_y = global_position.y
+	_last_floor_x = global_position.x
 
 func _update_facing(axis: float, delta: float) -> void:
 	var desired: float = signf(axis)
