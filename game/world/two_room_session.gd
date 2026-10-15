@@ -86,6 +86,8 @@ func _on_encounter() -> void:
 func _on_room_exit(target: String) -> void:
 	if not has_session() or intro_active or _transitioning or not player.life.can_control():
 		return
+	if target != room.config.previous_room_id and target != room.config.next_room_id:
+		return
 	if not _room_scenes().has(target):
 		if not _exit_shown and save_current("当前进度已保存"):
 			_exit_shown = true

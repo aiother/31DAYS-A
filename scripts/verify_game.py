@@ -21,7 +21,7 @@ def run(name, extra):
     output = result.stdout + result.stderr
     logs.append(f'=== {name}: exit {result.returncode} ===\n{output}')
     report.write_text('\n'.join(logs), encoding='utf-8')
-    if result.returncode != 0 or any(word in output for word in ('SCRIPT ERROR:', 'ERROR:', 'Parse Error')):
+    if result.returncode != 0 or any(word in output for word in ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')):
         print(output)
         raise SystemExit(f'{name} failed; see {report}')
     print(f'PASS {name}')
@@ -72,4 +72,7 @@ if 'TWO_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('vertical tower Room and checkpoint return', ['--script', 'res://tests/test_tower_room.gd'])
 if 'TOWER_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful tower Room test summary')
+output = run('exploration Room and persistent pearl placeholder', ['--script', 'res://tests/test_exploration_room.gd'])
+if 'EXPLORATION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful exploration Room test summary')
 print(f'All engine checks passed. Report: {report}')

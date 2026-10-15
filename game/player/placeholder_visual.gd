@@ -68,6 +68,11 @@ func _make_hit_sound() -> AudioStreamWAV:
 func _on_hit_confirmed(_target: CombatHurtbox, _damage: int, _impulse: Vector2) -> void:
 	_hit_sound.play()
 
+func _exit_tree() -> void:
+	if is_instance_valid(_hit_sound):
+		_hit_sound.stop()
+		_hit_sound.stream = null
+
 func _process(delta: float) -> void:
 	_hurt_flash = maxf(0.0, _hurt_flash - delta)
 	_reward_flash = maxf(0.0, _reward_flash - delta)

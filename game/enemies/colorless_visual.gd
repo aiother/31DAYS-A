@@ -12,6 +12,11 @@ func _ready() -> void:
 func _on_attack_started(_ranged: bool) -> void:
 	_warning.play()
 
+func _exit_tree() -> void:
+	if is_instance_valid(_warning):
+		_warning.stop()
+		_warning.stream = null
+
 func _draw() -> void:
 	if entity.state == ColorlessEntity.State.DEAD:
 		for i: int in range(4):

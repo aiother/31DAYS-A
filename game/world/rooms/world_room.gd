@@ -52,6 +52,12 @@ func _on_encounter_entered(body: Node2D) -> void:
 func _draw() -> void:
 	# Flat traversable floor, tall empty space: no platform or combat challenge.
 	draw_rect(config.bounds, Color(0.06, 0.08, 0.10))
+	if config.room_id == "HD_10002_3":
+		for x: int in [80, 560, 1040, 1520, 2000, 2448]:
+			draw_rect(Rect2(x, 120, 64, config.bounds.size.y - 120), Color(0.12, 0.145, 0.16))
+		draw_line(Vector2(896, 1590), Vector2(1216, 1590), Color(0.18, 0.23, 0.25), 3)
+		draw_line(Vector2(2416, 520), Vector2(2416, 200), Color(0.4, 0.45, 0.46), 4)
+		return
 	if config.room_id == "HD_10002_2":
 		for x: int in [48, 520, 1000, 1512, 1840]:
 			draw_rect(Rect2(x, 80, 64, config.bounds.size.y - 80), Color(0.12, 0.145, 0.16))

@@ -1,0 +1,76 @@
+[gd_scene load_steps=11 format=3]
+[ext_resource type="Script" path="res://world/rooms/world_room.gd" id="1"]
+[ext_resource type="Resource" path="res://data/world/hd_10002_3.tres" id="2"]
+[ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
+[ext_resource type="PackedScene" path="res://world/scenes/platform.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="5"]
+[ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="6"]
+[ext_resource type="Script" path="res://world/items/room_pickup.gd" id="7"]
+[ext_resource type="Resource" path="res://data/world/graybox_pearl.tres" id="8"]
+[sub_resource type="RectangleShape2D" id="ExitShape"]
+size = Vector2(144, 160)
+[sub_resource type="RectangleShape2D" id="ReturnShape"]
+size = Vector2(64, 160)
+[node name="HD_10002_3" type="Node2D"]
+script = ExtResource("1")
+config = ExtResource("2")
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("3")
+[node name="LeftBoundary" parent="." instance=ExtResource("4")]
+position = Vector2(-16, 896)
+rotation = 1.5707964
+scale = Vector2(10, 1)
+[node name="RightBoundary" parent="." instance=ExtResource("4")]
+position = Vector2(2576, 896)
+rotation = 1.5707964
+scale = Vector2(10, 1)
+[node name="BrokenPillar" parent="." instance=ExtResource("4")]
+position = Vector2(1264, 1504)
+rotation = 1.5707964
+scale = Vector2(1.25, 1)
+[node name="Platforms" type="Node2D" parent="."]
+[node name="Step0" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(400, 1392)
+[node name="Step1" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(624, 1232)
+[node name="Step2" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(848, 1072)
+[node name="TurnLanding" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(1072, 912)
+[node name="UpperArm" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(1456, 912)
+scale = Vector2(2, 1)
+[node name="Step4" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(1776, 768)
+[node name="Step5" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(2000, 616)
+[node name="ExitLanding" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(2336, 536)
+scale = Vector2(1.75, 1)
+[node name="Pearl" type="Node2D" parent="."]
+position = Vector2(1120, 1632)
+script = ExtResource("7")
+config = ExtResource("8")
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("6")
+[node name="Enemies" type="Node2D" parent="."]
+[node name="DownAttackEntity" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(1008, 1664)
+[node name="UpperEntity" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(2120, 552)
+flying = true
+ranged_only = true
+[node name="Return" type="Area2D" parent="."]
+position = Vector2(48, 1456)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Return"]
+shape = SubResource("ReturnShape")
+[node name="Exit" type="Area2D" parent="."]
+position = Vector2(2416, 440)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Exit"]
+shape = SubResource("ExitShape")
