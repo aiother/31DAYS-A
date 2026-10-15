@@ -34,6 +34,10 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	_release_slot()
 
+func alert_to_target() -> void:
+	# Summoned combatants already know who called them into this encounter.
+	_seen = is_instance_valid(target)
+
 func _release_slot() -> void:
 	if is_instance_valid(coordinator):
 		coordinator.release(self)

@@ -36,6 +36,7 @@ func spawn_reinforcement() -> void:
 	enemy.target = actor.target
 	enemy.coordinator = $AttackCoordinator as EnemyAttackCoordinator
 	$Enemies.add_child(enemy)
+	enemy.alert_to_target()
 	reinforcement_spawned.emit(enemy)
 
 func clear_reinforcements() -> void:

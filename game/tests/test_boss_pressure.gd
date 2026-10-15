@@ -48,6 +48,8 @@ func run() -> void:
 	var add: ColorlessEntity = arena.living_reinforcements()[0]
 	check(add.health == 13 and add.target == session.player and add.coordinator == arena.get_node("AttackCoordinator"), "summon uses existing health target and attack coordinator")
 	var before_motion: Vector2 = add.position
+	await ticks(10)
+	check(add.position.distance_to(before_motion) > 1, "distant summoned enemy immediately pursues beyond normal sight range")
 	session.player.position.x = 1200
 	session.player.reset_kinematics()
 	await ticks(60)
