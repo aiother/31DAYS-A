@@ -3,7 +3,7 @@ config_version=5
 
 [application]
 config/name="末日前31天 · V0.1 玩家灰盒"
-run/main_scene="res://world/two_room_session.tscn"
+run/main_scene="res://world/tower_session.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/characters/player_placeholder.svg"
 

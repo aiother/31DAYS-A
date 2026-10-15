@@ -11,6 +11,9 @@ const ROOMS: Dictionary = {
 }
 var _transitioning: bool = false
 
+func _room_scenes() -> Dictionary:
+	return ROOMS
+
 func _ready() -> void:
 	super._ready()
 	_bind_room()
@@ -33,7 +36,7 @@ func _mount_room(id: String) -> void:
 	var old: WorldRoom = room
 	remove_child(old)
 	old.queue_free()
-	room = (ROOMS[id] as PackedScene).instantiate() as WorldRoom
+	room = (_room_scenes()[id] as PackedScene).instantiate() as WorldRoom
 	room.name = "Room"
 	add_child(room)
 	move_child(room, 0)
@@ -60,7 +63,7 @@ func _bind_room() -> void:
 				var enemy: ColorlessEntity = child as ColorlessEntity
 				enemy.target = player
 				enemy.coordinator = room.get_node("AttackCoordinator") as EnemyAttackCoordinator
-				enemy.set_physics_process(bool(data.get("events", {}).get(ENCOUNTER, false)))
+				enemy.set_physics_process(room.config.room_id != ENTRY_ID or bool(data.get("events", {}).get(ENCOUNTER, false)))
 				if not enemy.defeated.is_connected(_on_room_enemy_defeated):
 					enemy.defeated.connect(_on_room_enemy_defeated)
 
@@ -83,7 +86,7 @@ func _on_encounter() -> void:
 func _on_room_exit(target: String) -> void:
 	if not has_session() or intro_active or _transitioning or not player.life.can_control():
 		return
-	if not ROOMS.has(target):
+	if not _room_scenes().has(target):
 		if not _exit_shown and save_current("当前进度已保存"):
 			_exit_shown = true
 			ui.call("show_room_boundary", target)

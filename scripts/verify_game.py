@@ -69,4 +69,7 @@ if 'START_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('adjacent Rooms and first encounter', ['--script', 'res://tests/test_two_rooms.gd'])
 if 'TWO_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful two-Room test summary')
+output = run('vertical tower Room and checkpoint return', ['--script', 'res://tests/test_tower_room.gd'])
+if 'TOWER_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful tower Room test summary')
 print(f'All engine checks passed. Report: {report}')
