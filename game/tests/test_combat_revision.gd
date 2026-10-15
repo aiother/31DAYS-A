@@ -59,11 +59,10 @@ func _measure_phases(running: bool, step: int) -> Vector3i:
 		await _ticks(1)
 	return counts
 
-func _measure_bounce(multiplier: float, hold_jump: bool) -> float:
+func _measure_bounce(hold_jump: bool) -> float:
 	await _reset()
 	_player.position = Vector2(224, 500)
 	await _ticks(1)
-	_combat.config.down_bounce_height_multiplier = multiplier
 	if hold_jump:
 		Input.action_press("jump")
 	_player.bounce_from_down_attack()
@@ -74,6 +73,19 @@ func _measure_bounce(multiplier: float, hold_jump: bool) -> float:
 		highest = minf(highest, _player.position.y)
 		if _player.velocity.y >= 0.0:
 			break
+	return start - highest
+
+func _measure_max_jump() -> float:
+	await _reset()
+	var start: float = _player.position.y
+	var highest: float = start
+	Input.action_press("jump")
+	for i: int in range(100):
+		await _ticks(1)
+		highest = minf(highest, _player.position.y)
+		if _player.velocity.y >= 0.0:
+			break
+	Input.action_release("jump")
 	return start - highest
 
 func _run() -> void:
@@ -114,11 +126,17 @@ func _run() -> void:
 	Input.action_press("run")
 	await _press()
 	_check(not _combat.running_attack, "run key without movement does not double attack timing")
-	var old_height: float = await _measure_bounce(1.0, false)
-	var new_height: float = await _measure_bounce(2.0, false)
-	_check(new_height / old_height > 1.95 and new_height / old_height < 2.15, "bounce height roughly doubles at 60Hz: %.2f -> %.2f" % [old_height, new_height])
-	var held_height: float = await _measure_bounce(2.0, true)
+	var jump_height: float = await _measure_max_jump()
+	var new_height: float = await _measure_bounce(false)
+	_check(absf(new_height - jump_height * 0.5) < 0.1, "down bounce is half actual held jump height: %.2f / %.2f" % [new_height, jump_height])
+	var held_height: float = await _measure_bounce(true)
 	_check(absf(new_height - held_height) < 0.1, "jump hold/release cannot alter hit bounce height")
+	var original_speed: float = _player.movement.jump_speed
+	_player.movement.jump_speed = 950.0
+	jump_height = await _measure_max_jump()
+	new_height = await _measure_bounce(false)
+	_check(absf(new_height - jump_height * 0.5) < 0.1, "bounce follows maximum height after jump tuning")
+	_player.movement.jump_speed = original_speed
 	Input.action_release("jump")
 	_world.queue_free()
 	await process_frame

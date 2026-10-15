@@ -80,6 +80,7 @@ class GameProjectTests(unittest.TestCase):
             document = (GAME.parent / 'Words' / name).read_text(encoding='utf-8')
             self.assertIn('2026-10-15', document)
             self.assertIn('2倍', document)
+            self.assertIn('长按跳跃最大高度的50%', document)
         for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md']:
             document = (GAME.parent / 'Words' / name).read_text(encoding='utf-8')
             self.assertIn('0.5秒', document)

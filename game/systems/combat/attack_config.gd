@@ -9,7 +9,7 @@ extends Resource
 @export var combo_timeout: float = 0.50
 @export var input_buffer: float = 0.18
 @export var running_timing_multiplier: float = 2.0
-@export var down_bounce_height_multiplier: float = 2.0
+@export_range(0.0, 1.0) var down_bounce_jump_height_ratio: float = 0.5
 @export var first_knockback: float = 140.0
 @export var second_knockback: float = 230.0
 @export var up_knockback: float = 280.0

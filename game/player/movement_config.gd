@@ -18,3 +18,23 @@ extends Resource
 @export var edge_grace_time: float = 0.12
 @export var hard_landing_distance: float = 320.0
 @export var hard_landing_duration: float = 0.44
+
+func maximum_jump_height(delta: float) -> float:
+	# Match the held-jump ascent, including its reduced-gravity hold window.
+	var speed: float = jump_speed
+	var hold: float = jump_hold_duration
+	var height: float = 0.0
+	while speed > 0.0:
+		var scale: float = held_gravity_scale if hold > 0.0 else 1.0
+		speed -= gravity * scale * delta
+		height += maxf(0.0, speed) * delta
+		hold = maxf(0.0, hold - delta)
+	return height
+
+func ascent_speed_for_height(height: float, delta: float) -> float:
+	if height <= 0.0:
+		return 0.0
+	# Invert the discrete ascent sum: H = dt * (n*v - g*dt*n*(n+1)/2).
+	var step: float = gravity * delta
+	var ticks: int = maxi(1, int(ceil((sqrt(1.0 + 8.0 * height / (step * delta)) - 1.0) * 0.5)))
+	return (height / delta + step * float(ticks * (ticks + 1)) * 0.5) / float(ticks)

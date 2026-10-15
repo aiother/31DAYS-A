@@ -81,8 +81,10 @@ func _physics_process(delta: float) -> void:
 	combat.resolve_hits()
 
 func bounce_from_down_attack() -> void:
-	# Height scales with speed squared. Jump release must not cut this bounce.
-	velocity.y = -movement.jump_release_speed * sqrt(combat.config.down_bounce_height_multiplier)
+	# Derive from the full held jump, not the release-cut jump speed.
+	var delta: float = 1.0 / float(Engine.physics_ticks_per_second)
+	var height: float = movement.maximum_jump_height(delta) * combat.config.down_bounce_jump_height_ratio
+	velocity.y = -movement.ascent_speed_for_height(height, delta)
 	_bounce_rising = true
 	_hold_remaining = 0.0
 	_jump_consumed = true
