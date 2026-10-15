@@ -32,12 +32,12 @@ func _draw() -> void:
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	# Isolated namespace rejects debug checkpoint IDs before attempting a teleport.
-	if snapshot.get("checkpoint") != CHECKPOINT:
+	if _checkpoint(str(snapshot.get("checkpoint", ""))) == null:
 		ui.call("save_failed", "此存档不属于起始Room，请选择新游戏")
 		return
 	super._restore(snapshot, revive)
 	_exit_shown = false
-	if not bool(data["events"].get(BIRTH, false)) and not revive:
+	if room.config.room_id == "HD_10001_1" and not bool(data["events"].get(BIRTH, false)) and not revive:
 		intro_active = true
 		_on_ground = false
 		_fall_speed = 0.0

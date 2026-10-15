@@ -21,3 +21,5 @@
 同日检查点阶段追加：主场景更新为`debug/checkpoint_lab.tscn`，在同一灰盒场地放置两面开发检查点旗，通过Resource配置；提供三个本地版本化JSON槽、自动保存、正常载入和死亡结算。用户确认死亡可能性50%向下取整；正常退出保留资源，死亡复活满血及3秒保护。真实地图、NPC/时间/成长持久化未实现，细则见`checkpoint_implementation.md`。下一阶段为第一个灰盒Room。
 
 同日首Room阶段追加：主场景为`world/start_room_session.tscn`，实例化HD_10001_1 PackedScene，接入T5的出生/引导/检查点三个Node。平地无敌人，出口仅验证目标HD_10002_1；相邻Room与分块加载尚未实现。正式Room使用独立room_saves目录，保留此前测试存档，详见`start_room_implementation.md`。
+
+同日双Room阶段追加：主场景`world/two_room_session.tscn`接入HD_10002_1、普通双向连接、相邻资源预加载与当前实例卸载/替换，首次介绍及入口检查点接入同一存档命名空间。用户允许重置敌人后重复获取可能性，覆盖原T4有限刷取限制。移动引导正式美术需位于画面中上部；本次仍是占位。详见`two_room_implementation.md`。

@@ -9,6 +9,8 @@ var _panel: PanelContainer
 var _menu: VBoxContainer
 var _mode: String = ""
 var _error_label: Label
+var _enemy_intro: PanelContainer
+var _enemy_intro_remaining: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -26,6 +28,15 @@ func _ready() -> void:
 	_error_label.add_theme_font_size_override("font_size", 22)
 	_error_label.modulate = Color(1, 0.5, 0.35)
 	_root.add_child(_error_label)
+	_enemy_intro = PanelContainer.new()
+	_enemy_intro.position = Vector2(1390, 100)
+	_enemy_intro.size = Vector2(460, 220)
+	_root.add_child(_enemy_intro)
+	var intro_text: Label = Label.new()
+	intro_text.text = "无色实体\n\n这里不安全。\n观察攻击前摇，寻找反击或闪避机会。"
+	intro_text.add_theme_font_size_override("font_size", 22)
+	_enemy_intro.add_child(intro_text)
+	_enemy_intro.hide()
 	for i: int in range(4):
 		var edge: ColorRect = ColorRect.new()
 		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -59,6 +70,10 @@ func _ready() -> void:
 	player.life.death_menu_ready.connect(show_death)
 
 func _process(_delta: float) -> void:
+	if not get_tree().paused:
+		_enemy_intro_remaining = maxf(0.0, _enemy_intro_remaining - _delta)
+		if _enemy_intro_remaining == 0.0:
+			_enemy_intro.hide()
 	var life: PlayerLife = player.life
 	var protection: String = ""
 	if life.protection_remaining > 0.0 and life.is_alive():
@@ -260,10 +275,20 @@ func _save_and_quit() -> void:
 	get_tree().quit()
 
 func show_room_boundary(_target: String) -> void:
-	_clear_menu("裂缝通向瓦砾塔", "room_boundary")
+	_clear_menu("前方道路", "room_boundary")
 	var label: Label = Label.new()
 	label.text = "本次灰盒体验到此\n前方区域将在下一阶段开放"
 	label.add_theme_font_size_override("font_size", 22)
 	_menu.add_child(label)
-	_button("返回起始区", resume_game, true)
+	_button("继续探索当前区域", resume_game, true)
 	_button("保存并退出", confirm_quit)
+
+func show_enemy_intro(duration: float) -> void:
+	_enemy_intro_remaining = duration
+	_enemy_intro.position.x = 1920
+	_enemy_intro.show()
+	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP).tween_property(_enemy_intro, "position:x", 1390.0, 0.2)
+
+func hide_enemy_intro() -> void:
+	_enemy_intro_remaining = 0.0
+	_enemy_intro.hide()

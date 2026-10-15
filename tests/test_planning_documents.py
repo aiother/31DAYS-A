@@ -146,7 +146,7 @@ class PlanningDocumentsTests(unittest.TestCase):
     def test_t4_accepted_revisions_and_scope_boundaries(self):
         t4 = self.docs["T4"]
         for rule in ("暗室侵蚀导致敌人更危险", "不直接Game Over",
-                     "不允许无限刷资源", "普通敌人刷新次数有限",
+                     "允许玩家反复往返场景", "不设一次性奖励上限",
                      "时间可感知", "时间推动剧情", "可扩展性"):
             self.assertIn(rule, t4)
         section = t4.split("## 9.")[1].split("## 10.")[0]
@@ -159,7 +159,7 @@ class PlanningDocumentsTests(unittest.TestCase):
     def test_t4_world_changes_and_full_game_separation(self):
         t4 = self.docs["T4"]
         for rule in ("单色实体增多，无色实体减少", "更多空缺与陷阱",
-                     "更多可帮助NPC与较低敌人难度", "资源有限",
+                     "更多可帮助NPC与较低敌人难度", "可通过重置敌人补充可能性",
                      "更早到来曾有救助机会", "NPC知道时间推进"):
             self.assertIn(rule, t4)
         self.assertIn("31天扩展方向（不纳入V0.1制作）", t4)

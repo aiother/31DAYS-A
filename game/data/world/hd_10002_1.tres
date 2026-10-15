@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/rooms/room_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+scene_id = "Region_HD_Scene_10002"
+room_id = "HD_10002_1"
+display_name = "瓦砾塔 · 深谷入口"
+previous_room_id = "HD_10001_1"
+next_room_id = "HD_10002_2"
+floor_offsets = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)

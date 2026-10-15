@@ -47,6 +47,9 @@ func _checkpoint(id: String) -> GrayboxCheckpoint:
 			return child as GrayboxCheckpoint
 	return null
 
+func _supports_checkpoint(id: String) -> bool:
+	return _checkpoint(id) != null
+
 func _all_checkpoints() -> Array[GrayboxCheckpoint]:
 	var result: Array[GrayboxCheckpoint] = []
 	for child: Node in get_tree().get_nodes_in_group("checkpoints"):
@@ -61,7 +64,7 @@ func start_slot(selected: int, new_game: bool) -> bool:
 	if next.is_empty():
 		ui.call("save_failed", store.last_error if not store.last_error.is_empty() else "此槽没有存档")
 		return false
-	if _checkpoint(str(next.get("checkpoint", ""))) == null:
+	if not _supports_checkpoint(str(next.get("checkpoint", ""))):
 		ui.call("save_failed", "此存档不属于当前场景，请选择新游戏")
 		return false
 	if new_game and not store.save_slot(selected, next):

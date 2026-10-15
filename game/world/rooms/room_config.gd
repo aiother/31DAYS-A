@@ -7,6 +7,11 @@ extends Resource
 @export var next_room_id: String = "HD_10002_1"
 @export var bounds: Rect2 = Rect2(0, 0, 1920, 1080)
 @export var floor_row: int = 14
+@export var floor_offsets: PackedInt32Array = []
+@export var previous_room_id: String = ""
+@export var encounter_duration: float = 5.0
+@export var entry_from_previous: Vector2 = Vector2(128, 896)
+@export var entry_from_next: Vector2 = Vector2(1680, 896)
 @export var ground_rows: int = 3
 @export var fall_start: Vector2 = Vector2(224, 160)
 # Graybox presentation tuning, not additional frozen balance rules.

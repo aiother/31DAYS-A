@@ -66,4 +66,7 @@ if 'CHECKPOINT_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('starting Room and persistent Nodes', ['--script', 'res://tests/test_start_room.gd'])
 if 'START_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful starting Room test summary')
+output = run('adjacent Rooms and first encounter', ['--script', 'res://tests/test_two_rooms.gd'])
+if 'TWO_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful two-Room test summary')
 print(f'All engine checks passed. Report: {report}')
