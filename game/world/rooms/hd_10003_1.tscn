@@ -1,0 +1,65 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://world/rooms/connection_room.gd" id="1"]
+[ext_resource type="Resource" path="res://data/world/hd_10003_1.tres" id="2"]
+[ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
+[ext_resource type="PackedScene" path="res://world/scenes/platform.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="5"]
+[ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="6"]
+[sub_resource type="RectangleShape2D" id="GateShape"]
+size = Vector2(64, 1080)
+[node name="HD_10003_1" type="Node2D"]
+script = ExtResource("1")
+config = ExtResource("2")
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("3")
+[node name="LeftBoundary" parent="." instance=ExtResource("4")]
+position = Vector2(-16, 540)
+rotation = 1.5707964
+scale = Vector2(5, 1)
+[node name="RightBoundary" parent="." instance=ExtResource("4")]
+position = Vector2(1552, 540)
+rotation = 1.5707964
+scale = Vector2(5, 1)
+[node name="Platforms" type="Node2D" parent="."]
+[node name="Step" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(576, 768)
+[node name="Upper" parent="Platforms" instance=ExtResource("4")]
+position = Vector2(800, 624)
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("6")
+[node name="Enemies" type="Node2D" parent="."]
+[node name="Entity" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(928, 896)
+[node name="Switch" type="Node2D" parent="."]
+position = Vector2(1184, 840)
+[node name="Prompt" type="Label" parent="Switch"]
+offset_left = -112.0
+offset_top = -80.0
+offset_right = 180.0
+theme_override_font_sizes/font_size = 22
+text = "需要先清敌"
+visible = false
+[node name="ReturnLabel" type="Label" parent="."]
+offset_left = 88.0
+offset_top = 656.0
+theme_override_font_sizes/font_size = 22
+text = "清敌后可返回"
+[node name="ExitLabel" type="Label" parent="."]
+offset_left = 1280.0
+offset_top = 656.0
+theme_override_font_sizes/font_size = 22
+text = "机关尚未开启"
+[node name="Return" type="Area2D" parent="."]
+position = Vector2(48, 540)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Return"]
+shape = SubResource("GateShape")
+[node name="Exit" type="Area2D" parent="."]
+position = Vector2(1488, 540)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Exit"]
+shape = SubResource("GateShape")

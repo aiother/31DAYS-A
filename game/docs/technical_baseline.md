@@ -27,3 +27,6 @@
 同日Room2追加：主场景`world/tower_session.tscn`以注册表扩展HD_10002_2，垂直平台路线、既有近战/远程压力、上下连接与相机范围接入。用户确认Room2沿用入口检查点；未新增Node编号、奖励系统或敌种。六段普通跳跃零资源可达性及跨Room死亡恢复纳入验证，详见`tower_room_implementation.md`。
 
 同日Room3追加：主场景`world/exploration_session.tscn`扩展HD_10002_3探索与战斗路线，加入下攻击可选支路、E/RB拾取珍珠占位及现有槽events持久化。用户明确本轮无强化属性、无未定机关、沿用入口检查点；未制作完整背包/成长系统。连接请求只允许当前邻接关系，详见`exploration_room_implementation.md`。
+
+
+同日连结处追加：主场景world/connection_session.tscn接入HD_10003_1。用户确认清敌永久解锁返回，清敌后靠近开关E / RB永久开启前路；继续沿用入口检查点。旧槽兼容，状态保存，写盘失败回滚、敌人重置仍重复奖励。HD_10004_1只作为阶段边界，未制作Boss，详见connection_room_implementation.md。

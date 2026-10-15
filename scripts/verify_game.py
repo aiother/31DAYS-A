@@ -75,4 +75,7 @@ if 'TOWER_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('exploration Room and persistent pearl placeholder', ['--script', 'res://tests/test_exploration_room.gd'])
 if 'EXPLORATION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful exploration Room test summary')
+output = run('connection Room and permanent mechanism', ['--script', 'res://tests/test_connection_room.gd'])
+if 'CONNECTION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful connection Room test summary')
 print(f'All engine checks passed. Report: {report}')
