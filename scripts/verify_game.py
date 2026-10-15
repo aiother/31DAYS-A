@@ -63,4 +63,7 @@ if 'SLOT_STORE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('checkpoint and resume integration', ['--script', 'res://tests/test_checkpoints.gd'])
 if 'CHECKPOINT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful checkpoint test summary')
+output = run('starting Room and persistent Nodes', ['--script', 'res://tests/test_start_room.gd'])
+if 'START_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful starting Room test summary')
 print(f'All engine checks passed. Report: {report}')

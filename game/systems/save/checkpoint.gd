@@ -6,6 +6,7 @@ var label: Label
 
 func _ready() -> void:
 	assert(config != null)
+	add_to_group("checkpoints")
 	collision_layer = 0
 	collision_mask = 2
 	monitorable = false

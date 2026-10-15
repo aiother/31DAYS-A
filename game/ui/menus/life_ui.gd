@@ -258,3 +258,12 @@ func _save_and_quit() -> void:
 		return
 	get_tree().paused = false
 	get_tree().quit()
+
+func show_room_boundary(_target: String) -> void:
+	_clear_menu("裂缝通向瓦砾塔", "room_boundary")
+	var label: Label = Label.new()
+	label.text = "本次灰盒体验到此\n前方区域将在下一阶段开放"
+	label.add_theme_font_size_override("font_size", 22)
+	_menu.add_child(label)
+	_button("返回起始区", resume_game, true)
+	_button("保存并退出", confirm_quit)

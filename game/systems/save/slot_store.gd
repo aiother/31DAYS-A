@@ -3,13 +3,14 @@ extends RefCounted
 ## JSON only: never deserialize executable resources or scene paths from saves.
 const VERSION: int = 1
 const SLOT_COUNT: int = 3
-const CHECKPOINTS: PackedStringArray = ["graybox_start", "graybox_forward"]
+const CHECKPOINTS: PackedStringArray = ["graybox_start", "graybox_forward", "HD_10001_1_N003"]
+var initial_checkpoint: String = "graybox_start"
 var directory: String = "user://saves"
 var last_error: String = ""
 var used_backup: bool = false
 
 func fresh() -> Dictionary:
-	return {"version": VERSION, "checkpoint": "graybox_start", "health": 3, "balance": 3, "maximum": 10, "events": {}, "play_seconds": 0.0}
+	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "events": {}, "play_seconds": 0.0}
 
 func path_for(slot: int) -> String:
 	return directory.path_join("slot_%d.json" % slot)

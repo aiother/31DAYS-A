@@ -42,10 +42,17 @@ func _process(delta: float) -> void:
 	$Instructions/EnemyStatus.text += " · %s" % (_notice if _notice_remaining > 0.0 else ("存档槽 %d" % slot if has_session() else "请选择存档槽"))
 
 func _checkpoint(id: String) -> GrayboxCheckpoint:
-	for child: Node in get_children():
-		if child is GrayboxCheckpoint and child.config.checkpoint_id == id:
+	for child: GrayboxCheckpoint in _all_checkpoints():
+		if child.config.checkpoint_id == id:
 			return child as GrayboxCheckpoint
 	return null
+
+func _all_checkpoints() -> Array[GrayboxCheckpoint]:
+	var result: Array[GrayboxCheckpoint] = []
+	for child: Node in get_tree().get_nodes_in_group("checkpoints"):
+		if child is GrayboxCheckpoint and is_ancestor_of(child):
+			result.append(child as GrayboxCheckpoint)
+	return result
 
 func start_slot(selected: int, new_game: bool) -> bool:
 	if _reloading or not store.valid_slot(selected):
@@ -53,6 +60,9 @@ func start_slot(selected: int, new_game: bool) -> bool:
 	var next: Dictionary = store.fresh() if new_game else store.load_slot(selected)
 	if next.is_empty():
 		ui.call("save_failed", store.last_error if not store.last_error.is_empty() else "此槽没有存档")
+		return false
+	if _checkpoint(str(next.get("checkpoint", ""))) == null:
+		ui.call("save_failed", "此存档不属于当前场景，请选择新游戏")
 		return false
 	if new_game and not store.save_slot(selected, next):
 		ui.call("save_failed", store.last_error)
@@ -86,9 +96,8 @@ func _restore(snapshot: Dictionary, revive: bool) -> void:
 	ui.call("resume_game")
 
 func _update_flags() -> void:
-	for child: Node in get_children():
-		if child is GrayboxCheckpoint:
-			child.set_active(child.config.checkpoint_id == str(data["checkpoint"]))
+	for child: GrayboxCheckpoint in _all_checkpoints():
+		child.set_active(child.config.checkpoint_id == str(data["checkpoint"]))
 
 func activate_checkpoint(id: String) -> bool:
 	if not has_session() or _loading or not player.life.is_alive() or _checkpoint(id) == null or data["checkpoint"] == id:

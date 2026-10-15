@@ -12,6 +12,7 @@ var state: State = State.ALIVE
 var hurt_remaining: float = 0.0
 var protection_remaining: float = 0.0
 var phase_remaining: float = 0.0
+var scripted_control_locked: bool = false
 
 func _ready() -> void:
 	assert(config != null)
@@ -21,7 +22,7 @@ func is_alive() -> bool:
 	return state == State.ALIVE
 
 func can_control() -> bool:
-	return is_alive() and hurt_remaining <= 0.0
+	return is_alive() and hurt_remaining <= 0.0 and not scripted_control_locked
 
 func take_hit(amount: int, impulse: Vector2 = Vector2.ZERO) -> bool:
 	var actions: PlayerPossibility = get_parent().get_node_or_null("Possibility") as PlayerPossibility
@@ -73,6 +74,7 @@ func revive() -> void:
 	respawned.emit()
 
 func _reset_state() -> void:
+	scripted_control_locked = false
 	state = State.ALIVE
 	hurt_remaining = 0.0
 	protection_remaining = 0.0

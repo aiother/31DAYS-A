@@ -1,14 +1,18 @@
 extends Node2D
 ## Development fixture only. No production Room ID or persistent state.
-@onready var ground: TileMapLayer = $Ground
+@export var ground_path: NodePath = NodePath("Ground")
+@onready var ground: TileMapLayer = get_node(ground_path) as TileMapLayer
 @onready var player: PlayerController = $Player
 @onready var status: Label = $Instructions/Status
 
 func _ready() -> void:
+	_build_ground()
+	queue_redraw()
+
+func _build_ground() -> void:
 	for x: int in range(30):
 		for y: int in range(14, 17):
 			ground.set_cell(Vector2i(x, y), 0, Vector2i.ZERO)
-	queue_redraw()
 
 func _process(_delta: float) -> void:
 	var state: String = "落地硬直" if player.landing_lock_remaining > 0.0 else ("地面" if player.is_on_floor() else "空中")
