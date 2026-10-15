@@ -38,6 +38,22 @@ func _spawn(position: Vector2) -> ColorlessEntity:
 	actor.attack_started.connect(_on_attack)
 	return actor
 
+func _check_windup(ranged: bool) -> void:
+	var actor: ColorlessEntity = _spawn(Vector2(340 if ranged else 292, 880))
+	actor.ranged_only = ranged
+	await _ticks(1)
+	_check(actor.state == ColorlessEntity.State.WINDUP and actor._ranged == ranged, "production %s attack enters windup" % ("ranged" if ranged else "melee"))
+	await _ticks(13)
+	_check(actor.state == ColorlessEntity.State.WINDUP, "windup does not end prematurely")
+	var ticks: int = 13
+	while actor.state == ColorlessEntity.State.WINDUP and ticks < 60:
+		await _ticks(1)
+		ticks += 1
+	_check(ticks >= 26 and ticks <= 27 and actor.state == ColorlessEntity.State.ACTIVE, "%s windup shortened by 1/3: %d frames at 60Hz" % ["ranged" if ranged else "melee", ticks])
+	_check(is_equal_approx(actor.config.active_duration, 0.12) and is_equal_approx(actor.config.recovery, 0.75), "enemy active duration and recovery unchanged")
+	actor.queue_free()
+	await _ticks(2)
+
 func _run() -> void:
 	var packed: PackedScene = load("res://debug/movement_lab.tscn") as PackedScene
 	_world = packed.instantiate() as Node2D
@@ -69,6 +85,10 @@ func _run() -> void:
 	await _ticks(120)
 	_check(_melee == old_melee and _ranged > old_ranged, "ranged-only configuration remains ranged-only")
 	_check(absf(_actor.position.x - 340.0) < 1.0, "ranged-only enemy holds firing position during cooldown")
+	_actor.queue_free()
+	await _ticks(2)
+	await _check_windup(false)
+	await _check_windup(true)
 	_world.queue_free()
 	await process_frame
 	print("ENEMY_MELEE_TESTS checks=%d failures=%d" % [_checks, _failures])

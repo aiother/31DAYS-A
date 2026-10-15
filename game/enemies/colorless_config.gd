@@ -9,7 +9,7 @@ extends Resource
 @export var sight_range: float = 700.0
 @export var melee_range: float = 92.0
 @export var ranged_range: float = 420.0
-@export var windup: float = 0.65
+@export var windup: float = 0.65 * 2.0 / 3.0
 @export var active_duration: float = 0.12
 @export var recovery: float = 0.75
 @export var hit_stun: float = 0.30
