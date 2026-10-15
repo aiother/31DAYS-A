@@ -94,6 +94,13 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('重新挑战（灰盒出生点）', ui)
         self.assertIn('Node.PROCESS_MODE_ALWAYS', ui)
 
+    def test_enemy_melee_approach_regression_is_in_verification(self):
+        verifier = (GAME.parent / 'scripts/verify_game.py').read_text(encoding='utf-8')
+        self.assertIn('res://tests/test_enemy_melee_approach.gd', verifier)
+        doc = (GAME / 'docs/colorless_implementation.md').read_text(encoding='utf-8')
+        self.assertIn('400px', doc)
+        self.assertIn('AI修复', doc)
+
     def test_oct15_revision_marked_in_related_documents(self):
         for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md', 'T3_可能性_基础属性_成长_死亡.md']:
             document = (GAME.parent / 'Words' / name).read_text(encoding='utf-8')

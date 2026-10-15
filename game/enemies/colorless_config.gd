@@ -14,3 +14,4 @@ extends Resource
 @export var recovery: float = 0.75
 @export var hit_stun: float = 0.30
 @export var projectile_speed: float = 300.0
+@export var ranged_cooldown: float = 4.0 # Hybrid enemies; ranged-only keeps its existing cadence.

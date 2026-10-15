@@ -23,6 +23,7 @@ var _ranged: bool = false
 var _attack_id: int = 0
 var _hit_targets: Dictionary[int, bool] = {}
 var _flash: float = 0.0
+var _ranged_cooldown_remaining: float = 0.0
 
 func _ready() -> void:
 	assert(config != null)
@@ -46,6 +47,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_flash = maxf(0.0, _flash - delta * 4.0)
 	_remaining = maxf(0.0, _remaining - delta)
+	_ranged_cooldown_remaining = maxf(0.0, _ranged_cooldown_remaining - delta)
 	if not flying:
 		velocity.y = minf(1500.0, velocity.y + config.gravity * delta)
 	if is_instance_valid(target) and target is PlayerController and not (target as PlayerController).life.is_alive():
@@ -54,6 +56,7 @@ func _physics_process(delta: float) -> void:
 		_stop_horizontal()
 		move_and_slide()
 		visual.queue_redraw()
+		_update_status_label()
 		return
 	match state:
 		State.STUN:
@@ -85,6 +88,11 @@ func _physics_process(delta: float) -> void:
 	if state == State.ACTIVE and not _ranged:
 		_melee_hits()
 	visual.queue_redraw()
+	_update_status_label()
+
+func _update_status_label() -> void:
+	var status: String = ["待机", "追击", "投掷前摇" if _ranged else "近战前摇", "投掷出手" if _ranged else "近战判定", "后摇", "受击硬直", "已击败"][state]
+	health_label.text = "%d / %d · %s" % [health, config.max_health, status]
 
 func _stop_horizontal() -> void:
 	velocity.x = 0.0
@@ -109,12 +117,10 @@ func _seek_target() -> void:
 		facing = signf(offset.x)
 	var close: bool = absf(offset.x) <= config.melee_range and absf(offset.y) <= 65.0
 	var in_range: bool = offset.length() <= config.ranged_range and (flying or absf(offset.y) <= 65.0)
-	if visible and (close or in_range):
-		var melee_window: bool = true
-		if close and not ranged_only and target is PlayerController:
-			var player: PlayerController = target as PlayerController
-			melee_window = player.combat.phase != PlayerCombat.Phase.WINDUP and player.combat.phase != PlayerCombat.Phase.ACTIVE
-		if melee_window and (not is_instance_valid(coordinator) or coordinator.try_acquire(self)):
+	var wants_melee: bool = close and not ranged_only
+	var wants_ranged: bool = in_range and _ranged_cooldown_remaining <= 0.0 and (ranged_only or not close)
+	if visible and (wants_melee or wants_ranged):
+		if not is_instance_valid(coordinator) or coordinator.try_acquire(self):
 			_ranged = ranged_only or not close
 			_attack_direction = offset.normalized() if _ranged else Vector2(facing, 0)
 			if _attack_direction.is_zero_approx():
@@ -125,6 +131,11 @@ func _seek_target() -> void:
 			_hit_targets.clear()
 			hitbox.position.x = facing * 48.0
 			attack_started.emit(_ranged)
+			_stop_horizontal()
+			return
+	# Hybrid ground enemies close the distance between throws, even if another
+	# attacker owns the slot. Ranged-only instances hold their firing position.
+	if (visible and close and not ranged_only) or (visible and in_range and ranged_only):
 		_stop_horizontal()
 		return
 	if flying:
@@ -152,6 +163,7 @@ func _melee_hits() -> void:
 		receiver.receive_attack(config.damage, _attack_direction * 100.0, self, _attack_id)
 
 func _spawn_projectile() -> void:
+	_ranged_cooldown_remaining = 0.0 if ranged_only else config.ranged_cooldown
 	var packed: PackedScene = load("res://enemies/colorless_projectile.tscn") as PackedScene
 	var projectile: ColorlessProjectile = packed.instantiate() as ColorlessProjectile
 	projectile.source = self
