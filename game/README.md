@@ -66,6 +66,7 @@
 - 连结处HD_10003_1狭窄平台与既有无色实体、清敌解锁返回、E/RB开启前路、两条通路永久持久化；写盘失败回滚，敌人重置仍重复奖励+2。沿用入口检查点。详见 `docs/connection_room_implementation.md`。
 
 - 渴望俯视60生命灰盒、首次高空镜头/登场名片、入口检查点、纵跳落击/高空悬停、3层召唤平台、永久胜利/天窗/通路和成长待领取标记。Boss无血条；死亡重试不重复演出，同时死亡优先保留Boss胜利。详见 `docs/overlook_boss_implementation.md`。
+- 【2026-10-15节奏修订】Boss后摇0.45秒、悬停4秒、升空速度900；悬停时预警0.6秒召唤无色实体，同时存活上限2只，击杀仍+2。玩家死亡/Boss击败清理召唤物和投掷物，不额外发奖。
 
 ## 尚未实现
 
@@ -130,6 +131,7 @@ Python策划表回归测试需要openpyxl及现有工作簿生成器使用的art
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_exploration_room.gd
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_connection_room.gd
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_overlook_boss.gd
+& "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_boss_pressure.gd
 ```
 
 导出独立exe需先安装同版本Godot Export Templates，再选择Windows x64预设。本次交付工程压缩包，不声称已验证exe导出。引擎下载供本地验证，未包含在压缩包中。

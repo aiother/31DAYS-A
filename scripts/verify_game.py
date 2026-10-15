@@ -81,4 +81,7 @@ if 'CONNECTION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('overlook Boss battle and permanent victory', ['--script', 'res://tests/test_overlook_boss.gd'])
 if 'OVERLOOK_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful Boss test summary')
+output = run('Boss pressure and summoned colorless enemies', ['--script', 'res://tests/test_boss_pressure.gd'])
+if 'BOSS_PRESSURE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful Boss pressure test summary')
 print(f'All engine checks passed. Report: {report}')

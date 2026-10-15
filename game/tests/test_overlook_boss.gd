@@ -113,6 +113,8 @@ func run() -> void:
 	check(boss().state == OverlookBoss.State.HOVER and arena().get_node("SummonedPlatforms").get_child_count() == 3, "AI flies upward and summons three fixed platforms")
 	arena().summon_platforms()
 	check(arena().get_node("SummonedPlatforms").get_child_count() == 3, "repeated hover does not accumulate platforms")
+	for minion: ColorlessEntity in arena().living_reinforcements():
+		minion.set_physics_process(false)
 	boss().set_physics_process(false)
 	session.player.possibility.balance = 0
 	await place(Vector2(416, 1280))

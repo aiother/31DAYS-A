@@ -35,6 +35,15 @@ func _bind_room() -> void:
 			actor.defeated.connect(_on_boss_defeated)
 		if not actor.platforms_requested.is_connected((room as BossRoom).summon_platforms):
 			actor.platforms_requested.connect((room as BossRoom).summon_platforms)
+		if not actor.reinforcement_warning.is_connected((room as BossRoom).prepare_reinforcement):
+			actor.reinforcement_warning.connect((room as BossRoom).prepare_reinforcement)
+		if not actor.reinforcement_requested.is_connected((room as BossRoom).spawn_reinforcement):
+			actor.reinforcement_requested.connect((room as BossRoom).spawn_reinforcement)
+		if not (room as BossRoom).reinforcement_spawned.is_connected(_on_reinforcement_spawned):
+			(room as BossRoom).reinforcement_spawned.connect(_on_reinforcement_spawned)
+
+func _on_reinforcement_spawned(enemy: ColorlessEntity) -> void:
+	enemy.defeated.connect(_on_room_enemy_defeated)
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	super._restore(snapshot, revive)
@@ -111,8 +120,14 @@ func _end_boss_intro(start: bool) -> void:
 		(room.get_node("Boss") as OverlookBoss).start_combat()
 
 func _on_boss_defeated() -> void:
+	(room as BossRoom).clear_reinforcements()
 	_victory_pending = true
 	save_current("渴望俯视已击败 · 天窗开启")
+
+func _on_death() -> void:
+	if room is BossRoom:
+		(room as BossRoom).clear_reinforcements()
+	super._on_death()
 
 func restart_challenge() -> void:
 	if _victory_pending and not save_current("胜利状态已保存"):
@@ -143,7 +158,7 @@ func _on_room_exit(target: String) -> void:
 func _process(delta: float) -> void:
 	super._process(delta)
 	if room is BossRoom and has_session():
-		$Instructions/Help.text = "留意落击范围 · 借召唤平台跳跃攻击\n击败后天窗开启 · 向上寻找通路"
+		$Instructions/Help.text = "留意落击与召唤提示 · 借平台跳跃攻击\n击败后天窗开启 · 向上寻找通路"
 		if _boss_intro_remaining > 0.0:
 			$Instructions/Help.text = "渴望俯视 · 首次登场"
 		elif _victory_pending or (room.get_node("Boss") as OverlookBoss).state == OverlookBoss.State.WAITING:

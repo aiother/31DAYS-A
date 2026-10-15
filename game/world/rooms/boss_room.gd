@@ -3,6 +3,50 @@ extends WorldRoom
 var opened: bool = false
 var summoned: bool = false
 var light_strength: float = 0.0
+signal reinforcement_spawned(enemy: ColorlessEntity)
+var summon_pending: bool = false
+var summon_position: Vector2 = Vector2.ZERO
+
+func living_reinforcements() -> Array[ColorlessEntity]:
+	var result: Array[ColorlessEntity] = []
+	for child: Node in $Enemies.get_children():
+		if child is ColorlessEntity and (child as ColorlessEntity).health > 0:
+			result.append(child as ColorlessEntity)
+	return result
+
+func prepare_reinforcement() -> void:
+	var actor: OverlookBoss = $Boss as OverlookBoss
+	if opened or actor.state == OverlookBoss.State.DEAD or not is_instance_valid(actor.target) or not actor.target.life.is_alive() or living_reinforcements().size() >= actor.config.max_reinforcements:
+		return
+	# Fixed ground anchors keep arrivals away from the player at warning start.
+	summon_position = Vector2(1536 if actor.target.position.x < 984 else 432, actor.config.floor_y)
+	summon_pending = true
+	queue_redraw()
+
+func spawn_reinforcement() -> void:
+	if not summon_pending:
+		return
+	summon_pending = false
+	queue_redraw()
+	var actor: OverlookBoss = $Boss as OverlookBoss
+	if opened or actor.state == OverlookBoss.State.DEAD or not actor.target.life.is_alive() or living_reinforcements().size() >= actor.config.max_reinforcements:
+		return
+	var enemy: ColorlessEntity = (preload("res://enemies/colorless_entity.tscn") as PackedScene).instantiate() as ColorlessEntity
+	enemy.position = summon_position
+	enemy.target = actor.target
+	enemy.coordinator = $AttackCoordinator as EnemyAttackCoordinator
+	$Enemies.add_child(enemy)
+	reinforcement_spawned.emit(enemy)
+
+func clear_reinforcements() -> void:
+	summon_pending = false
+	($Boss as OverlookBoss).summon_remaining = -1.0
+	for child: Node in $Enemies.get_children():
+		child.set_physics_process(false)
+		if child is ColorlessEntity:
+			(child as ColorlessEntity).hurtbox.accepts_hits = false
+		child.queue_free()
+	queue_redraw()
 
 func summon_platforms() -> void:
 	if summoned:
@@ -29,6 +73,9 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	draw_rect(config.bounds, Color(0.065, 0.07, 0.10))
+	if summon_pending:
+		draw_arc(summon_position - Vector2(0, 8), 48, PI, TAU, 24, Color(0.8, 0.55, 1), 5)
+		draw_line(summon_position - Vector2(0, 8), summon_position - Vector2(0, 104), Color(0.8, 0.55, 1, 0.65), 4)
 	for x: int in [64, 480, 960, 1440, 1824]:
 		draw_rect(Rect2(x, 80, 32, 1200), Color(0.12, 0.13, 0.17))
 	draw_line(Vector2(48, 1280), Vector2(48, 1080), Color(0.4, 0.8, 0.5) if opened else Color(0.8, 0.4, 0.3), 6)

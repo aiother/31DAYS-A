@@ -2,6 +2,8 @@ class_name OverlookBoss
 extends Node2D
 signal defeated
 signal platforms_requested
+signal reinforcement_warning
+signal reinforcement_requested
 enum State { WAITING, WINDUP, DIVE, RECOVERY, HOVER, DEAD }
 @export var config: OverlookConfig
 var target: PlayerController
@@ -12,6 +14,7 @@ var impact_x: float = 0.0
 var flash: float = 0.0
 var _attack_id: int = 0
 var _windup_start: Vector2
+var summon_remaining: float = -1.0
 @onready var hurtbox: CombatHurtbox = $GameplayRoot/Hurtbox
 
 func _ready() -> void:
@@ -57,8 +60,15 @@ func _physics_process(delta: float) -> void:
 				state = State.HOVER
 				remaining = config.hover_duration
 				platforms_requested.emit()
+				summon_remaining = config.summon_warning_duration
+				reinforcement_warning.emit()
 		State.HOVER:
 			position = position.move_toward(config.hover_position, config.rise_speed * delta)
+			if summon_remaining >= 0.0:
+				summon_remaining = maxf(0.0, summon_remaining - delta)
+				if summon_remaining == 0.0:
+					summon_remaining = -1.0
+					reinforcement_requested.emit()
 			if remaining == 0.0:
 				_windup()
 
