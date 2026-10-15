@@ -57,4 +57,10 @@ if 'POSSIBILITY_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('attack jumping and airborne dodge regression', ['--script', 'res://tests/test_air_actions.gd'])
 if 'AIR_ACTION_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful air action test summary')
+output = run('versioned slot persistence regression', ['--script', 'res://tests/test_slot_store.gd'])
+if 'SLOT_STORE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful slot persistence test summary')
+output = run('checkpoint and resume integration', ['--script', 'res://tests/test_checkpoints.gd'])
+if 'CHECKPOINT_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful checkpoint test summary')
 print(f'All engine checks passed. Report: {report}')

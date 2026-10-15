@@ -17,7 +17,10 @@ func _process(_delta: float) -> void:
 		var phases: PackedStringArray = PackedStringArray(["待机", "前摇", "判定", "后摇"])
 		status.text += "   攻击%d · %s" % [player.combat.combo_step, phases[player.combat.phase]]
 	if Input.is_action_just_pressed("debug_reset") and player.life.is_alive():
-		get_tree().reload_current_scene()
+		if has_method("debug_restart"):
+			call("debug_restart")
+		else:
+			get_tree().reload_current_scene()
 	if Input.is_action_just_pressed("toggle_fullscreen"):
 		var fullscreen: bool = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if fullscreen else DisplayServer.WINDOW_MODE_FULLSCREEN)

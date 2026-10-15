@@ -1,0 +1,20 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="PackedScene" path="res://debug/enemy_lab.tscn" id="1"]
+[ext_resource type="Script" path="res://debug/checkpoint_lab.gd" id="2"]
+[ext_resource type="Script" path="res://systems/save/checkpoint.gd" id="3"]
+[ext_resource type="Resource" path="res://data/checkpoints/graybox_start.tres" id="4"]
+[ext_resource type="Resource" path="res://data/checkpoints/graybox_forward.tres" id="5"]
+[node name="CheckpointLab" instance=ExtResource("1")]
+script = ExtResource("2")
+[node name="StartCheckpoint" type="Area2D" parent="."]
+script = ExtResource("3")
+config = ExtResource("4")
+[node name="ForwardCheckpoint" type="Area2D" parent="."]
+script = ExtResource("3")
+config = ExtResource("5")
+[node name="Title" parent="Instructions"]
+text = "末日前31天 / V0.1 检查点与存档灰盒"
+[node name="Help" parent="Instructions"]
+text = "A / D 移动 · Shift 跑步 · 空格跳跃 · J / 鼠标左键攻击 · K 闪避 · 长按 L 恢复
+经过旗帜自动记录检查点 · Esc 暂停 / 存档槽 / 保存并退出 · F11 全屏
+玩家开场生命3/5 · 死亡从检查点满血复活，可能性减半向下取整，保护3秒。"

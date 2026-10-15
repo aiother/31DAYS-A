@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Minimal T7 death/pause UI. No save/title/checkpoint is implied by restart.
+## T7 graybox menus; checkpoint sessions expose disk slots and safe exit.
 @onready var player: PlayerController = get_parent().get_node("Player") as PlayerController
 var _root: Control
 var _health: Label
@@ -8,6 +8,7 @@ var _edges: Array[ColorRect] = []
 var _panel: PanelContainer
 var _menu: VBoxContainer
 var _mode: String = ""
+var _error_label: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -20,6 +21,11 @@ func _ready() -> void:
 	_health.position = Vector2(64, 258)
 	_health.add_theme_font_size_override("font_size", 24)
 	_root.add_child(_health)
+	_error_label = Label.new()
+	_error_label.position = Vector2(64, 410)
+	_error_label.add_theme_font_size_override("font_size", 22)
+	_error_label.modulate = Color(1, 0.5, 0.35)
+	_root.add_child(_error_label)
 	for i: int in range(4):
 		var edge: ColorRect = ColorRect.new()
 		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -84,6 +90,9 @@ func _process(_delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
+		if get_parent().has_method("has_session") and not get_parent().call("has_session"):
+			get_viewport().set_input_as_handled()
+			return
 		if player.life.state == PlayerLife.State.DEATH_MENU:
 			show_death()
 		elif _mode == "pause":
@@ -120,6 +129,8 @@ func show_pause() -> void:
 	_clear_menu("已暂停", "pause")
 	_button("继续游戏", resume_game, true)
 	_button("设置", show_settings)
+	if get_parent().has_method("start_slot"):
+		_button("存档槽", show_slots)
 	_button("退出游戏", _quit_game)
 
 func resume_game() -> void:
@@ -132,10 +143,11 @@ func resume_game() -> void:
 
 func show_death() -> void:
 	_clear_menu("你倒下了", "death")
-	_button("重新挑战（灰盒出生点）", restart_challenge, true)
+	var checkpoint_mode: bool = get_parent().has_method("start_slot")
+	_button("从检查点继续" if checkpoint_mode else "重新挑战（灰盒出生点）", restart_challenge, true)
 	_button("退出游戏", _quit_game)
 	var note: Label = Label.new()
-	note.text = "正式检查点与存档尚未接入"
+	note.text = "满生命复活 · 可能性减半向下取整 · 负数清零" if checkpoint_mode else "此开发场景不使用检查点存档"
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	note.add_theme_font_size_override("font_size", 20)
 	_menu.add_child(note)
@@ -173,5 +185,76 @@ func show_settings() -> void:
 	_button("返回", show_pause, true)
 
 func _quit_game() -> void:
+	if get_parent().has_method("save_current"):
+		confirm_quit()
+		return
+	get_tree().paused = false
+	get_tree().quit()
+
+func save_failed(message: String) -> void:
+	_error_label.text = message
+
+func show_slots() -> void:
+	var lab: CheckpointLab = get_parent() as CheckpointLab
+	if lab == null:
+		return
+	if lab.has_session() and not lab.save_current():
+		return
+	_clear_menu("末日前31天 · 灰盒存档", "slots")
+	for selected: int in range(1, SlotStore.SLOT_COUNT + 1):
+		var snapshot: Dictionary = lab.store.load_slot(selected)
+		var error: String = lab.store.last_error
+		var row: HBoxContainer = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		_menu.add_child(row)
+		var label: Label = Label.new()
+		label.text = "槽 %d · %s" % [selected, "空" if snapshot.is_empty() and error.is_empty() else ("不可读取" if snapshot.is_empty() else "HP %d · 可能性 %d" % [snapshot["health"], snapshot["balance"]])]
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.add_theme_font_size_override("font_size", 20)
+		row.add_child(label)
+		if not snapshot.is_empty():
+			var resume: Button = Button.new()
+			resume.text = "继续"
+			resume.add_theme_font_size_override("font_size", 22)
+			resume.custom_minimum_size = Vector2(80, 54)
+			resume.pressed.connect(_select_slot.bind(selected, false))
+			row.add_child(resume)
+		var start: Button = Button.new()
+		start.text = "新游戏"
+		start.add_theme_font_size_override("font_size", 22)
+		start.custom_minimum_size = Vector2(100, 54)
+		start.pressed.connect(_confirm_new_slot.bind(selected, not snapshot.is_empty() or not error.is_empty()))
+		row.add_child(start)
+		if selected == 1:
+			start.grab_focus()
+	if lab.has_session():
+		_button("返回当前游戏", resume_game)
+	_button("退出游戏", confirm_quit)
+
+func _select_slot(selected: int, new_game: bool) -> void:
+	_error_label.text = ""
+	(get_parent() as CheckpointLab).start_slot(selected, new_game)
+
+func _confirm_new_slot(selected: int, occupied: bool) -> void:
+	_clear_menu("在槽 %d 开始新游戏？%s" % [selected, "\n将覆盖此槽现有进度" if occupied else ""], "confirm_new")
+	_button("确认开始", _select_slot.bind(selected, true), true)
+	_button("返回", show_slots)
+
+func confirm_quit() -> void:
+	_clear_menu("保存并退出游戏？", "confirm_quit")
+	_button("保存并退出", _save_and_quit, true)
+	_button("返回", _return_from_quit)
+
+func _return_from_quit() -> void:
+	if get_parent().has_method("has_session") and not get_parent().call("has_session"):
+		show_slots()
+	elif player.life.state == PlayerLife.State.DEATH_MENU:
+		show_death()
+	else:
+		show_pause()
+
+func _save_and_quit() -> void:
+	if not (get_parent() as CheckpointLab).save_current():
+		return
 	get_tree().paused = false
 	get_tree().quit()

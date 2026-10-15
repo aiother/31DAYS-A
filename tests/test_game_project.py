@@ -70,7 +70,7 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('res://debug/combat_target.tscn', lab)
         self.assertNotIn('colorless_entity', lab)
         project = (GAME / 'project.godot').read_text(encoding='utf-8')
-        self.assertIn('run/main_scene="res://debug/enemy_lab.tscn"', project)
+        self.assertIn('run/main_scene="res://debug/checkpoint_lab.tscn"', project)
         receiver = (GAME / 'systems/combat/combat_hurtbox.gd').read_text(encoding='utf-8')
         self.assertIn('signal hit_received', receiver)
         self.assertNotIn('current_health', receiver)
@@ -85,12 +85,12 @@ class GameProjectTests(unittest.TestCase):
         self.assertNotIn('单色实体', lab)
         self.assertNotIn('天人战士', lab)
 
-    def test_life_defaults_and_provisional_restart_are_explicit(self):
+    def test_life_defaults_and_checkpoint_restart_are_explicit(self):
         config = (GAME / 'data/player/graybox_life.tres').read_text(encoding='utf-8')
         for setting in ('max_health = 5', 'initial_health = 3', 'downed_duration = 1.0', 'respawn_protection = 3.0'):
             self.assertIn(setting, config)
         ui = (GAME / 'ui/menus/life_ui.gd').read_text(encoding='utf-8')
-        self.assertIn('正式检查点与存档尚未接入', ui)
+        self.assertIn('从检查点继续', ui)
         self.assertIn('重新挑战（灰盒出生点）', ui)
         self.assertIn('Node.PROCESS_MODE_ALWAYS', ui)
 
