@@ -1,0 +1,8 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://world/boss_session.tscn" id="1"]
+[ext_resource type="Script" path="res://world/field_session.gd" id="2"]
+[ext_resource type="Script" path="res://ui/dialogue/field_dialogue.gd" id="3"]
+[node name="FieldSession" instance=ExtResource("1")]
+script = ExtResource("2")
+[node name="FieldDialogue" type="CanvasLayer" parent="."]
+script = ExtResource("3")

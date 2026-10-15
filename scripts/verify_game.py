@@ -84,4 +84,7 @@ if 'OVERLOOK_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('Boss pressure and summoned colorless enemies', ['--script', 'res://tests/test_boss_pressure.gd'])
 if 'BOSS_PRESSURE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful Boss pressure test summary')
+output = run('golden wheat field dialogue and rescue departure', ['--script', 'res://tests/test_field_room.gd'])
+if 'FIELD_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful field Room test summary')
 print(f'All engine checks passed. Report: {report}')

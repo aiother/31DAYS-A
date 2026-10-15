@@ -33,3 +33,6 @@
 
 
 同日渴望俯视追加：主场景world/boss_session.tscn接入HD_10004_1，60生命/伤害1/0.6秒落击提示、飞行/纵跳/3层召唤平台为用户确认的可调灰盒。正式入口检查点、一次性镜头演出、无Boss血条、永久胜利与金光天窗接入；同帧死亡保留胜利，成长只记待领取。田野仍为阶段边界，详见overlook_boss_implementation.md。
+
+
+同日黄金麦湖追加：主场景world/field_session.tscn扩展Region_TY与TY_10001_1。用户确认首见演出、7临时逐句对话、一次性补满可能性与恢复教程、沿用Boss检查点；死亡/读档豁免主动放弃，手动回荒地须确认并保存永久失败。麦秆镇/救助/成长未交付，详见field_room_implementation.md。

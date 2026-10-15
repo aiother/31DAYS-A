@@ -147,6 +147,11 @@ func _button(text: String, callback: Callable, focus: bool = false) -> Button:
 
 func show_pause() -> void:
 	_clear_menu("已暂停", "pause")
+	if get_parent().has_method("quest_status_text"):
+		var task: Label = Label.new()
+		task.text = str(get_parent().call("quest_status_text"))
+		task.add_theme_font_size_override("font_size", 20)
+		_menu.add_child(task)
 	_button("继续游戏", resume_game, true)
 	_button("设置", show_settings)
 	if get_parent().has_method("start_slot"):
