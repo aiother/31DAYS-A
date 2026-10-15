@@ -75,7 +75,7 @@ func run() -> void:
 	player.position.y -= 100
 	player.set_physics_process(true)
 	await ticks(1)
-	check(not actions.try_dodge(), "air dodge prohibited")
+	check(actions.try_dodge() and actions.balance == 9, "air dodge permitted with same resource cost")
 	player.position = Vector2(224, 880)
 	await ticks(10)
 	player.set_physics_process(false)

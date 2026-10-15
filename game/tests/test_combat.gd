@@ -126,7 +126,7 @@ func _run() -> void:
 	var x: float = _player.global_position.x
 	Input.action_press("jump")
 	await _ticks(4)
-	_check(_player.is_on_floor() and _player.global_position.x > x, "attack permits full movement but blocks jump cancel")
+	_check(not _player.is_on_floor() and _player.velocity.y < 0 and _player.global_position.x > x and _combat.is_attacking(), "attack permits full movement and jumping without interruption")
 	await _reset()
 	Input.action_press("aim_down")
 	await _press()

@@ -66,7 +66,7 @@ class PlanningDocumentsTests(unittest.TestCase):
         for key in ("T1", "T2"):
             with self.subTest(document=key):
                 content = self.docs[key]
-                for rule in ("仅地面", "2.8秒", "最多连续3次", "满血不可",
+                for rule in ("地面/空中左右闪避", "攻击中可跳跃且不打断攻击", "2.8秒", "最多连续3次", "满血不可",
                              "不恢复生命", "留到T3"):
                     self.assertIn(rule, content)
         self.assertIn("V0.1不做墙跳、贴墙、蹬墙", self.docs["T1"])

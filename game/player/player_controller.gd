@@ -36,9 +36,11 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	if possibility.busy():
+		var was_grounded: bool = is_on_floor()
 		velocity.x = possibility.horizontal_speed()
-		velocity.y = minf(velocity.y + movement.gravity * movement.fall_gravity_scale * delta, movement.max_fall_speed)
-		move_and_slide()
+		_edge_remaining = 0.0
+		_apply_gravity(delta)
+		_move_with_landing(was_grounded)
 		return
 	var grounded: bool = is_on_floor()
 	landing_lock_remaining = maxf(0.0, landing_lock_remaining - delta)
@@ -63,13 +65,19 @@ func _physics_process(delta: float) -> void:
 		acceleration = movement.ground_deceleration if is_zero_approx(target) else movement.ground_acceleration
 	velocity.x = move_toward(velocity.x, target, acceleration * delta)
 	var edge_allowed: bool = _edge_remaining > 0.0 and absf(global_position.x - _last_floor_x) <= movement.edge_grace_distance
-	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0 and not combat.is_attacking():
-		combat.reset_combo()
+	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0:
+		if not combat.is_attacking():
+			combat.reset_combo()
 		velocity.y = -movement.jump_speed
 		_bounce_rising = false
 		_hold_remaining = movement.jump_hold_duration
 		_jump_consumed = true
 		_edge_remaining = 0.0
+	_apply_gravity(delta)
+	_move_with_landing(grounded)
+	combat.resolve_hits()
+
+func _apply_gravity(delta: float) -> void:
 	if velocity.y < 0.0:
 		if not _bounce_rising and not Input.is_action_pressed("jump"):
 			velocity.y = maxf(velocity.y, -movement.jump_release_speed)
@@ -80,6 +88,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		_bounce_rising = false
 		velocity.y = minf(velocity.y + movement.gravity * movement.fall_gravity_scale * delta, movement.max_fall_speed)
+
+func _move_with_landing(grounded: bool) -> void:
 	var descending: bool = velocity.y > 0.0 and not grounded
 	if descending and not _was_descending:
 		_fall_start_y = global_position.y
@@ -94,7 +104,6 @@ func _physics_process(delta: float) -> void:
 		landing_lock_remaining = movement.hard_landing_duration if hard else 0.0
 		_was_descending = false
 		landed.emit(impact_speed, hard)
-	combat.resolve_hits()
 
 func bounce_from_down_attack() -> void:
 	if not life.can_control():

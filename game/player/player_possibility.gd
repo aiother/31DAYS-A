@@ -37,7 +37,7 @@ func reset_actions() -> void:
 	since_dodge = 100.0
 
 func try_dodge() -> bool:
-	if not player.life.can_control() or not player.is_on_floor() or player.landing_lock_remaining > 0.0:
+	if not player.life.can_control() or player.landing_lock_remaining > 0.0:
 		return false
 	if state != State.IDLE and state != State.HEALING:
 		return false

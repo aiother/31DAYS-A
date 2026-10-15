@@ -54,4 +54,7 @@ if 'ENEMY_MELEE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('possibility dodge and healing regression', ['--script', 'res://tests/test_possibility.gd'])
 if 'POSSIBILITY_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful possibility test summary')
+output = run('attack jumping and airborne dodge regression', ['--script', 'res://tests/test_air_actions.gd'])
+if 'AIR_ACTION_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful air action test summary')
 print(f'All engine checks passed. Report: {report}')
