@@ -16,6 +16,7 @@ var _last_floor_x: float = 0.0
 var _jump_consumed: bool = false
 var _fall_start_y: float = 0.0
 var _was_descending: bool = false
+var _bounce_rising: bool = false
 
 func _ready() -> void:
 	assert(movement != null, "Assign MovementConfig before running player")
@@ -26,6 +27,7 @@ func _physics_process(delta: float) -> void:
 	var grounded: bool = is_on_floor()
 	landing_lock_remaining = maxf(0.0, landing_lock_remaining - delta)
 	if grounded:
+		_bounce_rising = false
 		_edge_remaining = movement.edge_grace_time
 		_last_floor_x = global_position.x
 		_jump_consumed = false
@@ -37,9 +39,6 @@ func _physics_process(delta: float) -> void:
 	_update_facing(axis, delta)
 	combat.tick(delta)
 	var speed: float = movement.run_speed if Input.is_action_pressed("run") else movement.walk_speed
-	if combat.is_attacking():
-		speed *= combat.config.movement_scale
-		velocity.x = clampf(velocity.x, -speed, speed)
 	var target: float = axis * speed
 	if _turn_remaining > 0.0:
 		target = 0.0
@@ -51,17 +50,19 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0 and not combat.is_attacking():
 		combat.reset_combo()
 		velocity.y = -movement.jump_speed
+		_bounce_rising = false
 		_hold_remaining = movement.jump_hold_duration
 		_jump_consumed = true
 		_edge_remaining = 0.0
 	if velocity.y < 0.0:
-		if not Input.is_action_pressed("jump"):
+		if not _bounce_rising and not Input.is_action_pressed("jump"):
 			velocity.y = maxf(velocity.y, -movement.jump_release_speed)
 			_hold_remaining = 0.0
 		var gravity_scale: float = movement.held_gravity_scale if _hold_remaining > 0.0 and Input.is_action_pressed("jump") else 1.0
 		velocity.y += movement.gravity * gravity_scale * delta
 		_hold_remaining = maxf(0.0, _hold_remaining - delta)
 	else:
+		_bounce_rising = false
 		velocity.y = minf(velocity.y + movement.gravity * movement.fall_gravity_scale * delta, movement.max_fall_speed)
 	var descending: bool = velocity.y > 0.0 and not grounded
 	if descending and not _was_descending:
@@ -70,6 +71,7 @@ func _physics_process(delta: float) -> void:
 	var impact_speed: float = velocity.y
 	move_and_slide()
 	if is_on_ceiling():
+		_bounce_rising = false
 		_hold_remaining = 0.0
 	if is_on_floor() and not grounded and impact_speed > 0.0:
 		var hard: bool = global_position.y - _fall_start_y >= movement.hard_landing_distance
@@ -79,8 +81,9 @@ func _physics_process(delta: float) -> void:
 	combat.resolve_hits()
 
 func bounce_from_down_attack() -> void:
-	# Same release speed as a tap jump; never hold-extend this hit bounce.
-	velocity.y = -movement.jump_release_speed
+	# Height scales with speed squared. Jump release must not cut this bounce.
+	velocity.y = -movement.jump_release_speed * sqrt(combat.config.down_bounce_height_multiplier)
+	_bounce_rising = true
 	_hold_remaining = 0.0
 	_jump_consumed = true
 	_edge_remaining = 0.0

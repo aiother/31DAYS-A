@@ -122,11 +122,11 @@ func _run() -> void:
 	Input.action_press("move_right")
 	await _ticks(12)
 	await _press()
-	_check(absf(_player.velocity.x) <= _player.movement.run_speed * _combat.config.movement_scale + 0.1, "attack immediately reduces running speed")
+	_check(absf(_player.velocity.x - _player.movement.run_speed) < 1.0, "attack preserves full running speed")
 	var x: float = _player.global_position.x
 	Input.action_press("jump")
 	await _ticks(4)
-	_check(_player.is_on_floor() and _player.global_position.x > x, "attack permits slow movement but blocks jump cancel")
+	_check(_player.is_on_floor() and _player.global_position.x > x, "attack permits full movement but blocks jump cancel")
 	await _reset()
 	Input.action_press("aim_down")
 	await _press()

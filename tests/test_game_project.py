@@ -75,5 +75,16 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('signal hit_received', receiver)
         self.assertNotIn('current_health', receiver)
 
+    def test_oct15_revision_marked_in_related_documents(self):
+        for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md', 'T3_可能性_基础属性_成长_死亡.md']:
+            document = (GAME.parent / 'Words' / name).read_text(encoding='utf-8')
+            self.assertIn('2026-10-15', document)
+            self.assertIn('2倍', document)
+        for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md']:
+            document = (GAME.parent / 'Words' / name).read_text(encoding='utf-8')
+            self.assertIn('0.5秒', document)
+            self.assertNotIn('攻击时可低速移动', document)
+            self.assertNotIn('移动速度大幅降低', document)
+
 if __name__ == '__main__':
     unittest.main()

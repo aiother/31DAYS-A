@@ -14,7 +14,12 @@ var direction: Vector2 = Vector2.RIGHT
 var combo_step: int = 0
 var attack_id: int = 0
 var _phase_remaining: float = 0.0
-var _combo_remaining: float = 0.0
+var running_attack: bool = false
+var _clock: float = 0.0
+var _last_press_time: float = -1000.0
+var _buffer_press_time: float = -1000.0
+var _buffer_combo_step: int = 1
+var _timing_multiplier: float = 1.0
 var _buffer_remaining: float = 0.0
 var _last_combo_step: int = 0
 var _hit_targets: Dictionary[int, bool] = {}
@@ -29,17 +34,17 @@ func is_attacking() -> bool:
 
 func reset_combo() -> void:
 	_last_combo_step = 0
-	_combo_remaining = 0.0
+	_last_press_time = -1000.0
 	_buffer_remaining = 0.0
 
 ## The physical player explicitly calls this; execution order is deterministic.
 func tick(delta: float) -> void:
+	_clock += delta
 	_buffer_remaining = maxf(0.0, _buffer_remaining - delta)
-	if phase == Phase.IDLE:
-		_combo_remaining = maxf(0.0, _combo_remaining - delta)
-		if _combo_remaining == 0.0:
-			_last_combo_step = 0
 	if Input.is_action_just_pressed("attack") and player.landing_lock_remaining <= 0.0:
+		_buffer_press_time = _clock
+		var in_combo_window: bool = _buffer_press_time - _last_press_time <= config.combo_timeout + 0.00001
+		_buffer_combo_step = 2 if _last_combo_step == 1 and in_combo_window else 1
 		_buffer_remaining = config.input_buffer
 	if phase != Phase.IDLE:
 		_phase_remaining -= delta
@@ -59,13 +64,17 @@ func _start_attack() -> void:
 		direction = Vector2.UP
 	else:
 		direction = Vector2(player.facing, 0.0)
-	combo_step = 2 if _last_combo_step == 1 else 1
+	combo_step = _buffer_combo_step
+	_last_press_time = _buffer_press_time
 	_last_combo_step = combo_step
+	# Snapshot on starting the swing; releasing run cannot shorten its recovery.
+	running_attack = Input.is_action_pressed("run") and not is_zero_approx(Input.get_axis("move_left", "move_right"))
+	_timing_multiplier = config.running_timing_multiplier if running_attack else 1.0
 	attack_id += 1
 	_hit_targets.clear()
 	_bounced = false
 	phase = Phase.WINDUP
-	_phase_remaining = config.windup
+	_phase_remaining = config.windup * _timing_multiplier
 	var shape: RectangleShape2D = hit_shape.shape as RectangleShape2D
 	shape.size = config.side_size if direction.y == 0.0 else config.vertical_size
 	hitbox.position = Vector2(direction.x * config.side_offset, -48.0 + direction.y * config.vertical_offset)
@@ -78,10 +87,9 @@ func _advance_phase() -> void:
 			_phase_remaining = config.active_duration
 		Phase.ACTIVE:
 			phase = Phase.RECOVERY
-			_phase_remaining = config.recovery_second if combo_step == 2 else config.recovery_first
+			_phase_remaining = (config.recovery_second if combo_step == 2 else config.recovery_first) * _timing_multiplier
 		Phase.RECOVERY:
 			phase = Phase.IDLE
-			_combo_remaining = config.combo_timeout
 			attack_finished.emit()
 
 ## Query the Hitbox geometry after move_and_slide, only during active frames.

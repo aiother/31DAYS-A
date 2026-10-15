@@ -39,4 +39,7 @@ if 'PLAYER_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('basic combat regression', ['--script', 'res://tests/test_combat.gd'])
 if 'COMBAT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful combat test summary')
+output = run('combat tuning revision', ['--script', 'res://tests/test_combat_revision.gd'])
+if 'COMBAT_REVISION_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful combat revision test summary')
 print(f'All engine checks passed. Report: {report}')
