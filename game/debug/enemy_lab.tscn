@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="PackedScene" path="res://debug/movement_lab.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="2"]
+[ext_resource type="Script" path="res://debug/enemy_lab.gd" id="3"]
+[ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="4"]
+[ext_resource type="Script" path="res://systems/combat/combat_hurtbox.gd" id="5"]
+[node name="EnemyLab" instance=ExtResource("1")]
+script = ExtResource("3")
+[node name="Hurtbox" parent="Player/GameplayRoot"]
+monitorable = true
+script = ExtResource("5")
+[node name="CollisionShape2D" parent="Player/GameplayRoot/Hurtbox"]
+disabled = false
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("4")
+[node name="Enemies" type="Node2D" parent="."]
+[node name="GroundEntity" parent="Enemies" node_paths=PackedStringArray("target", "coordinator") instance=ExtResource("2")]
+position = Vector2(1050, 880)
+target = NodePath("../../Player")
+coordinator = NodePath("../../AttackCoordinator")
+[node name="AirEntity" parent="Enemies" node_paths=PackedStringArray("target", "coordinator") instance=ExtResource("2")]
+position = Vector2(1600, 700)
+target = NodePath("../../Player")
+coordinator = NodePath("../../AttackCoordinator")
+flying = true
+ranged_only = true
+[node name="Title" parent="Instructions"]
+text = "末日前31天 / V0.1 无色实体灰盒"
+[node name="Help" parent="Instructions"]
+text = "A / D 移动 · Shift 跑步 · 空格跳跃 · J / 鼠标左键攻击 · R 重置 · F11 全屏
+W / ↑ 攻击上方 · 空中 S / ↓ 下攻击命中弹起 · 左右或上攻击可反弹橙色投掷物
+灰色无色实体：13生命、慢速追击、攻击前闪烁；当前玩家受击仅显示命中，不扣生命。"
+[node name="EnemyStatus" type="Label" parent="Instructions"]
+offset_left = 64.0
+offset_top = 210.0
+theme_override_font_sizes/font_size = 22
+text = "无色实体测试"

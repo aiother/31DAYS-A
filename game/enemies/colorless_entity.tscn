@@ -1,4 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://enemies/colorless_entity.gd" id="1"]
+[ext_resource type="Resource" path="res://data/enemies/colorless_entity.tres" id="2"]
+[ext_resource type="Script" path="res://systems/combat/combat_hurtbox.gd" id="3"]
+[ext_resource type="Script" path="res://enemies/colorless_visual.gd" id="4"]
 
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 24.0
@@ -10,7 +15,8 @@ size = Vector2(72, 56)
 [node name="ColorlessEntity" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 1
-metadata/implementation = "Structure only. No AI, attacks, HP or rewards. Not spawned."
+script = ExtResource("1")
+config = ExtResource("2")
 
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
 position = Vector2(0, -40)
@@ -36,14 +42,16 @@ position = Vector2(0, -40)
 collision_layer = 16
 collision_mask = 8
 monitoring = false
-monitorable = false
+script = ExtResource("3")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hurtbox"]
 shape = SubResource("Body")
-disabled = true
 
 [node name="VisualRoot" type="Node2D" parent="."]
+script = ExtResource("4")
 
-[node name="Placeholder" type="Polygon2D" parent="VisualRoot"]
-polygon = PackedVector2Array(-24, 0, -24, -80, 24, -80, 24, 0)
-color = Color(0.6, 0.64, 0.65, 1)
+[node name="HealthLabel" type="Label" parent="."]
+offset_left = -30.0
+offset_top = -108.0
+theme_override_font_sizes/font_size = 18
+text = "13 / 13"

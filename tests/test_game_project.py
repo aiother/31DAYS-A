@@ -70,10 +70,20 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('res://debug/combat_target.tscn', lab)
         self.assertNotIn('colorless_entity', lab)
         project = (GAME / 'project.godot').read_text(encoding='utf-8')
-        self.assertIn('run/main_scene="res://debug/combat_lab.tscn"', project)
+        self.assertIn('run/main_scene="res://debug/enemy_lab.tscn"', project)
         receiver = (GAME / 'systems/combat/combat_hurtbox.gd').read_text(encoding='utf-8')
         self.assertIn('signal hit_received', receiver)
         self.assertNotIn('current_health', receiver)
+
+    def test_colorless_baseline_and_diagnostic_player_damage(self):
+        config = (GAME / 'data/enemies/colorless_entity.tres').read_text(encoding='utf-8')
+        for setting in ('max_health = 13', 'damage = 1', 'reward = 2'):
+            self.assertIn(setting, config)
+        lab = (GAME / 'debug/enemy_lab.tscn').read_text(encoding='utf-8')
+        self.assertIn('res://enemies/colorless_entity.tscn', lab)
+        self.assertIn('玩家受击仅显示命中，不扣生命', lab)
+        self.assertNotIn('单色实体', lab)
+        self.assertNotIn('天人战士', lab)
 
     def test_oct15_revision_marked_in_related_documents(self):
         for name in ['T1_核心玩法与玩家操作.md', 'T2_战斗系统.md', 'T3_可能性_基础属性_成长_死亡.md']:
