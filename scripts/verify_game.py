@@ -78,4 +78,7 @@ if 'EXPLORATION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('connection Room and permanent mechanism', ['--script', 'res://tests/test_connection_room.gd'])
 if 'CONNECTION_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful connection Room test summary')
+output = run('overlook Boss battle and permanent victory', ['--script', 'res://tests/test_overlook_boss.gd'])
+if 'OVERLOOK_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful Boss test summary')
 print(f'All engine checks passed. Report: {report}')

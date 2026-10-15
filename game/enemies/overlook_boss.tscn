@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://enemies/overlook_boss.gd" id="1"]
+[ext_resource type="Resource" path="res://data/enemies/overlook.tres" id="2"]
+[ext_resource type="Script" path="res://systems/combat/combat_hurtbox.gd" id="3"]
+[sub_resource type="RectangleShape2D" id="Body"]
+size = Vector2(120, 240)
+[node name="OverlookBoss" type="Node2D"]
+script = ExtResource("1")
+config = ExtResource("2")
+[node name="GameplayRoot" type="Node2D" parent="."]
+[node name="Hurtbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(0, -120)
+collision_layer = 16
+collision_mask = 8
+monitoring = false
+script = ExtResource("3")
+accepts_hits = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hurtbox"]
+shape = SubResource("Body")
+[node name="VisualRoot" type="Node2D" parent="."]
+[node name="Placeholder" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(-60, 0, -60, -240, 60, -240, 60, 0)
+color = Color(0.58, 0.47, 0.66, 1)
+[node name="Eye" type="Polygon2D" parent="VisualRoot"]
+polygon = PackedVector2Array(-30, -195, 30, -195, 30, -183, -30, -183)
+color = Color(0.95, 0.88, 0.5, 1)

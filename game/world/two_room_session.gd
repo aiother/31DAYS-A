@@ -21,12 +21,15 @@ func _ready() -> void:
 func _supports_checkpoint(id: String) -> bool:
 	return id == CHECKPOINT or id == ENTRY_CHECKPOINT
 
+func _checkpoint_room(id: String) -> String:
+	return ENTRY_ID if id == ENTRY_CHECKPOINT else START_ID
+
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	var id: String = str(snapshot.get("checkpoint", ""))
 	if not _supports_checkpoint(id):
 		ui.call("save_failed", "检查点不属于当前已开放区域")
 		return
-	_mount_room(ENTRY_ID if id == ENTRY_CHECKPOINT else START_ID)
+	_mount_room(_checkpoint_room(id))
 	super._restore(snapshot, revive)
 	_bind_room()
 

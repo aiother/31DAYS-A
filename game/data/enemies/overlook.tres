@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="OverlookConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://enemies/overlook_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+max_health = 60
+damage = 1
+windup_duration = 0.6

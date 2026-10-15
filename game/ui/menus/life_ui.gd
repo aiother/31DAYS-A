@@ -11,6 +11,8 @@ var _mode: String = ""
 var _error_label: Label
 var _enemy_intro: PanelContainer
 var _enemy_intro_remaining: float = 0.0
+var _intro_leaving: bool = false
+var _intro_tween: Tween
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -72,8 +74,11 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not get_tree().paused:
 		_enemy_intro_remaining = maxf(0.0, _enemy_intro_remaining - _delta)
-		if _enemy_intro_remaining == 0.0:
-			_enemy_intro.hide()
+		if _enemy_intro_remaining == 0.0 and _enemy_intro.visible and not _intro_leaving:
+			_intro_leaving = true
+			_intro_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP)
+			_intro_tween.tween_property(_enemy_intro, "position:x", 1920.0, 0.2)
+			_intro_tween.tween_callback(_enemy_intro.hide)
 	var life: PlayerLife = player.life
 	var protection: String = ""
 	if life.protection_remaining > 0.0 and life.is_alive():
@@ -283,12 +288,20 @@ func show_room_boundary(_target: String) -> void:
 	_button("继续探索当前区域", resume_game, true)
 	_button("保存并退出", confirm_quit)
 
-func show_enemy_intro(duration: float) -> void:
+func show_enemy_intro(duration: float, text: String = "无色实体\n\n这里不安全。\n观察攻击前摇，寻找反击或闪避机会。") -> void:
+	(_enemy_intro.get_child(0) as Label).text = text
+	if _intro_tween != null and _intro_tween.is_valid():
+		_intro_tween.kill()
+	_intro_leaving = false
 	_enemy_intro_remaining = duration
 	_enemy_intro.position.x = 1920
 	_enemy_intro.show()
-	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP).tween_property(_enemy_intro, "position:x", 1390.0, 0.2)
+	_intro_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP)
+	_intro_tween.tween_property(_enemy_intro, "position:x", 1920.0 - _enemy_intro.size.x, 0.2)
 
 func hide_enemy_intro() -> void:
+	if _intro_tween != null and _intro_tween.is_valid():
+		_intro_tween.kill()
+	_intro_leaving = false
 	_enemy_intro_remaining = 0.0
 	_enemy_intro.hide()

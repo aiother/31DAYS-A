@@ -21,3 +21,6 @@ F5主场景为`world/connection_session.tscn`，五个小型Room资源预载，�
 ## 验证
 
 `test_connection_room.gd`覆盖真实Room3出口、锁定通路、普通跳跃平台、实际攻击命中、清敌自动保存、远处/暂停/攻击禁止交互、开关失败回滚与E输入重试、阶段边界、返回落点、敌人重复收益、死亡结算及正常读档保留机关。全部测试使用隔离存档目录；完整引擎回归和工程文件验证一并执行。
+
+
+同日后续修订：前方HD_10004_1现已交付渴望俯视Boss灰盒，主场景更新为world/boss_session.tscn，入口自动记录正式Boss检查点。连结处原有永久开关与重复收益规则不变。详见overlook_boss_implementation.md。

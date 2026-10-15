@@ -30,3 +30,6 @@
 
 
 同日连结处追加：主场景world/connection_session.tscn接入HD_10003_1。用户确认清敌永久解锁返回，清敌后靠近开关E / RB永久开启前路；继续沿用入口检查点。旧槽兼容，状态保存，写盘失败回滚、敌人重置仍重复奖励。HD_10004_1只作为阶段边界，未制作Boss，详见connection_room_implementation.md。
+
+
+同日渴望俯视追加：主场景world/boss_session.tscn接入HD_10004_1，60生命/伤害1/0.6秒落击提示、飞行/纵跳/3层召唤平台为用户确认的可调灰盒。正式入口检查点、一次性镜头演出、无Boss血条、永久胜利与金光天窗接入；同帧死亡保留胜利，成长只记待领取。田野仍为阶段边界，详见overlook_boss_implementation.md。

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="CheckpointConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://systems/save/checkpoint_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+checkpoint_id = "HD_10004_1_N003"
+display_name = "渴望俯视 · 入口"
+spawn_position = Vector2(224, 1280)
