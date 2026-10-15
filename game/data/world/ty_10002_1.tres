@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/rooms/room_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+region_id = "Region_TY"
+scene_id = "Region_TY_Scene_10002"
+room_id = "TY_10002_1"
+display_name = "麦秆镇"
+previous_room_id = "TY_10001_1"
+next_room_id = "HD_20001_1"
+entry_from_previous = Vector2(160, 896)
+entry_from_next = Vector2(1664, 896)

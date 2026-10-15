@@ -3,6 +3,8 @@ extends WorldRoom
 @export var dialogue: DialogueConfig
 var wave_time: float = 0.0
 var player_position: Vector2 = Vector2.ZERO
+var gaze_progress: float = -1.0
+var gaze_target: Vector2 = Vector2.ZERO
 
 func _process(delta: float) -> void:
 	wave_time += delta
@@ -24,3 +26,8 @@ func _draw() -> void:
 		draw_line(Vector2(x, 600), Vector2(x - 8, 648), Color(0.27, 0.29, 0.25), 10)
 	var hoe: Vector2 = Vector2(1776, 824)
 	draw_line(hoe, hoe + Vector2(58, -52 + sin(wave_time * 2) * 20), Color(0.32, 0.26, 0.19), 5)
+	if gaze_progress >= 0:
+		for i: int in range(20):
+			var angle: float = TAU * i / 20.0 + wave_time
+			var distance: float = lerpf(180, 16, gaze_progress)
+			draw_circle(gaze_target + Vector2(cos(angle), sin(angle)) * distance, 4, Color(1, 0.85, 0.3))

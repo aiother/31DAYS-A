@@ -92,7 +92,8 @@ func _restore(snapshot: Dictionary, revive: bool) -> void:
 		player.life.health = int(data["health"])
 		player.life.health_changed.emit(player.life.health, player.life.config.max_health)
 	player.possibility.balance = int(data["balance"])
-	player.possibility.balance_changed.emit(player.possibility.balance, player.possibility.config.maximum)
+	player.possibility.maximum = int(data["maximum"])
+	player.possibility.balance_changed.emit(player.possibility.balance, player.possibility.maximum)
 	player.position = _checkpoint(str(data["checkpoint"])).config.spawn_position
 	_update_flags()
 	_loading = false
@@ -132,6 +133,7 @@ func save_current(message: String = "已自动保存") -> bool:
 	if player.life.is_alive():
 		data["health"] = player.life.health
 		data["balance"] = player.possibility.balance
+	data["maximum"] = player.possibility.maximum
 	if not store.save_slot(slot, data):
 		ui.call("save_failed", store.last_error)
 		return false

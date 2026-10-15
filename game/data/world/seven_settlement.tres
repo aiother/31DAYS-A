@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DialogueConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://ui/dialogue/dialogue_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+speaker = "7 · 临时台词"
+first_lines = PackedStringArray("你停下脚步，帮助了那个人。", "愿这份可能性，陪你走得更远。")
+repeat_lines = PackedStringArray("这份可能性，将由你自己带往前方。")
+opening_duration = 1.5

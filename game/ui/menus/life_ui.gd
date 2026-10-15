@@ -85,7 +85,7 @@ func _process(_delta: float) -> void:
 		protection = " · 保护 %.1f 秒" % life.protection_remaining
 	_health.text = "生命 %d / %d%s" % [life.health, life.config.max_health, protection]
 	var actions: PlayerPossibility = player.possibility
-	_health.text += "\n可能性 %d / %d · K/B 滑步 · 长按 L/Y 恢复" % [actions.balance, actions.config.maximum]
+	_health.text += "\n可能性 %d / %d · K/B 滑步 · 长按 L/Y 恢复" % [actions.balance, actions.maximum]
 	if actions.state == PlayerPossibility.State.HEALING:
 		_health.text += "\n恢复中 %.1f / %.1f 秒" % [actions.config.heal_duration - actions.remaining, actions.config.heal_duration]
 	elif actions.busy():

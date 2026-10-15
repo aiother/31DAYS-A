@@ -96,7 +96,7 @@ func _on_dialogue_finished() -> void:
 	if _forced_dialogue:
 		data["events"][FIELD_STORY] = true
 		data["events"][HEAL_GUIDE] = true
-		_set_balance(player.possibility.config.maximum)
+		_set_balance(player.possibility.maximum)
 	else:
 		data["events"][SEVEN] = true
 	if not save_current("黄金麦湖进度已保存"):
@@ -112,7 +112,7 @@ func _on_dialogue_finished() -> void:
 func _set_balance(value: int) -> void:
 	_loading = true
 	player.possibility.balance = value
-	player.possibility.balance_changed.emit(value, player.possibility.config.maximum)
+	player.possibility.balance_changed.emit(value, player.possibility.maximum)
 	_loading = false
 
 func _end_dialogue() -> void:

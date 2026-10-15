@@ -1,0 +1,5 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://world/field_session.tscn" id="1"]
+[ext_resource type="Script" path="res://world/town_session.gd" id="2"]
+[node name="TownSession" instance=ExtResource("1")]
+script = ExtResource("2")

@@ -87,4 +87,7 @@ if 'BOSS_PRESSURE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('golden wheat field dialogue and rescue departure', ['--script', 'res://tests/test_field_room.gd'])
 if 'FIELD_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful field Room test summary')
+output = run('town rescue and first permanent growth', ['--script', 'res://tests/test_town_rescue.gd'])
+if 'TOWN_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful town rescue test summary')
 print(f'All engine checks passed. Report: {report}')

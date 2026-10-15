@@ -36,3 +36,6 @@
 
 
 同日黄金麦湖追加：主场景world/field_session.tscn扩展Region_TY与TY_10001_1。用户确认首见演出、7临时逐句对话、一次性补满可能性与恢复教程、沿用Boss检查点；死亡/读档豁免主动放弃，手动回荒地须确认并保存永久失败。麦秆镇/救助/成长未交付，详见field_room_implementation.md。
+
+
+同日麦秆镇追加：主场景world/town_session.tscn接入TY_10002_1。用户确认免费救助、一次+4、返回7后首次上限10→12且不补余额。运行时maximum与共享基础Resource分离，旧10上限槽兼容，新12上限绑定注视和救助来源；后续成长未交付。详见town_rescue_implementation.md。

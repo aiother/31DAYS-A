@@ -24,7 +24,9 @@ func _integer(value: Variant, low: int, high: int) -> bool:
 func valid(data: Dictionary) -> bool:
 	if not _integer(data.get("version"), VERSION, VERSION) or not CHECKPOINTS.has(str(data.get("checkpoint", ""))):
 		return false
-	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("balance"), -9, 10) or not _integer(data.get("maximum"), 10, 10):
+	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("maximum"), 10, 12):
+		return false
+	if not _integer(data.get("balance"), -9, int(data["maximum"])):
 		return false
 	var events: Variant = data.get("events")
 	if not events is Dictionary or events.size() > 1000:
@@ -32,6 +34,14 @@ func valid(data: Dictionary) -> bool:
 	for key: Variant in events:
 		if not key is String or key.is_empty() or key.length() > 128 or not events[key] is bool:
 			return false
+	# Only the delivered first growth is supported; a raised cap needs its permanent source.
+	var gaze: bool = bool(events.get("TY_10001_1_N005", false))
+	if bool(events.get("TY_10002_1_N002:completed", false)) and bool(events.get("TY_10002_1_N002:failed", false)):
+		return false
+	if int(data["maximum"]) != (12 if gaze else 10):
+		return false
+	if gaze and (not bool(events.get("TY_10002_1_N002:completed", false)) or not bool(events.get("TY_10001_1_N002", false)) or bool(events.get("TY_10002_1_N002:failed", false))):
+		return false
 	var seconds: Variant = data.get("play_seconds")
 	return (seconds is int or seconds is float) and is_finite(float(seconds)) and float(seconds) >= 0.0
 

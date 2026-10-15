@@ -5,6 +5,7 @@ enum State { IDLE, DODGE_WINDUP, DODGE_ACTIVE, DODGE_RECOVERY, HEALING }
 @export var config: PossibilityConfig
 @onready var player: PlayerController = get_parent().get_parent() as PlayerController
 var balance: int = 3
+var maximum: int = 10
 var state: State = State.IDLE
 var remaining: float = 0.0
 var chain: int = 0
@@ -16,12 +17,13 @@ var invincible_remaining: float = 0.0
 func _ready() -> void:
 	assert(config != null)
 	balance = config.initial
+	maximum = config.maximum
 
 func gain(amount: int) -> void:
 	if amount <= 0 or not player.life.is_alive():
 		return
-	balance = mini(config.maximum, balance + amount)
-	balance_changed.emit(balance, config.maximum)
+	balance = mini(maximum, balance + amount)
+	balance_changed.emit(balance, maximum)
 
 func busy() -> bool:
 	return state != State.IDLE
@@ -48,7 +50,7 @@ func try_dodge() -> bool:
 		return false
 	poor_dodge = balance < cost
 	balance -= cost
-	balance_changed.emit(balance, config.maximum)
+	balance_changed.emit(balance, maximum)
 	chain += 1
 	since_dodge = 0.0
 	var axis: float = Input.get_axis("move_left", "move_right")
@@ -64,7 +66,7 @@ func try_heal() -> bool:
 	if balance < config.heal_cost or player.life.health >= player.life.config.max_health:
 		return false
 	balance -= config.heal_cost
-	balance_changed.emit(balance, config.maximum)
+	balance_changed.emit(balance, maximum)
 	player.combat.reset_combo()
 	state = State.HEALING
 	remaining = config.heal_duration
