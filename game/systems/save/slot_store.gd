@@ -3,7 +3,7 @@ extends RefCounted
 ## JSON only: never deserialize executable resources or scene paths from saves.
 const VERSION: int = 1
 const SLOT_COUNT: int = 3
-const CHECKPOINTS: PackedStringArray = ["graybox_start", "graybox_forward", "HD_10001_1_N003", "HD_10002_1_N002", "HD_10004_1_N003", "HD_20001_1_N001"]
+const CHECKPOINTS: PackedStringArray = ["graybox_start", "graybox_forward", "HD_10001_1_N003", "HD_10002_1_N002", "HD_10004_1_N003", "HD_20001_1_N001", "HD_20002_2_N001"]
 var initial_checkpoint: String = "graybox_start"
 var directory: String = "user://saves"
 var last_error: String = ""
