@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://world/hazards/rubble_barrier.gd" id="1"]
+[ext_resource type="Script" path="res://systems/combat/combat_hurtbox.gd" id="2"]
+[sub_resource type="RectangleShape2D" id="Wall"]
+size = Vector2(64,360)
+[sub_resource type="RectangleShape2D" id="Hit"]
+size = Vector2(96,140)
+[node name="Rubble" type="StaticBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0,-180)
+shape = SubResource("Wall")
+[node name="Hurtbox" type="Area2D" parent="."]
+position = Vector2(0,-70)
+collision_layer = 16
+collision_mask = 8
+monitoring = false
+script = ExtResource("2")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("Hit")
+[node name="Label" type="Label" parent="."]
+offset_left = -220.0
+offset_top = -400.0
+theme_override_font_sizes/font_size = 20

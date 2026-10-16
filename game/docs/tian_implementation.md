@@ -35,3 +35,5 @@ NSZC_10002_1_N001首次介绍由指定Encounter范围触发；尚未完成首见
 ## 验证
 
 test_tian.gd验证42项真实伤害/物理、2/3连击、受击保护、重击范围与后摇、格挡破绽/反击名额、瞬移预警/中断/墙体/边缘、双人夹击、重复收益防护及弹反。test_tian_room.gd验证24项首见、自由移动、暂停、+11保存与上限、往返/死亡/读档、两槽隔离及保存失败重试。完整回归由scripts/verify_game.py执行。
+
+2026-10-16追加（用户确认）：堑壕第二间及落石挑战已交付，复用本轮天人AI，主场景world/trench_passage_session.tscn。未新增天人参数或首见剧情，详见trench_passage_implementation.md。

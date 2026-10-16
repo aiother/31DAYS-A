@@ -129,4 +129,10 @@ if 'TIAN_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('Tian first introduction freedom rewards and save retries', ['--script', 'res://tests/test_tian_room.gd'])
 if 'TIAN_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful Tian Room test summary')
+output = run('falling debris collision damage scheduler and rubble attacks', ['--script', 'res://tests/test_rockfall.gd'])
+if 'ROCKFALL_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful rockfall test summary')
+output = run('second trench negative-resource route and permanent passage', ['--script', 'res://tests/test_trench_passage.gd'])
+if 'TRENCH_PASSAGE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful trench passage test summary')
 print(f'All engine checks passed. Report: {report}')

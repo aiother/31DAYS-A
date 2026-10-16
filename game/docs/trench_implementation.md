@@ -15,3 +15,5 @@ test_trench.gd覆盖真实跨Room、安全返回、零资源六连跳直达边�
 2026-10-16后续修订（用户确认）：第一间新增地面/空中单色实体各一只，保留既有两只无色实体。单色实体AI与+7收益已交付，天人战士和第二间落石仍待实现；详见monochrome_implementation.md。
 
 2026-10-16追加（用户确认）：后续修订：新增两只天人战士和指定范围首见介绍，保留既有四只普通实体；主场景world/tian_session.tscn。第一间敌人/首见已补齐，第二间落石挑战仍为边界，详见tian_implementation.md。
+
+2026-10-16追加（用户确认）：第一间上层出口已接通第二间及正式检查点/落石通道，中心战场为新边界。主场景world/trench_passage_session.tscn，详见trench_passage_implementation.md。
