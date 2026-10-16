@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/rooms/room_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+scene_id = "Region_HD_Scene_20002"
+room_id = "HD_20002_1"
+display_name = "逃兵营帐 · 外围"
+previous_room_id = "HD_20001_3"
+next_room_id = "HD_20002_2"
+bounds = Rect2(0, 0, 3072, 1536)
+floor_row = 20
+floor_offsets = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+entry_from_previous = Vector2(224, 1280)
+entry_from_next = Vector2(2752, 1280)

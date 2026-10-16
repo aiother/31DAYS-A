@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="PickupConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/items/pickup_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+persistence_key = "keyitem:HD_20002_1:pearl_01"
+display_name = "珍珠（占位）"

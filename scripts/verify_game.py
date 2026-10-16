@@ -99,4 +99,7 @@ if 'RAVINE_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('ravine depth clear rescue and pearl persistence', ['--script', 'res://tests/test_ravine_depth.gd'])
 if 'RAVINE_DEPTH_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful ravine depth test summary')
+output = run('deserter camp exploration and persistent pearl', ['--script', 'res://tests/test_camp_room.gd'])
+if 'CAMP_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful camp Room test summary')
 print(f'All engine checks passed. Report: {report}')
