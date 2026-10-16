@@ -53,3 +53,5 @@
 2026-10-16寄生同伴者追加：主场景world/parasite_session.tscn接入HD_20003_1。用户确认80生命/伤害1/0.45秒前摇三连可弹反投射物，实际伤到玩家才回3生命，反弹伤害5；移动换位与受限首见、正式入口检查点、永久胜利/两端通路/第3日事件同次保存接入。闪避强化只记待领取；单色实体及逆时战场延期，详见parasite_boss_implementation.md。
 
 2026-10-16追加：寄生同伴者新增全部飞行的无色实体支援，上限2、击杀+2，胜利/死亡清理不发奖；随后按用户确认接通NSZC_10001_1外围高低差路线、既有无色实体与封闭能力门占位。NPC/特殊挑战/正式闪避强化延后，无额外检查点；NSZC_10002_1仍为边界，详见parasite_support_implementation.md和outskirts_implementation.md。
+
+2026-10-16追加：接通NSZC_10002_1堑壕第一间，六段纵向平台、既有无色实体、独立珍珠占位与正式检查点NSZC_10002_1_N002；主场景改为world/trench_session.tscn，下一间NSZC_10002_2为边界。新敌人/特殊挑战继续待定，详见trench_implementation.md。

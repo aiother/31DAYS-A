@@ -114,4 +114,7 @@ if 'PARASITE_SUPPORT_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('reverse-time battlefield outskirts and closed ability gate', ['--script', 'res://tests/test_outskirts.gd'])
 if 'OUTSKIRTS_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful outskirts test summary')
+output = run('trench traversal checkpoint and pearl persistence', ['--script', 'res://tests/test_trench.gd'])
+if 'TRENCH_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful trench test summary')
 print(f'All engine checks passed. Report: {report}')
