@@ -121,17 +121,20 @@ func _commit_gaze() -> bool:
 	var old_maximum: int = player.possibility.maximum
 	data["events"][GAZE] = true
 	data["events"][SEVEN] = true
-	_set_maximum(12)
-	if not save_current("已获得7的注视 · 可能性上限12"):
+	_set_maximum(_gaze_maximum())
+	if not save_current("已获得7的注视 · 可能性上限%d" % player.possibility.maximum):
 		data["events"] = before
 		_set_maximum(old_maximum)
 		data["maximum"] = old_maximum
 		_gaze_dialogue_done = false
 		return false
 	_end_dialogue()
-	dialogue_ui.show_notice("获得泥粪中的理想家的注视 · 可能性上限12")
+	dialogue_ui.show_notice("获得泥粪中的理想家的注视 · 可能性上限%d" % player.possibility.maximum)
 	ui.call("save_failed", "")
 	return true
+
+func _gaze_maximum() -> int:
+	return 12
 
 func _set_maximum(value: int) -> void:
 	_loading = true
@@ -162,7 +165,7 @@ func _on_room_exit(target: String) -> void:
 
 func quest_status_text() -> String:
 	if has_session() and bool(data["events"].get(GAZE, false)):
-		return "已获得7的注视 · 可能性上限12"
+		return "已获得7的注视 · 可能性上限%d" % player.possibility.maximum
 	if has_session() and bool(data["events"].get(RESCUE_DONE, false)):
 		return "救助完成：返回黄金麦湖与7交谈"
 	return super.quest_status_text()

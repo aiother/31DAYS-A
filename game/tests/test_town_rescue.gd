@@ -92,7 +92,7 @@ func run() -> void:
 	await ticks(2)
 	check(not session.dialogue_ui.active and session.player.possibility.balance == 4 and session.player.life.health == 3, "successful rescue gives +4 once without healing player or charging a fee")
 	check(session.store.load_slot(1)["events"].get(FieldSession.RESCUE_DONE, false) and session.store.load_slot(1)["balance"] == 4, "rescue and resource reward persist atomically")
-	check(session.room.get_node("Survivor/Name").text.contains("已救助") and session.quest_status_text().contains("返回黄金麦湖"), "survivor appearance and return-to-Seven objective update")
+	check(session.room.get_node("Survivor/Name").text.contains("已救助") and session.quest_status_text().contains("返回黄金麦湖") and session.room.get_node("Survivor/VisualRoot/Body").polygon.size() == 4 and session.room.get_node("Survivor/VisualRoot/Body").polygon[1] == Vector2(-24,-80), "survivor appearance and return-to-Seven objective update")
 	check(session.interact_survivor(), "rescued NPC remains available for dialogue")
 	await finish_dialogue()
 	check(session.player.possibility.balance == 4 and session.player.possibility.maximum == 10, "repeat survivor dialogue awards neither resources nor premature growth")

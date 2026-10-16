@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DialogueConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://ui/dialogue/dialogue_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+speaker = "沟壑幸存者 · 临时台词"
+first_lines = PackedStringArray("我被困在这里了……能拉我起来吗？", "谢谢你停下来。我能继续走了。")
+repeat_lines = PackedStringArray("我已经安全了。谢谢你的帮助。")
+failed_lines = PackedStringArray("这次救助的机会已经失去了。")
