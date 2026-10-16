@@ -117,7 +117,7 @@ func _physics_process(delta: float) -> void:
 func quest_status_text() -> String:
 	if room is RavineRescueRoom and has_session():
 		if bool(data["events"].get(HELPED, false)):
-			return "沟壑救助已完成" + (" · 成长已记录，获得7的注视后结算" if not bool(data["events"].get(GAZE, false)) else " · 可能性上限13")
+			return "沟壑救助已完成" + (" · 成长已记录，获得7的注视后结算" if not bool(data["events"].get(GAZE, false)) else " · 可能性上限%d" % player.possibility.maximum)
 		if bool(data["events"].get(FAILED, false)):
 			return "沟壑救助机会已永久失去"
 		return "上层有人等待救助 · E / RB 互动"

@@ -26,7 +26,7 @@ func valid(data: Dictionary) -> bool:
 		return false
 	if not _integer(data.get("version"), VERSION, VERSION) or not CHECKPOINTS.has(str(data.get("checkpoint", ""))):
 		return false
-	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("maximum"), 10, 13):
+	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("maximum"), 10, 14):
 		return false
 	if not _integer(data.get("balance"), -9, int(data["maximum"])):
 		return false
@@ -39,11 +39,14 @@ func valid(data: Dictionary) -> bool:
 	# Each delivered growth needs its permanent source; pending rescue does not raise the cap.
 	var gaze: bool = bool(events.get("TY_10001_1_N005", false))
 	var ravine_helped: bool = bool(events.get("rescue:HD_20001_2:completed", false))
+	var depth_helped: bool = bool(events.get("rescue:HD_20001_3:completed", false))
+	if depth_helped and bool(events.get("rescue:HD_20001_3:failed", false)):
+		return false
 	if ravine_helped and bool(events.get("rescue:HD_20001_2:failed", false)):
 		return false
 	if bool(events.get("TY_10002_1_N002:completed", false)) and bool(events.get("TY_10002_1_N002:failed", false)):
 		return false
-	if int(data["maximum"]) != (12 + int(ravine_helped) if gaze else 10):
+	if int(data["maximum"]) != (12 + int(ravine_helped) + int(depth_helped) if gaze else 10):
 		return false
 	if gaze and (not bool(events.get("TY_10002_1_N002:completed", false)) or not bool(events.get("TY_10001_1_N002", false)) or bool(events.get("TY_10002_1_N002:failed", false))):
 		return false

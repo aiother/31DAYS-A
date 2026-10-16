@@ -96,4 +96,7 @@ if 'RAVINE_DAY_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('ravine survivor rescue and deferred growth', ['--script', 'res://tests/test_ravine_rescue.gd'])
 if 'RAVINE_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful ravine rescue test summary')
+output = run('ravine depth clear rescue and pearl persistence', ['--script', 'res://tests/test_ravine_depth.gd'])
+if 'RAVINE_DEPTH_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful ravine depth test summary')
 print(f'All engine checks passed. Report: {report}')
