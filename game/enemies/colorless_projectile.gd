@@ -35,11 +35,14 @@ func _physics_process(delta: float) -> void:
 	if not hit.is_empty():
 		var receiver: CombatHurtbox = hit["collider"] as CombatHurtbox
 		if receiver != null:
-			receiver.receive_attack(5 if reflected else 1, velocity.normalized() * 100.0, source if is_instance_valid(source) else self, get_instance_id())
+			_deliver_hit(receiver)
 		queue_free()
 		return
 	global_position = end
 	rotation += delta * 8.0
+
+func _deliver_hit(receiver: CombatHurtbox) -> void:
+	receiver.receive_attack(5 if reflected else 1, velocity.normalized() * 100.0, source if is_instance_valid(source) else self, get_instance_id())
 
 func _draw() -> void:
 	var color: Color = Color(0.4, 0.92, 0.95) if reflected else Color(0.95, 0.66, 0.4)

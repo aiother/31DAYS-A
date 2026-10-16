@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="CheckpointConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://systems/save/checkpoint_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+checkpoint_id = "HD_20003_1_N003"
+display_name = "寄生同伴者 · 入口"
+spawn_position = Vector2(224, 1536)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/rooms/room_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+scene_id = "Region_HD_Scene_20003"
+room_id = "HD_20003_1"
+display_name = "寄生同伴者 · 监牢"
+previous_room_id = "HD_20002_2"
+next_room_id = "NSZC_10001_1"
+bounds = Rect2(0, 0, 1920, 1792)
+floor_row = 24
+entry_from_previous = Vector2(224, 1536)
+entry_from_next = Vector2(1344, 1056)
