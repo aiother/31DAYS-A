@@ -1,0 +1,64 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="Script" path="res://world/rooms/battlefield_room.gd" id="1"]
+[ext_resource type="Resource" path="res://data/world/nszc_10003_1.tres" id="2"]
+[ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
+[ext_resource type="PackedScene" path="res://world/scenes/platform.tscn" id="4"]
+[ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="5"]
+[ext_resource type="PackedScene" path="res://enemies/tian_warrior.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="7"]
+[sub_resource type="RectangleShape2D" id="Area"]
+size = Vector2(64,160)
+[sub_resource type="RectangleShape2D" id="Wall"]
+size = Vector2(32,1100)
+[node name="NSZC_10003_1" type="Node2D"]
+script = ExtResource("1")
+config = ExtResource("2")
+[node name="Ground" type="TileMapLayer" parent="."]
+tile_set = ExtResource("3")
+[node name="LeftBoundary" type="StaticBody2D" parent="."]
+position = Vector2(96,446)
+collision_layer = 1
+collision_mask = 0
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftBoundary"]
+shape = SubResource("Wall")
+[node name="GateVisual" type="Polygon2D" parent="LeftBoundary"]
+polygon = PackedVector2Array(-16,-446,16,-446,16,450,-16,450)
+color = Color(0.32,0.25,0.22,1)
+[node name="ReturnLabel" type="Label" parent="."]
+position = Vector2(136,690)
+theme_override_font_sizes/font_size = 18
+text = "返回路封锁\n完整战斗胜利后开启"
+[node name="RightBoundary" type="StaticBody2D" parent="."]
+position = Vector2(1904,446)
+collision_layer = 1
+collision_mask = 0
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightBoundary"]
+shape = SubResource("Wall")
+[node name="AttackCoordinator" type="Node" parent="."]
+script = ExtResource("5")
+[node name="Enemies" type="Node2D" parent="."]
+[node name="TianFront" parent="Enemies" instance=ExtResource("6")]
+position = Vector2(900,896)
+flank_side = -1
+[node name="TianRear" parent="Enemies" instance=ExtResource("6")]
+position = Vector2(1500,896)
+flank_side = 1
+[node name="Monochrome" parent="Enemies" instance=ExtResource("7")]
+position = Vector2(1200,896)
+[node name="Allies" type="Node2D" parent="."]
+[node name="Return" type="Area2D" parent="."]
+position = Vector2(48,816)
+collision_layer = 0
+collision_mask = 2
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Return"]
+shape = SubResource("Area")
+[node name="Exit" type="Area2D" parent="."]
+position = Vector2(2200,816)
+collision_layer = 0
+collision_mask = 0
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Exit"]
+shape = SubResource("Area")
+[node name="StageLabel" type="Label" parent="."]
+position = Vector2(590,530)
+theme_override_font_sizes/font_size = 24
+text = "中心战场 · 首段混战\n首名天人阵亡后，两批幸存者加入\n首段清空仅提示阶段完成"

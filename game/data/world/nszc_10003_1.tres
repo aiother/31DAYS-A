@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/rooms/room_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+region_id = "Region_NSZC"
+scene_id = "Region_NSZC_Scene_10003"
+room_id = "NSZC_10003_1"
+display_name = "中心战场 · 首段混战"
+previous_room_id = "NSZC_10002_2"
+next_room_id = ""
+bounds = Rect2(0,0,1920,1080)
+floor_row = 14
+entry_from_previous = Vector2(224,896)
+entry_from_next = Vector2(224,896)

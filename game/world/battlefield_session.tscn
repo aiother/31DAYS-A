@@ -1,0 +1,5 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://world/trench_passage_session.tscn" id="1"]
+[ext_resource type="Script" path="res://world/battlefield_session.gd" id="2"]
+[node name="BattlefieldSession" instance=ExtResource("1")]
+script = ExtResource("2")

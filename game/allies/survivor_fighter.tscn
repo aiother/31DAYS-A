@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://allies/survivor_fighter.gd" id="1"]
+[ext_resource type="Resource" path="res://data/allies/survivor.tres" id="2"]
+[ext_resource type="Script" path="res://systems/combat/combat_hurtbox.gd" id="3"]
+[sub_resource type="CapsuleShape2D" id="Body"]
+radius = 22.0
+height = 80.0
+[sub_resource type="RectangleShape2D" id="Hurt"]
+size = Vector2(44,80)
+[node name="Survivor" type="CharacterBody2D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1")
+config = ExtResource("2")
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0,-40)
+shape = SubResource("Body")
+[node name="GameplayRoot" type="Node2D" parent="."]
+[node name="Hurtbox" type="Area2D" parent="GameplayRoot"]
+position = Vector2(0,-40)
+collision_layer = 64
+collision_mask = 32
+monitoring = false
+script = ExtResource("3")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GameplayRoot/Hurtbox"]
+shape = SubResource("Hurt")
+[node name="VisualRoot" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-22,0,-22,-64,0,-84,22,-64,22,0)
+color = Color(1,1,1,1)
+[node name="HealthLabel" type="Label" parent="."]
+position = Vector2(-65,-116)
+theme_override_font_sizes/font_size = 16
