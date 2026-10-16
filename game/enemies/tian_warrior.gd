@@ -222,12 +222,12 @@ func try_block(impulse: Vector2, source: Node2D) -> bool:
 	velocity.x = 0
 	return true
 
-func _on_hit(damage: int, impulse: Vector2, source: Node2D, id: int) -> void:
-	if state == State.DEAD:
-		return
+func _protected_action() -> bool:
+	return motion == Motion.GUARD or counter_remaining>0 or (attack_kind in [Attack.HEAVY,Attack.COUNTER] and state in [State.WINDUP,State.ACTIVE,State.RECOVERY])
+
+func _interrupt_action() -> void:
 	_cancel_motion()
 	counter_remaining = 0
-	super._on_hit(damage,impulse,source,id)
 
 func _update_status_label() -> void:
 	super._update_status_label()

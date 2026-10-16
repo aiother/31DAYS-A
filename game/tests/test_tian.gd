@@ -122,7 +122,7 @@ func run() -> void:
 	actor = spawn(Vector2(292,896))
 	await ticks(2)
 	actor.hurtbox.receive_attack(5,Vector2.RIGHT,player,4002)
-	check(actor.hurtbox.receive_attack(5,Vector2.RIGHT,player,4003) and actor.health==26 and actor.counter_remaining==0, "guard cooldown prevents repeated blocks and hit cancels pending counter")
+	check(actor.hurtbox.receive_attack(5,Vector2.RIGHT,player,4003) and actor.health==26 and actor.counter_remaining>0 and actor.motion==TianWarrior.Motion.GUARD, "guard cooldown allows damage while defense and pending counter remain uninterrupted")
 	await clean()
 	actor = spawn(Vector2(292,896))
 	await ticks(2)

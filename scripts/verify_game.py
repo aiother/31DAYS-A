@@ -135,4 +135,7 @@ if 'ROCKFALL_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('second trench negative-resource route and permanent passage', ['--script', 'res://tests/test_trench_passage.gd'])
 if 'TRENCH_PASSAGE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful trench passage test summary')
+output = run('protected enemy actions and future stagger interrupt hook', ['--script', 'res://tests/test_enemy_interrupts.gd'])
+if 'ENEMY_INTERRUPTS_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful enemy interruption test summary')
 print(f'All engine checks passed. Report: {report}')

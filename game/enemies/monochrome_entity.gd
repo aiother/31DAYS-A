@@ -84,7 +84,7 @@ func _safe_horizontal(direction: float, distance: float) -> bool:
 
 func _on_player_attack(direction: Vector2, _combo_step: int) -> void:
 	# React to visible attack startup, never to player HP or a future input.
-	if not is_physics_processing() or state not in [State.IDLE,State.CHASE,State.WINDUP] or motion != Motion.NONE or dodge_cooldown_remaining > 0 or not is_instance_valid(target):
+	if not is_physics_processing() or not can_interrupt() or state not in [State.IDLE,State.CHASE,State.WINDUP] or motion != Motion.NONE or dodge_cooldown_remaining > 0 or not is_instance_valid(target):
 		return
 	var offset: Vector2 = global_position-target.global_position
 	if offset.length()>tuning().dodge_range or absf(offset.y)>100 or not _can_see_target():
@@ -146,11 +146,11 @@ func _spawn_projectile() -> void:
 	projectile.position = get_parent().to_local(global_position+Vector2(facing*36,-40))
 	get_parent().add_child(projectile)
 
-func _on_hit(damage: int, impulse: Vector2, source: Node2D, id: int) -> void:
-	if state == State.DEAD:
-		return
+func _protected_action() -> bool:
+	return motion == Motion.DODGE or (strong_attack and state in [State.WINDUP,State.ACTIVE,State.RECOVERY])
+
+func _interrupt_action() -> void:
 	_end_motion()
-	super._on_hit(damage,impulse,source,id)
 
 func _update_status_label() -> void:
 	super._update_status_label()

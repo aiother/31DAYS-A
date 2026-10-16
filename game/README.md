@@ -4,6 +4,8 @@
 
 **修订标记（2026-10-15，同日追加）**：下攻击弹起高度改为长按跳跃最大高度的50%，覆盖此前“原来的2倍”规则；取消攻击移动减速、跑攻前后摇各翻倍及连击按键间隔上限0.5秒（含边界）保留。同步修订仓库 `Words/` 中T1、T2及T3关联条目。
 
+**修订标记（2026-10-16）**：敌人重/强力攻击、闪避、防御及格挡反击链不被普通命中打断；正常扣血与致死结算保留，原有闪避无敌不变。预留独立失衡打断接口，当前没有实装失衡值。详见 `docs/enemy_interrupt_revision.md`。
+
 ## 打开与运行
 
 1. 使用 **Godot 4.7.2 Stable 标准版 Windows x64**。官方下载：https://godotengine.org/download/archive/4.7.2-stable/ 。无需 .NET、Spine 或其他插件。
@@ -176,6 +178,7 @@ Python策划表回归测试需要openpyxl及现有工作簿生成器使用的art
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_tian_room.gd
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_rockfall.gd
 & "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_trench_passage.gd
+& "完整路径/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_enemy_interrupts.gd
 ```
 
 导出独立exe需先安装同版本Godot Export Templates，再选择Windows x64预设。本次交付工程压缩包，不声称已验证exe导出。引擎下载供本地验证，未包含在压缩包中。

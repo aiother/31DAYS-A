@@ -3,6 +3,7 @@ extends CharacterBody2D
 signal attack_started(ranged: bool)
 signal defeated(reward: int)
 enum State { IDLE, CHASE, WINDUP, ACTIVE, RECOVERY, STUN, DEAD }
+enum InterruptReason { HIT, STAGGER }
 @export var config: ColorlessConfig
 @export var target: Node2D
 @export var coordinator: EnemyAttackCoordinator
@@ -175,15 +176,37 @@ func _spawn_projectile() -> void:
 	projectile.position = get_parent().to_local(global_position + Vector2(facing * 36.0, -40))
 	get_parent().add_child(projectile)
 
+func _protected_action() -> bool:
+	return false
+
+func can_interrupt(reason: InterruptReason = InterruptReason.HIT) -> bool:
+	return health>0 and state!=State.DEAD and (reason==InterruptReason.STAGGER or not _protected_action())
+
+func _interrupt_action() -> void:
+	pass
+
+func request_interrupt(reason: InterruptReason = InterruptReason.HIT, impulse: Vector2 = Vector2.ZERO, duration: float = -1.0) -> bool:
+	# Future stagger accumulation calls this explicitly after its threshold breaks.
+	# Ordinary damage never grants itself the STAGGER reason.
+	if not can_interrupt(reason):
+		return false
+	_interrupt_action()
+	_release_slot()
+	state = State.STUN
+	_remaining = config.hit_stun if duration<0 else duration
+	velocity = impulse
+	return true
+
 func _on_hit(damage: int, impulse: Vector2, _source: Node2D, _id: int) -> void:
 	if state == State.DEAD:
 		return
 	health = maxi(0, health - damage)
 	health_label.text = "%d / %d" % [health, config.max_health]
-	_release_slot()
 	_flash = 1.0
 	if health == 0:
 		state = State.DEAD
+		_interrupt_action()
+		_release_slot()
 		velocity = Vector2.ZERO
 		hurtbox.accepts_hits = false
 		hurtbox.set_deferred("monitorable", false)
@@ -194,6 +217,4 @@ func _on_hit(damage: int, impulse: Vector2, _source: Node2D, _id: int) -> void:
 		if is_instance_valid(coordinator) and not coordinator.keep_corpse(self):
 			queue_free()
 		return
-	state = State.STUN
-	_remaining = config.hit_stun
-	velocity = impulse
+	request_interrupt(InterruptReason.HIT,impulse)
