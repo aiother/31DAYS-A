@@ -111,4 +111,7 @@ if 'PARASITE_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('parasite flying support and resource rewards', ['--script', 'res://tests/test_parasite_support.gd'])
 if 'PARASITE_SUPPORT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful parasite support test summary')
+output = run('reverse-time battlefield outskirts and closed ability gate', ['--script', 'res://tests/test_outskirts.gd'])
+if 'OUTSKIRTS_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful outskirts test summary')
 print(f'All engine checks passed. Report: {report}')

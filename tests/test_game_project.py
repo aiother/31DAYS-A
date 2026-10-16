@@ -70,7 +70,7 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('res://debug/combat_target.tscn', lab)
         self.assertNotIn('colorless_entity', lab)
         project = (GAME / 'project.godot').read_text(encoding='utf-8')
-        self.assertIn('run/main_scene="res://world/parasite_session.tscn"', project)
+        self.assertIn('run/main_scene="res://world/outskirts_session.tscn"', project)
         receiver = (GAME / 'systems/combat/combat_hurtbox.gd').read_text(encoding='utf-8')
         self.assertIn('signal hit_received', receiver)
         self.assertNotIn('current_health', receiver)
