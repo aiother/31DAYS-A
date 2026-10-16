@@ -1,0 +1,5 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://world/rooms/nszc_10003_1.tscn" id="1"]
+[ext_resource type="Script" path="res://world/rooms/rescue_battlefield_room.gd" id="2"]
+[node name="NSZC_10003_1" instance=ExtResource("1")]
+script = ExtResource("2")

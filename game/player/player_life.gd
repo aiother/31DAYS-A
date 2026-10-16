@@ -13,6 +13,8 @@ var hurt_remaining: float = 0.0
 var protection_remaining: float = 0.0
 var phase_remaining: float = 0.0
 var scripted_control_locked: bool = false
+# Optional encounter-owned interception, after ordinary immunity checks and before death.
+var hit_interceptor: Callable
 
 func _ready() -> void:
 	assert(config != null)
@@ -29,6 +31,8 @@ func take_hit(amount: int, impulse: Vector2 = Vector2.ZERO) -> bool:
 	if actions != null and actions.invincible_remaining > 0.0:
 		return false
 	if not is_alive() or protection_remaining > 0.0 or hurt_remaining > 0.0 or amount <= 0:
+		return false
+	if hit_interceptor.is_valid() and bool(hit_interceptor.call(amount)):
 		return false
 	health = maxi(0, health - amount)
 	hurt_remaining = config.hurt_duration
