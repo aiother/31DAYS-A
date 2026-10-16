@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 [ext_resource type="Script" path="res://world/rooms/trench_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/nszc_10002_1.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -9,6 +9,7 @@
 [ext_resource type="Resource" path="res://data/world/trench_pearl.tres" id="8"]
 [ext_resource type="Script" path="res://systems/save/checkpoint.gd" id="9"]
 [ext_resource type="Resource" path="res://data/checkpoints/nszc_10002_1_n002.tres" id="10"]
+[ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="11"]
 [sub_resource type="RectangleShape2D" id="ExitShape"]
 size = Vector2(144, 160)
 [sub_resource type="RectangleShape2D" id="ReturnShape"]
@@ -56,6 +57,12 @@ script = ExtResource("6")
 position = Vector2(1088, 1792)
 [node name="UpperEntity" parent="Enemies" instance=ExtResource("5")]
 position = Vector2(1328, 1008)
+flying = true
+ranged_only = true
+[node name="GroundMonochrome" parent="Enemies" instance=ExtResource("11")]
+position = Vector2(1424, 1792)
+[node name="FlyingMonochrome" parent="Enemies" instance=ExtResource("11")]
+position = Vector2(1664, 768)
 flying = true
 ranged_only = true
 [node name="Return" type="Area2D" parent="."]

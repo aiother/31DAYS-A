@@ -71,7 +71,7 @@ func _bind_room() -> void:
 					enemy.defeated.connect(_on_room_enemy_defeated)
 
 func _on_room_enemy_defeated(reward: int) -> void:
-	# Repeat kills after Room/death/load reset still award +2 (producer confirmed).
+	# Reset enemies still pay their configured reward (+2 colorless, +7 monochrome).
 	_on_defeated(reward)
 
 func _on_room_exit_left() -> void:

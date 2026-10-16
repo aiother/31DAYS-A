@@ -117,4 +117,10 @@ if 'OUTSKIRTS_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('trench traversal checkpoint and pearl persistence', ['--script', 'res://tests/test_trench.gd'])
 if 'TRENCH_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful trench test summary')
+output = run('monochrome enemy movement attacks dodge and reflection', ['--script', 'res://tests/test_monochrome.gd'])
+if 'MONOCHROME_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful monochrome test summary')
+output = run('monochrome trench integration rewards and persistence', ['--script', 'res://tests/test_monochrome_room.gd'])
+if 'MONOCHROME_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful monochrome Room test summary')
 print(f'All engine checks passed. Report: {report}')

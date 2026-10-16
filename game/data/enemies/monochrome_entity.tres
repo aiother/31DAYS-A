@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MonochromeConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://enemies/monochrome_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+max_health = 21
+damage = 1
+reward = 7
+speed = 240.0
+windup = 0.3
+active_duration = 0.12
+recovery = 0.45
+hit_stun = 0.2
+projectile_speed = 380.0
+ranged_range = 420.0
+ranged_cooldown = 3.0
