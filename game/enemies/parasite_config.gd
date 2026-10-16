@@ -11,3 +11,7 @@ extends Resource
 @export var projectile_speed: float = 380.0
 @export var floor_y: float = 1536.0
 @export var intro_duration: float = 5.0
+@export var support_initial_delay: float = 2.0
+@export var support_interval: float = 6.0
+@export var support_warning: float = 0.6
+@export var max_support: int = 2

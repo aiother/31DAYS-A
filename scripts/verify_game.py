@@ -108,4 +108,7 @@ if 'CAMP_WAVES_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('parasite Boss lifesteal reflection and third-day victory', ['--script', 'res://tests/test_parasite_boss.gd'])
 if 'PARASITE_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful parasite Boss test summary')
+output = run('parasite flying support and resource rewards', ['--script', 'res://tests/test_parasite_support.gd'])
+if 'PARASITE_SUPPORT_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful parasite support test summary')
 print(f'All engine checks passed. Report: {report}')

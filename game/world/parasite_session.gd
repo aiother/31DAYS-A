@@ -28,6 +28,11 @@ func _bind_room() -> void:
 		actor.target = player
 		if not actor.defeated.is_connected(_on_parasite_defeated):
 			actor.defeated.connect(_on_parasite_defeated)
+		if not (room as ParasiteRoom).support_spawned.is_connected(_on_parasite_support_spawned):
+			(room as ParasiteRoom).support_spawned.connect(_on_parasite_support_spawned)
+
+func _on_parasite_support_spawned(enemy: ColorlessEntity) -> void:
+	enemy.defeated.connect(_on_room_enemy_defeated)
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	super._restore(snapshot, revive)
@@ -148,7 +153,7 @@ func _on_room_exit(target: String) -> void:
 func _process(delta: float) -> void:
 	super._process(delta)
 	if room is ParasiteRoom and has_session():
-		$Instructions/Help.text = "左右/向上攻击弹反投射物 · 被命中会让Boss吸血\n击败后木板落下 · 沿平台寻找逆时战场破洞"
+		$Instructions/Help.text = "攻击弹反投射物 · 飞行支援击杀可获得+2可能性\n被命中会让Boss吸血 · 击败后沿平台寻找破洞"
 		if _parasite_intro_remaining > 0.0:
 			$Instructions/Help.text = "寄生同伴者 · 首次登场"
 		elif _parasite_victory_pending or (room.get_node("Boss") as ParasiteBoss).state == ParasiteBoss.State.WAITING:
