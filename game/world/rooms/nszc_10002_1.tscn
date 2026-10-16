@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 [ext_resource type="Script" path="res://world/rooms/trench_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/nszc_10002_1.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -10,6 +10,9 @@
 [ext_resource type="Script" path="res://systems/save/checkpoint.gd" id="9"]
 [ext_resource type="Resource" path="res://data/checkpoints/nszc_10002_1_n002.tres" id="10"]
 [ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://enemies/tian_warrior.tscn" id="12"]
+[sub_resource type="RectangleShape2D" id="EncounterShape"]
+size = Vector2(1120, 2048)
 [sub_resource type="RectangleShape2D" id="ExitShape"]
 size = Vector2(144, 160)
 [sub_resource type="RectangleShape2D" id="ReturnShape"]
@@ -65,6 +68,19 @@ position = Vector2(1424, 1792)
 position = Vector2(1664, 768)
 flying = true
 ranged_only = true
+[node name="TianFront" parent="Enemies" instance=ExtResource("12")]
+position = Vector2(880, 1792)
+flank_side = -1
+[node name="TianRear" parent="Enemies" instance=ExtResource("12")]
+position = Vector2(1760, 1792)
+flank_side = 1
+[node name="Encounter" type="Area2D" parent="."]
+position = Vector2(1240, 1024)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Encounter"]
+shape = SubResource("EncounterShape")
 [node name="Return" type="Area2D" parent="."]
 position = Vector2(48, 1712)
 collision_layer = 0

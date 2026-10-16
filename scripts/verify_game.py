@@ -123,4 +123,10 @@ if 'MONOCHROME_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('monochrome trench integration rewards and persistence', ['--script', 'res://tests/test_monochrome_room.gd'])
 if 'MONOCHROME_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful monochrome Room test summary')
+output = run('Tian warrior combos guard counter blink and shared attacks', ['--script', 'res://tests/test_tian.gd'])
+if 'TIAN_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful Tian test summary')
+output = run('Tian first introduction freedom rewards and save retries', ['--script', 'res://tests/test_tian_room.gd'])
+if 'TIAN_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful Tian Room test summary')
 print(f'All engine checks passed. Report: {report}')

@@ -35,3 +35,5 @@ NSZC_10002_1新增地面单色实体(1424,1792)与空中远程单色实体(1664,
 ## 验证
 
 test_monochrome.gd验证45项AI/物理/伤害/闪避/攻击协调/弹反行为；test_monochrome_room.gd验证17项真实场景输入、暂停、奖励保存、上限截断、往返、死亡及正常读档。原test_trench.gd继续覆盖零可能性路线和珍珠/检查点回滚。完整回归由scripts/verify_game.py执行。
+
+2026-10-16追加（用户确认）：后续修订：天人战士及堑壕第一间首见已交付，保留本轮单色实体；主场景world/tian_session.tscn，第二间仍为边界，详见tian_implementation.md。

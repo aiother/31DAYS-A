@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TianConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://enemies/tian_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+max_health = 31
+reward = 11
+damage = 1
+speed = 300.0
+windup = 0.25
+active_duration = 0.12
+recovery = 0.55
+hit_stun = 0.2
+projectile_speed = 420.0
+ranged_cooldown = 2.0

@@ -1,0 +1,13 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="1"]
+[ext_resource type="Script" path="res://enemies/tian_warrior.gd" id="2"]
+[ext_resource type="Resource" path="res://data/enemies/tian_warrior.tres" id="3"]
+[ext_resource type="Script" path="res://enemies/tian_visual.gd" id="4"]
+[ext_resource type="Script" path="res://enemies/tian_hurtbox.gd" id="5"]
+[node name="TianWarrior" instance=ExtResource("1")]
+script = ExtResource("2")
+config = ExtResource("3")
+[node name="Hurtbox" parent="GameplayRoot" index="2"]
+script = ExtResource("5")
+[node name="VisualRoot" parent="." index="2"]
+script = ExtResource("4")
