@@ -39,3 +39,11 @@ func show_slash() -> void:
 func show_save_retry() -> void:
 	slash.hide()
 	caption.text = "进度保存失败 · E / RB 重试"
+
+func show_cleared(count: int) -> void:
+	slash.hide()
+	caption.text = "10的斩击 · 已秒杀 %d 名敌人" % count
+
+func show_reinforcements() -> void:
+	slash.hide()
+	caption.text = "下一波敌人即将从右侧进入"

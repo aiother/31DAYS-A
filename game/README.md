@@ -10,6 +10,8 @@
 
 **最新追加（2026-10-16，用户确认）**：中心战场10一次性救场与协同测试已交付。致命伤、两名友军均倒下、第二波兜底任一触发，冻结演出后清场、补满可能性但不回血；已保存救场在死亡/读档后不重播、不重复补满。详见 `docs/ten_rescue_implementation.md`。最终波次、时限及结局继续待下一轮。
 
+**本轮缺陷修订（2026-10-16）**：修复救场清场与新波次衔接过快的问题。斩击后保留1.2秒空场并显示秒杀数量，再预警1秒，随后才生成新的协同敌人并显示入场卡片。真实按键流程已新增回归，详见 `docs/ten_rescue_implementation.md`。
+
 ## 打开与运行
 
 1. 使用 **Godot 4.7.2 Stable 标准版 Windows x64**。官方下载：https://godotengine.org/download/archive/4.7.2-stable/ 。无需 .NET、Spine 或其他插件。
@@ -196,3 +198,5 @@ Python策划表回归测试需要openpyxl及现有工作簿生成器使用的art
 中心战场专项回归：`--script res://tests/test_battlefield.gd`，覆盖真实双向伤害、两批增援、索敌、无友伤、存档失败重试、检查点和死亡重置。
 
 10救场专项：`--script res://tests/test_ten_rescue.gd`；旧首段 `world/battlefield_session.tscn` 保留作独立回归，F5以本轮主入口为准。
+
+清场展示回归：`--script res://tests/test_ten_clear_presentation.gd`，通过真实交互按键确认旧敌全灭、空场停顿和新一波入场时序。

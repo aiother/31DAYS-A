@@ -144,4 +144,7 @@ if 'BATTLEFIELD_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('Ten rescue interception cinematic persistence and cooperation', ['--script', 'res://tests/test_ten_rescue.gd'])
 if 'TEN_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful Ten rescue test summary')
+output = run('real input Ten clear aftermath and distinct reinforcement arrival', ['--script', 'res://tests/test_ten_clear_presentation.gd'])
+if 'TEN_CLEAR_PRESENTATION_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful Ten clear presentation test summary')
 print(f'All engine checks passed. Report: {report}')

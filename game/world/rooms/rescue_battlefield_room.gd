@@ -11,6 +11,7 @@ var rescue_done: bool = false
 var rescue_reason: String = ""
 var ten: TenFighter
 var _loss_check_queued: bool = false
+var rescue_kill_count: int = 0
 
 func _ready() -> void:
 	super._ready()
@@ -73,12 +74,17 @@ func begin_rescue(reason: String) -> void:
 				if audio is AudioStreamPlayer:
 					(audio as AudioStreamPlayer).stop()
 
-func clear_hostiles() -> void:
+func clear_hostiles() -> int:
+	var killed: int = 0
 	for child: Node in $Enemies.get_children():
 		if child is ColorlessEntity and (child as ColorlessEntity).health>0:
 			var enemy: ColorlessEntity = child as ColorlessEntity
 			# The cinematic kill bypasses dodge/guard; ordinary player damage does not.
 			enemy._on_hit(enemy.health,Vector2.ZERO,ten,0)
+			if enemy.health==0:
+				killed += 1
+	rescue_kill_count = killed
+	return killed
 
 func replace_wave() -> void:
 	for child: Node in $Enemies.get_children():

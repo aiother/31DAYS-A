@@ -103,7 +103,7 @@ func run() -> void:
 	await dialogue_to_slash()
 	var real_directory: String = session.store.directory
 	session.store.directory = real_directory.path_join("slot_1.json")
-	await ticks(24)
+	await ticks(100)
 	check(session.cinematic==RescueBattlefieldSession.Cinematic.SAVE and session._rescue_commit_pending,"failed completion save leaves a retryable cinematic stage")
 	check(not session.data["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT,false) and session.player.possibility.balance==-9,"failed save atomically rolls back event and full-cap reward")
 	check(session.player.life.health==1 and not session.player.is_physics_processing() and session.rescue_overlay.caption.text.contains("重试"),"failed save retains control lock and clear retry feedback")
@@ -112,6 +112,8 @@ func run() -> void:
 	await ticks(1)
 	Input.action_release("interact")
 	await ticks(2)
+	check(session.cinematic==RescueBattlefieldSession.Cinematic.REINFORCEMENTS,"saved clear is followed by a distinct reinforcement warning")
+	await ticks(62)
 	check(session.cinematic==RescueBattlefieldSession.Cinematic.NONE and arena().phase==RescueBattlefieldRoom.Phase.COOP,"successful retry starts cooperative battle")
 	check(session.data["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT,false) and session.store.load_slot(1)["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT,false),"one-time rescue event is saved")
 	check(session.player.possibility.balance==10 and session.store.load_slot(1)["balance"]==10 and session.player.life.health==1,"rescue fills possibility but does not heal health")
@@ -185,7 +187,7 @@ func run() -> void:
 	check(arena().rescue_reason=="second_wave" and session.cinematic==RescueBattlefieldSession.Cinematic.DROP,"first clear produces second-wave fallback rescue")
 	check(arena().get_node("Enemies").get_child_count()==3 and (arena().get_node("Enemies").get_child(0) as ColorlessEntity).health==31,"fallback consists of two Tian and one monochrome before slash")
 	await dialogue_to_slash()
-	await ticks(24)
+	await ticks(160)
 	quiet()
 	check(arena().phase==RescueBattlefieldRoom.Phase.COOP,"fallback rescue completion also starts cooperation")
 	for child: Node in arena().get_node("Enemies").get_children():

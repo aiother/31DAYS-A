@@ -3,7 +3,8 @@ extends BattlefieldSession
 const RESCUE_DONE_EVENT: String = "NSZC_10003_1_N002"
 const TEN_RESCUE_ROOM: PackedScene = preload("res://world/rooms/rescue_battlefield.tscn")
 const RESCUE_DIALOGUE: DialogueConfig = preload("res://data/dialogue/ten_rescue.tres")
-enum Cinematic { NONE, DROP, DIALOGUE, SLASH, SAVE }
+const PRESENTATION: RescuePresentationConfig = preload("res://data/world/ten_rescue_presentation.tres")
+enum Cinematic { NONE, DROP, DIALOGUE, SLASH, SAVE, AFTERMATH, REINFORCEMENTS }
 var cinematic: Cinematic = Cinematic.NONE
 var cinematic_remaining: float = 0
 var _rescue_commit_pending: bool = false
@@ -71,11 +72,22 @@ func _physics_process(delta: float) -> void:
 		elif cinematic==Cinematic.SLASH:
 			cinematic_remaining = maxf(0,cinematic_remaining-delta)
 			if cinematic_remaining==0:
+				cinematic = Cinematic.AFTERMATH
+				cinematic_remaining = PRESENTATION.cleared_hold
+				rescue_overlay.show_cleared(_arena().rescue_kill_count)
+				_arena().get_node("StageLabel").text = "10的斩击已清除当前全部敌人"
+		elif cinematic==Cinematic.AFTERMATH:
+			cinematic_remaining = maxf(0,cinematic_remaining-delta)
+			if cinematic_remaining==0:
 				cinematic = Cinematic.SAVE
 				_rescue_commit_pending = true
 				_finish_rescue()
 		elif cinematic==Cinematic.SAVE and (Input.is_action_just_pressed("interact") or bool(data["events"].get(RESCUE_DONE_EVENT,false))):
 			_finish_rescue()
+		elif cinematic==Cinematic.REINFORCEMENTS:
+			cinematic_remaining = maxf(0,cinematic_remaining-delta)
+			if cinematic_remaining==0:
+				_enter_coop()
 		return
 	super._physics_process(delta)
 
@@ -87,7 +99,7 @@ func _on_dialogue_finished() -> void:
 		return
 	dialogue_ui.dismiss()
 	cinematic = Cinematic.SLASH
-	cinematic_remaining = 0.35
+	cinematic_remaining = PRESENTATION.slash_duration
 	rescue_overlay.show_slash()
 	_arena().clear_hostiles()
 
@@ -116,6 +128,12 @@ func _finish_rescue() -> void:
 	if not save_current("10救场完成 · 可能性已补满"):
 		rescue_overlay.show_save_retry()
 		return
+	cinematic = Cinematic.REINFORCEMENTS
+	cinematic_remaining = PRESENTATION.reinforcement_warning
+	rescue_overlay.show_reinforcements()
+	ui.call("save_failed","")
+
+func _enter_coop() -> void:
 	cinematic = Cinematic.NONE
 	intro_active = false
 	rescue_overlay.hide()
@@ -124,6 +142,7 @@ func _finish_rescue() -> void:
 	player.set_physics_process(true)
 	_arena().start_coop()
 	ui.call("save_failed","")
+	ui.call("show_enemy_intro",3.0,"新一波敌人进入战场\n\n刚才的敌人已被10全灭。\n现在与10共同迎战增援。")
 
 func _on_stage_completed() -> void:
 	var area: RescueBattlefieldRoom = _arena()
