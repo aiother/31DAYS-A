@@ -71,6 +71,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if not room is TownRoom or not has_session():
 		return
+	if dialogue_ui.confirming:
+		return
 	if dialogue_ui.active:
 		if not _near_survivor():
 			_end_dialogue()

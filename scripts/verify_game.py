@@ -90,4 +90,7 @@ if 'FIELD_ROOM_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('town rescue and first permanent growth', ['--script', 'res://tests/test_town_rescue.gd'])
 if 'TOWN_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful town rescue test summary')
+output = run('ravine checkpoint and persistent second-day event', ['--script', 'res://tests/test_ravine_day.gd'])
+if 'RAVINE_DAY_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful ravine date test summary')
 print(f'All engine checks passed. Report: {report}')

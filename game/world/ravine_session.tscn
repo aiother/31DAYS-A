@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://world/town_session.tscn" id="1"]
+[ext_resource type="Script" path="res://world/ravine_session.gd" id="2"]
+[node name="RavineSession" instance=ExtResource("1")]
+script = ExtResource("2")
+[node name="DayUI" type="CanvasLayer" parent="."]
+layer = 14
+visible = false
+[node name="Day" type="Label" parent="DayUI"]
+offset_left = 64.0
+offset_top = 368.0
+theme_override_font_sizes/font_size = 24
+text = "第 1 日"

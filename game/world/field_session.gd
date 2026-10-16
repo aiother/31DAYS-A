@@ -155,7 +155,7 @@ func cancel_departure() -> void:
 	_end_dialogue()
 
 func confirm_departure() -> bool:
-	if _departure_target != BOSS_ID or get_tree().paused or not player.life.is_alive() or not room is FieldRoom or not dialogue_ui.confirming:
+	if not _valid_departure_target(_departure_target) or get_tree().paused or not player.life.is_alive() or not dialogue_ui.confirming:
 		return false
 	var before: Dictionary = data["events"].duplicate()
 	data["events"][RESCUE_FAILED] = true
@@ -170,6 +170,9 @@ func confirm_departure() -> bool:
 	_transitioning = true
 	_change_room.call_deferred(target)
 	return true
+
+func _valid_departure_target(target: String) -> bool:
+	return room is FieldRoom and target == BOSS_ID
 
 func quest_status_text() -> String:
 	if not has_session() or not bool(data["events"].get(HEAL_GUIDE, false)):
