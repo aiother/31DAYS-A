@@ -13,6 +13,7 @@ var since_dodge: float = 100.0
 var poor_dodge: bool = false
 var dodge_direction: float = 1.0
 var invincible_remaining: float = 0.0
+var dodge_upgraded: bool = false
 
 func _ready() -> void:
 	assert(config != null)
@@ -108,4 +109,5 @@ func tick(delta: float) -> void:
 			cancel()
 
 func horizontal_speed() -> float:
-	return dodge_direction * config.dodge_speed if state == State.DODGE_ACTIVE else 0.0
+	var speed: float = config.enhanced_dodge_speed if dodge_upgraded else config.dodge_speed
+	return dodge_direction * speed if state == State.DODGE_ACTIVE else 0.0

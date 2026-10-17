@@ -58,6 +58,8 @@ func run() -> void:
 		base["events"][key] = true
 	check(session.store.save_slot(1,base) and session.start_slot(1,false), "saved parasite victory remains loadable in extended session")
 	await ticks(4)
+	# Capture the successfully migrated Boss reward before testing this Room.
+	base = session.data.duplicate(true)
 	await enter()
 	check(session.room is OutskirtsRoom and session.room.config.region_id=="Region_NSZC" and session.room.config.scene_id=="Region_NSZC_Scene_10001", "actual opened hole enters new region and correct scene")
 	check(session.room.config.next_room_id=="NSZC_10002_1" and session.get_node("Instructions/Title").text.contains("逆时战场"), "next trench identifier and region HUD are correct")

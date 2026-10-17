@@ -42,6 +42,8 @@ func valid(data: Dictionary) -> bool:
 	for key: Variant in events:
 		if not key is String or key.is_empty() or key.length() > 128 or not events[key] is bool:
 			return false
+	if bool(events.get("HD_20003_1:dodge_growth_claimed",false)) and (not bool(events.get("HD_20003_1_N001:defeated",false)) or bool(events.get("HD_20003_1:dodge_growth_pending",false))):
+		return false
 	if bool(events.get(FinalClock.WON,false)) and bool(events.get(FinalClock.TIMEOUT,false)):
 		return false
 	if bool(events.get(FinalClock.STARTED,false)) and not bool(events.get("NSZC_10003_1_N002",false)):

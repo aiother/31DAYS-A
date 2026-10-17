@@ -165,4 +165,7 @@ if 'CAMPAIGN_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('enemy multi-platform pursuit overhang wall and cliff safety', ['--script', 'res://tests/test_platform_pursuit.gd'])
 if 'PLATFORM_PURSUIT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful platform pursuit summary')
+output = run('permanent dodge growth migration physical movement and slot isolation', ['--script', 'res://tests/test_dodge_growth.gd'])
+if 'DODGE_GROWTH_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful dodge growth summary')
 print(f'All engine checks passed. Report: {report}')

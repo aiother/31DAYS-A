@@ -6,6 +6,7 @@ const PARASITE_INTRO: String = "HD_20003_1_N001:intro"
 const PARASITE_DEFEATED: String = "HD_20003_1_N001:defeated"
 const PARASITE_PASSAGE: String = "HD_20003_1_N002"
 const DODGE_PENDING: String = "HD_20003_1:dodge_growth_pending"
+const DODGE_GROWTH: String = "HD_20003_1:dodge_growth_claimed"
 const PARASITE_ROOM: PackedScene = preload("res://world/rooms/hd_20003_1.tscn")
 var _parasite_intro_remaining: float = 0.0
 var _parasite_victory_pending: bool = false
@@ -36,8 +37,17 @@ func _on_parasite_support_spawned(enemy: ColorlessEntity) -> void:
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	super._restore(snapshot, revive)
+	_sync_dodge_growth()
+	if _needs_dodge_growth():
+		save_current("旧档闪避强化已补领")
 	if room is ParasiteRoom and has_session():
 		_enter_parasite()
+
+func _needs_dodge_growth() -> bool:
+	return has_session() and bool(data["events"].get(PARASITE_DEFEATED,false)) and (not bool(data["events"].get(DODGE_GROWTH,false)) or bool(data["events"].get(DODGE_PENDING,false)))
+
+func _sync_dodge_growth() -> void:
+	player.possibility.dodge_upgraded = has_session() and bool(data["events"].get(PARASITE_DEFEATED,false)) and bool(data["events"].get(DODGE_GROWTH,false))
 
 func _change_room(target: String) -> void:
 	super._change_room(target)
@@ -78,6 +88,9 @@ func _enter_parasite() -> void:
 	ui.call("show_enemy_intro", actor.config.intro_duration, "寄生同伴者\n\n弹反连续投射物。\n被命中会让Boss恢复生命。")
 
 func _physics_process(delta: float) -> void:
+	if _needs_dodge_growth() and Input.is_action_just_pressed("interact"):
+		save_current("闪避强化已补领")
+		return
 	if _parasite_intro_remaining > 0.0:
 		if not player.life.is_alive():
 			_end_parasite_intro(false)
@@ -114,7 +127,7 @@ func _end_parasite_intro(start: bool) -> void:
 func _on_parasite_defeated() -> void:
 	(room as ParasiteRoom).clear_projectiles()
 	_parasite_victory_pending = true
-	save_current("寄生同伴者已击败 · 木板落下")
+	save_current("寄生同伴者已击败 · 木板落下 · 获得闪避强化")
 
 func _on_death() -> void:
 	if room is ParasiteRoom:
@@ -127,19 +140,25 @@ func restart_challenge() -> void:
 	super.restart_challenge()
 
 func save_current(message: String = "已自动保存") -> bool:
-	if not _parasite_victory_pending:
+	if not _parasite_victory_pending and not _needs_dodge_growth():
 		return super.save_current(message)
 	var before: Dictionary = data["events"].duplicate()
 	var old_day: int = int(data.get("day",1))
-	data["day"] = maxi(old_day,3)
-	for key: String in [PARASITE_DEFEATED, PARASITE_PASSAGE, DODGE_PENDING]:
-		data["events"][key] = true
+	var victory: bool = _parasite_victory_pending
+	if victory:
+		data["day"] = maxi(old_day,3)
+		for key: String in [PARASITE_DEFEATED, PARASITE_PASSAGE]:
+			data["events"][key] = true
+	data["events"][DODGE_GROWTH] = true
+	data["events"].erase(DODGE_PENDING)
 	if not super.save_current(message):
 		data["events"] = before
 		data["day"] = old_day
+		_sync_dodge_growth()
 		return false
+	_sync_dodge_growth()
 	_parasite_victory_pending = false
-	if room is ParasiteRoom:
+	if victory and room is ParasiteRoom:
 		(room as ParasiteRoom).set_opened(true,true)
 	ui.call("save_failed", "")
 	return true
@@ -154,7 +173,11 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if room is ParasiteRoom and has_session():
 		$Instructions/Help.text = "攻击弹反投射物 · 飞行支援击杀可获得+2可能性\n被命中会让Boss吸血 · 击败后沿平台寻找破洞"
+		if player.possibility.dodge_upgraded:
+			$Instructions/Help.text = "已获得闪避强化 · 地面/空中速度900\n沿平台寻找破洞 · 可返回营帐"
 		if _parasite_intro_remaining > 0.0:
 			$Instructions/Help.text = "寄生同伴者 · 首次登场"
 		elif _parasite_victory_pending or (room.get_node("Boss") as ParasiteBoss).state == ParasiteBoss.State.WAITING:
 			$Instructions/Help.text = "进度保存尚未完成 · 按 E / RB 重试"
+	if _needs_dodge_growth():
+		$Instructions/EnemyStatus.text += " · 闪避强化尚未补领（E / RB 重试保存）"

@@ -104,7 +104,7 @@ func run() -> void:
 	session = current_scene as TrenchSession
 	quiet()
 	check(session.room is TrenchRoom and session.player.life.health==5 and session.player.possibility.balance==2 and session.player.life.protection_remaining>2.8, "death returns to trench checkpoint with settled resources and revive protection")
-	check(session.data["day"]==3 and session.data["events"].get(key,false) and session.data["events"].get(ParasiteSession.DODGE_PENDING,false), "death preserves date pearl and pending Boss reward")
+	check(session.data["day"]==3 and session.data["events"].get(key,false) and session.data["events"].get(ParasiteSession.DODGE_GROWTH,false) and session.player.possibility.dodge_upgraded, "death preserves date pearl and granted Boss dodge upgrade")
 	check(session.start_slot(1,false), "new checkpoint save can be loaded normally")
 	await ticks(4)
 	session = current_scene as TrenchSession

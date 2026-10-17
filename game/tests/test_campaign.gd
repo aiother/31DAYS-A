@@ -155,7 +155,7 @@ func run() -> void:
 	await ticks(310)
 	var parasite: ParasiteBoss = session.room.get_node("Boss") as ParasiteBoss
 	check(not session.intro_active and parasite.hurtbox.receive_attack(80, Vector2.ZERO, session.player, 30001), "second Boss intro and actual defeat work in main session")
-	check(session.data["day"] == 3 and session.data["events"].get(ParasiteSession.DODGE_PENDING, false), "second Boss advances day three and preserves pending upgrade")
+	check(session.data["day"] == 3 and session.data["events"].get(ParasiteSession.DODGE_GROWTH, false) and session.player.possibility.dodge_upgraded, "second Boss advances day three and grants permanent dodge upgrade")
 	await travel(OutskirtsSession.OUTSKIRTS_ID)
 	check(session.player.possibility.maximum == 14, "closed optional ability gate grants no undefined NPC growth")
 	await travel(TrenchSession.TRENCH_ID)

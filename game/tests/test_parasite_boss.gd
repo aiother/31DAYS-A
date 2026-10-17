@@ -186,12 +186,12 @@ func run() -> void:
 	var real_directory: String = session.store.directory
 	session.store.directory = real_directory.path_join("slot_1.json")
 	boss().hurtbox.receive_attack(80,Vector2.ZERO,session.player,900)
-	check(session._parasite_victory_pending and session.data["day"]==2 and not session.data["events"].get(ParasiteSession.PARASITE_DEFEATED,false) and not arena().opened, "failed victory write rolls back defeated passage day and reward marker")
+	check(session._parasite_victory_pending and session.data["day"]==2 and not session.data["events"].get(ParasiteSession.PARASITE_DEFEATED,false) and not session.player.possibility.dodge_upgraded and not arena().opened, "failed victory write rolls back defeated passage day and actual dodge upgrade")
 	session.store.directory = real_directory
 	session.player.life.protection_remaining = 0
 	session.player.life.take_hit(5)
 	check(session.store.load_slot(1)["day"]==3 and arena().opened and session.store.load_slot(1)["events"].get(ParasiteSession.PARASITE_DEFEATED,false), "same-frame player death retries and saves Boss victory with day3")
-	check(session.data["events"].get(ParasiteSession.PARASITE_PASSAGE,false) and session.data["events"].get(ParasiteSession.DODGE_PENDING,false) and not arena().get_node("Boards").visible and arena().has_node("FallingBoards"), "victory saves passage and pending dodge reward then animates falling boards")
+	check(session.data["events"].get(ParasiteSession.PARASITE_PASSAGE,false) and session.data["events"].get(ParasiteSession.DODGE_GROWTH,false) and session.player.possibility.dodge_upgraded and not session.data["events"].has(ParasiteSession.DODGE_PENDING) and not arena().get_node("Boards").visible and arena().has_node("FallingBoards"), "victory saves passage and actual dodge upgrade then animates falling boards")
 	check(session.player.combat.config.damage==damage and session.data["balance"]==1 and session.player.possibility.maximum==14, "victory adds no invented stats resource reward or max growth")
 	await ticks(90)
 	session.ui.call("restart_challenge")
@@ -223,7 +223,7 @@ func run() -> void:
 	boss().hurtbox.receive_attack(80,Vector2.ZERO,session.player,901)
 	check(session.store.load_slot(2)["day"]==3 and session.store.load_slot(2)["balance"]==3 and session.store.load_slot(2)["health"]==5, "player-first simultaneous victory preserves death settlement and advances day")
 	await ticks(90)
-	for key: String in [ParasiteSession.PARASITE_DEFEATED,ParasiteSession.PARASITE_PASSAGE,ParasiteSession.DODGE_PENDING]:
+	for key: String in [ParasiteSession.PARASITE_DEFEATED,ParasiteSession.PARASITE_PASSAGE,ParasiteSession.DODGE_PENDING,ParasiteSession.DODGE_GROWTH]:
 		session.data["events"].erase(key)
 	session.data["day"] = 2
 	session._parasite_victory_pending = true

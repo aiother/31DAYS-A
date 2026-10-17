@@ -15,3 +15,4 @@ extends Resource
 @export var invincible_duration: float = 0.16
 @export var poor_invincible_duration: float = 0.08
 @export var dodge_speed: float = 720.0
+@export var enhanced_dodge_speed: float = 900.0
