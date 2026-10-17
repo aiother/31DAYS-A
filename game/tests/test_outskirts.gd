@@ -19,6 +19,8 @@ func ticks(count: int) -> void:
 func place(point: Vector2) -> void:
 	session.player.position = point
 	session.player.reset_kinematics()
+	# Fixture teleport is not a swept gameplay move through the hazard.
+	if session.room is OutskirtsRoom: (session.room as OutskirtsRoom).reset_attempt()
 	await ticks(4)
 func enter() -> void:
 	await place(Vector2(1552,1056))
@@ -63,7 +65,7 @@ func run() -> void:
 	await enter()
 	check(session.room is OutskirtsRoom and session.room.config.region_id=="Region_NSZC" and session.room.config.scene_id=="Region_NSZC_Scene_10001", "actual opened hole enters new region and correct scene")
 	check(session.room.config.next_room_id=="NSZC_10002_1" and session.get_node("Instructions/Title").text.contains("逆时战场"), "next trench identifier and region HUD are correct")
-	check(session._all_checkpoints().is_empty() and session._pickups().is_empty() and not session.room.has_node("Survivor"), "approved partial scope adds no checkpoint pearl or NPC")
+	check(session._all_checkpoints().is_empty() and session._pickups().is_empty() and session.room.has_node("Survivor"), "optional survivor adds no new checkpoint or pearl")
 	check(session.data["checkpoint"]==ParasiteSession.PARASITE_CHECKPOINT and session.data["day"]==3 and session.player.possibility.balance==0, "cross-region entry preserves checkpoint date and resources")
 	await place(Vector2(768,1280))
 	check(await jump_to(Vector2(1024,1152)), "zero-resource jump crosses main high ground")
@@ -76,10 +78,14 @@ func run() -> void:
 	await place(Vector2(2112,848))
 	Input.action_press("move_right")
 	Input.action_press("run")
-	await ticks(50)
+	# Release after the first failed attempt; holding run would intentionally retry.
+	for i: int in range(50):
+		await ticks(1)
+		if session.player.life.health<3: break
 	Input.action_release("move_right")
 	Input.action_release("run")
-	check(session.player.position.x<2220 and session.room.get_node("AbilityGate/CollisionShape2D").disabled==false, "unfinished ability gate remains physically closed")
+	await ticks(2)
+	check(session.player.position.x<2220 and not (session.room as OutskirtsRoom).opened and session.player.life.health==2, "running into spikes fails with damage and returns to upper entrance; position=%s health=%d" % [session.player.position,session.player.life.health])
 	check(session.player.possibility.maximum==10 and session.data["events"]==base["events"], "gate approach creates no rescue growth or unlock event")
 	await place(Vector2(2400,1280))
 	Input.action_press("move_right")
@@ -113,7 +119,12 @@ func run() -> void:
 	session = current_scene as OutskirtsSession
 	check(session.room is ParasiteRoom and session.player.life.protection_remaining==0 and session.player.possibility.balance==2, "normal load keeps resources without revive protection")
 	await enter()
-	check(not session.room.has_node("Survivor") and session.room.has_node("AbilityGate"), "revisit does not invent missing NPC or bypass gate")
+	check(session.room.has_node("Survivor") and not (session.room as OutskirtsRoom).opened, "revisit preserves closed unearned challenge and survivor")
+	# The retained standalone scene ends before Trench; a boundary is not departure.
+	session.data["events"][OutskirtsSession.SPIKES_OPEN] = true
+	session.data["events"][OutskirtsSession.OUTSKIRTS_SEEN] = true
+	session._on_room_exit("NSZC_10002_1")
+	check(paused and session.ui.get("_mode")=="room_boundary" and not session.dialogue_ui.confirming and not session.data["events"].get(OutskirtsSession.OUTSKIRTS_FAILED,false),"standalone scene boundary never abandons a seen survivor or enters a missing Room")
 	paused = false
 	session.queue_free()
 	await ticks(2)

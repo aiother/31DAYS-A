@@ -157,7 +157,18 @@ func run() -> void:
 	check(not session.intro_active and parasite.hurtbox.receive_attack(80, Vector2.ZERO, session.player, 30001), "second Boss intro and actual defeat work in main session")
 	check(session.data["day"] == 3 and session.data["events"].get(ParasiteSession.DODGE_GROWTH, false) and session.player.possibility.dodge_upgraded, "second Boss advances day three and grants permanent dodge upgrade")
 	await travel(OutskirtsSession.OUTSKIRTS_ID)
-	check(session.player.possibility.maximum == 14, "closed optional ability gate grants no undefined NPC growth")
+	check(session.player.possibility.maximum == 14, "optional gate grants no growth before rescue")
+	await place(Vector2(2196,848))
+	session.player.facing = 1
+	Input.action_press("dodge")
+	await ticks(18)
+	Input.action_release("dodge")
+	await ticks(2)
+	check(session.data["events"].get(OutskirtsSession.SPIKES_OPEN,false),"real upgraded dodge completes optional spike challenge in campaign")
+	await place(Vector2(2576,848))
+	check(session.interact_outskirts_survivor(),"campaign begins final optional survivor rescue")
+	await dialogue()
+	check(session.player.possibility.maximum==15 and session.data["events"].get(OutskirtsSession.OUTSKIRTS_HELPED,false),"third independent NPC completes cap 15 growth")
 	await travel(TrenchSession.TRENCH_ID)
 	await collect()
 	await travel(TrenchPassageSession.PASSAGE_ID)
@@ -179,7 +190,7 @@ func run() -> void:
 	check(session._arena().rescue_kill_count == 3, "Ten slash clears actual opening enemies in continuous session")
 	await ticks(165)
 	check(session.data["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT, false) and session.data["events"].get(FinalClock.STARTED, false), "rescue reward transitions directly into persisted final clock")
-	check(session.player.possibility.maximum == 14 and session.player.possibility.balance == 14, "Ten fills grown cap without healing or extra growth")
+	check(session.player.possibility.maximum == 15 and session.player.possibility.balance == 15, "Ten fills grown cap without healing or extra growth")
 	for wave: int in range(3):
 		check(session._final_arena().wave_index == wave, "continuous final wave index %d" % wave)
 		await clear()
@@ -196,16 +207,16 @@ func run() -> void:
 	check(paused and session.final_ui.mode == "finished", "campaign reaches placeholder ending screen")
 	var saved: Dictionary = session.store.load_slot(1)
 	check(session.store.valid(saved) and saved["events"].get(FinalClock.END, false), "complete naturally earned event set passes slot validation")
-	check(saved["checkpoint"] == TrenchPassageSession.PASSAGE_CHECKPOINT and saved["maximum"] == 14 and saved["day"] == 3, "ending preserves real checkpoint, growth and date")
+	check(saved["checkpoint"] == TrenchPassageSession.PASSAGE_CHECKPOINT and saved["maximum"] == 15 and saved["day"] == 3, "ending preserves real checkpoint, growth and date")
 	check(visited.size() == session._room_scenes().size() and visited.size() == 18, "continuous campaign visits all 18 delivered Rooms")
 	check(pearls.size() == 4, "all four delivered pearl placeholders collected")
 	for key: String in pearls:
 		check(saved["events"].get(key, false), "ending retains earlier pearl " + key)
-	check(not saved["events"].get(FieldSession.RESCUE_FAILED, false) and not saved["events"].get(RavineRescueSession.FAILED, false) and not saved["events"].get(RavineDepthSession.DEPTH_FAILED, false), "successful route does not accidentally abandon saved survivors")
+	check(not saved["events"].get(FieldSession.RESCUE_FAILED, false) and not saved["events"].get(RavineRescueSession.FAILED, false) and not saved["events"].get(RavineDepthSession.DEPTH_FAILED, false) and not saved["events"].get(OutskirtsSession.OUTSKIRTS_FAILED,false), "successful route does not accidentally abandon saved survivors")
 	check(session.start_slot(1, false), "full campaign save reloads through normal production path")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
-	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 14, "normal reload restores finished campaign and earned growth")
+	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15, "normal reload restores finished campaign and earned growth")
 	paused = false
 	session.queue_free()
 	await physics_frame

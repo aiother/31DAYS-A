@@ -14,6 +14,7 @@ var poor_dodge: bool = false
 var dodge_direction: float = 1.0
 var invincible_remaining: float = 0.0
 var dodge_upgraded: bool = false
+var dodge_serial: int = 0
 
 func _ready() -> void:
 	assert(config != null)
@@ -53,6 +54,7 @@ func try_dodge() -> bool:
 	balance -= cost
 	balance_changed.emit(balance, maximum)
 	chain += 1
+	dodge_serial += 1
 	since_dodge = 0.0
 	var axis: float = Input.get_axis("move_left", "move_right")
 	dodge_direction = signf(axis) if not is_zero_approx(axis) else player.facing

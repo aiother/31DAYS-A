@@ -32,7 +32,7 @@ func valid(data: Dictionary) -> bool:
 		return false
 	if not _integer(data.get("version"), VERSION, VERSION) or not CHECKPOINTS.has(str(data.get("checkpoint", ""))):
 		return false
-	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("maximum"), 10, 14):
+	if not _integer(data.get("health"), 1, 5) or not _integer(data.get("maximum"), 10, 15):
 		return false
 	if not _integer(data.get("balance"), -9, int(data["maximum"])):
 		return false
@@ -58,13 +58,21 @@ func valid(data: Dictionary) -> bool:
 	var gaze: bool = bool(events.get("TY_10001_1_N005", false))
 	var ravine_helped: bool = bool(events.get("rescue:HD_20001_2:completed", false))
 	var depth_helped: bool = bool(events.get("rescue:HD_20001_3:completed", false))
+	var outskirts_helped: bool = bool(events.get("rescue:NSZC_10001_1:completed",false))
+	var spikes_open: bool = bool(events.get("gate:NSZC_10001_1:spikes_cleared",false))
+	if spikes_open and not bool(events.get("HD_20003_1:dodge_growth_claimed",false)):
+		return false
+	if (outskirts_helped or bool(events.get("rescue:NSZC_10001_1:seen",false)) or bool(events.get("rescue:NSZC_10001_1:failed",false))) and not spikes_open:
+		return false
+	if outskirts_helped and bool(events.get("rescue:NSZC_10001_1:failed",false)):
+		return false
 	if depth_helped and bool(events.get("rescue:HD_20001_3:failed", false)):
 		return false
 	if ravine_helped and bool(events.get("rescue:HD_20001_2:failed", false)):
 		return false
 	if bool(events.get("TY_10002_1_N002:completed", false)) and bool(events.get("TY_10002_1_N002:failed", false)):
 		return false
-	if int(data["maximum"]) != (12 + int(ravine_helped) + int(depth_helped) if gaze else 10):
+	if int(data["maximum"]) != (12 + int(ravine_helped) + int(depth_helped) + int(outskirts_helped) if gaze else 10):
 		return false
 	if gaze and (not bool(events.get("TY_10002_1_N002:completed", false)) or not bool(events.get("TY_10001_1_N002", false)) or bool(events.get("TY_10002_1_N002:failed", false))):
 		return false

@@ -111,7 +111,7 @@ if 'PARASITE_BOSS_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('parasite flying support and resource rewards', ['--script', 'res://tests/test_parasite_support.gd'])
 if 'PARASITE_SUPPORT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful parasite support test summary')
-output = run('reverse-time battlefield outskirts and closed ability gate', ['--script', 'res://tests/test_outskirts.gd'])
+output = run('reverse-time battlefield outskirts and optional spike branch', ['--script', 'res://tests/test_outskirts.gd'])
 if 'OUTSKIRTS_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful outskirts test summary')
 output = run('trench traversal checkpoint and pearl persistence', ['--script', 'res://tests/test_trench.gd'])
@@ -171,4 +171,10 @@ if 'DODGE_GROWTH_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('enemy downward platform pursuit safe ledge descent and replanning', ['--script', 'res://tests/test_platform_descent.gd'])
 if 'PLATFORM_DESCENT_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful platform descent summary')
+output = run('outskirts enhanced dodge spike challenge persistence and retry', ['--script', 'res://tests/test_outskirts_challenge.gd'])
+if 'OUTSKIRTS_CHALLENGE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful outskirts challenge summary')
+output = run('outskirts optional rescue deferred growth abandonment and slot isolation', ['--script', 'res://tests/test_outskirts_rescue.gd'])
+if 'OUTSKIRTS_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful outskirts rescue summary')
 print(f'All engine checks passed. Report: {report}')
