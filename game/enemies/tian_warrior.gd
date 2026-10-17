@@ -125,7 +125,7 @@ func _seek_target() -> void:
 		state = State.IDLE
 		return
 	state = State.CHASE
-	if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown):
+	if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown,tuning().pursuit_max_drop):
 		return
 	if absf(offset.x)>1:
 		facing = signf(offset.x)

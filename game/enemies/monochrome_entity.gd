@@ -112,7 +112,7 @@ func _seek_target() -> void:
 		var visible: bool = _can_see_target()
 		if visible and offset.length()<=config.sight_range:
 			_seen = true
-		if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown):
+		if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown,tuning().pursuit_max_drop):
 			state = State.CHASE
 			return
 		if _seen and visible and _dash_cooldown == 0 and offset.length()>220 and offset.length()<520 and (flying or (is_on_floor() and absf(offset.y)<65)):

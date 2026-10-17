@@ -20,3 +20,4 @@ extends ColorlessConfig
 @export var flank_distance: float = 140.0
 @export var jump_speed: float = 950.0
 @export var jump_cooldown: float = 1.0
+@export var pursuit_max_drop: float = 320.0

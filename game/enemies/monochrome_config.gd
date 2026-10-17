@@ -13,3 +13,4 @@ extends ColorlessConfig
 @export var dodge_range: float = 180.0
 @export var jump_speed: float = 950.0
 @export var jump_cooldown: float = 1.0
+@export var pursuit_max_drop: float = 320.0

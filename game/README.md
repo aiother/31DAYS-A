@@ -20,6 +20,8 @@
 
 ## 打开与运行
 
+**下行追击修复（2026-10-17）**：单色实体与天人战士会选择安全落点，走出平台边缘并逐层向下追击；支持正下方目标与低顶板，拒绝深坑/无落脚处，原上行跳跃保留。详见 `docs/platform_pursuit_revision.md` 的下行修复记录。
+
 **追加优化（2026-10-17，用户要求）**：逃兵营帐围攻三波全部结束前不可离开，实体屏障与出口检查同时封锁；单色实体与天人战士支持沿可达平台逐级跳跃追击、实心顶板绕行与安全落点检测。详见 `docs/platform_pursuit_revision.md`。
 
 1. 使用 **Godot 4.7.2 Stable 标准版 Windows x64**。官方下载：https://godotengine.org/download/archive/4.7.2-stable/ 。无需 .NET、Spine 或其他插件。

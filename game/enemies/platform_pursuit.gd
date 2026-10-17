@@ -9,15 +9,20 @@ var cooldown: float = 0
 var repath: float = 0
 var launch: Vector2
 var approaching: bool = false
+var descending: bool = false
+var travel_remaining: float = 0
 
 func tick(delta: float) -> void:
 	cooldown = maxf(0, cooldown-delta)
 	repath = maxf(0, repath-delta)
+	travel_remaining = maxf(0, travel_remaining-delta)
 
 func cancel() -> void:
 	active = false
 	airborne = false
 	approaching = false
+	descending = false
+	travel_remaining = 0
 	repath = 0
 
 func _floor_at(actor: CharacterBody2D, x: float, top: float, bottom: float) -> Dictionary:
@@ -70,22 +75,97 @@ func _arc_speed(actor: ColorlessEntity, start: Vector2, end: Vector2, jump_speed
 			return INF
 	return INF
 
-func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float) -> bool:
+func _drop_route(actor: ColorlessEntity, vx: float, max_drop: float) -> Dictionary:
+	# Simulate walking across the current top surface, then falling naturally.
+	# Floor contacts slide along the surface; walls and intermediate landings do
+	# not get ignored. A deep gap never becomes permission to leave the edge.
+	var start: Vector2 = actor.global_position
+	var transform: Transform2D = actor.global_transform
+	transform.origin = start-Vector2(0,0.1)
+	var vy: float = 0
+	var step: float = 1.0/60.0
+	for i: int in range(180):
+		vy = minf(1500,vy+actor.config.gravity*step)
+		var motion: Vector2 = Vector2(vx,vy)*step
+		var collision: KinematicCollision2D = KinematicCollision2D.new()
+		if actor.test_move(transform,motion,collision,0.02):
+			var normal: Vector2 = collision.get_normal()
+			if normal.y > -0.7:
+				return {}
+			transform.origin += collision.get_travel()
+			var drop: float = transform.origin.y-start.y
+			if drop>32:
+				var point: Vector2 = transform.origin
+				if drop<=max_drop and point.y<=actor.target.global_position.y+48 and _supported(actor,point):
+					return {"point":point,"speed":vx}
+				return {}
+			var slide: Vector2 = collision.get_remainder().slide(normal)
+			if actor.test_move(transform,slide):
+				return {}
+			transform.origin += slide
+			vy = 0
+		else:
+			transform.origin += motion
+		if transform.origin.y-start.y>max_drop+4:
+			return {}
+	return {}
+
+func _start_descent(actor: ColorlessEntity, max_drop: float) -> bool:
+	if repath>0:
+		return false
+	repath = 0.25
+	var direction: float = signf(actor.target.global_position.x-actor.global_position.x)
+	if direction==0: direction = actor.facing
+	var best: Dictionary = {}
+	var score: float = INF
+	for ratio: float in [1.0,0.65]:
+		for side: float in [direction,-direction]:
+			var route: Dictionary = _drop_route(actor,side*actor.config.speed*ratio,max_drop)
+			if route.is_empty(): continue
+			var distance: float = (route["point"] as Vector2).distance_to(actor.target.global_position)
+			if distance<score:
+				best = route
+				score = distance
+		if not best.is_empty(): break
+	if best.is_empty():
+		return false
+	goal = best["point"]
+	horizontal_speed = best["speed"]
+	active = true
+	airborne = false
+	descending = true
+	approaching = false
+	travel_remaining = 3.5
+	actor.velocity.x = horizontal_speed
+	actor.facing = signf(horizontal_speed)
+	return true
+
+func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float, max_drop: float = 320.0) -> bool:
 	if actor.flying or not is_instance_valid(actor.target):
 		cancel()
 		return false
 	if active:
+		if travel_remaining==0 or (descending and not airborne and actor.is_on_floor() and actor.target.global_position.y<=actor.global_position.y+48):
+			cancel()
+			return false
 		if not actor.is_on_floor():
 			airborne = true
 		elif airborne:
 			active = false
 			airborne = false
+			descending = false
 			repath = 0
 			return false
 		actor.velocity.x = horizontal_speed if absf(actor.global_position.x-goal.x)>6 else 0.0
 		actor.facing = signf(horizontal_speed) if absf(horizontal_speed)>1 else actor.facing
 		return true
-	if not actor.is_on_floor() or not actor._seen or actor.target.global_position.y>=actor.global_position.y-48:
+	if not actor.is_on_floor() or not actor._seen:
+		approaching = false
+		return false
+	if actor.target.global_position.y>actor.global_position.y+48:
+		approaching = false
+		return _start_descent(actor,max_drop)
+	if actor.target.global_position.y>=actor.global_position.y-48:
 		approaching = false
 		return false
 	if approaching:
@@ -133,6 +213,8 @@ func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float) -> b
 			horizontal_speed = vx
 			active = true
 			airborne = false
+			descending = false
+			travel_remaining = 3.5
 			cooldown = jump_cooldown
 			actor.velocity = Vector2(vx,-jump_speed)
 			return true

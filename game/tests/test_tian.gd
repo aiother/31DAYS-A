@@ -182,8 +182,10 @@ func run() -> void:
 	actor = spawn(Vector2(674,768))
 	player.position = Vector2(1800,896)
 	actor.alert_to_target()
-	await ticks(10)
-	check(actor.is_on_floor() and actor.position.x<690 and not actor._safe_path(180), "ground destination validation rejects platform-edge blink and dash")
+	await ticks(5)
+	check(not actor._safe_path(180) and actor.motion!=TianWarrior.Motion.BLINK_WARNING and actor.motion!=TianWarrior.Motion.DASH, "edge pursuit never uses blink or dash to bypass ground validation")
+	await ticks(55)
+	check(actor.is_on_floor() and absf(actor.position.y-896)<4 and actor.position.x>700, "warrior naturally descends to confirmed lower floor")
 	await clean()
 	player.position = Vector2(800,896)
 	player.life.protection_remaining = 1000

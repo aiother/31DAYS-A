@@ -168,4 +168,7 @@ if 'PLATFORM_PURSUIT_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('permanent dodge growth migration physical movement and slot isolation', ['--script', 'res://tests/test_dodge_growth.gd'])
 if 'DODGE_GROWTH_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful dodge growth summary')
+output = run('enemy downward platform pursuit safe ledge descent and replanning', ['--script', 'res://tests/test_platform_descent.gd'])
+if 'PLATFORM_DESCENT_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful platform descent summary')
 print(f'All engine checks passed. Report: {report}')

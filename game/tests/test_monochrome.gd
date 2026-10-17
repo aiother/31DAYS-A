@@ -155,10 +155,8 @@ func run() -> void:
 	actor = spawn(Vector2(674,768))
 	player.position = Vector2(1800,896)
 	actor.alert_to_target()
-	await ticks(6)
-	var edge: float = actor.position.x
-	await ticks(15)
-	check(actor.is_on_floor() and actor.position.x<edge+5, "ground pursuit does not run blindly off a platform edge")
+	await ticks(65)
+	check(actor.is_on_floor() and absf(actor.position.y-896)<4 and actor.position.x>700, "ground pursuit safely descends to confirmed lower floor instead of freezing at edge")
 	await clean()
 	actor = spawn(Vector2(350,896))
 	actor.alert_to_target()
