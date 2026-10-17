@@ -35,6 +35,8 @@ func disable_enemies() -> void:
 		enemy.set_physics_process(false)
 func pearl() -> RoomPickup:
 	return session.room.get_node("Pearl") as RoomPickup
+func mono() -> MonochromeEntity:
+	return session.room.get_node("Enemies/GroundMonochrome") as MonochromeEntity
 func jump_to(point: Vector2) -> bool:
 	Input.action_release("jump")
 	await ticks(30)
@@ -72,7 +74,9 @@ func run() -> void:
 	await enter_camp()
 	check(session.room is CampRoom and session.room.config.room_id=="HD_20002_1" and session.room.config.scene_id=="Region_HD_Scene_20002", "actual cleared ravine exit enters first deserter camp Room")
 	check(session.room.config.previous_room_id=="HD_20001_3" and session.room.config.next_room_id=="HD_20002_2", "camp uses frozen adjacent Room identifiers")
-	check(enemies().size()==3 and session._all_checkpoints().is_empty() and not session.room.has_node("Survivor"), "camp reuses three colorless entities and adds no NPC or checkpoint")
+	check(enemies().size()==4 and enemies()[3] is MonochromeEntity and session._all_checkpoints().is_empty() and not session.room.has_node("Survivor"), "camp keeps three colorless and adds existing monochrome without NPC or checkpoint")
+	check(mono().health==21 and mono().config.reward==7 and not mono().flying and mono().target==session.player and mono().coordinator==session.room.get_node("AttackCoordinator"), "ground monochrome reuses21HP/reward7 and shared attack budget")
+	check(mono().position.is_equal_approx(Vector2(1760,1280)) and mono().is_on_floor(), "monochrome starts on real floor below upper route away from entry")
 	check(session.data["checkpoint"]==RavineSession.RAVINE_CHECKPOINT and session.data["day"]==2 and session.player.possibility.balance==0 and session.player.possibility.maximum==14, "crossing into camp preserves resources date and checkpoint")
 	var camera: Camera2D = session.player.get_node("Camera2D") as Camera2D
 	check(camera.limit_right==3072 and camera.limit_bottom==1536, "camera limits follow larger camp Room")
@@ -107,7 +111,7 @@ func run() -> void:
 	await ticks(200)
 	Input.action_release("move_right")
 	Input.action_release("run")
-	check(paused and session.ui.get("_mode")=="room_boundary" and (enemies()[0] as ColorlessEntity).health==13, "main route reaches next camp boundary with enemies alive and no clear lock")
+	check(paused and session.ui.get("_mode")=="room_boundary" and (enemies()[0] as ColorlessEntity).health==13 and mono().health==21, "main route reaches next camp boundary with both enemy types alive and no clear lock")
 	check(session.player.possibility.balance==0 and session.data["day"]==2, "traversal and boundary charge no resources or date changes")
 	session.ui.call("resume_game")
 	# A real down attack is possible on open ground, independent of platform traversal.
@@ -126,13 +130,22 @@ func run() -> void:
 	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(8,Vector2.ZERO,session.player,3000)
 	await ticks(2)
 	check(session.player.possibility.balance==2, "existing camp enemy gives established +2 defeat reward")
+	var before_monochrome: Dictionary = session.data["events"].duplicate()
+	mono().hurtbox.receive_attack(21,Vector2.ZERO,session.player,3100)
+	check(session.player.possibility.balance==9 and session.store.load_slot(1)["balance"]==9, "monochrome kill immediately saves its independent+7 reward")
+	mono().hurtbox.receive_attack(21,Vector2.ZERO,session.player,3101)
+	check(session.player.possibility.balance==9 and session.data["events"]==before_monochrome, "corpse cannot reward twice or invent permanent progress")
 	await place(Vector2(48,1280))
 	await place(Vector2(1824,1280))
 	disable_enemies()
-	check((enemies()[0] as ColorlessEntity).health==13 and not pearl().visible, "revisit resets enemies while preserving pearl collection")
+	check((enemies()[0] as ColorlessEntity).health==13 and mono().health==21 and mono().dodge_cooldown_remaining==0 and not pearl().visible, "revisit resets both enemy types while preserving pearl collection")
 	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(13,Vector2.ZERO,session.player,3001)
-	check(session.player.possibility.balance==4, "reset camp enemy still gives +2")
-	session.player.possibility.gain(3)
+	check(session.player.possibility.balance==11, "reset colorless enemy still gives+2 independently of monochrome reward")
+	session._set_balance(-9)
+	mono().hurtbox.receive_attack(21,Vector2.ZERO,session.player,3102)
+	check(session.player.possibility.balance==-2 and session.store.load_slot(1)["balance"]==-2, "reset monochrome again pays full7 from negative balance")
+	# Preserve the existing odd-balance death fixture after independently testing rewards.
+	session._set_balance(7)
 	session.player.life.take_hit(3)
 	await ticks(90)
 	session.ui.call("restart_challenge")
@@ -144,7 +157,7 @@ func run() -> void:
 	check(session.player.possibility.balance==3 and session.player.life.protection_remaining==0, "normal load preserves current resources without revive protection")
 	await enter_camp()
 	disable_enemies()
-	check(not pearl().visible and (enemies()[0] as ColorlessEntity).health==13, "normal-load revisit restores ownership and resets camp enemies")
+	check(not pearl().visible and (enemies()[0] as ColorlessEntity).health==13 and mono().health==21 and mono().dodge_cooldown_remaining==0, "post-death normal load restores pearl ownership and resets both enemy types")
 	await place(Vector2(48,1280))
 	var saved: Dictionary = session.store.load_slot(1)
 	real_directory = session.store.directory
@@ -159,6 +172,8 @@ func run() -> void:
 	await enter_camp()
 	disable_enemies()
 	check(pearl().visible and session.player.possibility.balance==0 and session.store.load_slot(1)["events"].get("keyitem:HD_20002_1:pearl_01",false), "different slot has its own pearl and resources")
+	mono().hurtbox.receive_attack(21,Vector2.ZERO,session.player,3103)
+	check(session.player.possibility.balance==7 and session.store.load_slot(1)["balance"]==3, "monochrome rewards stay isolated between slots")
 	session.start_slot(2,true)
 	await ticks(4)
 	session = current_scene as CampSession
