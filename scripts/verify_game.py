@@ -177,4 +177,7 @@ if 'OUTSKIRTS_CHALLENGE_TESTS checks=' not in output or 'failures=0' not in outp
 output = run('outskirts optional rescue deferred growth abandonment and slot isolation', ['--script', 'res://tests/test_outskirts_rescue.gd'])
 if 'OUTSKIRTS_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful outskirts rescue summary')
+output = run('permanent combat range growth physical hits reflection migration and slots', ['--script', 'res://tests/test_combat_growth.gd'])
+if 'COMBAT_GROWTH_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful combat growth summary')
 print(f'All engine checks passed. Report: {report}')

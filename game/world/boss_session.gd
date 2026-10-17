@@ -6,6 +6,7 @@ const BOSS_INTRO: String = "HD_10004_1_N001:intro"
 const BOSS_DEFEATED: String = "HD_10004_1_N001:defeated"
 const BOSS_PASSAGE: String = "HD_10004_1_N002"
 const GROWTH_PENDING: String = "HD_10004_1:combat_growth_pending"
+const COMBAT_GROWTH: String = "HD_10004_1:combat_growth_claimed"
 const BOSS_ROOMS: Dictionary = {
 	START_ID: preload("res://world/rooms/hd_10001_1.tscn"),
 	ENTRY_ID: preload("res://world/rooms/hd_10002_1.tscn"),
@@ -47,8 +48,17 @@ func _on_reinforcement_spawned(enemy: ColorlessEntity) -> void:
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	super._restore(snapshot, revive)
+	_sync_combat_growth()
+	if _needs_combat_growth():
+		save_current("旧档战斗强化已补领")
 	if room is BossRoom and has_session():
 		_enter_boss()
+
+func _needs_combat_growth() -> bool:
+	return has_session() and bool(data["events"].get(BOSS_DEFEATED,false)) and (not bool(data["events"].get(COMBAT_GROWTH,false)) or bool(data["events"].get(GROWTH_PENDING,false)))
+
+func _sync_combat_growth() -> void:
+	player.combat.range_upgraded = has_session() and bool(data["events"].get(BOSS_DEFEATED,false)) and bool(data["events"].get(COMBAT_GROWTH,false))
 
 func _change_room(target: String) -> void:
 	super._change_room(target)
@@ -89,6 +99,9 @@ func _enter_boss() -> void:
 	ui.call("show_enemy_intro", actor.config.intro_duration, "渴望俯视\n\n留意落击提示。\n利用召唤平台接近高空目标。")
 
 func _physics_process(delta: float) -> void:
+	if _needs_combat_growth() and Input.is_action_just_pressed("interact"):
+		save_current("战斗强化已补领")
+		return
 	if _boss_intro_remaining > 0.0:
 		if not player.life.is_alive():
 			_end_boss_intro(false)
@@ -122,7 +135,7 @@ func _end_boss_intro(start: bool) -> void:
 func _on_boss_defeated() -> void:
 	(room as BossRoom).clear_reinforcements()
 	_victory_pending = true
-	save_current("渴望俯视已击败 · 天窗开启")
+	save_current("渴望俯视已击败 · 天窗开启 · 获得攻击范围强化")
 
 func _on_death() -> void:
 	if room is BossRoom:
@@ -135,16 +148,22 @@ func restart_challenge() -> void:
 	super.restart_challenge()
 
 func save_current(message: String = "已自动保存") -> bool:
-	if not _victory_pending:
+	if not _victory_pending and not _needs_combat_growth():
 		return super.save_current(message)
 	var before: Dictionary = data["events"].duplicate()
-	for key: String in [BOSS_DEFEATED, BOSS_PASSAGE, GROWTH_PENDING]:
-		data["events"][key] = true
+	var victory: bool = _victory_pending
+	if victory:
+		for key: String in [BOSS_DEFEATED, BOSS_PASSAGE]:
+			data["events"][key] = true
+	data["events"][COMBAT_GROWTH] = true
+	data["events"].erase(GROWTH_PENDING)
 	if not super.save_current(message):
 		data["events"] = before
+		_sync_combat_growth()
 		return false
+	_sync_combat_growth()
 	_victory_pending = false
-	if room is BossRoom:
+	if victory and room is BossRoom:
 		(room as BossRoom).set_opened(true)
 	ui.call("save_failed", "")
 	return true
@@ -163,3 +182,7 @@ func _process(delta: float) -> void:
 			$Instructions/Help.text = "渴望俯视 · 首次登场"
 		elif _victory_pending or (room.get_node("Boss") as OverlookBoss).state == OverlookBoss.State.WAITING:
 			$Instructions/Help.text = "进度保存尚未完成 · 按 E / RB 重试"
+		elif player.combat.range_upgraded:
+			$Instructions/Help.text = "已获得攻击范围强化 · 四方向范围+20%\n天窗开启 · 向上寻找通路"
+	if _needs_combat_growth():
+		$Instructions/EnemyStatus.text += " · 战斗强化尚未补领（E / RB 重试保存）"

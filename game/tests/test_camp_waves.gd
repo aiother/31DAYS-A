@@ -64,6 +64,8 @@ func run() -> void:
 		base["events"][key] = true
 	await load_snapshot(base)
 	await enter_arena()
+	# Capture legitimate old-save Boss reward migration before testing wave rewards.
+	var wave_events: Dictionary = session.data["events"].duplicate()
 	check(arena()!=null and arena().config.room_id=="HD_20002_2" and arena().config.next_room_id=="HD_20003_1", "actual camp road enters configured wave Room")
 	check(session.data["checkpoint"]==CampWavesSession.WAVES_CHECKPOINT and session.store.load_slot(1)["checkpoint"]==CampWavesSession.WAVES_CHECKPOINT and session._all_checkpoints().size()==1, "entry records formally numbered wave checkpoint")
 	check(session.player.possibility.balance==-9 and session.player.possibility.maximum==14 and session.data["day"]==2, "checkpoint activation does not refill resources or change date")
@@ -121,7 +123,7 @@ func run() -> void:
 	check(session.player.possibility.balance==5 and session.store.load_slot(1)["balance"]==5, "seven+2 rewards repay -9 to5 with no completion bonus")
 	await ticks(120)
 	check(arena().phase==CampWavesRoom.Phase.COMPLETE and arena().wave==3 and arena().get_node("Enemies").get_child_count()<=6, "completion produces no extra waves and respects corpse limit")
-	check(session.get_node("Instructions/Help").text.contains("完成") and session.data["events"]==base["events"], "completion shows feedback without inventing permanent clear or growth events")
+	check(session.get_node("Instructions/Help").text.contains("完成") and session.data["events"]==wave_events, "completion shows feedback without inventing permanent clear or growth events")
 	check(arena().get_node("ReturnBattleGate").collision_layer==0 and arena().get_node("ForwardBattleGate").collision_layer==0, "only completion opens both physical barriers")
 	await place(Vector2(1824,1280))
 	check(paused and session.ui.get("_mode")=="room_boundary", "completed waves allow forward travel to registered next-room boundary")

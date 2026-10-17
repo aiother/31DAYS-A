@@ -15,6 +15,7 @@ var combo_step: int = 0
 var attack_id: int = 0
 var _phase_remaining: float = 0.0
 var running_attack: bool = false
+var range_upgraded: bool = false
 var _clock: float = 0.0
 var _last_press_time: float = -1000.0
 var _buffer_press_time: float = -1000.0
@@ -88,8 +89,10 @@ func _start_attack() -> void:
 	phase = Phase.WINDUP
 	_phase_remaining = config.windup * _timing_multiplier
 	var shape: RectangleShape2D = hit_shape.shape as RectangleShape2D
-	shape.size = config.side_size if direction.y == 0.0 else config.vertical_size
-	hitbox.position = Vector2(direction.x * config.side_offset, -48.0 + direction.y * config.vertical_offset)
+	var reach: float = config.enhanced_range_multiplier if range_upgraded else 1.0
+	shape.size = (config.side_size if direction.y == 0.0 else config.vertical_size) * reach
+	# Scale around the combat origin, keeping the player's body/feet unchanged.
+	hitbox.position = Vector2(direction.x * config.side_offset * reach, -48.0 + direction.y * config.vertical_offset * reach)
 	attack_started.emit(direction, combo_step)
 
 func _advance_phase() -> void:

@@ -110,7 +110,7 @@ func run() -> void:
 	await ticks(310)
 	var overlook: OverlookBoss = session.room.get_node("Boss") as OverlookBoss
 	check(not session.intro_active and overlook.hurtbox.receive_attack(60, Vector2.ZERO, session.player, 30000), "actual first Boss intro and defeat work in final session")
-	check(session.data["events"].get(BossSession.GROWTH_PENDING, false), "first Boss pending reward persists without invented upgrade")
+	check(session.data["events"].get(BossSession.COMBAT_GROWTH, false) and session.player.combat.range_upgraded and not session.data["events"].has(BossSession.GROWTH_PENDING), "first Boss grants confirmed permanent attack range upgrade")
 	await travel(FieldSession.FIELD_ID)
 	await ticks(125)
 	await dialogue()
@@ -216,7 +216,7 @@ func run() -> void:
 	check(session.start_slot(1, false), "full campaign save reloads through normal production path")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
-	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15, "normal reload restores finished campaign and earned growth")
+	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded, "normal reload restores finished campaign and both earned growth sources")
 	paused = false
 	session.queue_free()
 	await physics_frame

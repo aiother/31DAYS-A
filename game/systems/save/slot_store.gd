@@ -44,6 +44,8 @@ func valid(data: Dictionary) -> bool:
 			return false
 	if bool(events.get("HD_20003_1:dodge_growth_claimed",false)) and (not bool(events.get("HD_20003_1_N001:defeated",false)) or bool(events.get("HD_20003_1:dodge_growth_pending",false))):
 		return false
+	if bool(events.get("HD_10004_1:combat_growth_claimed",false)) and (not bool(events.get("HD_10004_1_N001:defeated",false)) or bool(events.get("HD_10004_1:combat_growth_pending",false))):
+		return false
 	if bool(events.get(FinalClock.WON,false)) and bool(events.get(FinalClock.TIMEOUT,false)):
 		return false
 	if bool(events.get(FinalClock.STARTED,false)) and not bool(events.get("NSZC_10003_1_N002",false)):

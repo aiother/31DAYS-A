@@ -164,13 +164,13 @@ func run() -> void:
 	var real_directory: String = session.store.directory
 	session.store.directory = real_directory.path_join("slot_1.json")
 	boss().hurtbox.receive_attack(60, Vector2.ZERO, session.player, 900)
-	check(session._victory_pending and not arena().opened and not session.data["events"].get(BossSession.BOSS_DEFEATED, false), "failed victory write leaves pending retry and no false permanent unlock")
+	check(session._victory_pending and not arena().opened and not session.data["events"].get(BossSession.BOSS_DEFEATED, false) and not session.player.combat.range_upgraded, "failed victory write leaves pending retry without unlock or combat upgrade")
 	session.store.directory = real_directory
 	# Simultaneous defeat priority: death settlement must include pending Boss victory.
 	session.player.life.protection_remaining = 0
 	session.player.life.take_hit(5)
 	check(session.store.load_slot(1)["events"].get(BossSession.BOSS_DEFEATED, false) and arena().opened, "same-frame player death saves Boss victory before returning")
-	check(session.data["events"].get(BossSession.BOSS_PASSAGE, false) and session.data["events"].get(BossSession.GROWTH_PENDING, false), "victory records passage Node and pending growth once")
+	check(session.data["events"].get(BossSession.BOSS_PASSAGE, false) and session.data["events"].get(BossSession.COMBAT_GROWTH, false) and not session.data["events"].has(BossSession.GROWTH_PENDING) and session.player.combat.range_upgraded, "victory atomically grants passage and permanent combat upgrade")
 	check(session.player.combat.config.damage == damage and session.player.possibility.balance == 1, "Boss adds no undefined attribute buff or possibility reward")
 	await ticks(90)
 	session.ui.call("restart_challenge")
