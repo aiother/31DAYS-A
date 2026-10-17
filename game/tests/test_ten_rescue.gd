@@ -126,7 +126,7 @@ func run() -> void:
 	var before: float = ten.position.x
 	await ticks(155)
 	check(ten.position.x>before+100 and ten.attacks>0 and front.health<=21,"Ten AI approaches and deals actual ten-damage melee strikes")
-	check(ten.config.damage==10 and ten.config.windup==0.3 and ten.config.recovery==0.65,"Ten uses approved adjustable attack parameters")
+	check(ten.config.damage==10 and ten.config.windup==0.18 and ten.config.recovery==0.32,"Ten uses revised aggressive adjustable attack parameters")
 	var ten_hp: int = ten.health
 	ten.hurtbox.receive_attack(99,Vector2.ZERO,front,7000)
 	check(ten.health==ten_hp and not ten.hurtbox.accepts_hits,"graybox Ten cannot be defeated")

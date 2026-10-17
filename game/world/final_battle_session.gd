@@ -1,0 +1,265 @@
+class_name FinalBattleSession
+extends RescueBattlefieldSession
+const FINAL_ROOM: PackedScene = preload("res://world/rooms/final_battlefield.tscn")
+const FINAL_DIALOGUE: DialogueConfig = preload("res://data/dialogue/ten_victory.tres")
+var _start_pending: bool = false
+var _win_pending: bool = false
+var _timeout_pending: bool = false
+var _timeout_active: bool = false
+var _ending_pending: bool = false
+var _ending_active: bool = false
+var _ending_remaining: float = 0
+var _ending_attempted: bool = false
+var _final_talk: bool = false
+var _clock_save_remaining: float = 0.5
+@onready var final_ui: FinalBattleUI = $FinalBattleUI
+
+func _ready() -> void:
+	super._ready()
+	process_physics_priority = -20
+	final_ui.retry_requested.connect(retry_final_battle)
+	final_ui.quit_requested.connect(_final_quit)
+	final_ui.slots_requested.connect(func() -> void: ui.call("show_slots"))
+
+func _room_scenes() -> Dictionary:
+	var scenes: Dictionary = super._room_scenes().duplicate()
+	scenes[BATTLEFIELD_ID] = FINAL_ROOM
+	return scenes
+
+func _final_arena() -> FinalBattlefieldRoom:
+	return room as FinalBattlefieldRoom
+
+func _restore(snapshot: Dictionary, revive: bool) -> void:
+	super._restore(snapshot,revive)
+	FinalClock.normalize(data)
+	if bool(data["events"].get(FinalClock.END,false)):
+		_show_finished()
+	elif bool(data["events"].get(FinalClock.TALK,false)):
+		_begin_ending()
+	elif bool(data["events"].get(FinalClock.TIMEOUT,false)):
+		_show_timeout()
+
+func _bind_room() -> void:
+	super._bind_room()
+	var area: FinalBattlefieldRoom = _final_arena()
+	if area!=null:
+		if not area.battle_started.is_connected(_on_final_started):
+			area.battle_started.connect(_on_final_started)
+		if not area.wave_changed.is_connected(_on_wave_changed):
+			area.wave_changed.connect(_on_wave_changed)
+		if bool(data.get("events",{}).get(FinalClock.WON,false)):
+			area.set_victory()
+
+func _on_wave_changed(index: int) -> void:
+	ui.call("show_enemy_intro",1.0,"敌方第%d波即将进入\n\n最后一波会有幸存者与平台支援。" % [index+1])
+
+func _on_final_started() -> void:
+	if bool(data["events"].get(FinalClock.STARTED,false)):
+		return
+	_start_pending = true
+	_final_arena().stop_attempt()
+	player.life.scripted_control_locked = true
+	player.set_physics_process(false)
+	intro_active = true
+	_try_start_clock()
+
+func _try_start_clock() -> bool:
+	var before: Dictionary = data.duplicate(true)
+	FinalClock.start(data)
+	if not save_current("最终战计时已保存"):
+		data = before
+		_notify("计时尚未保存 · E / RB 重试")
+		return false
+	_start_pending = false
+	intro_active = false
+	player.life.scripted_control_locked = false
+	player.set_physics_process(true)
+	var area: FinalBattlefieldRoom = _final_arena()
+	area.stopped = false
+	for child: Node in area.get_node("Enemies").get_children():
+		if child is ColorlessEntity and (child as ColorlessEntity).health>0:
+			child.set_physics_process(true)
+	for child: Node in area.get_node("Allies").get_children():
+		if (child as SurvivorFighter).health>0:
+			child.set_physics_process(true)
+	ui.call("save_failed","")
+	return true
+
+func _clock_tick(delta: float) -> void:
+	if not has_session() or not player.life.is_alive() or intro_active or cinematic!=Cinematic.NONE or _start_pending or _win_pending or _timeout_active or _ending_active:
+		return
+	if FinalClock.tick(data,delta):
+		_timeout_pending = true
+		save_current("最终战超时")
+		_show_timeout()
+		return
+	if int(data.get("day",1))==3 and not bool(data["events"].get(FinalClock.WON,false)):
+		_clock_save_remaining -= delta
+		if _clock_save_remaining<=0:
+			_clock_save_remaining = 0.5
+			save_current()
+
+func _physics_process(delta: float) -> void:
+	if _final_talk:
+		return
+	if _ending_active:
+		_ending_remaining = maxf(0,_ending_remaining-delta)
+		if _ending_remaining>0:
+			final_ui.show_ending(1-_ending_remaining/3.0)
+		if _ending_remaining==0:
+			if not _ending_attempted or Input.is_action_just_pressed("interact"):
+				_ending_attempted = true
+				_ending_pending = true
+				if not save_current("V0.1结局已保存"):
+					final_ui.message.text = "结局保存失败 · E / RB 重试"
+			if bool(data["events"].get(FinalClock.END,false)):
+				_show_finished()
+		return
+	if _start_pending:
+		if Input.is_action_just_pressed("interact"):
+			_try_start_clock()
+		return
+	_clock_tick(delta)
+	if _timeout_active:
+		return
+	super._physics_process(delta)
+	var area: FinalBattlefieldRoom = _final_arena()
+	if area!=null and bool(data["events"].get(FinalClock.WON,false)):
+		if not area.victory:
+			area.set_victory()
+		if not _final_talk and Input.is_action_just_pressed("interact") and player.life.can_control() and player.position.distance_to(area.ten.position)<=110:
+			_final_talk = true
+			intro_active = true
+			player.life.scripted_control_locked = true
+			player.set_physics_process(false)
+			_story_hud(true)
+			ui.call("hide_enemy_intro")
+			dialogue_ui.start(FINAL_DIALOGUE,FINAL_DIALOGUE.first_lines)
+
+func _on_stage_completed() -> void:
+	var area: FinalBattlefieldRoom = _final_arena()
+	if area==null or area.phase!=RescueBattlefieldRoom.Phase.COOP:
+		super._on_stage_completed()
+		return
+	if bool(data["events"].get(FinalClock.WON,false)):
+		return
+	if float(data.get("final_remaining",900))<=0 or float(data.get("day3_remaining",1800))<=0:
+		_timeout_pending = true
+		save_current("最终战超时")
+		_show_timeout()
+		return
+	if area.wave_state==FinalBattlefieldRoom.WaveState.COMPLETE or not area.advance_wave():
+		_win_pending = true
+		if save_current("最终战胜利 · 靠近10对话"):
+			area.set_victory()
+		else:
+			_notify("胜利尚未保存 · E / RB 重试")
+
+func save_current(message: String = "已自动保存") -> bool:
+	var before: Dictionary = data.get("events",{}).duplicate()
+	if _win_pending:
+		data["events"][FinalClock.WON] = true
+		data["events"].erase(FinalClock.TIMEOUT)
+	if _timeout_pending:
+		data["events"][FinalClock.TIMEOUT] = true
+	if _ending_pending:
+		data["events"][FinalClock.END] = true
+	if not super.save_current(message):
+		if has_session():
+			data["events"] = before
+		return false
+	_win_pending = false
+	_timeout_pending = false
+	_ending_pending = false
+	return true
+
+func _show_timeout() -> void:
+	_timeout_active = true
+	ui.call("hide_enemy_intro")
+	if _final_arena()!=null:
+		_final_arena().stop_attempt()
+	player.life.scripted_control_locked = true
+	final_ui.show_timeout(float(data.get("final_budget",0))>0,float(data.get("final_budget",0)))
+	get_tree().paused = true
+
+func retry_final_battle() -> bool:
+	if not _timeout_active or float(data.get("final_budget",0))<=0:
+		return false
+	var before: Dictionary = data.duplicate(true)
+	var pending: bool = _timeout_pending
+	_timeout_pending = false
+	FinalClock.retry(data)
+	if not save_current("最终战重试预算已保存"):
+		data = before
+		_timeout_pending = pending
+		return false
+	_timeout_active = false
+	final_ui.reset_panel()
+	ui.call("save_failed","")
+	get_tree().paused = false
+	_restore(data.duplicate(true),false)
+	_change_room(BATTLEFIELD_ID)
+	return true
+
+func _on_dialogue_finished() -> void:
+	if not _final_talk:
+		super._on_dialogue_finished()
+		return
+	if get_tree().paused:
+		return
+	data["events"][FinalClock.TALK] = true
+	if not save_current("胜利对话已完成"):
+		data["events"].erase(FinalClock.TALK)
+		return
+	dialogue_ui.dismiss()
+	_final_talk = false
+	_begin_ending()
+
+func _begin_ending() -> void:
+	ui.call("save_failed","")
+	_ending_active = true
+	_ending_remaining = 3
+	_ending_attempted = false
+	intro_active = true
+	player.life.scripted_control_locked = true
+	player.set_physics_process(false)
+	_story_hud(true)
+	final_ui.show_ending(0)
+
+func _show_finished() -> void:
+	ui.call("save_failed","")
+	_ending_active = false
+	player.life.scripted_control_locked = true
+	player.set_physics_process(false)
+	_story_hud(true)
+	if final_ui.mode!="finished":
+		final_ui.show_finished()
+	get_tree().paused = true
+
+func _final_quit() -> void:
+	if save_current():
+		get_tree().paused = false
+		get_tree().quit()
+
+func _on_room_exit(id: String) -> void:
+	if _final_arena()!=null and bool(data["events"].get(FinalClock.WON,false)) and id==room.config.previous_room_id:
+		if not _transitioning and player.life.can_control() and save_current("正在返回堑壕"):
+			_transitioning = true
+			_change_room.call_deferred(id)
+		return
+	super._on_room_exit(id)
+
+func _process(delta: float) -> void:
+	super._process(delta)
+	final_ui.clock_label.visible = has_session() and int(data.get("day",1))==3 and not intro_active and not bool(data.get("events",{}).get(FinalClock.END,false))
+	if has_session():
+		var day_seconds: int = ceili(float(data.get("day3_remaining",1800)))
+		var final_seconds: int = ceili(float(data.get("final_remaining",900)))
+		final_ui.clock_label.text = "第三日 %02d:%02d" % [day_seconds/60,day_seconds%60]
+		if bool(data["events"].get(FinalClock.STARTED,false)):
+			final_ui.clock_label.text += "\n最终战 %02d:%02d" % [final_seconds/60,final_seconds%60]
+		if bool(data["events"].get(FinalClock.END,false)):
+			_show_finished()
+	if _final_arena()!=null:
+		$Instructions/Title.text = "逆时战场 / 中心战场 · 最终战"
+		$Instructions/Help.text = "三波敌军 · 最后一波幸存者与平台支援 · 击杀恢复可能性\n计时暂停于菜单和剧情；死亡/读档不回补 · 最终胜利后与10对话"

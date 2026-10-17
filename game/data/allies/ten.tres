@@ -1,5 +1,8 @@
-[gd_resource type="Resource" script_class="SurvivorConfig" load_steps=2 format=3]
-[ext_resource type="Script" path="res://allies/survivor_config.gd" id="1"]
+[gd_resource type="Resource" script_class="TenConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://allies/ten_config.gd" id="1"]
 [resource]
 script = ExtResource("1")
 damage = 10
+speed = 420.0
+windup = 0.18
+recovery = 0.32

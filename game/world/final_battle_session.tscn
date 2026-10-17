@@ -1,0 +1,8 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://world/rescue_battlefield_session.tscn" id="1"]
+[ext_resource type="Script" path="res://world/final_battle_session.gd" id="2"]
+[ext_resource type="Script" path="res://ui/menus/final_battle_ui.gd" id="3"]
+[node name="FinalBattleSession" instance=ExtResource("1")]
+script = ExtResource("2")
+[node name="FinalBattleUI" type="CanvasLayer" parent="."]
+script = ExtResource("3")

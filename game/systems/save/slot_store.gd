@@ -22,6 +22,12 @@ func _integer(value: Variant, low: int, high: int) -> bool:
 	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and float(value) >= low and float(value) <= high
 
 func valid(data: Dictionary) -> bool:
+	for key: String in ["day3_remaining","final_remaining","final_budget"]:
+		var value: Variant = data.get(key,1800.0 if key=="day3_remaining" else 900.0)
+		if not (value is float or value is int) or not is_finite(float(value)) or float(value)<0 or float(value)>(1800 if key=="day3_remaining" else 900):
+			return false
+	if float(data.get("final_remaining",900))>float(data.get("final_budget",900)):
+		return false
 	if not _integer(data.get("day", 1), 1, 3):
 		return false
 	if not _integer(data.get("version"), VERSION, VERSION) or not CHECKPOINTS.has(str(data.get("checkpoint", ""))):
@@ -36,6 +42,16 @@ func valid(data: Dictionary) -> bool:
 	for key: Variant in events:
 		if not key is String or key.is_empty() or key.length() > 128 or not events[key] is bool:
 			return false
+	if bool(events.get(FinalClock.WON,false)) and bool(events.get(FinalClock.TIMEOUT,false)):
+		return false
+	if bool(events.get(FinalClock.STARTED,false)) and not bool(events.get("NSZC_10003_1_N002",false)):
+		return false
+	if (bool(events.get(FinalClock.WON,false)) or bool(events.get(FinalClock.TIMEOUT,false))) and not bool(events.get(FinalClock.STARTED,false)):
+		return false
+	if bool(events.get(FinalClock.TALK,false)) and not bool(events.get(FinalClock.WON,false)):
+		return false
+	if bool(events.get(FinalClock.END,false)) and not bool(events.get(FinalClock.TALK,false)):
+		return false
 	# Each delivered growth needs its permanent source; pending rescue does not raise the cap.
 	var gaze: bool = bool(events.get("TY_10001_1_N005", false))
 	var ravine_helped: bool = bool(events.get("rescue:HD_20001_2:completed", false))

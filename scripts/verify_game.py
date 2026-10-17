@@ -147,4 +147,16 @@ if 'TEN_RESCUE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('real input Ten clear aftermath and distinct reinforcement arrival', ['--script', 'res://tests/test_ten_clear_presentation.gd'])
 if 'TEN_CLEAR_PRESENTATION_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful Ten clear presentation test summary')
+output = run('Ten aggression mobility physical dash and repeated attacks', ['--script', 'res://tests/test_ten_mobility.gd'])
+if 'TEN_MOBILITY_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful TEN_MOBILITY_TESTS summary')
+output = run('final clock migration bounds and validation', ['--script', 'res://tests/test_final_clock.gd'])
+if 'FINAL_CLOCK_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful FINAL_CLOCK_TESTS summary')
+output = run('final waves support permanent victory and ending', ['--script', 'res://tests/test_final_battle.gd'])
+if 'FINAL_BATTLE_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful FINAL_BATTLE_TESTS summary')
+output = run('final timer death load timeout and explicit retry', ['--script', 'res://tests/test_final_retry.gd'])
+if 'FINAL_RETRY_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful FINAL_RETRY_TESTS summary')
 print(f'All engine checks passed. Report: {report}')

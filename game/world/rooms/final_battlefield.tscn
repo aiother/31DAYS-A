@@ -1,0 +1,8 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://world/rooms/rescue_battlefield.tscn" id="1"]
+[ext_resource type="Script" path="res://world/rooms/final_battlefield_room.gd" id="2"]
+[ext_resource type="Resource" path="res://data/world/final_battle.tres" id="3"]
+[node name="NSZC_10003_1" instance=ExtResource("1")]
+script = ExtResource("2")
+battle = ExtResource("3")
+[node name="FinalPlatforms" type="Node2D" parent="."]
