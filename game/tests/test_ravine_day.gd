@@ -76,7 +76,7 @@ func run() -> void:
 	check(session.data["day"] == 2 and session.store.load_slot(1)["day"] == 2 and session.store.load_slot(1)["checkpoint"] == RavineSession.RAVINE_CHECKPOINT, "completed Seven story advances day and checkpoint in one saved snapshot")
 	check(session.player.life.health == 3 and session.player.possibility.balance == 7, "checkpoint and date event preserve live player resources")
 	check(session.get_node("DayUI/Day").text == "第 2 日" and session.get_node("DayUI").visible, "current date appears in HUD")
-	check(session.room.get_node("Enemies").get_child_count() == 2 and lower_enemy().health == 13, "approved scope reuses two existing colorless entities")
+	check(session.room.get_node("Enemies").get_child_count() == 3 and lower_enemy().health == 13 and session.room.get_node("Enemies/GroundMonochrome") is MonochromeEntity, "frozen composition keeps two colorless and adds existing ground monochrome")
 	var saved: Dictionary = session.store.load_slot(1)
 	check(not session.activate_checkpoint(RavineSession.RAVINE_CHECKPOINT), "same checkpoint and day activation is idempotent")
 	await ticks(4)
