@@ -44,7 +44,7 @@ func clear_camp_fixture() -> void:
 			await ticks(1)
 		for enemy: ColorlessEntity in camp.living():
 			enemy.set_physics_process(false)
-			enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,20000+wave)
+			enemy.hurtbox.receive_attack(enemy.health,Vector2.ZERO,session.player,20000+wave)
 		await ticks(1)
 	check(camp.phase==CampWavesRoom.Phase.COMPLETE,"Boss fixture clears all camp waves before using exit")
 	session._set_balance(balance)

@@ -8,6 +8,10 @@ var phase: Phase = Phase.READY
 var wave: int = 0
 var remaining: float = 0.0
 const ENEMY: PackedScene = preload("res://enemies/colorless_entity.tscn")
+const MONOCHROME: PackedScene = preload("res://enemies/monochrome_entity.tscn")
+
+func _is_monochrome(index: int) -> bool:
+	return wave>0 and wave<=waves.monochrome_indices.size() and index==waves.monochrome_indices[wave-1]
 
 func _ready() -> void:
 	super._ready()
@@ -52,8 +56,8 @@ func start_waves() -> bool:
 func _spawn_wave() -> void:
 	phase = Phase.ACTIVE
 	for index: int in range(waves.counts[wave-1]):
-		var enemy: ColorlessEntity = ENEMY.instantiate() as ColorlessEntity
-		var airborne: bool = wave >= 2 and index == waves.counts[wave-1]-1
+		var enemy: ColorlessEntity = (MONOCHROME if _is_monochrome(index) else ENEMY).instantiate() as ColorlessEntity
+		var airborne: bool = not _is_monochrome(index) and wave >= 2 and index == waves.counts[wave-1]-1
 		enemy.position = waves.air_spawn if airborne else (waves.left_spawn if index == 0 else waves.right_spawn)
 		enemy.flying = airborne
 		enemy.ranged_only = airborne
@@ -105,7 +109,7 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(x-160,1280),Vector2(x,704),Vector2(x+160,1280)]),Color(0.19,0.17,0.15))
 	if phase == Phase.WARNING:
 		for index: int in range(waves.counts[wave-1]):
-			var airborne: bool = wave >= 2 and index == waves.counts[wave-1]-1
+			var airborne: bool = not _is_monochrome(index) and wave >= 2 and index == waves.counts[wave-1]-1
 			var point: Vector2 = waves.air_spawn if airborne else (waves.left_spawn if index == 0 else waves.right_spawn)
-			draw_circle(point+Vector2(0,-44),52,Color(0.9,0.35,0.15,0.3))
+			draw_circle(point+Vector2(0,-44),52,Color(0.65,0.3,0.9,0.4) if _is_monochrome(index) else Color(0.9,0.35,0.15,0.3))
 			draw_line(point+Vector2(-40,0),point+Vector2(40,0),Color(1,0.55,0.2),5)

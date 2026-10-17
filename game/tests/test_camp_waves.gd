@@ -41,9 +41,9 @@ func wait_phase(expected: CampWavesRoom.Phase, count: int = 110) -> bool:
 func freeze_enemies() -> void:
 	for enemy: ColorlessEntity in arena().living():
 		enemy.set_physics_process(false)
-func kill(enemy: ColorlessEntity, damage: int = 13) -> void:
+func kill(enemy: ColorlessEntity, damage: int = -1) -> void:
 	attack_id += 1
-	enemy.hurtbox.receive_attack(damage,Vector2.ZERO,session.player,attack_id)
+	enemy.hurtbox.receive_attack(enemy.health if damage<0 else damage,Vector2.ZERO,session.player,attack_id)
 func clear_wave() -> void:
 	for enemy: ColorlessEntity in arena().living():
 		kill(enemy)
@@ -116,11 +116,20 @@ func run() -> void:
 	check(session.player.possibility.balance==-1 and arena().phase==CampWavesRoom.Phase.INTERVAL, "wave2 adds only two existing kill rewards")
 	check(await wait_phase(CampWavesRoom.Phase.ACTIVE), "third wave follows interval and warning")
 	freeze_enemies()
-	check(arena().wave==3 and arena().living().size()==3 and arena().living()[2].flying, "wave3 contains exactly three enemies")
+	check(arena().wave==3 and arena().living().size()==3 and arena().living()[2].flying and arena().living()[1] is MonochromeEntity and arena().living()[1].health==21, "wave3 retains three enemies with one ground monochrome and flying colorless")
+	var last_monochrome: MonochromeEntity = arena().living()[1] as MonochromeEntity
+	for enemy: ColorlessEntity in arena().living():
+		if enemy!=last_monochrome: kill(enemy)
+	await ticks(2)
+	check(arena().phase==CampWavesRoom.Phase.ACTIVE and arena().living().size()==1 and arena().get_node("ReturnBattleGate").collision_layer==1 and arena().get_node("ForwardBattleGate").collision_layer==1, "living last monochrome prevents completion and keeps both exits locked")
 	check(not arena().start_waves(), "wave3 cannot retrigger previous waves")
-	await clear_wave()
+	kill(last_monochrome)
+	# The corpse limiter may free the seventh corpse on the next frame.
+	last_monochrome.hurtbox.receive_attack(21,Vector2.ZERO,session.player,9999)
+	check(session.player.possibility.balance==10,"dead last monochrome cannot repeat kill or completion reward")
+	await ticks(2)
 	check(arena().phase==CampWavesRoom.Phase.COMPLETE and arena().living().is_empty(), "all three waves complete after seven total kills")
-	check(session.player.possibility.balance==5 and session.store.load_slot(1)["balance"]==5, "seven+2 rewards repay -9 to5 with no completion bonus")
+	check(session.player.possibility.balance==10 and session.store.load_slot(1)["balance"]==10, "six colorless plus one monochrome pay19 total from-9 to10 without bonus")
 	await ticks(120)
 	check(arena().phase==CampWavesRoom.Phase.COMPLETE and arena().wave==3 and arena().get_node("Enemies").get_child_count()<=6, "completion produces no extra waves and respects corpse limit")
 	check(session.get_node("Instructions/Help").text.contains("完成") and session.data["events"]==wave_events, "completion shows feedback without inventing permanent clear or growth events")
@@ -136,7 +145,7 @@ func run() -> void:
 	await wait_phase(CampWavesRoom.Phase.ACTIVE,50)
 	freeze_enemies()
 	kill(arena().living()[0])
-	check(session.player.possibility.balance==7, "revisit enemy still pays+2")
+	check(session.player.possibility.balance==12, "revisit enemy still pays+2 after mixed wave rewards")
 	await place(Vector2(1824,1280))
 	check(not paused and arena()!=null and arena().living().size()==1, "forward exit rejects active battle with living enemy")
 	await place(Vector2(48,1280))
@@ -157,10 +166,10 @@ func run() -> void:
 	await ticks(4)
 	session = current_scene as CampWavesSession
 	check(arena()!=null and arena().phase==CampWavesRoom.Phase.READY and arena().wave==0 and session.player.position.distance_to(Vector2(224,1280))<2, "death respawns at new checkpoint with fresh safe sequence")
-	check(session.player.life.health==5 and session.player.possibility.balance==3 and session.player.possibility.maximum==14 and session.player.life.protection_remaining>2.8 and session.data["day"]==2, "respawn preserves floor-half resources full health protection cap and date")
+	check(session.player.life.health==5 and session.player.possibility.balance==6 and session.player.possibility.maximum==14 and session.player.life.protection_remaining>2.8 and session.data["day"]==2, "respawn preserves floor-half resources full health protection cap and date")
 	var continued: Dictionary = session.store.load_slot(1)
 	await load_snapshot(continued)
-	check(arena().phase==CampWavesRoom.Phase.READY and session.player.life.protection_remaining==0 and session.player.possibility.balance==3, "normal load resets waves but preserves actual resources without protection")
+	check(arena().phase==CampWavesRoom.Phase.READY and session.player.life.protection_remaining==0 and session.player.possibility.balance==6, "normal load resets waves but preserves actual resources without protection")
 	await place(Vector2(500,1280))
 	check(await wait_phase(CampWavesRoom.Phase.ACTIVE,50), "loaded run can spawn a fresh first wave")
 	freeze_enemies()
@@ -190,7 +199,7 @@ func run() -> void:
 	Input.action_release("interact")
 	await ticks(2)
 	check(session.data["checkpoint"]==CampWavesSession.WAVES_CHECKPOINT and session.store.load_slot(2)["checkpoint"]==CampWavesSession.WAVES_CHECKPOINT and session._all_checkpoints()[0].active, "E retry records checkpoint after storage recovery")
-	check(session.store.load_slot(1)["balance"]==3 and session.player.possibility.balance==-9, "wave resources remain isolated by slot")
+	check(session.store.load_slot(1)["balance"]==6 and session.player.possibility.balance==-9, "wave resources remain isolated by slot")
 	session.start_slot(2,true)
 	await ticks(4)
 	session = current_scene as CampWavesSession

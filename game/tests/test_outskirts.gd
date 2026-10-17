@@ -66,6 +66,8 @@ func run() -> void:
 	check(session.room is OutskirtsRoom and session.room.config.region_id=="Region_NSZC" and session.room.config.scene_id=="Region_NSZC_Scene_10001", "actual opened hole enters new region and correct scene")
 	check(session.room.config.next_room_id=="NSZC_10002_1" and session.get_node("Instructions/Title").text.contains("逆时战场"), "next trench identifier and region HUD are correct")
 	check(session._all_checkpoints().is_empty() and session._pickups().is_empty() and session.room.has_node("Survivor"), "optional survivor adds no new checkpoint or pearl")
+	var monochrome: MonochromeEntity = session.room.get_node("Enemies/GroundMonochrome") as MonochromeEntity
+	check(session.room.get_node("Enemies").get_child_count()==4 and monochrome.health==21 and monochrome.config.reward==7 and monochrome.target==session.player and monochrome.coordinator==session.room.get_node("AttackCoordinator"),"outskirts keeps three colorless and binds existing ground monochrome21HP/reward7")
 	check(session.data["checkpoint"]==ParasiteSession.PARASITE_CHECKPOINT and session.data["day"]==3 and session.player.possibility.balance==0, "cross-region entry preserves checkpoint date and resources")
 	await place(Vector2(768,1280))
 	check(await jump_to(Vector2(1024,1152)), "zero-resource jump crosses main high ground")
@@ -108,6 +110,13 @@ func run() -> void:
 	check(enemy.health==13, "returning resets ordinary enemies")
 	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,8001)
 	check(session.player.possibility.balance==4, "reset enemy still gives+2")
+	monochrome = session.room.get_node("Enemies/GroundMonochrome") as MonochromeEntity
+	session._set_balance(-9)
+	monochrome.hurtbox.receive_attack(21,Vector2.ZERO,session.player,8100)
+	monochrome.hurtbox.receive_attack(21,Vector2.ZERO,session.player,8101)
+	check(session.player.possibility.balance==-2 and session.store.load_slot(1)["balance"]==-2,"outskirts monochrome saves7 from negative balance and corpse cannot repeat reward")
+	# Keep the established even-balance death fixture independent of new kill checks.
+	session._set_balance(4)
 	session.player.life.take_hit(3)
 	await ticks(90)
 	session.ui.call("restart_challenge")
@@ -119,7 +128,7 @@ func run() -> void:
 	session = current_scene as OutskirtsSession
 	check(session.room is ParasiteRoom and session.player.life.protection_remaining==0 and session.player.possibility.balance==2, "normal load keeps resources without revive protection")
 	await enter()
-	check(session.room.has_node("Survivor") and not (session.room as OutskirtsRoom).opened, "revisit preserves closed unearned challenge and survivor")
+	check(session.room.has_node("Survivor") and not (session.room as OutskirtsRoom).opened and (session.room.get_node("Enemies/GroundMonochrome") as MonochromeEntity).health==21, "normal-load revisit resets monochrome and preserves closed unearned challenge and survivor")
 	# The retained standalone scene ends before Trench; a boundary is not departure.
 	session.data["events"][OutskirtsSession.SPIKES_OPEN] = true
 	session.data["events"][OutskirtsSession.OUTSKIRTS_SEEN] = true

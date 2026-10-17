@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://world/rooms/outskirts_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/nszc_10001_1.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="8"]
 [ext_resource type="Resource" path="res://data/world/outskirts_spikes.tres" id="9"]
 [ext_resource type="Resource" path="res://data/dialogue/outskirts_survivor.tres" id="10"]
+[ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="11"]
 [sub_resource type="RectangleShape2D" id="ReturnShape"]
 size = Vector2(64, 1536)
 [sub_resource type="RectangleShape2D" id="ExitShape"]
@@ -56,6 +57,8 @@ position = Vector2(1500, 1280)
 position = Vector2(2208, 800)
 flying = true
 ranged_only = true
+[node name="GroundMonochrome" parent="Enemies" instance=ExtResource("11")]
+position = Vector2(1760,1280)
 [node name="AttackCoordinator" type="Node" parent="."]
 script = ExtResource("8")
 [node name="Return" type="Area2D" parent="."]
