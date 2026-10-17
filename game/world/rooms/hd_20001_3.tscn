@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 [ext_resource type="Script" path="res://world/rooms/ravine_depth_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/hd_20001_3.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="7"]
 [ext_resource type="Script" path="res://world/items/room_pickup.gd" id="8"]
 [ext_resource type="Resource" path="res://data/world/ravine_depth_pearl.tres" id="9"]
+[ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="10"]
 [sub_resource type="RectangleShape2D" id="Passage"]
 size = Vector2(64, 1536)
 [sub_resource type="RectangleShape2D" id="EncounterShape"]
@@ -48,6 +49,8 @@ position = Vector2(1280, 1280)
 position = Vector2(1500, 944)
 flying = true
 ranged_only = true
+[node name="GroundMonochrome" parent="Enemies" instance=ExtResource("10")]
+position = Vector2(1600, 1280)
 [node name="AttackCoordinator" type="Node" parent="."]
 script = ExtResource("6")
 [node name="Return" type="Area2D" parent="."]
