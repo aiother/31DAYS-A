@@ -159,4 +159,7 @@ if 'FINAL_BATTLE_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('final timer death load timeout and explicit retry', ['--script', 'res://tests/test_final_retry.gd'])
 if 'FINAL_RETRY_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful FINAL_RETRY_TESTS summary')
+output = run('continuous new-game campaign through all Rooms and ending', ['--script', 'res://tests/test_campaign.gd'])
+if 'CAMPAIGN_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful continuous campaign summary')
 print(f'All engine checks passed. Report: {report}')
