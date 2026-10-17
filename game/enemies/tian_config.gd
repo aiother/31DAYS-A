@@ -18,3 +18,5 @@ extends ColorlessConfig
 @export var counter_windup: float = 0.35
 @export var counter_lifetime: float = 0.9
 @export var flank_distance: float = 140.0
+@export var jump_speed: float = 950.0
+@export var jump_cooldown: float = 1.0

@@ -16,6 +16,7 @@ var counter_remaining: float = 0.0
 var _combo_count: int = 0
 var _attack_serial: int = 0
 var _motion_direction: float = 1.0
+var platform_pursuit: EnemyPlatformPursuit = EnemyPlatformPursuit.new()
 
 func tuning() -> TianConfig:
 	return config as TianConfig
@@ -56,6 +57,7 @@ func _physics_process(delta: float) -> void:
 	blink_cooldown_remaining = maxf(0,blink_cooldown_remaining-delta)
 	guard_cooldown_remaining = maxf(0,guard_cooldown_remaining-delta)
 	counter_remaining = maxf(0,counter_remaining-delta)
+	platform_pursuit.tick(delta)
 	velocity.y = minf(1500,velocity.y+config.gravity*delta)
 	if not is_instance_valid(target) or (target is PlayerController and not (target as PlayerController).life.is_alive()):
 		_release_slot()
@@ -123,6 +125,8 @@ func _seek_target() -> void:
 		state = State.IDLE
 		return
 	state = State.CHASE
+	if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown):
+		return
 	if absf(offset.x)>1:
 		facing = signf(offset.x)
 	var level: bool = absf(offset.y)<=65
@@ -226,6 +230,7 @@ func _protected_action() -> bool:
 	return motion == Motion.GUARD or counter_remaining>0 or (attack_kind in [Attack.HEAVY,Attack.COUNTER] and state in [State.WINDUP,State.ACTIVE,State.RECOVERY])
 
 func _interrupt_action() -> void:
+	platform_pursuit.cancel()
 	_cancel_motion()
 	counter_remaining = 0
 

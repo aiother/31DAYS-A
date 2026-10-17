@@ -162,4 +162,7 @@ if 'FINAL_RETRY_TESTS checks=' not in output or 'failures=0' not in output:
 output = run('continuous new-game campaign through all Rooms and ending', ['--script', 'res://tests/test_campaign.gd'])
 if 'CAMPAIGN_TESTS checks=' not in output or 'failures=0' not in output:
     sys.exit('Missing successful continuous campaign summary')
+output = run('enemy multi-platform pursuit overhang wall and cliff safety', ['--script', 'res://tests/test_platform_pursuit.gd'])
+if 'PLATFORM_PURSUIT_TESTS checks=' not in output or 'failures=0' not in output:
+    sys.exit('Missing successful platform pursuit summary')
 print(f'All engine checks passed. Report: {report}')

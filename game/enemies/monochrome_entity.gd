@@ -7,7 +7,7 @@ var motion_remaining: float = 0.0
 var dodge_cooldown_remaining: float = 0.0
 var strong_attack: bool = false
 var _dash_cooldown: float = 0.0
-var _jump_cooldown: float = 0.0
+var platform_pursuit: EnemyPlatformPursuit = EnemyPlatformPursuit.new()
 var _motion_direction: Vector2 = Vector2.ZERO
 var _attack_count: int = 0
 var _light_windup: float
@@ -41,7 +41,7 @@ func _physics_process(delta: float) -> void:
 	_watch_target()
 	dodge_cooldown_remaining = maxf(0,dodge_cooldown_remaining-delta)
 	_dash_cooldown = maxf(0,_dash_cooldown-delta)
-	_jump_cooldown = maxf(0,_jump_cooldown-delta)
+	platform_pursuit.tick(delta)
 	if state == State.DEAD:
 		return
 	var player_dead: bool = is_instance_valid(target) and target is PlayerController and not (target as PlayerController).life.is_alive()
@@ -112,6 +112,9 @@ func _seek_target() -> void:
 		var visible: bool = _can_see_target()
 		if visible and offset.length()<=config.sight_range:
 			_seen = true
+		if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown):
+			state = State.CHASE
+			return
 		if _seen and visible and _dash_cooldown == 0 and offset.length()>220 and offset.length()<520 and (flying or (is_on_floor() and absf(offset.y)<65)):
 			var direction: Vector2 = offset.normalized() if flying else Vector2(signf(offset.x),0)
 			if _safe_horizontal(direction.x,tuning().dash_speed*tuning().dash_duration):
@@ -129,13 +132,6 @@ func _seek_target() -> void:
 	super._seek_target()
 	if state == State.WINDUP:
 		_attack_count += 1
-	elif state == State.CHASE and not flying and is_on_floor() and _jump_cooldown == 0 and is_instance_valid(target):
-		var offset: Vector2 = target.global_position-global_position
-		var needs_jump: bool = (offset.y < -48 and offset.y > -190 and absf(offset.x)<300) or (is_on_wall() and absf(offset.x)>100)
-		if needs_jump and not test_move(global_transform,Vector2(0,-120)):
-			velocity.y = -tuning().jump_speed
-			velocity.x = signf(offset.x)*config.speed
-			_jump_cooldown = tuning().jump_cooldown
 
 func _spawn_projectile() -> void:
 	_ranged_cooldown_remaining = 0 if ranged_only else config.ranged_cooldown
@@ -150,6 +146,7 @@ func _protected_action() -> bool:
 	return motion == Motion.DODGE or (strong_attack and state in [State.WINDUP,State.ACTIVE,State.RECOVERY])
 
 func _interrupt_action() -> void:
+	platform_pursuit.cancel()
 	_end_motion()
 
 func _update_status_label() -> void:

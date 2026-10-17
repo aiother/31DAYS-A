@@ -9,6 +9,26 @@ var wave: int = 0
 var remaining: float = 0.0
 const ENEMY: PackedScene = preload("res://enemies/colorless_entity.tscn")
 
+func _ready() -> void:
+	super._ready()
+	# Full-height barriers also prevent jumping around an exit trigger.
+	for x: float in [112.0, 1776.0]:
+		var gate: StaticBody2D = StaticBody2D.new()
+		gate.name = "ReturnBattleGate" if x < 960 else "ForwardBattleGate"
+		gate.position = Vector2(x, 768)
+		gate.collision_layer = 1
+		gate.collision_mask = 0
+		var shape: CollisionShape2D = CollisionShape2D.new()
+		var rectangle: RectangleShape2D = RectangleShape2D.new()
+		rectangle.size = Vector2(32, 1536)
+		shape.shape = rectangle
+		gate.add_child(shape)
+		add_child(gate)
+
+func _open_exits() -> void:
+	for gate: String in ["ReturnBattleGate", "ForwardBattleGate"]:
+		(get_node(gate) as StaticBody2D).collision_layer = 0
+
 func living() -> Array[ColorlessEntity]:
 	var result: Array[ColorlessEntity] = []
 	for child: Node in $Enemies.get_children():
@@ -54,6 +74,7 @@ func _on_defeated(_reward: int) -> void:
 	if wave >= waves.counts.size():
 		phase = Phase.COMPLETE
 		remaining = 0
+		_open_exits()
 	else:
 		phase = Phase.INTERVAL
 		remaining = waves.interval
@@ -77,6 +98,9 @@ func _physics_process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_rect(config.bounds,Color(0.075,0.065,0.07))
+	if phase != Phase.COMPLETE:
+		for x: float in [112.0, 1776.0]:
+			draw_rect(Rect2(x-16, 0, 32, 1536), Color(0.7,0.28,0.12,0.8))
 	for x: int in [320,960,1536]:
 		draw_colored_polygon(PackedVector2Array([Vector2(x-160,1280),Vector2(x,704),Vector2(x+160,1280)]),Color(0.19,0.17,0.15))
 	if phase == Phase.WARNING:

@@ -11,5 +11,5 @@ extends ColorlessConfig
 @export var dodge_cooldown: float = 2.0
 @export var low_health_dodge_cooldown: float = 1.0
 @export var dodge_range: float = 180.0
-@export var jump_speed: float = 850.0
+@export var jump_speed: float = 950.0
 @export var jump_cooldown: float = 1.0

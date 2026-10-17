@@ -51,6 +51,12 @@ func _physics_process(delta: float) -> void:
 	if room is CampWavesRoom and has_session() and Input.is_action_just_pressed("interact") and player.life.can_control() and player.position.distance_to(_checkpoint(WAVES_CHECKPOINT).config.spawn_position)<=96:
 		activate_checkpoint(WAVES_CHECKPOINT)
 
+func _on_room_exit(target_id: String) -> void:
+	if room is CampWavesRoom and (room as CampWavesRoom).phase != CampWavesRoom.Phase.COMPLETE:
+		_notify("完成全部围攻波次后才能离开")
+		return
+	super._on_room_exit(target_id)
+
 func _process(delta: float) -> void:
 	super._process(delta)
 	if room is CampWavesRoom and has_session():
@@ -65,6 +71,6 @@ func _process(delta: float) -> void:
 				status = "第 %d 波已清空 · 准备下一波" % arena.wave
 			CampWavesRoom.Phase.COMPLETE:
 				status = "%d 波战斗完成 · 可继续前进" % arena.waves.counts.size()
-		$Instructions/Help.text = status+"\n两端可自由通行 · 往返/死亡/读档重置整场"
+		$Instructions/Help.text = status+"\n全部波次结束后开放两端 · 往返/死亡/读档重置整场"
 		if data["checkpoint"] != WAVES_CHECKPOINT:
 			$Instructions/Help.text = "入口检查点尚未保存 · 靠近旗帜按 E / RB 重试\n"+status

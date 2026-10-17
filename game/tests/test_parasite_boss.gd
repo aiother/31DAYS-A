@@ -28,6 +28,27 @@ func load_snapshot(snapshot: Dictionary, selected: int = 1) -> void:
 	check(session.store.save_slot(selected,snapshot) and session.start_slot(selected,false), "valid prior checkpoint snapshot loads")
 	await ticks(4)
 	session = current_scene as ParasiteSession
+func clear_camp_fixture() -> void:
+	# This Boss-specific suite now obeys the camp exit rule. Wave timing/rewards
+	# are covered separately; accelerate only this fixture's local timers and
+	# restore its starting balance for the subsequent lifesteal/death assertions.
+	var camp: CampWavesRoom = session.room as CampWavesRoom
+	var balance: int = session.player.possibility.balance
+	camp.waves = camp.waves.duplicate(true) as CampWaveConfig
+	camp.waves.warning = 0.01
+	camp.waves.interval = 0.01
+	camp.start_waves()
+	for wave: int in range(3):
+		for i: int in range(8):
+			if camp.phase == CampWavesRoom.Phase.ACTIVE: break
+			await ticks(1)
+		for enemy: ColorlessEntity in camp.living():
+			enemy.set_physics_process(false)
+			enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,20000+wave)
+		await ticks(1)
+	check(camp.phase==CampWavesRoom.Phase.COMPLETE,"Boss fixture clears all camp waves before using exit")
+	session._set_balance(balance)
+	session.save_current()
 func shot(point: Vector2, velocity: Vector2) -> ParasiteProjectile:
 	var projectile: ParasiteProjectile = (load("res://enemies/parasite_projectile.tscn") as PackedScene).instantiate() as ParasiteProjectile
 	projectile.position = point
@@ -78,6 +99,7 @@ func run() -> void:
 	for key: String in [BossSession.BOSS_INTRO,BossSession.BOSS_DEFEATED,BossSession.BOSS_PASSAGE,FieldSession.FIELD_STORY,FieldSession.HEAL_GUIDE,FieldSession.RESCUE_DONE,TownSession.GAZE,RavineRescueSession.HELPED,RavineDepthSession.DEPTH_HELPED,RavineDepthRoom.GATES,RavineSession.RAVINE_CHECKPOINT]:
 		base["events"][key] = true
 	await load_snapshot(base)
+	await clear_camp_fixture()
 	await place(Vector2(1824,1280))
 	check(arena()!=null and arena().config.room_id=="HD_20003_1" and arena().config.next_room_id=="NSZC_10001_1", "actual camp prison door enters configured parasite arena")
 	check(session.data["checkpoint"]==ParasiteSession.PARASITE_CHECKPOINT and session.store.load_slot(1)["checkpoint"]==ParasiteSession.PARASITE_CHECKPOINT, "new formal entry checkpoint persists before introduction")
@@ -178,6 +200,7 @@ func run() -> void:
 	check(boss().state==ParasiteBoss.State.DEAD and arena().opened and session.data["day"]==3 and not session.intro_active, "victory day and passage survive death")
 	await place(Vector2(48,1536))
 	check(session.room is CampWavesRoom and session.player.position.distance_to(Vector2(1728,1280))<2, "victory opens actual return to safe wave Room landing")
+	await clear_camp_fixture()
 	await place(Vector2(1824,1280))
 	check(boss().health==0 and arena().opened and session.data["day"]==3, "revisit neither respawns Boss nor changes day3")
 	await load_snapshot(session.store.load_slot(1))
