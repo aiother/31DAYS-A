@@ -24,6 +24,7 @@ func _bind_room() -> void:
 			arena.enemy_spawned.connect(_on_wave_enemy_spawned)
 
 func _on_wave_enemy_spawned(enemy: ColorlessEntity) -> void:
+	WorldDayRules.apply_enemy(enemy, int(data.get("day", 1)))
 	enemy.defeated.connect(_on_room_enemy_defeated)
 
 func _change_room(target_id: String) -> void:

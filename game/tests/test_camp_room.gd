@@ -112,7 +112,7 @@ func run() -> void:
 	await ticks(200)
 	Input.action_release("move_right")
 	Input.action_release("run")
-	check(paused and session.ui.get("_mode")=="room_boundary" and (enemies()[0] as ColorlessEntity).health==13 and mono().health==21, "main route reaches next camp boundary with both enemy types alive and no clear lock")
+	check(paused and session.ui.get("_mode")=="room_boundary" and (enemies()[0] as ColorlessEntity).health==15 and mono().health==21, "main route reaches next camp boundary with second-day colorless and unchanged monochrome alive")
 	check(session.player.possibility.balance==0 and session.data["day"]==2, "traversal and boundary charge no resources or date changes")
 	session.ui.call("resume_game")
 	# A real down attack is possible on open ground, independent of platform traversal.
@@ -122,13 +122,13 @@ func run() -> void:
 	var bounced: bool = false
 	for i: int in range(30):
 		await ticks(1)
-		if (enemies()[0] as ColorlessEntity).health<13:
+		if (enemies()[0] as ColorlessEntity).health<15:
 			bounced = session.player.velocity.y<0
 			break
 	Input.action_release("attack")
 	Input.action_release("aim_down")
-	check((enemies()[0] as ColorlessEntity).health==8 and bounced, "actual down attack damages and bounces from existing camp enemy")
-	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(8,Vector2.ZERO,session.player,3000)
+	check((enemies()[0] as ColorlessEntity).health==10 and bounced, "actual down attack deals five and bounces from second-day camp enemy")
+	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(10,Vector2.ZERO,session.player,3000)
 	await ticks(2)
 	check(session.player.possibility.balance==2, "existing camp enemy gives established +2 defeat reward")
 	var before_monochrome: Dictionary = session.data["events"].duplicate()
@@ -139,8 +139,8 @@ func run() -> void:
 	await place(Vector2(48,1280))
 	await place(Vector2(1824,1280))
 	disable_enemies()
-	check((enemies()[0] as ColorlessEntity).health==13 and mono().health==21 and mono().dodge_cooldown_remaining==0 and not pearl().visible, "revisit resets both enemy types while preserving pearl collection")
-	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(13,Vector2.ZERO,session.player,3001)
+	check((enemies()[0] as ColorlessEntity).health==15 and mono().health==21 and mono().dodge_cooldown_remaining==0 and not pearl().visible, "second-day revisit resets both enemy types while preserving pearl collection")
+	(enemies()[0] as ColorlessEntity).hurtbox.receive_attack(15,Vector2.ZERO,session.player,3001)
 	check(session.player.possibility.balance==11, "reset colorless enemy still gives+2 independently of monochrome reward")
 	session._set_balance(-9)
 	mono().hurtbox.receive_attack(21,Vector2.ZERO,session.player,3102)
@@ -158,7 +158,7 @@ func run() -> void:
 	check(session.player.possibility.balance==3 and session.player.life.protection_remaining==0, "normal load preserves current resources without revive protection")
 	await enter_camp()
 	disable_enemies()
-	check(not pearl().visible and (enemies()[0] as ColorlessEntity).health==13 and mono().health==21 and mono().dodge_cooldown_remaining==0, "post-death normal load restores pearl ownership and resets both enemy types")
+	check(not pearl().visible and (enemies()[0] as ColorlessEntity).health==15 and mono().health==21 and mono().dodge_cooldown_remaining==0, "post-death second-day load restores pearl ownership and both enemy types")
 	await place(Vector2(48,1280))
 	var saved: Dictionary = session.store.load_slot(1)
 	real_directory = session.store.directory

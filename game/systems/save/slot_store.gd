@@ -10,7 +10,7 @@ var last_error: String = ""
 var used_backup: bool = false
 
 func fresh() -> Dictionary:
-	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "day": 1, "events": {}, "play_seconds": 0.0}
+	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "day": 1, "events": {WorldDayRules.ENABLED: true}, "play_seconds": 0.0}
 
 func path_for(slot: int) -> String:
 	return directory.path_join("slot_%d.json" % slot)
@@ -61,6 +61,9 @@ func valid(data: Dictionary) -> bool:
 	if bool(events.get(FinalClock.END,false)) and not bool(events.get(FinalClock.TALK,false)):
 		return false
 	# Each delivered growth needs its permanent source; pending rescue does not raise the cap.
+	for id: String in WorldDayRules.IDS:
+		if bool(events.get(WorldDayRules.expired_key(id), false)) and (bool(events.get(WorldDayRules.completed(id), false)) or bool(events.get(WorldDayRules.failed(id), false)) or bool(events.get(WorldDayRules.grace_key(id), false))):
+			return false
 	var gaze: bool = bool(events.get("TY_10001_1_N005", false))
 	var ravine_helped: bool = bool(events.get("rescue:HD_20001_2:completed", false))
 	var depth_helped: bool = bool(events.get("rescue:HD_20001_3:completed", false))

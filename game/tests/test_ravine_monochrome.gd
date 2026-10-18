@@ -41,7 +41,7 @@ func run() -> void:
 	quiet()
 	check(session.room is RavineRoom and session.room.get_node("Enemies").get_child_count()==3,"existing ravine Room contains two colorless and one monochrome")
 	check(mono().health==21 and mono().config.reward==7 and not mono().flying,"new placement reuses approved ground21HP/reward7")
-	check((session.room.get_node("Enemies/LowerEntity") as ColorlessEntity).health==13 and (session.room.get_node("Enemies/UpperEntity") as ColorlessEntity).flying,"down-attack practice and flying colorless remain intact")
+	check((session.room.get_node("Enemies/LowerEntity") as ColorlessEntity).health==15 and (session.room.get_node("Enemies/UpperEntity") as ColorlessEntity).flying,"second-day down-attack practice and flying colorless remain intact")
 	check(mono().target==session.player and mono().coordinator==session.room.get_node("AttackCoordinator"),"normal session binds player and shared attack budget")
 	check(mono().position.is_equal_approx(Vector2(1696,1280)) and mono().is_on_floor(),"spawn rests on real TileMap floor away from checkpoint")
 	check(session._all_checkpoints().size()==1 and session._pickups().is_empty() and session.data["checkpoint"]==RavineSession.RAVINE_CHECKPOINT,"composition adds no checkpoint or pickup")

@@ -35,6 +35,9 @@ func run() -> void:
 	snapshot["balance"] = -9
 	snapshot["day"] = 3
 	snapshot["events"][ParasiteSession.DODGE_PENDING] = true
+	# This fixture already starts on day three; include the current NPC deadlines
+	# so the later no-new-events assertion isolates combat rather than migration.
+	WorldDayRules.sync(snapshot)
 	check(session.store.save_slot(1,snapshot) and session.start_slot(1,false), "old trench checkpoint loads with new enemy composition")
 	await ticks(4)
 	quiet()

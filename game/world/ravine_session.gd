@@ -73,7 +73,7 @@ func _on_room_exit(target: String) -> void:
 	if room is TownRoom and target == RAVINE_ID:
 		if not has_session() or get_tree().paused or intro_active or _transitioning or not player.life.can_control() or dialogue_ui.confirming:
 			return
-		if bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_DONE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)):
+		if not rescue_expired(TOWN_ID) and bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_DONE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)):
 			_end_dialogue()
 			_departure_target = target
 			player.reset_kinematics()

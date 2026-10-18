@@ -18,7 +18,7 @@ func _near_ravine_survivor() -> bool:
 	return room is RavineRescueRoom and player.position.distance_to((room.get_node("Survivor") as Node2D).position) <= (room as RavineRescueRoom).dialogue.interaction_radius
 
 func _rescue_pending() -> bool:
-	return bool(data["events"].get(SEEN, false)) and not bool(data["events"].get(HELPED, false)) and not bool(data["events"].get(FAILED, false))
+	return not rescue_expired(RESCUE_ID) and bool(data["events"].get(SEEN, false)) and not bool(data["events"].get(HELPED, false)) and not bool(data["events"].get(FAILED, false))
 
 func _on_encounter() -> void:
 	if room is RavineRescueRoom and has_session():
@@ -33,7 +33,7 @@ func interact_ravine_survivor() -> bool:
 	data["events"][SEEN] = true
 	var config: DialogueConfig = (room as RavineRescueRoom).dialogue
 	_dialogue_kind = "ravine_rescue"
-	dialogue_ui.start(config, config.first_lines if _rescue_pending() else (config.repeat_lines if bool(data["events"].get(HELPED, false)) else config.failed_lines))
+	dialogue_ui.start(config, PackedStringArray([rescue_expired_text()]) if rescue_expired(RESCUE_ID) else (config.first_lines if _rescue_pending() else (config.repeat_lines if bool(data["events"].get(HELPED, false)) else config.failed_lines)))
 	return true
 
 func _on_dialogue_finished() -> void:
@@ -116,6 +116,7 @@ func _physics_process(delta: float) -> void:
 
 func quest_status_text() -> String:
 	if room is RavineRescueRoom and has_session():
+		if rescue_expired(RESCUE_ID): return "沟壑救助已过期 · 更早抵达可帮助这里的人"
 		if bool(data["events"].get(HELPED, false)):
 			return "沟壑救助已完成" + (" · 成长已记录，获得7的注视后结算" if not bool(data["events"].get(GAZE, false)) else " · 可能性上限%d" % player.possibility.maximum)
 		if bool(data["events"].get(FAILED, false)):
@@ -126,6 +127,9 @@ func quest_status_text() -> String:
 func _process(delta: float) -> void:
 	super._process(delta)
 	if room is RavineRescueRoom and has_session():
-		(room as RavineRescueRoom).refresh_rescue(bool(data["events"].get(HELPED, false)), bool(data["events"].get(FAILED, false)), _near_ravine_survivor() and not dialogue_ui.active)
+		(room as RavineRescueRoom).refresh_rescue(bool(data["events"].get(HELPED, false)), bool(data["events"].get(FAILED, false)) or rescue_expired(RESCUE_ID), _near_ravine_survivor() and not dialogue_ui.active)
+		if rescue_expired(RESCUE_ID): (room.get_node("Survivor/Name") as Label).text = "沟壑幸存者 · 救助已过期"
 		$Instructions/Help.text = "沿平台向上寻找幸存者 · E / RB 救助\n向左返回入口 · 向右继续探索"
+		if rescue_expired(RESCUE_ID):
+			$Instructions/Help.text = "救助已过期 · E / RB 了解错失的机会\n向左返回入口 · 向右继续探索"
 		dialogue_ui.quest.text = quest_status_text()

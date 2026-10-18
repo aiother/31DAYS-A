@@ -30,14 +30,15 @@ func _near_outskirts_survivor() -> bool:
 	return room is OutskirtsRoom and bool(data.get("events",{}).get(SPIKES_OPEN,false)) and player.position.distance_to((room.get_node("Survivor") as Node2D).position)<=(room as OutskirtsRoom).challenge.interaction_radius
 
 func _outskirts_pending() -> bool:
-	return bool(data["events"].get(OUTSKIRTS_SEEN,false)) and not bool(data["events"].get(OUTSKIRTS_HELPED,false)) and not bool(data["events"].get(OUTSKIRTS_FAILED,false))
+	return not rescue_expired(OUTSKIRTS_ID) and bool(data["events"].get(OUTSKIRTS_SEEN,false)) and not bool(data["events"].get(OUTSKIRTS_HELPED,false)) and not bool(data["events"].get(OUTSKIRTS_FAILED,false))
 
 func _sees_outskirts_survivor() -> bool:
 	return room is OutskirtsRoom and bool(data["events"].get(SPIKES_OPEN,false)) and Rect2(2326,752,442,128).has_point(player.position)
 
 func _refresh_outskirts() -> void:
 	if room is OutskirtsRoom:
-		(room as OutskirtsRoom).refresh(bool(data.get("events",{}).get(SPIKES_OPEN,false)),bool(data.get("events",{}).get(OUTSKIRTS_HELPED,false)),bool(data.get("events",{}).get(OUTSKIRTS_FAILED,false)),_near_outskirts_survivor() and not dialogue_ui.active)
+		(room as OutskirtsRoom).refresh(bool(data.get("events",{}).get(SPIKES_OPEN,false)),bool(data.get("events",{}).get(OUTSKIRTS_HELPED,false)),bool(data.get("events",{}).get(OUTSKIRTS_FAILED,false)) or rescue_expired(OUTSKIRTS_ID),_near_outskirts_survivor() and not dialogue_ui.active)
+		if rescue_expired(OUTSKIRTS_ID): (room.get_node("Survivor/Name") as Label).text = "外围幸存者 · 救助已过期"
 
 func _stop_spike_motion() -> void:
 	# Returning to the retry marker does not reset the global 1/2/3 dodge costs.
@@ -99,7 +100,7 @@ func interact_outskirts_survivor() -> bool:
 	if not bool(data["events"].get(OUTSKIRTS_SEEN,false)): record_event(OUTSKIRTS_SEEN)
 	_dialogue_kind = "outskirts_rescue"
 	var config: DialogueConfig = (room as OutskirtsRoom).dialogue
-	dialogue_ui.start(config,config.first_lines if _outskirts_pending() else (config.repeat_lines if bool(data["events"].get(OUTSKIRTS_HELPED,false)) else config.failed_lines))
+	dialogue_ui.start(config,PackedStringArray([rescue_expired_text()]) if rescue_expired(OUTSKIRTS_ID) else (config.first_lines if _outskirts_pending() else (config.repeat_lines if bool(data["events"].get(OUTSKIRTS_HELPED,false)) else config.failed_lines)))
 	return true
 
 func _on_dialogue_finished() -> void:
@@ -180,6 +181,7 @@ func _on_death() -> void:
 
 func quest_status_text() -> String:
 	if room is OutskirtsRoom and has_session():
+		if rescue_expired(OUTSKIRTS_ID): return "外围救助已过期 · 更早抵达可帮助这里的人"
 		if bool(data["events"].get(OUTSKIRTS_HELPED,false)): return "外围救助已完成"+(" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
 		if bool(data["events"].get(OUTSKIRTS_FAILED,false)): return "外围救助机会已永久失去"
 		return "上层尖刺后有人等待帮助 · 强化闪避可通过"

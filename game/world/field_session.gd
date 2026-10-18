@@ -23,6 +23,26 @@ var _departure_target: String = ""
 var _field_camera_offset: float = 0.0
 @onready var dialogue_ui: FieldDialogue = $FieldDialogue
 
+func _restore(snapshot: Dictionary, revive: bool) -> void:
+	var normalized: Dictionary = snapshot.duplicate(true)
+	WorldDayRules.migrate(normalized)
+	WorldDayRules.sync(normalized)
+	super._restore(normalized, revive)
+
+func save_current(message: String = "已自动保存") -> bool:
+	var before: Dictionary = data.get("events", {}).duplicate()
+	WorldDayRules.sync(data)
+	if not super.save_current(message):
+		data["events"] = before
+		return false
+	return true
+
+func rescue_expired(id: String) -> bool:
+	return has_session() and WorldDayRules.expired(data, id)
+
+func rescue_expired_text() -> String:
+	return "来得太晚，救助机会已过期。更早抵达时，这里的人仍有获救的机会。"
+
 func _room_scenes() -> Dictionary:
 	return FIELD_ROOMS
 
@@ -85,7 +105,7 @@ func interact_seven() -> bool:
 	if get_tree().paused or not has_session() or not _near_seven() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
 		return false
 	var config: DialogueConfig = (room as FieldRoom).dialogue
-	dialogue_ui.start(config, config.failed_lines if bool(data["events"].get(RESCUE_FAILED, false)) else config.repeat_lines)
+	dialogue_ui.start(config, PackedStringArray([rescue_expired_text()]) if rescue_expired("TY_10002_1") else (config.failed_lines if bool(data["events"].get(RESCUE_FAILED, false)) else config.repeat_lines))
 	return true
 
 func _on_dialogue_finished() -> void:
@@ -138,7 +158,7 @@ func _on_room_exit(target: String) -> void:
 			return
 		if target != room.config.previous_room_id and target != room.config.next_room_id:
 			return
-		if target == BOSS_ID and bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)) and not bool(data["events"].get(RESCUE_DONE, false)):
+		if target == BOSS_ID and not rescue_expired("TY_10002_1") and bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)) and not bool(data["events"].get(RESCUE_DONE, false)):
 			_end_dialogue()
 			_departure_target = target
 			player.reset_kinematics()
@@ -175,6 +195,8 @@ func _valid_departure_target(target: String) -> bool:
 	return room is FieldRoom and target == BOSS_ID
 
 func quest_status_text() -> String:
+	if rescue_expired("TY_10002_1"):
+		return "麦秆镇救助已过期 · 更早抵达可帮助这里的人"
 	if not has_session() or not bool(data["events"].get(HEAL_GUIDE, false)):
 		return ""
 	if bool(data["events"].get(RESCUE_FAILED, false)):
@@ -196,5 +218,7 @@ func _process(delta: float) -> void:
 		(room.get_node("Seven/Prompt") as Label).visible = _near_seven() and not dialogue_ui.active and not intro_active
 		(room.get_node("Seven/Prompt") as Label).position.x = -184 if player.position.x < 1728 else 64
 		$Instructions/Help.text = "E / RB 与7交谈 · 向右前往麦秆镇\n返回荒地将失去本次救助机会"
+		if rescue_expired("TY_10002_1"):
+			$Instructions/Help.text = "麦秆镇救助已过期 · 更早抵达可帮助这里的人\nE / RB 与7交谈 · 道路仍可往返"
 		if _guide_time > 0:
 			$Instructions/Help.text = "长按 L / Y 恢复生命 · 消耗3可能性，持续2.8秒恢复2生命\n松键或被打断会取消恢复，已消耗的可能性不退还"

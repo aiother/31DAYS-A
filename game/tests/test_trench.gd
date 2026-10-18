@@ -86,7 +86,7 @@ func run() -> void:
 	check(session.collect_pickup(pearl) and session.store.load_slot(1)["events"].get(key,false), "pearl ownership persists")
 	check(not session.collect_pickup(pearl) and session.player.possibility.maximum==10 and session.player.possibility.balance==0 and session.player.combat.pearl_count==1 and is_equal_approx(session.player.combat.range_multiplier(),1.05), "pearl adds5% reach exactly once without possibility changes")
 	var enemy: ColorlessEntity = session.room.get_node("Enemies/DownAttackEntity") as ColorlessEntity
-	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,9000)
+	enemy.hurtbox.receive_attack(17,Vector2.ZERO,session.player,9000)
 	check(session.player.possibility.balance==2, "trench enemy rewards two possibility")
 	await place(Vector2(48,1792))
 	check(session.room is OutskirtsRoom and session.player.position.distance_to(Vector2(2752,1280))<2, "return reaches safe outskirts landing without immediate bounce")
@@ -94,8 +94,8 @@ func run() -> void:
 	quiet()
 	check(not session._pickups()[0].can_collect(session.player) and session.data["events"].get(key,false), "pearl remains owned across room reset")
 	enemy = session.room.get_node("Enemies/DownAttackEntity") as ColorlessEntity
-	check(enemy.health==13, "ordinary enemies reset on revisit")
-	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,9001)
+	check(enemy.health==17, "third-day ordinary enemies reset strengthened on revisit")
+	enemy.hurtbox.receive_attack(17,Vector2.ZERO,session.player,9001)
 	check(session.player.possibility.balance==4, "reset enemy still rewards two")
 	session.player.life.take_hit(3)
 	await ticks(90)

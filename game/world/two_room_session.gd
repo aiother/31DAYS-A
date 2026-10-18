@@ -29,6 +29,7 @@ func _restore(snapshot: Dictionary, revive: bool) -> void:
 	if not _supports_checkpoint(id):
 		ui.call("save_failed", "检查点不属于当前已开放区域")
 		return
+	_loading = true
 	_mount_room(_checkpoint_room(id))
 	super._restore(snapshot, revive)
 	_bind_room()
@@ -64,6 +65,8 @@ func _bind_room() -> void:
 		for child: Node in room.get_node("Enemies").get_children():
 			if child is ColorlessEntity:
 				var enemy: ColorlessEntity = child as ColorlessEntity
+				if has_session() and not _loading and room.config.room_id not in ["HD_10004_1", "HD_20003_1", "NSZC_10003_1"]:
+					WorldDayRules.apply_enemy(enemy, int(data.get("day", 1)))
 				enemy.target = player
 				enemy.coordinator = room.get_node("AttackCoordinator") as EnemyAttackCoordinator
 				enemy.set_physics_process(room.config.room_id != ENTRY_ID or bool(data.get("events", {}).get(ENCOUNTER, false)))

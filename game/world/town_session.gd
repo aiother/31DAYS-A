@@ -25,14 +25,15 @@ func _near_survivor() -> bool:
 	return room is TownRoom and player.position.distance_to((room.get_node("Survivor") as Node2D).position) <= (room as TownRoom).dialogue.interaction_radius
 
 func _can_rescue() -> bool:
-	return bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)) and not bool(data["events"].get(RESCUE_DONE, false))
+	return not rescue_expired(TOWN_ID) and bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)) and not bool(data["events"].get(RESCUE_DONE, false))
 
 func interact_survivor() -> bool:
 	if not has_session() or get_tree().paused or not _near_survivor() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
 		return false
 	var config: DialogueConfig = (room as TownRoom).dialogue
 	_dialogue_kind = "rescue" if _can_rescue() else "survivor"
-	dialogue_ui.start(config, config.first_lines if _can_rescue() else (config.repeat_lines if bool(data["events"].get(RESCUE_DONE, false)) else config.failed_lines))
+	data["events"]["rescue:TY_10002_1:seen"] = true
+	dialogue_ui.start(config, PackedStringArray([rescue_expired_text()]) if rescue_expired(TOWN_ID) else (config.first_lines if _can_rescue() else (config.repeat_lines if bool(data["events"].get(RESCUE_DONE, false)) else config.failed_lines)))
 	return true
 
 func interact_seven() -> bool:
@@ -176,7 +177,10 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "E / RB 与7交谈 · 救助已完成，可往返田野与荒地" if bool(data["events"].get(GAZE, false)) else "E / RB 与7交谈，完成注视结算\n救助已完成，返回7领取你的成长"
 	if room is TownRoom and has_session():
 		var done: bool = bool(data["events"].get(RESCUE_DONE, false))
-		var failed: bool = bool(data["events"].get(RESCUE_FAILED, false))
+		var failed: bool = bool(data["events"].get(RESCUE_FAILED, false)) or rescue_expired(TOWN_ID)
 		(room as TownRoom).refresh_rescue(done, failed, _near_survivor() and not dialogue_ui.active)
+		if rescue_expired(TOWN_ID): (room.get_node("Survivor/Name") as Label).text = "幸存者 · 救助已过期"
 		$Instructions/Title.text = "田野 / 麦秆镇"
 		$Instructions/Help.text = "E / RB 与幸存者互动 · 救助后返回黄金麦湖寻找7\n向左返回麦田 · 向右探索前路"
+		if rescue_expired(TOWN_ID):
+			$Instructions/Help.text = "救助已过期 · E / RB 了解错失的机会\n向左返回麦田 · 向右探索前路"

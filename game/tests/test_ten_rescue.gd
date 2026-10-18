@@ -4,6 +4,7 @@ var failures: int = 0
 var session: RescueBattlefieldSession
 var directory: String
 var created: Array[String] = []
+var initial_events: Dictionary = {}
 func _initialize() -> void:
 	run.call_deferred()
 func check(ok: bool, message: String) -> void:
@@ -43,6 +44,8 @@ func fresh() -> void:
 	snapshot["balance"] = -9
 	for key: String in [TrenchPassageRoom.CLEARED,TrenchPassageRoom.CHALLENGE,TrenchPassageRoom.FORWARD]:
 		snapshot["events"][key] = true
+	WorldDayRules.sync(snapshot)
+	initial_events = snapshot["events"].duplicate()
 	check(session.store.save_slot(1,snapshot) and session.start_slot(1,false),"fresh old-format checkpoint save loads")
 	quiet()
 	session.player.position = Vector2(1856,944)
@@ -196,7 +199,9 @@ func run() -> void:
 			enemy.hurtbox.receive_attack(enemy.health,Vector2.ZERO,arena().ten,7400)
 	await ticks(3)
 	check(session.stage_notified and arena().completed,"cooperative roster clear produces stage completion")
-	check(session.data["events"].size()==4 and session.data["day"]==3 and session.player.possibility.maximum==10,"no final victory timer ending or growth flag is fabricated")
+	var expected_events: Dictionary = initial_events.duplicate()
+	expected_events[RescueBattlefieldSession.RESCUE_DONE_EVENT] = true
+	check(session.data["events"]==expected_events and session.data["day"]==3 and session.player.possibility.maximum==10,"only one rescue event is added to existing third-day deadlines without victory timer ending or growth")
 	check((arena().get_node("LeftBoundary") as StaticBody2D).collision_layer==1 and session._all_checkpoints().is_empty(),"full-victory return lock and existing checkpoint policy remain")
 	check(session.data["checkpoint"]==TrenchPassageSession.PASSAGE_CHECKPOINT,"rescue does not create a checkpoint")
 	session._change_room(TrenchPassageSession.PASSAGE_ID)

@@ -15,7 +15,7 @@ func _gaze_maximum() -> int:
 	return 12 + int(bool(data["events"].get(HELPED,false))) + int(bool(data["events"].get(DEPTH_HELPED,false)))
 
 func _depth_pending() -> bool:
-	return bool(data["events"].get(DEPTH_SEEN,false)) and not bool(data["events"].get(DEPTH_HELPED,false)) and not bool(data["events"].get(DEPTH_FAILED,false))
+	return not rescue_expired(DEPTH_ID) and bool(data["events"].get(DEPTH_SEEN,false)) and not bool(data["events"].get(DEPTH_HELPED,false)) and not bool(data["events"].get(DEPTH_FAILED,false))
 
 func _on_encounter() -> void:
 	if room is RavineDepthRoom and has_session():
@@ -71,7 +71,7 @@ func _on_room_exit(target: String) -> void:
 			_notify("消灭当前区域的敌人后开启前路")
 			return
 		# Explicitly approved early retreat: abandoning this NPC does not clear either gate.
-		if not bool(data["events"].get(DEPTH_FAILED,false)):
+		if not rescue_expired(DEPTH_ID) and not bool(data["events"].get(DEPTH_FAILED,false)):
 			data["events"][DEPTH_SEEN] = true
 			_end_dialogue()
 			_departure_target = target
@@ -117,6 +117,7 @@ func _physics_process(delta: float) -> void:
 
 func quest_status_text() -> String:
 	if room is RavineDepthRoom and has_session():
+		if rescue_expired(DEPTH_ID): return "沟壑深处救助已过期 · 清敌仍可开启通路"
 		if bool(data["events"].get(DEPTH_HELPED,false)):
 			return "清敌救助已完成" + (" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
 		if bool(data["events"].get(DEPTH_FAILED,false)):
@@ -127,11 +128,14 @@ func quest_status_text() -> String:
 func _process(delta: float) -> void:
 	super._process(delta)
 	if room is RavineDepthRoom and has_session():
-		(room as RavineDepthRoom).refresh(bool(data["events"].get(DEPTH_HELPED,false)),bool(data["events"].get(DEPTH_FAILED,false)),bool(data["events"].get(RavineDepthRoom.GATES,false)))
+		(room as RavineDepthRoom).refresh(bool(data["events"].get(DEPTH_HELPED,false)),bool(data["events"].get(DEPTH_FAILED,false)) or rescue_expired(DEPTH_ID),bool(data["events"].get(RavineDepthRoom.GATES,false)))
+		if rescue_expired(DEPTH_ID): (room.get_node("Survivor/Name") as Label).text = "幸存者 · 救助已过期"
 		$Instructions/Help.text = "清敌后永久开启两端通路 · E / RB 拾取珍珠占位\n向左可确认放弃救助并撤回"
 		if bool(data["events"].get(RavineDepthRoom.GATES,false)):
 			$Instructions/Help.text = "两端通路已永久开启 · E / RB 拾取珍珠占位\n向左返回沟壑第二间 · 向右前往逃兵营帐"
 		elif bool(data["events"].get(DEPTH_FAILED,false)):
 			$Instructions/Help.text = "本次救助已放弃 · 清敌后永久开启两端通路\n向左可撤回 · 向右需先清敌"
+		if rescue_expired(DEPTH_ID):
+			$Instructions/Help.text = "救助已过期 · 清敌仍可永久开启通路\n两端已开启" if bool(data["events"].get(RavineDepthRoom.GATES,false)) else "救助已过期 · 清敌仍可永久开启通路\n向左可撤回 · 向右需先清敌"
 		if _cleared() and not bool(data["events"].get(RavineDepthRoom.GATES,false)):
 			$Instructions/Help.text = "结算尚未保存 · 按 E / RB 重试"

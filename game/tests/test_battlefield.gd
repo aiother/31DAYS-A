@@ -37,6 +37,7 @@ func run() -> void:
 	snapshot["events"][TrenchPassageRoom.CLEARED] = true
 	snapshot["events"][TrenchPassageRoom.CHALLENGE] = true
 	snapshot["events"][TrenchPassageRoom.FORWARD] = true
+	WorldDayRules.sync(snapshot) # Current third-day NPC deadlines are not battlefield rewards.
 	check(session.store.save_slot(1,snapshot) and session.start_slot(1,false),"existing passage save loads in new main")
 	await ticks(4)
 	quiet()

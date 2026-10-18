@@ -102,13 +102,13 @@ func run() -> void:
 	check(session.room is ParasiteRoom and session.player.position.distance_to(Vector2(1344,1056))<2 and session.data["day"]==3, "return uses safe parasite upper landing without date rollback")
 	await enter()
 	var enemy: ColorlessEntity = session.room.get_node("Enemies/LowerEntity") as ColorlessEntity
-	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,8000)
+	enemy.hurtbox.receive_attack(17,Vector2.ZERO,session.player,8000)
 	check(session.player.possibility.balance==2, "existing outskirts enemy gives+2")
 	await place(Vector2(48,1280))
 	await enter()
 	enemy = session.room.get_node("Enemies/LowerEntity") as ColorlessEntity
-	check(enemy.health==13, "returning resets ordinary enemies")
-	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,8001)
+	check(enemy.health==17, "third-day returning resets strengthened ordinary enemies")
+	enemy.hurtbox.receive_attack(17,Vector2.ZERO,session.player,8001)
 	check(session.player.possibility.balance==4, "reset enemy still gives+2")
 	monochrome = session.room.get_node("Enemies/GroundMonochrome") as MonochromeEntity
 	session._set_balance(-9)
