@@ -80,6 +80,7 @@ func collect() -> void:
 		session.player.reset_kinematics()
 		check(session.collect_pickup(pickup), "campaign collects " + pickup.config.persistence_key)
 		pearls.append(pickup.config.persistence_key)
+		check(session.player.combat.pearl_count == pearls.size() and is_equal_approx(session.player.combat.range_multiplier(), 1.0 + pearls.size()*0.05 + (0.2 if session.player.combat.range_upgraded else 0.0)), "campaign pickup immediately adds exact permanent range")
 
 func shutdown_environment() -> void:
 	var hazard: RoomRockfall = session.room.environment_hazard
@@ -229,14 +230,14 @@ func run() -> void:
 	check(saved.has("day_remaining") and float(saved["day3_remaining"])>0 and float(saved["day3_remaining"])<1800,"continuous ending preserves consumed natural clock fields without refilling")
 	check(shutdown_keys.size()==4 and shutdown_keys.all(func(key: String) -> bool: return bool(saved["events"].get(key,false))),"ending retains all four independent environment shutdowns")
 	check(visited.size() == session._room_scenes().size() and visited.size() == 18, "continuous campaign visits all 18 delivered Rooms")
-	check(pearls.size() == 4, "all four delivered pearl placeholders collected")
+	check(pearls.size() == 4 and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "all four pearls and Boss combine at140% at ending")
 	for key: String in pearls:
 		check(saved["events"].get(key, false), "ending retains earlier pearl " + key)
 	check(not saved["events"].get(FieldSession.RESCUE_FAILED, false) and not saved["events"].get(RavineRescueSession.FAILED, false) and not saved["events"].get(RavineDepthSession.DEPTH_FAILED, false) and not saved["events"].get(OutskirtsSession.OUTSKIRTS_FAILED,false), "successful route does not accidentally abandon saved survivors")
 	check(session.start_slot(1, false), "full campaign save reloads through normal production path")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
-	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded, "normal reload restores finished campaign and both earned growth sources")
+	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "normal reload restores finished campaign and all earned pearl and Boss growth")
 	paused = false
 	session.queue_free()
 	await physics_frame

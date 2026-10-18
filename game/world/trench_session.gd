@@ -44,6 +44,6 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if room is TrenchRoom:
 		$Instructions/Title.text = "逆时战场 / 堑壕第一间"
-		$Instructions/Help.text = "沿平台向上探索 · E / RB 拾取珍珠占位\n两端无清敌限制 · 上层道路为本阶段边界"
+		$Instructions/Help.text = "沿平台向上探索 · E / RB 拾取珍珠：近战范围 +5%\n两端无清敌限制 · 沿上层道路继续探索"
 		if has_session() and data["checkpoint"] != TRENCH_CHECKPOINT:
 			$Instructions/Help.text = "检查点尚未保存 · 靠近旗帜按 E / RB 重试"

@@ -142,7 +142,7 @@ func run() -> void:
 	Input.action_release("interact")
 	check(not item.visible and session.store.load_slot(1)["events"].get(item.config.persistence_key, false), "E input collects pearl and immediately persists state")
 	check(str(session.ui.get("_error_label").text).is_empty(), "successful retry clears stale write failure feedback")
-	check(session.player.life.health == health and session.player.possibility.balance == 0 and session.player.combat.config.damage == damage, "approved placeholder adds no health resource or attack attributes")
+	check(session.player.life.health == health and session.player.possibility.balance == 0 and session.player.combat.config.damage == damage and session.player.combat.pearl_count == 1 and is_equal_approx(session.player.combat.range_multiplier(),1.05), "pearl grants5% reach without health resource or damage changes")
 	check(not session.collect_pickup(item), "collected pearl cannot be collected twice")
 	# Escape the optional recess using only ordinary jump.
 	Input.action_press("move_left")

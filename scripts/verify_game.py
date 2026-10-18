@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('permanent pearl growth additive reach real hits reflection legacy saves and slots', 'res://tests/test_pearl_growth.gd', 'PEARL_GROWTH_TESTS checks='),
     ('four-Room environmental hazards real traversal permanent switches and save recovery', 'res://tests/test_environment_batch.gd', 'ENVIRONMENT_BATCH_TESTS checks='),
     ('natural day clock migration rollover and final budget handoff', 'res://tests/test_day_clock.gd', 'DAY_CLOCK_TESTS checks='),
     ('natural day session pause persistence story rollover and timeout retry', 'res://tests/test_day_clock_session.gd', 'DAY_CLOCK_SESSION_TESTS checks='),

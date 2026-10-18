@@ -108,8 +108,8 @@ func run() -> void:
 	await ticks(1)
 	Input.action_release("interact")
 	await ticks(2)
-	check(not pearl().visible and session.store.load_slot(1)["events"].get(pearl().config.persistence_key,false), "real E collects and saves pearl placeholder")
-	check(session.player.possibility.maximum==13 and session.player.possibility.balance==0 and session.player.life.health==3, "pearl changes no combat attributes or resources")
+	check(not pearl().visible and session.store.load_slot(1)["events"].get(pearl().config.persistence_key,false), "real E collects and saves permanent pearl")
+	check(session.player.possibility.maximum==13 and session.player.possibility.balance==0 and session.player.life.health==3 and session.player.combat.pearl_count==1 and session.player.combat.range_upgraded and is_equal_approx(session.player.combat.range_multiplier(),1.25), "pearl adds5% to earned Boss20% without health or possibility changes")
 	# Use an actual attack for the first hit, then the established hurtbox API for settlement order.
 	await place(Vector2(1190,1280))
 	Input.action_press("attack")

@@ -90,6 +90,7 @@ func _process(_delta: float) -> void:
 		_health.text += "\n恢复中 %.1f / %.1f 秒" % [actions.config.heal_duration - actions.remaining, actions.config.heal_duration]
 	elif actions.busy():
 		_health.text += "\n%s滑步 · 连续 %d / 3" % ["透支" if actions.poor_dodge else "", actions.chain]
+	_health.text += "\n珍珠 %d / 4 · 近战范围 %d%%" % [player.combat.pearl_count, roundi(player.combat.range_multiplier() * 100)]
 	_health.modulate = Color(1, 0.5, 0.4) if life.health <= 1 else Color.WHITE
 	var edge_alpha: float = 0.0
 	var black_alpha: float = 0.0

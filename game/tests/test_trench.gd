@@ -84,7 +84,7 @@ func run() -> void:
 	check(not session.collect_pickup(pearl) and not session.data["events"].has(key) and pearl.can_collect(session.player), "failed pearl save leaves pickup and event retryable")
 	session.store.directory = real_directory
 	check(session.collect_pickup(pearl) and session.store.load_slot(1)["events"].get(key,false), "pearl ownership persists")
-	check(not session.collect_pickup(pearl) and session.player.possibility.maximum==10 and session.player.possibility.balance==0, "pearl cannot duplicate or grant undefined attributes")
+	check(not session.collect_pickup(pearl) and session.player.possibility.maximum==10 and session.player.possibility.balance==0 and session.player.combat.pearl_count==1 and is_equal_approx(session.player.combat.range_multiplier(),1.05), "pearl adds5% reach exactly once without possibility changes")
 	var enemy: ColorlessEntity = session.room.get_node("Enemies/DownAttackEntity") as ColorlessEntity
 	enemy.hurtbox.receive_attack(13,Vector2.ZERO,session.player,9000)
 	check(session.player.possibility.balance==2, "trench enemy rewards two possibility")

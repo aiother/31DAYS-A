@@ -1,6 +1,12 @@
 class_name ExplorationSession
 extends TowerSession
 const EXPLORATION_ID: String = "HD_10002_3"
+const PEARL_KEYS: Array[String] = [
+	"item:HD_10002_3:pearl_01",
+	"keyitem:HD_20001_3:pearl_01",
+	"keyitem:HD_20002_1:pearl_01",
+	"item:NSZC_10002_1:pearl_01"
+]
 const EXPLORATION_ROOMS: Dictionary = {
 	START_ID: preload("res://world/rooms/hd_10001_1.tscn"),
 	ENTRY_ID: preload("res://world/rooms/hd_10002_1.tscn"),
@@ -10,6 +16,18 @@ const EXPLORATION_ROOMS: Dictionary = {
 
 func _room_scenes() -> Dictionary:
 	return EXPLORATION_ROOMS
+
+func _restore(snapshot: Dictionary, revive: bool) -> void:
+	super._restore(snapshot, revive)
+	_sync_pearl_growth()
+
+func _sync_pearl_growth() -> void:
+	var count: int = 0
+	if has_session():
+		for key: String in PEARL_KEYS:
+			if bool(data["events"].get(key, false)):
+				count += 1
+	player.combat.pearl_count = count
 
 func _bind_room() -> void:
 	super._bind_room()
@@ -67,6 +85,9 @@ func collect_pickup(pickup: RoomPickup) -> bool:
 			data["events"].erase(key)
 		return false
 	pickup.refresh(player, true)
+	_sync_pearl_growth()
+	if key in PEARL_KEYS:
+		_notify("珍珠 %d / 4 · 近战范围 %d%%" % [player.combat.pearl_count, roundi(player.combat.range_multiplier() * 100)])
 	ui.call("save_failed", "")
 	return true
 

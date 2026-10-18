@@ -3,4 +3,4 @@
 [resource]
 script = ExtResource("1")
 persistence_key = "keyitem:HD_20001_3:pearl_01"
-display_name = "珍珠（占位）"
+display_name = "珍珠"

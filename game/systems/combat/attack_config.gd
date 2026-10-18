@@ -3,6 +3,7 @@ extends Resource
 ## T3 damage is frozen. Timing, reach and knockback are graybox tuning values.
 @export var damage: int = 5
 @export var enhanced_range_multiplier: float = 1.2
+@export var pearl_range_bonus: float = 0.05
 @export var windup: float = 0.08
 @export var active_duration: float = 0.10
 @export var recovery_first: float = 0.14

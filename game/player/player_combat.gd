@@ -16,6 +16,7 @@ var attack_id: int = 0
 var _phase_remaining: float = 0.0
 var running_attack: bool = false
 var range_upgraded: bool = false
+var pearl_count: int = 0
 var _clock: float = 0.0
 var _last_press_time: float = -1000.0
 var _buffer_press_time: float = -1000.0
@@ -32,6 +33,10 @@ func _ready() -> void:
 
 func is_attacking() -> bool:
 	return phase != Phase.IDLE
+
+func range_multiplier() -> float:
+	# Add each permanent source to the base; never mutate the shared Resource.
+	return (config.enhanced_range_multiplier if range_upgraded else 1.0) + clampi(pearl_count, 0, 4) * config.pearl_range_bonus
 
 func reset_combo() -> void:
 	_last_combo_step = 0
@@ -89,7 +94,7 @@ func _start_attack() -> void:
 	phase = Phase.WINDUP
 	_phase_remaining = config.windup * _timing_multiplier
 	var shape: RectangleShape2D = hit_shape.shape as RectangleShape2D
-	var reach: float = config.enhanced_range_multiplier if range_upgraded else 1.0
+	var reach: float = range_multiplier()
 	shape.size = (config.side_size if direction.y == 0.0 else config.vertical_size) * reach
 	# Scale around the combat origin, keeping the player's body/feet unchanged.
 	hitbox.position = Vector2(direction.x * config.side_offset * reach, -48.0 + direction.y * config.vertical_offset * reach)
