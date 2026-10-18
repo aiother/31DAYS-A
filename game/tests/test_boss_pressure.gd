@@ -32,6 +32,7 @@ func run() -> void:
 	check(actor.config.recovery_duration == 0.45 and actor.config.hover_duration == 4.0 and actor.config.rise_speed == 900, "shorter recovery and hover with faster ascent")
 	check(actor.config.windup_duration == 0.6 and actor.config.damage == 1 and actor.health == 60, "readable landing warning and existing damage/health preserved")
 	check(arena.living_reinforcements().is_empty(), "no add appears before summon skill")
+	check(arena.get_node("OrdinaryEnemies").get_child_count() == 1, "ordinary monochrome is present before summons without occupying their slots")
 	for i: int in range(150):
 		await ticks(1)
 		if arena.summon_pending:

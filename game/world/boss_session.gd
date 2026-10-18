@@ -87,6 +87,7 @@ func _enter_boss() -> void:
 		return
 	if bool(data["events"].get(BOSS_INTRO, false)):
 		actor.start_combat()
+		arena.start_ordinary(player)
 		return
 	data["events"][BOSS_INTRO] = true
 	if not save_current("Boss首次演出已记录"):
@@ -131,6 +132,7 @@ func _end_boss_intro(start: bool) -> void:
 	(player.get_node("Camera2D") as Camera2D).offset = Vector2.ZERO
 	if start:
 		(room.get_node("Boss") as OverlookBoss).start_combat()
+		(room as BossRoom).start_ordinary(player)
 
 func _on_boss_defeated() -> void:
 	(room as BossRoom).clear_reinforcements()

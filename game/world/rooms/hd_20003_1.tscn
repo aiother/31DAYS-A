@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 [ext_resource type="Script" path="res://world/rooms/parasite_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/hd_20003_1.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://data/checkpoints/hd_20003_1_n003.tres" id="6"]
 [ext_resource type="PackedScene" path="res://enemies/parasite_boss.tscn" id="7"]
 [ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="8"]
+[ext_resource type="Script" path="res://world/rooms/boss_ordinary_enemies.gd" id="9"]
 [sub_resource type="RectangleShape2D" id="ReturnShape"]
 size = Vector2(64, 1792)
 [sub_resource type="RectangleShape2D" id="ExitShape"]
@@ -42,6 +43,10 @@ polygon = PackedVector2Array(-76, 0, -76, -112, -60, -112, -60, -48, 72, -48, 72
 color = Color(0.28, 0.22, 0.16, 1)
 [node name="Boss" parent="." instance=ExtResource("7")]
 position = Vector2(1280, 1536)
+[node name="OrdinaryEnemies" type="Node2D" parent="."]
+script = ExtResource("9")
+spawn_position = Vector2(1600, 1280)
+flying = true
 [node name="Enemies" type="Node2D" parent="."]
 [node name="AttackCoordinator" type="Node" parent="."]
 script = ExtResource("8")

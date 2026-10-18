@@ -45,7 +45,15 @@ func _physics_process(delta: float) -> void:
 		support_spawned.emit(enemy)
 	queue_redraw()
 
+func start_ordinary(player: PlayerController) -> void:
+	if opened:
+		return
+	var enemy: MonochromeEntity = ($OrdinaryEnemies as BossOrdinaryEnemies).start(player, $AttackCoordinator as EnemyAttackCoordinator)
+	if enemy != null:
+		support_spawned.emit(enemy)
+
 func clear_projectiles() -> void:
+	($OrdinaryEnemies as BossOrdinaryEnemies).clear()
 	support_pending = false
 	support_remaining = -1
 	for child: Node in $Enemies.get_children():
@@ -56,6 +64,8 @@ func clear_projectiles() -> void:
 	queue_redraw()
 
 func set_opened(value: bool, animate: bool = false) -> void:
+	if value:
+		($OrdinaryEnemies as BossOrdinaryEnemies).clear()
 	var changed: bool = opened != value
 	opened = value
 	if value and changed and animate:

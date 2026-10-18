@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('Boss ordinary monochrome lifecycle and summon separation', 'res://tests/test_boss_ordinary.gd', 'BOSS_ORDINARY_TESTS checks='),
     ('player physics regression', 'res://tests/test_player.gd', 'PLAYER_TESTS checks='),
     ('basic combat regression', 'res://tests/test_combat.gd', 'COMBAT_TESTS checks='),
     ('combat tuning revision', 'res://tests/test_combat_revision.gd', 'COMBAT_REVISION_TESTS checks='),

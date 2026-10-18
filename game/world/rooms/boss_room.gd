@@ -39,7 +39,15 @@ func spawn_reinforcement() -> void:
 	enemy.alert_to_target()
 	reinforcement_spawned.emit(enemy)
 
+func start_ordinary(player: PlayerController) -> void:
+	if opened:
+		return
+	var enemy: MonochromeEntity = ($OrdinaryEnemies as BossOrdinaryEnemies).start(player, $AttackCoordinator as EnemyAttackCoordinator)
+	if enemy != null:
+		reinforcement_spawned.emit(enemy)
+
 func clear_reinforcements() -> void:
+	($OrdinaryEnemies as BossOrdinaryEnemies).clear()
 	summon_pending = false
 	($Boss as OverlookBoss).summon_remaining = -1.0
 	for child: Node in $Enemies.get_children():
@@ -63,6 +71,7 @@ func set_opened(value: bool) -> void:
 	opened = value
 	$ExitLabel.text = "天窗已开启 · 向上前进" if value else "击败渴望俯视后开启"
 	if value:
+		($OrdinaryEnemies as BossOrdinaryEnemies).clear()
 		summon_platforms()
 		if changed:
 			create_tween().tween_property(self, "light_strength", 1.0, 0.8)

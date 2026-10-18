@@ -76,6 +76,7 @@ func _enter_parasite() -> void:
 		return
 	if bool(data["events"].get(PARASITE_INTRO, false)):
 		actor.start_combat()
+		arena.start_ordinary(player)
 		return
 	data["events"][PARASITE_INTRO] = true
 	if not save_current("Boss首次演出已记录"):
@@ -123,6 +124,7 @@ func _end_parasite_intro(start: bool) -> void:
 	(room.get_node("Boss/VisualRoot") as Node2D).rotation = 0
 	if start:
 		(room.get_node("Boss") as ParasiteBoss).start_combat()
+		(room as ParasiteRoom).start_ordinary(player)
 
 func _on_parasite_defeated() -> void:
 	(room as ParasiteRoom).clear_projectiles()

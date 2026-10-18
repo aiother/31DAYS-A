@@ -64,6 +64,7 @@ func run() -> void:
 	first.set_physics_process(false)
 	await ticks(20)
 	check(arena().living_support().size()==2, "periodic support reaches two living enemies")
+	check(arena().get_node("OrdinaryEnemies").get_child_count()==1, "two colorless support coexist with independent ordinary aerial monochrome")
 	for enemy: ColorlessEntity in arena().living_support():
 		enemy.set_physics_process(false)
 	await ticks(50)

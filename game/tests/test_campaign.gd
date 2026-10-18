@@ -27,7 +27,7 @@ func quiet() -> void:
 		session = current_scene as FinalBattleSession
 	if not is_instance_valid(session):
 		return
-	for container: String in ["Enemies", "Allies"]:
+	for container: String in ["Enemies", "OrdinaryEnemies", "Allies"]:
 		if session.room.has_node(container):
 			for actor: Node in session.room.get_node(container).get_children():
 				actor.process_mode = Node.PROCESS_MODE_DISABLED
