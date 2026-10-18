@@ -146,9 +146,11 @@ func save_current(message: String = "已自动保存") -> bool:
 		return super.save_current(message)
 	var before: Dictionary = data["events"].duplicate()
 	var old_day: int = int(data.get("day",1))
+	var old_time: float = float(data.get("day_remaining",DayClock.CONFIG.day_seconds))
+	var old_third_time: float = float(data.get("day3_remaining",DayClock.CONFIG.day_seconds))
 	var victory: bool = _parasite_victory_pending
 	if victory:
-		data["day"] = maxi(old_day,3)
+		DayClock.advance_to(data,3)
 		for key: String in [PARASITE_DEFEATED, PARASITE_PASSAGE]:
 			data["events"][key] = true
 	data["events"][DODGE_GROWTH] = true
@@ -156,6 +158,8 @@ func save_current(message: String = "已自动保存") -> bool:
 	if not super.save_current(message):
 		data["events"] = before
 		data["day"] = old_day
+		data["day_remaining"] = old_time
+		data["day3_remaining"] = old_third_time
 		_sync_dodge_growth()
 		return false
 	_sync_dodge_growth()

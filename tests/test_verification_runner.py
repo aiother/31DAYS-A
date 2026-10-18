@@ -39,8 +39,8 @@ class VerificationRunnerTests(unittest.TestCase):
         self.assertFalse(passed)
 
     def test_manifest_keeps_all_suites_and_real_files(self):
-        self.assertEqual(len(verifier.TESTS), 61)
-        self.assertEqual(len({path for _, path, _ in verifier.TESTS}), 61)
+        self.assertEqual(len(verifier.TESTS), 63)
+        self.assertEqual(len({path for _, path, _ in verifier.TESTS}), 63)
         for _, path, _ in verifier.TESTS:
             self.assertTrue((verifier.ROOT/'game'/path.removeprefix('res://')).is_file())
 

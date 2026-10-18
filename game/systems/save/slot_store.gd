@@ -22,9 +22,11 @@ func _integer(value: Variant, low: int, high: int) -> bool:
 	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and float(value) >= low and float(value) <= high
 
 func valid(data: Dictionary) -> bool:
-	for key: String in ["day3_remaining","final_remaining","final_budget"]:
-		var value: Variant = data.get(key,1800.0 if key=="day3_remaining" else 900.0)
-		if not (value is float or value is int) or not is_finite(float(value)) or float(value)<0 or float(value)>(1800 if key=="day3_remaining" else 900):
+	for key: String in ["day_remaining","day3_remaining","final_remaining","final_budget"]:
+		var day_key: bool = key in ["day_remaining","day3_remaining"]
+		var limit: float = DayClock.CONFIG.day_seconds if day_key else 900.0
+		var value: Variant = data.get(key,limit)
+		if not (value is float or value is int) or not is_finite(float(value)) or float(value)<0 or float(value)>limit:
 			return false
 	if float(data.get("final_remaining",900))>float(data.get("final_budget",900)):
 		return false
@@ -42,6 +44,8 @@ func valid(data: Dictionary) -> bool:
 	for key: Variant in events:
 		if not key is String or key.is_empty() or key.length() > 128 or not events[key] is bool:
 			return false
+	if bool(events.get(DayClock.TIMEOUT,false)) and (int(data.get("day",1))!=3 or float(data.get("day3_remaining",DayClock.CONFIG.day_seconds))!=0 or bool(events.get(FinalClock.STARTED,false)) or bool(events.get(FinalClock.WON,false))):
+		return false
 	if bool(events.get("HD_20003_1:dodge_growth_claimed",false)) and (not bool(events.get("HD_20003_1_N001:defeated",false)) or bool(events.get("HD_20003_1:dodge_growth_pending",false))):
 		return false
 	if bool(events.get("HD_10004_1:combat_growth_claimed",false)) and (not bool(events.get("HD_10004_1_N001:defeated",false)) or bool(events.get("HD_10004_1:combat_growth_pending",false))):

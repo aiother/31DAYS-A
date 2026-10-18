@@ -92,6 +92,7 @@ func run() -> void:
 	visited[session.room.config.room_id] = true
 	check(not session.intro_active and session.player.life.can_control() and session.data["events"].get(StartRoomSession.BIRTH, false), "production final session completes opening birth")
 	check(session.player.life.health == 3 and session.player.possibility.balance == 3 and session.data["day"] == 1, "new-game resources and day unchanged")
+	check(DayClock.remaining(session.data)<1800 and DayClock.remaining(session.data)>1790,"continuous campaign starts natural time only after opening control returns")
 	await travel(TwoRoomSession.ENTRY_ID)
 	await place(Vector2(288, 896))
 	check(session.data["checkpoint"] == TwoRoomSession.ENTRY_CHECKPOINT, "tower entrance checkpoint activates in main session")
@@ -129,6 +130,7 @@ func run() -> void:
 	await travel(TownSession.TOWN_ID)
 	await travel(RavineSession.RAVINE_ID)
 	check(session.data["day"] == 2 and session.data["checkpoint"] == RavineSession.RAVINE_CHECKPOINT, "real story and entrance advance day two with checkpoint")
+	check(DayClock.remaining(session.data)>1799 and DayClock.remaining(session.data)<=1800,"real second-day event initializes new-day window in continuous campaign")
 	await travel(RavineRescueSession.RESCUE_ID)
 	session.player.set_physics_process(false)
 	session.player.position = Vector2(1056, 720)
@@ -156,6 +158,7 @@ func run() -> void:
 	var parasite: ParasiteBoss = session.room.get_node("Boss") as ParasiteBoss
 	check(not session.intro_active and parasite.hurtbox.receive_attack(80, Vector2.ZERO, session.player, 30001), "second Boss intro and actual defeat work in main session")
 	check(session.data["day"] == 3 and session.data["events"].get(ParasiteSession.DODGE_GROWTH, false) and session.player.possibility.dodge_upgraded, "second Boss advances day three and grants permanent dodge upgrade")
+	check(DayClock.remaining(session.data)==1800,"real Boss victory initializes third-day clock once with its reward")
 	await travel(OutskirtsSession.OUTSKIRTS_ID)
 	check(session.player.possibility.maximum == 14, "optional gate grants no growth before rescue")
 	await place(Vector2(2196,848))
@@ -208,6 +211,7 @@ func run() -> void:
 	var saved: Dictionary = session.store.load_slot(1)
 	check(session.store.valid(saved) and saved["events"].get(FinalClock.END, false), "complete naturally earned event set passes slot validation")
 	check(saved["checkpoint"] == TrenchPassageSession.PASSAGE_CHECKPOINT and saved["maximum"] == 15 and saved["day"] == 3, "ending preserves real checkpoint, growth and date")
+	check(saved.has("day_remaining") and float(saved["day3_remaining"])>0 and float(saved["day3_remaining"])<1800,"continuous ending preserves consumed natural clock fields without refilling")
 	check(visited.size() == session._room_scenes().size() and visited.size() == 18, "continuous campaign visits all 18 delivered Rooms")
 	check(pearls.size() == 4, "all four delivered pearl placeholders collected")
 	for key: String in pearls:

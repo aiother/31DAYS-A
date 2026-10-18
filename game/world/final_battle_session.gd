@@ -12,6 +12,8 @@ var _ending_remaining: float = 0
 var _ending_attempted: bool = false
 var _final_talk: bool = false
 var _clock_save_remaining: float = 0.5
+var _exploration_timeout: bool = false
+var _announced_day: int = 0
 @onready var final_ui: FinalBattleUI = $FinalBattleUI
 
 func _ready() -> void:
@@ -30,14 +32,19 @@ func _final_arena() -> FinalBattlefieldRoom:
 	return room as FinalBattlefieldRoom
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
-	super._restore(snapshot,revive)
+	var normalized: Dictionary = snapshot.duplicate(true)
+	DayClock.normalize(normalized)
+	super._restore(normalized,revive)
 	FinalClock.normalize(data)
+	_announced_day = int(data.get("day",1))
 	if bool(data["events"].get(FinalClock.END,false)):
 		_show_finished()
 	elif bool(data["events"].get(FinalClock.TALK,false)):
 		_begin_ending()
 	elif bool(data["events"].get(FinalClock.TIMEOUT,false)):
 		_show_timeout()
+	elif bool(data["events"].get(DayClock.TIMEOUT,false)) or DayClock.expired(data):
+		_expire_day()
 
 func _bind_room() -> void:
 	super._bind_room()
@@ -86,18 +93,33 @@ func _try_start_clock() -> bool:
 	return true
 
 func _clock_tick(delta: float) -> void:
-	if not has_session() or not player.life.is_alive() or intro_active or cinematic!=Cinematic.NONE or _start_pending or _win_pending or _timeout_active or _ending_active:
+	if get_tree().paused or not has_session() or _loading or _reloading or _transitioning or not player.life.is_alive() or intro_active or dialogue_ui.active or dialogue_ui.confirming or cinematic!=Cinematic.NONE or _start_pending or _win_pending or _timeout_active or _ending_active or _final_talk or bool(data["events"].get(FinalClock.WON,false)):
 		return
-	if FinalClock.tick(data,delta):
+	var elapsed: Dictionary = DayClock.tick(data,delta)
+	if FinalClock.tick(data,float(elapsed["third_delta"])):
 		_timeout_pending = true
 		save_current("最终战超时")
 		_show_timeout()
 		return
-	if int(data.get("day",1))==3 and not bool(data["events"].get(FinalClock.WON,false)):
-		_clock_save_remaining -= delta
-		if _clock_save_remaining<=0:
-			_clock_save_remaining = 0.5
-			save_current()
+	if DayClock.expired(data):
+		_expire_day()
+		return
+	_clock_save_remaining -= delta
+	if not (elapsed["days"] as Array).is_empty() or _clock_save_remaining<=0:
+		_clock_save_remaining = DayClock.CONFIG.save_interval
+		save_current("日期与剩余时间已保存" if not (elapsed["days"] as Array).is_empty() else "计时已保存")
+
+func _expire_day() -> void:
+	data["events"][DayClock.TIMEOUT] = true
+	save_current("第三日探索时间已耗尽")
+	_show_timeout(true)
+
+func blocks_resume() -> bool:
+	return _timeout_active or bool(data.get("events",{}).get(FinalClock.END,false))
+
+func _announce_day(day: int) -> void:
+	final_ui.show_day(day)
+	_announced_day = day
 
 func _physics_process(delta: float) -> void:
 	if _final_talk:
@@ -173,16 +195,22 @@ func save_current(message: String = "已自动保存") -> bool:
 	_ending_pending = false
 	return true
 
-func _show_timeout() -> void:
+func _show_timeout(exploration: bool = false) -> void:
 	_timeout_active = true
+	_exploration_timeout = exploration
 	ui.call("hide_enemy_intro")
 	if _final_arena()!=null:
 		_final_arena().stop_attempt()
 	player.life.scripted_control_locked = true
-	final_ui.show_timeout(float(data.get("final_budget",0))>0,float(data.get("final_budget",0)))
+	if exploration:
+		final_ui.show_day_timeout()
+	else:
+		final_ui.show_timeout(float(data.get("final_budget",0))>0,float(data.get("final_budget",0)))
 	get_tree().paused = true
 
 func retry_final_battle() -> bool:
+	if _timeout_active and _exploration_timeout:
+		return _retry_exploration()
 	if not _timeout_active or float(data.get("final_budget",0))<=0:
 		return false
 	var before: Dictionary = data.duplicate(true)
@@ -199,6 +227,20 @@ func retry_final_battle() -> bool:
 	get_tree().paused = false
 	_restore(data.duplicate(true),false)
 	_change_room(BATTLEFIELD_ID)
+	return true
+
+func _retry_exploration() -> bool:
+	var before: Dictionary = data.duplicate(true)
+	DayClock.retry(data)
+	if not save_current("第三日探索重试已保存"):
+		data = before
+		return false
+	_timeout_active = false
+	_exploration_timeout = false
+	final_ui.reset_panel()
+	ui.call("save_failed","")
+	get_tree().paused = false
+	_queue_reload(slot,data,false)
 	return true
 
 func _on_dialogue_finished() -> void:
@@ -251,11 +293,16 @@ func _on_room_exit(id: String) -> void:
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	final_ui.clock_label.visible = has_session() and int(data.get("day",1))==3 and not intro_active and not bool(data.get("events",{}).get(FinalClock.END,false))
+	$DayUI.visible = false
+	final_ui.clock_label.visible = has_session() and not intro_active and not dialogue_ui.active and not dialogue_ui.confirming and not _timeout_active and not bool(data.get("events",{}).get(FinalClock.END,false))
 	if has_session():
-		var day_seconds: int = ceili(float(data.get("day3_remaining",1800)))
+		var day: int = int(data.get("day",1))
+		if _announced_day!=0 and _announced_day!=day:
+			_announce_day(day)
+		_announced_day = day
+		var day_seconds: int = ceili(DayClock.remaining(data))
 		var final_seconds: int = ceili(float(data.get("final_remaining",900)))
-		final_ui.clock_label.text = "第三日 %02d:%02d" % [day_seconds/60,day_seconds%60]
+		final_ui.clock_label.text = "第 %d 日 · 剩余 %02d:%02d" % [day,day_seconds/60,day_seconds%60]
 		if bool(data["events"].get(FinalClock.STARTED,false)):
 			final_ui.clock_label.text += "\n最终战 %02d:%02d" % [final_seconds/60,final_seconds%60]
 		if bool(data["events"].get(FinalClock.END,false)):

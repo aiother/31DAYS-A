@@ -43,23 +43,28 @@ func activate_checkpoint(id: String) -> bool:
 	var old_checkpoint: String = str(data["checkpoint"])
 	var old_events: Dictionary = data["events"].duplicate()
 	var old_day: int = int(data.get("day", 1))
+	var old_time: float = DayClock.remaining(data)
 	var next_day: int = maxi(old_day, 2) if bool(data["events"].get(FIELD_STORY, false)) else old_day
 	if old_checkpoint == id and bool(data["events"].get(id, false)) and next_day == old_day:
 		return false
 	data["checkpoint"] = id
 	data["events"][id] = true
-	data["day"] = next_day
+	DayClock.advance_to(data,next_day)
 	_update_flags()
 	if not save_current("巢都入口检查点已记录"):
 		data["checkpoint"] = old_checkpoint
 		data["events"] = old_events
 		data["day"] = old_day
+		data["day3_remaining" if old_day==3 else "day_remaining"] = old_time
 		_update_flags()
 		return false
 	ui.call("save_failed", "")
 	if next_day > old_day:
-		dialogue_ui.show_notice("第 %d 日" % next_day)
+		_announce_day(next_day)
 	return true
+
+func _announce_day(day: int) -> void:
+	dialogue_ui.show_notice("第 %d 日"%day)
 
 func _valid_departure_target(target: String) -> bool:
 	return (room is TownRoom and target == RAVINE_ID) or super._valid_departure_target(target)

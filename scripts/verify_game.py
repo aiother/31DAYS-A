@@ -9,6 +9,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('natural day clock migration rollover and final budget handoff', 'res://tests/test_day_clock.gd', 'DAY_CLOCK_TESTS checks='),
+    ('natural day session pause persistence story rollover and timeout retry', 'res://tests/test_day_clock_session.gd', 'DAY_CLOCK_SESSION_TESTS checks='),
     ('all-Room flying monochrome detours and recovery', 'res://tests/test_air_pursuit.gd', 'AIR_PURSUIT_TESTS checks='),
     ('all-Room rounded platform contact perturbations', 'res://tests/test_pursuit_contacts.gd', 'PURSUIT_CONTACTS_TESTS checks='),
     ('dynamic pursuit recovery and multi-platform video regression', 'res://tests/test_pursuit_recovery.gd', 'PURSUIT_RECOVERY_TESTS checks='),
@@ -75,7 +77,7 @@ TESTS = [
 def execute(engine, project, name, extra, expected=None):
     survey = any('test_pursuit_survey_' in str(arg) for arg in extra)
     contacts = any('test_pursuit_contacts.gd' in str(arg) or 'test_air_pursuit.gd' in str(arg) for arg in extra)
-    accelerated = survey or contacts or any('test_pursuit_recovery.gd' in str(arg) for arg in extra)
+    accelerated = survey or contacts or any('test_pursuit_recovery.gd' in str(arg) or 'test_day_clock_session.gd' in str(arg) for arg in extra)
     timeout = 600 if survey else (180 if contacts else 60)
     if accelerated:
         extra = ['--fixed-fps', '60', *extra]

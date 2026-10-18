@@ -159,6 +159,11 @@ func show_pause() -> void:
 	_button("退出游戏", _quit_game)
 
 func resume_game() -> void:
+	if get_parent().has_method("blocks_resume") and get_parent().call("blocks_resume"):
+		_panel.hide()
+		_mode = ""
+		get_tree().paused = true
+		return
 	if player.life.state == PlayerLife.State.DEATH_MENU:
 		show_death()
 		return
