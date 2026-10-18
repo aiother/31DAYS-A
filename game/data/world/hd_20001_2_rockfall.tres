@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RoomRockfallConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://world/hazards/room_rockfall_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+persistence_key = "hazard:HD_20001_2:disabled"
+lane = 1408.0
+spawn_y = 864.0
+floor_y = 1152.0
+switch_position = Vector2(1600, 1108)
+active_bounds = Rect2(1200, 700, 480, 520)
+warning = 0.6
+interval = 1.8
+speed = 700.0
+damage = 1
+interaction_radius = 88.0

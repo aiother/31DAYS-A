@@ -14,6 +14,8 @@ func _room_scenes() -> Dictionary:
 func _bind_room() -> void:
 	super._bind_room()
 	if has_session():
+		if room.environment_hazard!=null:
+			room.environment_hazard.refresh(player,data["events"])
 		for pickup: RoomPickup in _pickups():
 			pickup.refresh(player, bool(data["events"].get(pickup.config.persistence_key, false)))
 
@@ -29,9 +31,26 @@ func _physics_process(delta: float) -> void:
 	if not has_session() or intro_active:
 		return
 	if Input.is_action_just_pressed("interact"):
+		if activate_environment_switch():
+			return
 		for pickup: RoomPickup in _pickups():
 			if collect_pickup(pickup):
 				break
+
+func activate_environment_switch() -> bool:
+	if not has_session() or get_tree().paused or intro_active or _transitioning or room.environment_hazard==null or not room.environment_hazard.can_interact(player):
+		return false
+	var hazard: RoomRockfall = room.environment_hazard
+	var key: String = hazard.config.persistence_key
+	var existed: bool = data["events"].has(key)
+	data["events"][key] = true
+	if not save_current("本间落石已永久关闭"):
+		if existed: data["events"][key] = false
+		else: data["events"].erase(key)
+		return false
+	hazard.refresh(player,data["events"])
+	ui.call("save_failed","")
+	return true
 
 func collect_pickup(pickup: RoomPickup) -> bool:
 	if get_tree().paused or not has_session() or intro_active or not is_instance_valid(pickup) or not room.is_ancestor_of(pickup) or not pickup.can_collect(player):
@@ -54,6 +73,8 @@ func collect_pickup(pickup: RoomPickup) -> bool:
 func _process(delta: float) -> void:
 	super._process(delta)
 	if has_session():
+		if room.environment_hazard!=null:
+			room.environment_hazard.refresh(player,data["events"])
 		for pickup: RoomPickup in _pickups():
 			pickup.refresh(player, bool(data["events"].get(pickup.config.persistence_key, false)))
 	if room.config.room_id == EXPLORATION_ID:

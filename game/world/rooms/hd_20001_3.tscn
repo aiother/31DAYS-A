@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://world/rooms/ravine_depth_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/hd_20001_3.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://world/items/room_pickup.gd" id="8"]
 [ext_resource type="Resource" path="res://data/world/ravine_depth_pearl.tres" id="9"]
 [ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="10"]
+[ext_resource type="Resource" path="res://data/world/hd_20001_3_rockfall.tres" id="environment"]
 [sub_resource type="RectangleShape2D" id="Passage"]
 size = Vector2(64, 1536)
 [sub_resource type="RectangleShape2D" id="EncounterShape"]
@@ -15,6 +16,7 @@ size = Vector2(1408, 1536)
 [node name="HD_20001_3" type="Node2D"]
 script = ExtResource("1")
 config = ExtResource("2")
+environment = ExtResource("environment")
 [node name="Ground" type="TileMapLayer" parent="."]
 tile_set = ExtResource("3")
 [node name="LeftBoundary" parent="." instance=ExtResource("4")]

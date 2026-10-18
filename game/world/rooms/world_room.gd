@@ -5,6 +5,8 @@ signal exit_requested(target: String)
 signal exit_left
 signal encounter_requested
 @export var config: RoomConfig
+@export var environment: RoomRockfallConfig
+var environment_hazard: RoomRockfall
 
 func _ready() -> void:
 	assert(config != null)
@@ -21,6 +23,11 @@ func _ready() -> void:
 		$Return.body_exited.connect(_on_exit_left)
 	if has_node("Encounter"):
 		$Encounter.body_entered.connect(_on_encounter_entered)
+	if environment!=null:
+		environment_hazard = RoomRockfall.new()
+		environment_hazard.name = "EnvironmentRockfall"
+		environment_hazard.config = environment
+		add_child(environment_hazard)
 	queue_redraw()
 
 func activate_checkpoint(id: String) -> void:

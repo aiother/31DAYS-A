@@ -9,6 +9,7 @@ var directory: String
 var visited: Dictionary = {}
 var pearls: Array[String] = []
 var attack_id: int = 20000
+var shutdown_keys: Array[String] = []
 
 func _initialize() -> void:
 	run.call_deferred()
@@ -80,6 +81,16 @@ func collect() -> void:
 		check(session.collect_pickup(pickup), "campaign collects " + pickup.config.persistence_key)
 		pearls.append(pickup.config.persistence_key)
 
+func shutdown_environment() -> void:
+	var hazard: RoomRockfall = session.room.environment_hazard
+	await place(hazard.config.switch_position+Vector2(0,44))
+	Input.action_press("interact")
+	await ticks(1)
+	Input.action_release("interact")
+	await ticks(2)
+	check(hazard.disabled and session.store.load_slot(1)["events"].get(hazard.config.persistence_key,false),"campaign actual E input permanently shuts down "+session.room.config.room_id)
+	shutdown_keys.append(hazard.config.persistence_key)
+
 func run() -> void:
 	directory = "user://tests/campaign_%d" % Time.get_ticks_usec()
 	session = (load("res://world/final_battle_session.tscn") as PackedScene).instantiate() as FinalBattleSession
@@ -131,7 +142,9 @@ func run() -> void:
 	await travel(RavineSession.RAVINE_ID)
 	check(session.data["day"] == 2 and session.data["checkpoint"] == RavineSession.RAVINE_CHECKPOINT, "real story and entrance advance day two with checkpoint")
 	check(DayClock.remaining(session.data)>1799 and DayClock.remaining(session.data)<=1800,"real second-day event initializes new-day window in continuous campaign")
+	await shutdown_environment()
 	await travel(RavineRescueSession.RESCUE_ID)
+	await shutdown_environment()
 	session.player.set_physics_process(false)
 	session.player.position = Vector2(1056, 720)
 	check(session.interact_ravine_survivor(), "campaign starts elevated ravine rescue")
@@ -142,8 +155,10 @@ func run() -> void:
 	session.room.encounter_requested.emit()
 	await clear()
 	check(session.data["events"].get(RavineDepthSession.DEPTH_HELPED, false) and session.player.possibility.maximum == 14, "clear rescue in main session settles independent cap 14")
+	await shutdown_environment()
 	await collect()
 	await travel(CampSession.CAMP_ID)
+	await shutdown_environment()
 	await collect()
 	await travel(CampWavesSession.WAVES_ID)
 	var camp: CampWavesRoom = session.room as CampWavesRoom
@@ -212,6 +227,7 @@ func run() -> void:
 	check(session.store.valid(saved) and saved["events"].get(FinalClock.END, false), "complete naturally earned event set passes slot validation")
 	check(saved["checkpoint"] == TrenchPassageSession.PASSAGE_CHECKPOINT and saved["maximum"] == 15 and saved["day"] == 3, "ending preserves real checkpoint, growth and date")
 	check(saved.has("day_remaining") and float(saved["day3_remaining"])>0 and float(saved["day3_remaining"])<1800,"continuous ending preserves consumed natural clock fields without refilling")
+	check(shutdown_keys.size()==4 and shutdown_keys.all(func(key: String) -> bool: return bool(saved["events"].get(key,false))),"ending retains all four independent environment shutdowns")
 	check(visited.size() == session._room_scenes().size() and visited.size() == 18, "continuous campaign visits all 18 delivered Rooms")
 	check(pearls.size() == 4, "all four delivered pearl placeholders collected")
 	for key: String in pearls:

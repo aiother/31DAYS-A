@@ -95,6 +95,7 @@ func run() -> void:
 	for point: Vector2 in [Vector2(1424,1136),Vector2(1648,992),Vector2(1872,848)]:
 		check(await jump_to(point), "ordinary jump reaches camp platform %s; actual %s" % [point,session.player.position])
 	check(session.player.possibility.balance==0 and pearl().can_collect(session.player), "zero-resource route reaches actual pearl interaction radius")
+	var collected_health: int = session.player.life.health
 	var real_directory: String = session.store.directory
 	session.store.directory = real_directory.path_join("slot_1.json")
 	check(not session.collect_pickup(pearl()) and pearl().visible and not session.data["events"].get(pearl().config.persistence_key,false), "failed pearl write rolls back state and visibility")
@@ -104,7 +105,7 @@ func run() -> void:
 	Input.action_release("interact")
 	await ticks(2)
 	check(not pearl().visible and session.store.load_slot(1)["events"].get("keyitem:HD_20002_1:pearl_01",false), "real E collects and persists camp pearl")
-	check(not session.collect_pickup(pearl()) and session.player.possibility.maximum==14 and session.player.possibility.balance==0 and session.player.life.health==3, "duplicate pearl cannot award resources growth or health")
+	check(not session.collect_pickup(pearl()) and session.player.possibility.maximum==14 and session.player.possibility.balance==0 and session.player.life.health==collected_health, "duplicate pearl cannot change resources growth or pre-pickup health after environmental traversal")
 	check(not session.data["events"].get("keyitem:HD_20001_3:pearl_01",false), "camp and ravine pearls have independent ownership")
 	Input.action_press("move_right")
 	Input.action_press("run")

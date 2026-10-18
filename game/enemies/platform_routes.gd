@@ -159,7 +159,7 @@ func matches_tuning(actor: ColorlessEntity, jump: float, drop: float) -> bool:
 	return is_equal_approx(jump_speed,jump) and is_equal_approx(max_drop,drop) and is_equal_approx(ground_speed,actor.config.speed) and is_equal_approx(air_speed,burst) and is_equal_approx(gravity,actor.config.gravity)
 
 func _collect_anchors(node: Node, anchors: Array[float]) -> void:
-	if node is CharacterBody2D or node is ColorlessProjectile:
+	if node is CharacterBody2D or node is ColorlessProjectile or node.is_in_group("navigation_transients"):
 		return
 	if node is Node2D and not node is CollisionShape2D:
 		anchors.append((node as Node2D).global_position.x)

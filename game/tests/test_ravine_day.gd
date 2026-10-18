@@ -82,6 +82,10 @@ func run() -> void:
 	await ticks(4)
 	check(session.store.load_slot(1) == saved and session.data["day"] == 2, "repeat activation performs no day increment or duplicate write")
 	disable_enemies()
+	var hazard: RoomRockfall = session.room.environment_hazard
+	await place(hazard.config.switch_position+Vector2(0,44))
+	check(session.activate_environment_switch(),"existing geometry route can first use real permanent hazard shutdown")
+	check(hazard.disabled and session.store.load_slot(1)["events"].get(hazard.config.persistence_key,false),"route fixture closes trap through saved interaction rather than bypassing damage")
 	session.player.possibility.balance = 0
 	session.player.possibility.balance_changed.emit(0, 10)
 	await place(Vector2(768, 1280))

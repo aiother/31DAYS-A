@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://world/rooms/camp_room.gd" id="1"]
 [ext_resource type="Resource" path="res://data/world/hd_20002_1.tres" id="2"]
 [ext_resource type="TileSet" path="res://data/world/graybox_tileset.tres" id="3"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="7"]
 [ext_resource type="Script" path="res://systems/combat/enemy_attack_coordinator.gd" id="8"]
 [ext_resource type="PackedScene" path="res://enemies/monochrome_entity.tscn" id="9"]
+[ext_resource type="Resource" path="res://data/world/hd_20002_1_rockfall.tres" id="environment"]
 [sub_resource type="RectangleShape2D" id="ReturnShape"]
 size = Vector2(64, 1536)
 [sub_resource type="RectangleShape2D" id="ExitShape"]
@@ -15,6 +16,7 @@ size = Vector2(64, 1536)
 [node name="HD_20002_1" type="Node2D"]
 script = ExtResource("1")
 config = ExtResource("2")
+environment = ExtResource("environment")
 [node name="Ground" type="TileMapLayer" parent="."]
 tile_set = ExtResource("3")
 [node name="LeftBoundary" parent="." instance=ExtResource("4")]
