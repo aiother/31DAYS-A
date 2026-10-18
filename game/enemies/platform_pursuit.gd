@@ -46,6 +46,13 @@ func _walkable(actor: CharacterBody2D, start: Vector2, end: Vector2) -> bool:
 	var count: int = maxi(1, ceili(absf(end.x-start.x)/16))
 	for i: int in range(count+1):
 		if not _supported(actor, start.lerp(end, i/float(count))):
+			# At a wall contact the extra-wide side probe may start inside the
+			# raised tile. A real supported body can still walk away from it.
+			# Only relax the origin; every subsequent sample and landing stays strict.
+			if i == 0 and actor.is_on_floor() and start.is_equal_approx(actor.global_position):
+				var floor_hit: Dictionary = _floor_at(actor, start.x, start.y-3, start.y+5)
+				if not floor_hit.is_empty() and (floor_hit["normal"] as Vector2).y < -0.9 and absf((floor_hit["position"] as Vector2).y-start.y)<3:
+					continue
 			return false
 	return true
 
@@ -167,7 +174,11 @@ func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float, max_
 	if actor.target.global_position.y>actor.global_position.y+48:
 		approaching = false
 		return _start_descent(actor,max_drop)
-	if actor.target.global_position.y>=actor.global_position.y-48:
+	var offset: Vector2 = actor.target.global_position-actor.global_position
+	# Same-level targets can be separated by a solid step. Check the full
+	# horizontal segment so backing away does not cancel the obstacle route.
+	var crossing_obstacle: bool = absf(offset.y)<=48 and absf(offset.x)>1 and actor.test_move(actor.global_transform, Vector2(offset.x, 0))
+	if actor.target.global_position.y>=actor.global_position.y-48 and not crossing_obstacle:
 		approaching = false
 		return false
 	if approaching:
@@ -186,11 +197,17 @@ func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float, max_
 	var start: Vector2 = actor.global_position
 	var height: float = jump_speed*jump_speed/(2*actor.config.gravity)-12
 	var reach: float = actor.config.speed*2*jump_speed/actor.config.gravity
+	var best_score: float = INF
+	var best_point: Vector2
+	var best_from: Vector2
+	var best_speed: float = 0.0
 	# A target directly overhead can require walking away across several solid
 	# overhangs before the first lower step becomes reachable. Search launch
 	# positions on the connected floor; never relax support or arc collision.
 	for index: int in range(APPROACH_STEPS * 2 + 1):
 		var dx: float = 0.0 if index == 0 else ceilf(index / 2.0) * APPROACH_STEP * (-1.0 if index % 2 == 1 else 1.0)
+		if absf(dx)*0.25 >= best_score:
+			break
 		var from: Vector2 = start + Vector2(dx, 0)
 		if dx != 0 and not _walkable(actor, start, from):
 			continue
@@ -203,26 +220,44 @@ func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float, max_
 			if hit.is_empty() or (hit["normal"] as Vector2).y > -0.9:
 				continue
 			var point: Vector2 = hit["position"]
-			if point.y < actor.target.global_position.y - 16 or not _supported(actor, point):
+			if not _supported(actor, point):
+				continue
+			if crossing_obstacle:
+				# Climb a supported intermediate top toward the blocked target,
+				# then use the existing safe descent after reaching its top.
+				if (point.x-start.x)*signf(offset.x)<=0 or absf(point.x-actor.target.global_position.x)>=absf(offset.x):
+					continue
+			elif point.y < actor.target.global_position.y - 16:
 				continue
 			candidates.append(point)
 		candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(actor.target.global_position) < b.distance_to(actor.target.global_position))
 		for point: Vector2 in candidates:
+			# Compare the useful landing, not just the first possible jump.
+			# A platform behind us must not win over a short backstep onto
+			# the actual obstacle separating us from the target.
+			var score: float = point.distance_to(actor.target.global_position)+absf(dx)*0.25
+			if score >= best_score:
+				continue
 			var vx: float = _arc_speed(actor,from,point,jump_speed)
 			if not is_finite(vx):
 				continue
-			if dx!=0:
-				launch = from
-				approaching = true
-				actor.velocity.x = signf(dx)*actor.config.speed
-				return true
-			goal = point
-			horizontal_speed = vx
-			active = true
-			airborne = false
-			descending = false
-			travel_remaining = 3.5
-			cooldown = jump_cooldown
-			actor.velocity = Vector2(vx,-jump_speed)
+			best_score = score
+			best_point = point
+			best_from = from
+			best_speed = vx
+	if is_finite(best_score):
+		if absf(best_from.x-start.x)>1:
+			launch = best_from
+			approaching = true
+			actor.velocity.x = signf(launch.x-start.x)*actor.config.speed
 			return true
+		goal = best_point
+		horizontal_speed = best_speed
+		active = true
+		airborne = false
+		descending = false
+		travel_remaining = 3.5
+		cooldown = jump_cooldown
+		actor.velocity = Vector2(horizontal_speed,-jump_speed)
+		return true
 	return false
