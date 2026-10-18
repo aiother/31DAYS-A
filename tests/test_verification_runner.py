@@ -39,10 +39,24 @@ class VerificationRunnerTests(unittest.TestCase):
         self.assertFalse(passed)
 
     def test_manifest_keeps_all_suites_and_real_files(self):
-        self.assertEqual(len(verifier.TESTS), 53)
-        self.assertEqual(len({path for _, path, _ in verifier.TESTS}), 53)
+        self.assertEqual(len(verifier.TESTS), 61)
+        self.assertEqual(len({path for _, path, _ in verifier.TESTS}), 61)
         for _, path, _ in verifier.TESTS:
             self.assertTrue((verifier.ROOT/'game'/path.removeprefix('res://')).is_file())
+
+    def test_survey_uses_fixed_60hz_and_separate_bounded_budget(self):
+        with patch.object(verifier.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout='SURVEY_TESTS checks=1 failures=0\n',stderr='')) as run:
+            result=verifier.execute('engine','project','survey',['--script','res://tests/test_pursuit_survey_a.gd'],'SURVEY_TESTS checks=')
+        self.assertTrue(result[3])
+        self.assertEqual(run.call_args.kwargs['timeout'],600)
+        self.assertIn('--fixed-fps',run.call_args.args[0])
+        self.assertIn('60',run.call_args.args[0])
+
+    def test_ordinary_suites_keep_realtime_60_second_budget(self):
+        with patch.object(verifier.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout='',stderr='')) as run:
+            verifier.execute('engine','project','normal',['--script','res://tests/test_platform_pursuit.gd'])
+        self.assertEqual(run.call_args.kwargs['timeout'],60)
+        self.assertNotIn('--fixed-fps',run.call_args.args[0])
 
     def test_parallel_execution_follows_import_and_keeps_ordered_report(self):
         barrier = threading.Barrier(2)

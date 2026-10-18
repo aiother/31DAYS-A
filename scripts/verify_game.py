@@ -9,6 +9,14 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('all-Room flying monochrome detours and recovery', 'res://tests/test_air_pursuit.gd', 'AIR_PURSUIT_TESTS checks='),
+    ('all-Room rounded platform contact perturbations', 'res://tests/test_pursuit_contacts.gd', 'PURSUIT_CONTACTS_TESTS checks='),
+    ('dynamic pursuit recovery and multi-platform video regression', 'res://tests/test_pursuit_recovery.gd', 'PURSUIT_RECOVERY_TESTS checks='),
+    ('all-Room pursuit survey A', 'res://tests/test_pursuit_survey_a.gd', 'PURSUIT_SURVEY_A_TESTS checks='),
+    ('all-Room pursuit survey B', 'res://tests/test_pursuit_survey_b.gd', 'PURSUIT_SURVEY_B_TESTS checks='),
+    ('all-Room pursuit survey C', 'res://tests/test_pursuit_survey_c.gd', 'PURSUIT_SURVEY_C_TESTS checks='),
+    ('all-Room pursuit survey D', 'res://tests/test_pursuit_survey_d.gd', 'PURSUIT_SURVEY_D_TESTS checks='),
+    ('all-Room pursuit gate-state survey E', 'res://tests/test_pursuit_survey_e.gd', 'PURSUIT_SURVEY_E_TESTS checks='),
     ('TileMap wall backsteps same-level obstacles and moving target regression', 'res://tests/test_platform_obstacles.gd', 'PLATFORM_OBSTACLES_TESTS checks='),
     ('platform detours around wide overhangs and real ravine video regression', 'res://tests/test_platform_detour.gd', 'PLATFORM_DETOUR_TESTS checks='),
     ('Boss ordinary monochrome lifecycle and summon separation', 'res://tests/test_boss_ordinary.gd', 'BOSS_ORDINARY_TESTS checks='),
@@ -65,15 +73,21 @@ TESTS = [
 ]
 
 def execute(engine, project, name, extra, expected=None):
+    survey = any('test_pursuit_survey_' in str(arg) for arg in extra)
+    contacts = any('test_pursuit_contacts.gd' in str(arg) or 'test_air_pursuit.gd' in str(arg) for arg in extra)
+    accelerated = survey or contacts or any('test_pursuit_recovery.gd' in str(arg) for arg in extra)
+    timeout = 600 if survey else (180 if contacts else 60)
+    if accelerated:
+        extra = ['--fixed-fps', '60', *extra]
     try:
         result = subprocess.run([engine, '--headless', '--path', project, *extra],
-                                capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=60)
+                                capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
         code, output = result.returncode, result.stdout + result.stderr
     except subprocess.TimeoutExpired as error:
         def decode(value):
             return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else (value or '')
         code = 124
-        output = decode(error.stdout) + decode(error.stderr) + '\nERROR: suite exceeded 60 seconds\n'
+        output = decode(error.stdout) + decode(error.stderr) + f'\nERROR: suite exceeded {timeout} seconds\n'
     passed = code == 0 and not any(marker in output for marker in ERROR_MARKERS)
     if expected:
         passed = passed and re.search(re.escape(expected) + r'\d+ failures=0(?:\r?\n|$)', output) is not None
@@ -99,7 +113,13 @@ def main():
         logs += [f'=== {name}: exit {code} ===\n{output}' for _,(name,code,output,_) in sorted(results.items())]
         report.write_text('\n'.join(logs), encoding='utf-8')
         print(('PASS ' if result[3] else 'FAIL ') + result[0], flush=True)
-        if not result[3]: print(result[2], flush=True)
+        if not result[3]:
+            output = result[2]
+            if len(output)>12000:
+                lines=output.splitlines()
+                diagnostics=[line for line in lines if any(marker in line for marker in ERROR_MARKERS) or re.search(r'failures=[1-9]',line)]
+                output='\n'.join(diagnostics+lines[-20:])
+            print(output, flush=True)
     for index,(name,extra) in enumerate([
         ('editor import',['--editor','--import','--quit']),
         ('main scene180 frames',['--quit-after','180']),

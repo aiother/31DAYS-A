@@ -8,6 +8,7 @@ var dodge_cooldown_remaining: float = 0.0
 var strong_attack: bool = false
 var _dash_cooldown: float = 0.0
 var platform_pursuit: EnemyPlatformPursuit = EnemyPlatformPursuit.new()
+var air_pursuit: EnemyAirPursuit = EnemyAirPursuit.new()
 var _motion_direction: Vector2 = Vector2.ZERO
 var _attack_count: int = 0
 var _light_windup: float
@@ -39,6 +40,10 @@ func _watch_target() -> void:
 
 func _physics_process(delta: float) -> void:
 	_watch_target()
+	air_pursuit.tick(delta)
+	if not is_instance_valid(target) or (target is PlayerController and not (target as PlayerController).life.is_alive()):
+		platform_pursuit.cancel()
+		air_pursuit.cancel()
 	dodge_cooldown_remaining = maxf(0,dodge_cooldown_remaining-delta)
 	_dash_cooldown = maxf(0,_dash_cooldown-delta)
 	platform_pursuit.tick(delta)
@@ -112,8 +117,28 @@ func _seek_target() -> void:
 		var visible: bool = _can_see_target()
 		if visible and offset.length()<=config.sight_range:
 			_seen = true
+		if flying and air_pursuit.chase(self):
+			state = State.CHASE
+			return
 		if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown,tuning().pursuit_max_drop):
 			state = State.CHASE
+			return
+		if platform_pursuit.graph_mode and platform_pursuit.no_path:
+			state = State.CHASE
+			if visible and offset.length()<=config.ranged_range and _ranged_cooldown_remaining==0 and (not is_instance_valid(coordinator) or coordinator.try_acquire(self)):
+				strong_attack = false
+				config.windup = _light_windup
+				config.recovery = _light_recovery
+				config.damage = _light_damage
+				_ranged = true
+				_attack_direction = offset.normalized()
+				facing = signf(offset.x) if absf(offset.x)>1 else facing
+				state = State.WINDUP
+				_remaining = config.windup
+				_attack_id += 1
+				_hit_targets.clear()
+				_stop_horizontal()
+				attack_started.emit(true)
 			return
 		if _seen and visible and _dash_cooldown == 0 and offset.length()>220 and offset.length()<520 and (flying or (is_on_floor() and absf(offset.y)<65)):
 			var direction: Vector2 = offset.normalized() if flying else Vector2(signf(offset.x),0)
@@ -147,6 +172,7 @@ func _protected_action() -> bool:
 
 func _interrupt_action() -> void:
 	platform_pursuit.cancel()
+	air_pursuit.cancel()
 	_end_motion()
 
 func _update_status_label() -> void:
@@ -156,4 +182,8 @@ func _update_status_label() -> void:
 	var action: String = "闪避" if motion == Motion.DODGE else "冲刺"
 	if motion == Motion.NONE:
 		action = ("强力·" if strong_attack else "轻击·")+health_label.text.get_slice("·",1).strip_edges()
+		if state==State.CHASE and not platform_pursuit.intent.is_empty():
+			action = platform_pursuit.intent
+		if flying and state==State.CHASE and not air_pursuit.intent.is_empty():
+			action = air_pursuit.intent
 	health_label.text = "单色 %d / %d · %s" % [health,config.max_health,action]

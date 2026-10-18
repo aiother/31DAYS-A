@@ -61,7 +61,7 @@ func obstacle_safety(kind: String, tall: bool) -> void:
 		target.position = Vector2(1000, 1152)
 	spawn(kind, Vector2(1112.1, 1280))
 	await ticks(60)
-	check(actor.is_on_floor() and absf(actor.position.y-1280)<4 and actor.position.x>1110 and actor.position.x<1144, kind+(" refuses wall above jump height" if tall else " does not backstep into void to clear wall"))
+	check(actor.is_on_floor() and absf(actor.position.y-1280)<4 and actor.position.x>1110 and (tall or actor.position.x<1144), kind+(" refuses wall above jump height while retaining safe search" if tall else " does not backstep into void to clear wall"))
 	await clean()
 
 func run() -> void:

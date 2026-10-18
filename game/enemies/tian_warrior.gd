@@ -60,6 +60,7 @@ func _physics_process(delta: float) -> void:
 	platform_pursuit.tick(delta)
 	velocity.y = minf(1500,velocity.y+config.gravity*delta)
 	if not is_instance_valid(target) or (target is PlayerController and not (target as PlayerController).life.is_alive()):
+		platform_pursuit.cancel()
 		_release_slot()
 		_cancel_motion()
 		counter_remaining = 0
@@ -126,6 +127,10 @@ func _seek_target() -> void:
 		return
 	state = State.CHASE
 	if platform_pursuit.chase(self,tuning().jump_speed,tuning().jump_cooldown,tuning().pursuit_max_drop):
+		return
+	if platform_pursuit.graph_mode and platform_pursuit.no_path:
+		if visible and offset.length()<=config.ranged_range and _ranged_cooldown_remaining==0 and _acquire():
+			_start_attack(Attack.RANGED)
 		return
 	if absf(offset.x)>1:
 		facing = signf(offset.x)
@@ -243,4 +248,6 @@ func _update_status_label() -> void:
 		action = ["","冲刺","瞬移预警","格挡"][motion]
 	else:
 		action += "·"+health_label.text.get_slice("·",1).strip_edges()
+		if state==State.CHASE and not platform_pursuit.intent.is_empty():
+			action = platform_pursuit.intent
 	health_label.text = "天人 %d / %d · %s" % [health,config.max_health,action]
