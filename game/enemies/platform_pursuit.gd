@@ -1,6 +1,8 @@
 class_name EnemyPlatformPursuit
 extends RefCounted
 ## Local, collision-checked ballistic steps. No teleport or collision bypass.
+const APPROACH_STEP: float = 96.0
+const APPROACH_STEPS: int = 10
 var active: bool = false
 var airborne: bool = false
 var goal: Vector2
@@ -184,23 +186,28 @@ func chase(actor: ColorlessEntity, jump_speed: float, jump_cooldown: float, max_
 	var start: Vector2 = actor.global_position
 	var height: float = jump_speed*jump_speed/(2*actor.config.gravity)-12
 	var reach: float = actor.config.speed*2*jump_speed/actor.config.gravity
-	var candidates: Array[Vector2] = []
-	for i: int in range(-ceili(reach/32), ceili(reach/32)+1):
-		var x: float = start.x+i*32
-		var hit: Dictionary = _floor_at(actor,x,start.y-height,start.y-40)
-		if hit.is_empty() or (hit["normal"] as Vector2).y > -0.9:
+	# A target directly overhead can require walking away across several solid
+	# overhangs before the first lower step becomes reachable. Search launch
+	# positions on the connected floor; never relax support or arc collision.
+	for index: int in range(APPROACH_STEPS * 2 + 1):
+		var dx: float = 0.0 if index == 0 else ceilf(index / 2.0) * APPROACH_STEP * (-1.0 if index % 2 == 1 else 1.0)
+		var from: Vector2 = start + Vector2(dx, 0)
+		if dx != 0 and not _walkable(actor, start, from):
 			continue
-		var point: Vector2 = hit["position"]
-		if point.y < actor.target.global_position.y-16 or not _supported(actor,point):
-			continue
-		candidates.append(point)
-	candidates.sort_custom(func(a: Vector2,b: Vector2) -> bool: return a.distance_to(actor.target.global_position)<b.distance_to(actor.target.global_position))
-	# Prefer an immediate jump; only then consider walking clear of an overhang.
-	for dx: float in [0.0,-96.0,96.0,-192.0,192.0]:
-		var from: Vector2 = start+Vector2(dx,0)
-		if dx!=0 and not _walkable(actor,start,from):
-			continue
-		for point: Vector2 in candidates.slice(0,8):
+		var candidates: Array[Vector2] = []
+		# Scan from this launch, rather than starving a detour of landing points
+		# outside the jump radius of the actor's original position.
+		for i: int in range(-ceili(reach / 32), ceili(reach / 32) + 1):
+			var x: float = from.x + i * 32
+			var hit: Dictionary = _floor_at(actor, x, start.y - height, start.y - 40)
+			if hit.is_empty() or (hit["normal"] as Vector2).y > -0.9:
+				continue
+			var point: Vector2 = hit["position"]
+			if point.y < actor.target.global_position.y - 16 or not _supported(actor, point):
+				continue
+			candidates.append(point)
+		candidates.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(actor.target.global_position) < b.distance_to(actor.target.global_position))
+		for point: Vector2 in candidates:
 			var vx: float = _arc_speed(actor,from,point,jump_speed)
 			if not is_finite(vx):
 				continue
