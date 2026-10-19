@@ -1,6 +1,6 @@
 # DOC-003：记录待决事项裁决并写入主文档
 
-状态：待合并（2026-10-19 Codex 审查通过，独立 G3 通过；见 review.md）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-19 用户授权合并，master 的 G3 通过；见 integration.md）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：DOC-002（已合并）
 
 ## 目标
