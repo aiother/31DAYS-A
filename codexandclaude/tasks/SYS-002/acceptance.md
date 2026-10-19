@@ -1,6 +1,6 @@
 # SYS-002 G4 验收入口（S 级小任务）
 
-状态：入口实现与自测完成，待 Claude S 级审查；SYS-002 用户 G4 结果待填写。
+状态：入口经 Claude S 级审查通过；SYS-002 用户 G4 已于 2026-10-19 通过，见下表。
 
 批准依据：用户在会话中的原话“让 Codex 做一个 G4 验收入口”，并明确本任务只改以下两份文件。基线为已获 Claude 审查通过的固定 SHA `70b1ae17bb4bb45f422fb09dcb0b03a3f4c38823`，分支 `codex/SYS-002-g4`。
 
@@ -64,11 +64,11 @@ python codexandclaude/tools/run_checks.py focused --python-all
 
 原始日志在本工作区 `codexandclaude/runs/SYS-002-g4/`（忽略目录），summary.json 为9组启动结果；windowed-camp.txt 与 preview-camp.png 为窗口自测和渲染证据。工具版本：Godot 4.7.2.stable.official.ed1daf0bf、Python 3.12.14、openpyxl 3.1.5、Git 2.56.0.windows.2、Node v24.19.0。提交前 G3 实测结果与实现 SHA 在下方交付补记中追加。
 
-## 用户验收结果（待填写）
+## 用户验收结果
 
 | 日期/验收人 | 场景、余额/上限、站位 | 第1项生成/+2 | 第2项上限/回升 | 第3项暂停/清理 | 第4项高处观察 | 结论/问题 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 待验收 | — | 未验证 | 未验证 | 未验证 | 未验证 | 用户 G4 尚未完成 |
+| 2026-10-19／用户 | 使用本验收入口（Claude 提供 camp、overlook、trench 启动命令） | 通过 | 通过 | 通过 | 通过，未反映长时间不生成 | 用户在会话中反馈“没问题”；四项按通过记录，由 Claude 代为填写 |
 
 ## S 级交付补记
 
