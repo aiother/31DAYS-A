@@ -80,6 +80,26 @@ class PendingDecisionsTests(unittest.TestCase):
             with self.subTest(row=row[0]):
                 self.assertRegex(row[4], r"2026-10-\d{2}")
 
+    def b_row(self, item_id):
+        rows = [row for row in table_rows(self.section(SECTIONS["B"])) if row[0] == item_id]
+        self.assertEqual(len(rows), 1, item_id)
+        return rows[0]
+
+    def test_rescue_expiry_keeps_the_legacy_slot_exception(self):
+        row = self.b_row("B-005")
+        conclusion, source = row[3], row[4]
+        for rule in ("尚未见过", "旧存档", "已见过", "未主动放弃", "永久保留一次救助机会"):
+            self.assertIn(rule, conclusion)
+        self.assertIn("旧槽兼容", source)
+
+    def test_trench_forward_path_requires_breaking_the_rubble(self):
+        conclusion = self.b_row("B-016")[3]
+        trench = conclusion.split("NSZC_10002_2")[1].split("；")[0]
+        for rule in ("清敌保存后开返回", "清敌与挑战均保存后", "攻击打碎碎石堆", "保存成功", "永久开前路"):
+            self.assertIn(rule, trench)
+        self.assertLess(trench.index("清敌与挑战均保存后"), trench.index("攻击打碎碎石堆"))
+        self.assertLess(trench.index("攻击打碎碎石堆"), trench.index("永久开前路"))
+
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
             with self.subTest(keyword=keyword):
