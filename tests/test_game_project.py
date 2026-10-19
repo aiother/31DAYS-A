@@ -2,6 +2,8 @@
 from pathlib import Path
 import re
 import unittest
+import tempfile
+from unittest.mock import patch
 
 GAME = Path(__file__).resolve().parents[1] / 'game'
 
@@ -11,7 +13,23 @@ class GameProjectTests(unittest.TestCase):
             if '.godot' in file.parts or file.suffix not in ('.godot', '.gd', '.tres', '.tscn'):
                 continue
             for relative in re.findall(r'res://([^"\s]+)', file.read_text(encoding='utf-8')):
+                if relative.startswith('../'):
+                    continue  # Runtime outputs outside the Godot project are not input resources.
                 self.assertTrue((GAME / relative).is_file(), (file, relative))
+
+    def test_runtime_output_can_be_absent_but_internal_resource_cannot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'fixture.gd'
+            source.write_text('var output = "res://../outputs/absent.json"', encoding='utf-8')
+            with patch.dict(globals(), GAME=root):
+                self.test_all_resource_references_resolve()
+                source.write_text('var input = "res://assets/absent.json"', encoding='utf-8')
+                with self.assertRaisesRegex(AssertionError, 'assets/absent.json'):
+                    self.test_all_resource_references_resolve()
+                (root / 'assets').mkdir()
+                (root / 'assets/absent.json').write_text('{}', encoding='utf-8')
+                self.test_all_resource_references_resolve()
 
     def test_engine_and_screen_baseline(self):
         config = (GAME / 'project.godot').read_text(encoding='utf-8')

@@ -24,7 +24,7 @@ class T7WorkbookTests(unittest.TestCase):
         env = os.environ.copy()
         env["T7_OUTPUT_PATH"] = str(cls.fixture)
         env.pop("T7_PREVIEW_DIR", None)
-        node = Path(os.environ.get("USERPROFILE", "C:/Users/Administrator")) / ".cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe"
+        node = Path(os.environ["DAYS31_NODE"]) if os.environ.get("DAYS31_NODE") else Path(os.environ.get("USERPROFILE", "C:/Users/Administrator")) / ".cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe"
         subprocess.run([str(node), str(FILE.parents[1] / "scripts" / "build_t7.mjs")],
                        env=env, check=True, capture_output=True, text=True, encoding="utf-8")
         cls.book = openpyxl.load_workbook(cls.fixture, data_only=False)
