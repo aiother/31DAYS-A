@@ -67,12 +67,39 @@ class PlanningDocumentsTests(unittest.TestCase):
             with self.subTest(document=key):
                 content = self.docs[key]
                 for rule in ("地面/空中左右闪避", "攻击中可跳跃且不打断攻击", "2.8秒", "最多连续3次", "满血不可",
-                             "不恢复生命", "留到T3"):
+                             "不恢复生命"):
                     self.assertIn(rule, content)
+        # T1 is a current spec: values T3 has frozen are cited, not deferred.
+        self.assertIn("留到T3", self.docs["T2"])
+        self.assertIn("见T3", self.docs["T1"])
+        self.assertNotIn("留到T3", self.docs["T1"])
         self.assertIn("V0.1不做墙跳、贴墙、蹬墙", self.docs["T1"])
         self.assertIn("3秒复活无敌", self.docs["T1"])
         self.assertIn("不作为V0.1任何必经地形的通行条件", self.docs["T1"])
         self.assertIn("同一次攻击动作对同一目标只造成一次伤害", self.docs["T2"])
+
+    def test_t0_t1_are_current_specs_with_change_logs(self):
+        for key, last in (("T0", 7), ("T1", 9)):
+            with self.subTest(document=key):
+                content = self.docs[key]
+                self.assertNotRegex(content, r"【20\d\d-")
+                self.assertNotRegex(content, r"(?m)^\*\*20\d\d-")
+                self.assertIn("现行版更新：", content)
+                headings = re.findall(r"^## (\d+)\. (.+)$", content, re.M)
+                self.assertEqual(headings[-1], (str(last), "变更记录"))
+                log = content.split(f"## {last}. 变更记录")[1]
+                self.assertIn("| 日期 | 变更 | 来源 |", log)
+                self.assertIn("2026-10-19", log)
+        t0, t1 = self.docs["T0"], self.docs["T1"]
+        for superseded in ("不依赖墙体能力、空中闪避", "未给出道具清单", "修订前的2倍"):
+            self.assertNotIn(superseded, t1)
+        self.assertNotIn("空中闪避于2026-10-15", t0)
+        for rule in ("渴望俯视", "寄生同伴者", "应急药包", "攻击范围", "闪避速度",
+                     "10的生命上限成长不在V0.1正式开放"):
+            self.assertIn(rule, t0)
+        for rule in ("不超过0.5秒", "前摇与后摇各乘2", "长按跳跃最大高度的50%", "取消攻击时的移动减速",
+                     "Q / Back", "消耗1个立即恢复2生命", "-9", "1.3秒", "50%", "死亡菜单"):
+            self.assertIn(rule, t1)
 
     def test_all_six_accepted_t2_revisions_replace_original_rules(self):
         t2 = self.docs["T2"]
@@ -306,7 +333,11 @@ class PlanningDocumentsTests(unittest.TestCase):
         for key in gates:
             self.assertEqual(records[key]["解锁条件"], "战斗事件门")
         self.assertIn("任何必经地形不能要求消耗可能性的滑步", content)
-        self.assertIn("覆盖本版早期“不新增Boss”的记录", self.docs["T0"])
+        t0_scope = self.docs["T0"].split("## 1.")[1].split("## 3.")[0]
+        for boss in ("渴望俯视", "寄生同伴者"):
+            self.assertIn(boss, t0_scope)
+        self.assertIn("最终战不增加额外Boss", self.docs["T0"])
+        self.assertNotIn("不新增Boss", self.docs["T0"])
 
     def test_t53_room_node_state_separation(self):
         for key, fields in self.t53_records().items():
