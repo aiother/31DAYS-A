@@ -1,6 +1,6 @@
 # DOC-002：策划待决事项总表
 
-状态：已批准，待 DOC-001 合并且本任务卡合入 master 后开工（2026-10-19 用户批准）｜级别：M｜实现：Claude｜审查：Codex
+状态：已批准，规划已合入 master，待 Claude 开工（2026-10-19；见 planning_integration.md）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：DOC-001 合并后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：DOC-001（T0、T1 现行版须先合入）
 
 ## 目标
