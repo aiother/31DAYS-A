@@ -100,6 +100,14 @@ class PlanningDocumentsTests(unittest.TestCase):
         for rule in ("不超过0.5秒", "前摇与后摇各乘2", "长按跳跃最大高度的50%", "取消攻击时的移动减速",
                      "Q / Back", "消耗1个立即恢复2生命", "-9", "1.3秒", "50%", "死亡菜单"):
             self.assertIn(rule, t1)
+        # Growth: help given before 7's gaze is recorded and settled on the first gaze (T3 rescue revisions).
+        self.assertIn("获得注视前完成的有效帮助先记录，首次获得注视时统一结算", t1)
+        # Ten's rescue: cite the current three-condition revision, never the old two-condition section.
+        self.assertIn("2026-10-16追加修订：10一次性救场与协同测试", t1)
+        for trigger in ("致命攻击", "两名幸存者均到达后全部倒下", "第二波兜底"):
+            self.assertIn(trigger, t1.split("### 4.2")[1].split("### 4.3")[0])
+        for stale in ("T2第10节", "幸存者死亡达到一半", "幸存者战士损失达到一半"):
+            self.assertNotIn(stale, t1)
 
     def test_all_six_accepted_t2_revisions_replace_original_rules(self):
         t2 = self.docs["T2"]
