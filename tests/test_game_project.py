@@ -46,16 +46,44 @@ class GameProjectTests(unittest.TestCase):
 
     def test_keyboard_controller_and_future_actions(self):
         config = (GAME / 'project.godot').read_text(encoding='utf-8')
-        for action in ('move_left', 'move_right', 'aim_up', 'aim_down', 'run',
-                       'jump', 'attack', 'dodge', 'recover', 'interact', 'use_item', 'pause'):
-            body = re.search(r'^' + action + r'=\{(.*?)\n\}', config, re.M | re.S).group(1)
-            self.assertIn('InputEventKey', body)
-            self.assertRegex(body, 'InputEventJoypad(Button|Motion)')
-        self.assertIn('InputEventMouseButton', config)
+        # T1 section 7: compare complete event lists, including physical vs logical
+        # keys and axis direction, so a different key or extra binding cannot pass.
+        def key(code, logical=False):
+            return ('InputEventKey', {'device': 16, 'keycode': code} if logical
+                    else {'physical_keycode': code})
+
+        def pad(button, device=None):
+            return ('InputEventJoypadButton', {'button_index': button, **(
+                {'device': device} if device is not None else {})})
+
+        def axis(index, direction):
+            return ('InputEventJoypadMotion', {'axis': index, 'axis_value': direction})
+
+        expected = {
+            'move_left': [key(65), key(4194319), axis(0, -1), pad(13)],
+            'move_right': [key(68), key(4194321), axis(0, 1), pad(14)],
+            'aim_up': [key(87), key(4194320), axis(1, -1), pad(11)],
+            'aim_down': [key(83), key(4194322), axis(1, 1), pad(12)],
+            'jump': [key(32), pad(0)],
+            'attack': [key(74), pad(2), ('InputEventMouseButton', {'button_index': 1})],
+            'dodge': [key(75), pad(1)], 'recover': [key(76), pad(3)],
+            'run': [key(4194325), pad(9)], 'interact': [key(69), pad(10)],
+            'use_item': [key(81), pad(4)], 'pause': [key(4194305), pad(6)],
+            'ui_accept': [key(4194309, True), key(4194310, True), key(32, True), pad(0, -1)],
+            'toggle_fullscreen': [key(4194342)], 'debug_reset': [key(82)],
+        }
+        for action, bindings in expected.items():
+            with self.subTest(action=action):
+                match = re.search(r'^' + action + r'=\{(.*?)\n\}', config, re.M | re.S)
+                self.assertIsNotNone(match, action)
+                events = []
+                for kind, fields in re.findall(r'Object\((\w+),(.*?)\)', match.group(1)):
+                    properties = {name: float(value) for name, value in re.findall(
+                        r'"(\w+)":\s*(-?\d+(?:\.\d+)?)', fields)}
+                    events.append((kind, properties))
+                self.assertCountEqual(events, bindings)
         lab = (GAME / 'debug/movement_lab.tscn').read_text(encoding='utf-8')
         self.assertIn('LB 跑步', lab)
-        run = re.search(r'^run=\{(.*?)\n\}', config, re.M | re.S).group(1)
-        self.assertIn('"button_index":9', run)
 
     def test_visual_physics_separation_and_inactive_combat(self):
         player = (GAME / 'player/player.tscn').read_text(encoding='utf-8')
