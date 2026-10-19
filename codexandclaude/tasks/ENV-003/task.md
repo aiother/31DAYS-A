@@ -1,6 +1,6 @@
 # ENV-003：协作检查入口的三项改进
 
-状态：待合并（2026-10-19 Codex 独立审查通过，无 G4 要求；待用户授权合并）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-19 用户授权先完成合并，master 的 G2/G3 全量通过；见 integration.md）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：`3f54a7bedf804b324d8d110fcb98da0af30294c9`（ENV-001 审查 SHA）｜依赖：ENV-001
 
 ## 批准与流程说明
