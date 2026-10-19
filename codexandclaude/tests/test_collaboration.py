@@ -90,6 +90,22 @@ class CollaborationTests(unittest.TestCase):
                          "不要声称测试通过", "独立 worktree"):
             self.assertIn(boundary, review)
 
+    def test_plan_v2_is_a_linked_proposal_with_core_safeguards(self):
+        readme = (COLLAB / "README.md").read_text(encoding="utf-8")
+        self.assertIn("](plan_v2.md)", readme)
+        plan = (COLLAB / "plan_v2.md").read_text(encoding="utf-8")
+        self.assertIn("状态：提案", plan)
+        headings = re.findall(r"^## (\d+)\.", plan, re.M)
+        self.assertEqual(list(map(int, headings)), list(range(1, len(headings) + 1)))
+        for boundary in ("用户是唯一决策者", "仓库是唯一沟通渠道", "一人写，一人审",
+                         "不超过两轮", "合并后", "全量", "主目录 `D:\\31days` 只属于用户",
+                         "不用 `git add -A`", "不推送远程", "冻结范围",
+                         "不让两个 Agent 自动互相调用"):
+            with self.subTest(boundary=boundary):
+                self.assertIn(boundary, plan)
+        for level in ("| S 小 |", "| M 中 |", "| L 大 |"):
+            self.assertIn(level, plan)
+
     def test_protocol_preserves_pending_work_and_requires_tested_commits(self):
         protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")
         for boundary in ("现有未提交变更必须保留", "未提交内容不会自动进入新 worktree",
