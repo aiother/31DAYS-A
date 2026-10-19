@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS = ('godot', 'python', 'git', 'node')
@@ -115,6 +116,10 @@ def load_verifier(root):
 
 def python_result(output):
     counts = re.findall(r'^Ran (\d+) tests? in ', output, re.M)
+    # Gates require every test to run: a skip usually hides a missing tool or dependency.
+    skipped = re.search(r'^OK \((.*(?:skipped|expected failures)=.*)\)\s*$', output, re.M)
+    if skipped:
+        raise CheckFailure(f'Skipped tests are not allowed in gates ({skipped.group(1)}); fix the dependency or remove the skip')
     if len(counts) != 1 or int(counts[0]) == 0 or not re.search(r'^OK\s*$', output, re.M):
         raise CheckFailure('Missing/invalid unittest summary (requires positive test count and OK)')
     if re.search(r'^(?:FAILED|ERROR:|FAIL:)', output, re.M):
@@ -129,6 +134,17 @@ def g2_result(output, verifier):
     if sorted(observed) != sorted(expected) or 'All engine checks passed. Report:' not in output:
         raise CheckFailure(f'Incomplete verifier summary: expected {len(expected)} entries, observed {len(observed)}')
     return len(expected)
+
+
+def required_tools(args):
+    if args.mode != 'focused':
+        return list(TOOLS)
+    needed = {'git', 'python'}
+    if args.python_module or args.python_all:
+        needed.add('node')  # T6/T7 workbook tests build their fixtures with Node.
+    if args.godot_script:
+        needed.add('godot')
+    return [tool for tool in TOOLS if tool in needed]
 
 
 def parser():
@@ -177,7 +193,9 @@ def main(argv=None):
         status = runner.run([git, 'status', '--porcelain', '--untracked-files=all'], 30, stdout_only=True)
         summary['dirty'] = bool(status.strip())
         summary['status'] = status.splitlines()
-        for tool in TOOLS:
+        needed = required_tools(args)
+        summary['tools_not_required'] = [tool for tool in TOOLS if tool not in needed]
+        for tool in needed:
             path = resolve_tool(tool, args, config, env)
             summary['tools'][tool] = {'path': path}
             if tool == 'python':
@@ -189,9 +207,10 @@ def main(argv=None):
             summary['tools'][tool]['version'] = version
             if tool == 'godot' and not version.startswith('4.7.2.stable.'):
                 raise CheckFailure(f'Expected Godot 4.7.2 stable, got {version}')
-        env['DAYS31_NODE'] = summary['tools']['node']['path']
+        if 'node' in summary['tools']:
+            env['DAYS31_NODE'] = summary['tools']['node']['path']
         python = summary['tools']['python']['path']
-        verifier = load_verifier(args.root) if args.mode != 'env' else None
+        verifier = load_verifier(args.root) if args.mode == 'full' or args.godot_script else None
         if args.mode == 'full':
             report = directory / 'engine.txt'
             output = runner.run([python, args.root / 'scripts/verify_game.py', '--godot', summary['tools']['godot']['path'],
@@ -230,6 +249,9 @@ def main(argv=None):
         summary['passed'] = True
     except (CheckFailure, OSError, ValueError, ImportError) as error:
         summary['reason'] = str(error)
+    except Exception as error:  # Keep evidence for bugs too; BaseException (Ctrl+C) still propagates.
+        summary['reason'] = f'Unexpected {type(error).__name__}: {error}'
+        summary['traceback'] = traceback.format_exc()
     summary['finished_utc'] = datetime.now(timezone.utc).isoformat()
     summary_path = directory / 'summary.json'
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
