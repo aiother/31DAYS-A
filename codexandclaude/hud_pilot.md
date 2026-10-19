@@ -37,14 +37,14 @@
 
 Python：C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe（已有表格依赖；无需安装）。
 
-在自己的工作区依次验证，并保留真实输出：
+在自己的工作区依次验证，并保留真实输出。新工作区必须先运行 Godot 回归生成 outputs/pursuit_air.json，再跑 Python 资源引用检查；该引用检查同时检查了测试输出路径。不得复制主目录旧报告或创建占位报告让检查通过。
 
 ```powershell
 & 'D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe' --headless --editor --path game --import --quit
 & 'D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe' --headless --path game --script res://tests/test_hud_layout.gd
+& 'C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -X utf8 scripts/verify_game.py --godot 'D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe' --jobs 4 --report codexandclaude/runs/hud_engine_validation.txt
 & 'C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -X utf8 -m unittest discover -s tests -v
 & 'C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -X utf8 -m unittest discover -s codexandclaude/tests -v
-& 'C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -X utf8 scripts/verify_game.py --godot 'D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe' --jobs 4 --report codexandclaude/runs/hud_engine_validation.txt
 ```
 
 新增套件必须有真实检查计数和 failures=0 摘要，登记时匹配该摘要。不能只依据进程退出码或最后一句话判断通过；错误、解析异常、泄漏或超时均报告失败。不要削弱既有测试或绕过权限错误；遇到权限限制，报告需要用户授权的具体动作。

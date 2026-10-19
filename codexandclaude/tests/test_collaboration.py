@@ -49,6 +49,12 @@ class CollaborationTests(unittest.TestCase):
                       and "verifier.TESTS" in ast.unparse(node.args[0])]
         self.assertEqual(len(assertions), 2)
 
+    def test_clean_worktree_validation_generates_reports_before_resource_checks(self):
+        task = (COLLAB / "hud_pilot.md").read_text(encoding="utf-8")
+        self.assertLess(task.index(" -X utf8 scripts/verify_game.py"),
+                        task.index(" -X utf8 -m unittest discover -s tests"))
+        self.assertIn("不得复制主目录旧报告或创建占位报告", task)
+
     def test_markdown_links_resolve_within_collaboration_directory(self):
         for document in COLLAB.glob("*.md"):
             for target in re.findall(r"\]\(([^)]+)\)", document.read_text(encoding="utf-8")):

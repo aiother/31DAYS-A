@@ -36,3 +36,5 @@ Codex：D:\31days\codexandclaude\worktrees\codex-review，分支 codex/hud-layou
 这些路径由协调者在准备提交之后创建；以 git worktree list、git status 和 git rev-parse HEAD 验证。工作区不复制未提交表格/配置。主工程仍在 D:\31days；独立工作区只是避免同时改同一份文件，不改变 Claude 对整个项目的职责。
 
 当前尚无 HUD 修复提交、Godot 复现结果或人工视觉验收。不要把本文件的基线检查当成实现完成。
+
+新工作区预检发现：tests/test_game_project.py 的资源存在检查也匹配了 test_air_pursuit.gd 内的输出路径 res://../outputs/pursuit_air.json；全新工作区没有该被忽略的生成文件，因此在未运行对应引擎测试前会出现一项失败。正确顺序为先运行 Godot 测试生成该工作区的真实报告，再运行 Python 检查。不要复制旧报告、创建占位文件或删除断言。协调者进行首次生成时未修改游戏源码。
