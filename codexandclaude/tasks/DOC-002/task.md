@@ -1,6 +1,6 @@
 # DOC-002：策划待决事项总表
 
-状态：待合并（2026-10-19 第2轮复审通过，R1、R2 已解决，独立 G3 通过；见 review.md）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-19 用户授权合并，master 的 G3 通过；见 integration.md）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：DOC-001 合并后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：DOC-001（T0、T1 现行版须先合入）
 
 ## 目标
