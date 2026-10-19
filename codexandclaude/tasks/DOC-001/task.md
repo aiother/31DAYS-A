@@ -1,6 +1,6 @@
 # DOC-001：T0、T1 改写为现行版
 
-状态：进行中（2026-10-19 Codex 审查需修改，待 Claude 修订；见 review.md）｜级别：M｜实现：Claude｜审查：Codex
+状态：待审查（2026-10-19 第2轮：已按 Codex 审查 R1、R2 修订，G3 通过）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无
 
 ## 目标
