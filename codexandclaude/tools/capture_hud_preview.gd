@@ -62,6 +62,32 @@ func run() -> void:
 	await ticks(3)
 	var hud: Label = session.ui.get("_health") as Label
 	check(hud.get_line_count() == 5 and hud.text.contains("恢复中"), "capture must show actual five-row healing HUD")
+	if OS.get_cmdline_user_args().has("--interactive"):
+		root.size = Vector2i(1280, 720)
+		root.title = "HUD 验收预览（独立测试存档）· Esc 暂停/设置 · 关闭窗口结束"
+		session.ui.save_failed(LONG_ERROR)
+		root.close_requested.connect(func() -> void: quit(0))
+		await ticks(3)
+		check((session.ui.get("_error_label") as Label).get_line_count() > 1, "interactive preview shows wrapped error")
+		print("HUD_ACCEPTANCE_READY: isolated test save; Esc opens pause/settings; close window to finish")
+		if OS.get_cmdline_user_args().has("--smoke-test"):
+			var pause_event: InputEventAction = InputEventAction.new()
+			pause_event.action = "pause"
+			pause_event.pressed = true
+			Input.parse_input_event(pause_event)
+			await ticks(3)
+			check(paused and session.ui.get("_mode") == "pause", "preview accepts pause input through real UI")
+			session.ui.show_settings()
+			await ticks(3)
+			check(session.ui.get("_mode") == "settings", "preview opens actual settings")
+			paused = false
+			session.queue_free()
+			await ticks(2)
+			current_scene = null
+			cleanup()
+			print("HUD_ACCEPTANCE_TESTS checks=%d failures=%d" % [checks, failures])
+			quit(0 if failures == 0 else 1)
+		return
 	await capture("short_1920.png", Vector2i(1920, 1080))
 	await capture("short_1280.png", Vector2i(1280, 720))
 	session.ui.save_failed(LONG_ERROR)
@@ -78,11 +104,19 @@ func run() -> void:
 	session.queue_free()
 	await ticks(2)
 	current_scene = null
+	cleanup()
+	print("HUD_PREVIEW_TESTS checks=%d failures=%d" % [checks, failures])
+	quit(0 if failures == 0 else 1)
+
+func cleanup() -> void:
+	if directory.is_empty() or not DirAccess.dir_exists_absolute(directory):
+		return
 	for selected: int in range(1, SlotStore.SLOT_COUNT + 1):
 		for suffix: String in ["", ".tmp", ".bak"]:
 			var path: String = directory.path_join("slot_%d.json" % selected) + suffix
 			if FileAccess.file_exists(path):
 				check(DirAccess.remove_absolute(path) == OK, "temporary preview save cleanup")
 	check(DirAccess.remove_absolute(directory) == OK, "temporary preview directory cleanup")
-	print("HUD_PREVIEW_TESTS checks=%d failures=%d" % [checks, failures])
-	quit(0 if failures == 0 else 1)
+
+func _finalize() -> void:
+	cleanup()

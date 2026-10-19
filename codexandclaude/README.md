@@ -10,6 +10,7 @@
 - [试点基线核对](hud_baseline.md)：用户未提交输入、工作区来源及本轮冻结边界。
 - [Codex 独立审查](hud_pilot_review.md)：修复提交审查、独立复跑及真实截图复查，含剩余人工验收事项。
 - [截图复查工具](tools/capture_hud_preview.gd)：使用独立测试存档捕获真实渲染结果，包含图像与清理验证。
+- [人工验收步骤](hud_acceptance.md)：启动固定测试状态的交互预览，检查窗口、全屏和实际输入。
 - [规范验证](tests/test_collaboration.py)：验证入口、任务边界和项目引用。
 
 Claude 可以在整个 `D:\31days` 项目按任务工作；`codexandclaude/` 只存放双方协作规范、交接、审查记录及相关验证，不是它的项目访问边界。游戏源码及游戏测试仍按原工程组织。
