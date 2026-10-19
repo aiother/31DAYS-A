@@ -1,5 +1,6 @@
 """Check handoff entry points, project references and read-only task boundaries."""
 from pathlib import Path
+import ast
 import re
 import unittest
 
@@ -9,6 +10,45 @@ COLLAB = ROOT / "codexandclaude"
 
 
 class CollaborationTests(unittest.TestCase):
+    def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
+        task = (COLLAB / "hud_pilot.md").read_text(encoding="utf-8")
+        for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
+                     "tests/test_verification_runner.py"):
+            with self.subTest(path=path):
+                self.assertIn(path, task)
+                self.assertTrue((ROOT / path).is_file())
+        for path in ("game/tests/test_hud_layout.gd",
+                     "codexandclaude/hud_pilot_delivery.md"):
+            self.assertIn(path, task)
+            self.assertTrue((ROOT / path).parent.is_dir())
+
+    def test_hud_handoff_covers_reproduction_and_independent_review(self):
+        task = (COLLAB / "hud_pilot.md").read_text(encoding="utf-8")
+        for boundary in ("claude/hud-layout-pilot", "先复现，后修复", "基线应因重叠而失败",
+                         "若未复现", "不复制、不提交、不覆盖", "两处套件数量",
+                         "临时路径", "人工验收未完成时不能声称可最终合并",
+                         "不要自行合并 master", "交付后停止"):
+            self.assertIn(boundary, task)
+        readme = (COLLAB / "README.md").read_text(encoding="utf-8")
+        self.assertIn("codex/hud-layout-review", readme)
+        ignores = (COLLAB / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("/worktrees/", ignores)
+        self.assertIn("/runs/", ignores)
+
+    def test_referenced_test_count_assertions_remain_present(self):
+        # The handoff authorizes a count update, not removal of manifest checks.
+        tree = ast.parse((ROOT / "tests/test_verification_runner.py").read_text(encoding="utf-8"))
+        assertions = [node for node in ast.walk(tree)
+                      if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                      and node.func.attr == "assertEqual" and len(node.args) == 2
+                      and isinstance(node.args[1], ast.Constant)
+                      and isinstance(node.args[1].value, int)
+                      and isinstance(node.args[0], ast.Call)
+                      and isinstance(node.args[0].func, ast.Name)
+                      and node.args[0].func.id == "len"
+                      and "verifier.TESTS" in ast.unparse(node.args[0])]
+        self.assertEqual(len(assertions), 2)
+
     def test_markdown_links_resolve_within_collaboration_directory(self):
         for document in COLLAB.glob("*.md"):
             for target in re.findall(r"\]\(([^)]+)\)", document.read_text(encoding="utf-8")):
