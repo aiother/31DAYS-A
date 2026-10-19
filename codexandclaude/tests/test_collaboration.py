@@ -100,7 +100,10 @@ class CollaborationTests(unittest.TestCase):
         for boundary in ("用户是唯一决策者", "仓库是唯一沟通渠道", "一人写，一人审",
                          "不超过两轮", "合并后", "全量", "主目录 `D:\\31days` 只属于用户",
                          "不用 `git add -A`", "不推送远程", "冻结范围",
-                         "不让两个 Agent 自动互相调用"):
+                         "不让两个 Agent 自动互相调用", "规格优先于代码",
+                         "git switch --detach", "git revert", "暂停后续所有集成",
+                         "不记录自身所在提交的哈希", "立即停止并报告",
+                         "不能审查自己的实现后直接集成", "不重新触发 G2"):
             with self.subTest(boundary=boundary):
                 self.assertIn(boundary, plan)
         for level in ("| S 小 |", "| M 中 |", "| L 大 |"):
