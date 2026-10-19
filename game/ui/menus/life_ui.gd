@@ -91,6 +91,8 @@ func _process(_delta: float) -> void:
 	elif actions.busy():
 		_health.text += "\n%s滑步 · 连续 %d / 3" % ["透支" if actions.poor_dodge else "", actions.chain]
 	_health.text += "\n珍珠 %d / 4 · 近战范围 %d%%" % [player.combat.pearl_count, roundi(player.combat.range_multiplier() * 100)]
+	if get_parent().has_method("medkit_count"):
+		_health.text += "\n药包 %d / %d · Q / Back 使用" % [int(get_parent().call("medkit_count")), MedkitRules.CONFIG.maximum]
 	_health.modulate = Color(1, 0.5, 0.4) if life.health <= 1 else Color.WHITE
 	var edge_alpha: float = 0.0
 	var black_alpha: float = 0.0

@@ -10,7 +10,7 @@ var last_error: String = ""
 var used_backup: bool = false
 
 func fresh() -> Dictionary:
-	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "day": 1, "events": {WorldDayRules.ENABLED: true}, "play_seconds": 0.0}
+	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "day": 1, "medkits": 0, "events": {WorldDayRules.ENABLED: true}, "play_seconds": 0.0}
 
 func path_for(slot: int) -> String:
 	return directory.path_join("slot_%d.json" % slot)
@@ -22,6 +22,8 @@ func _integer(value: Variant, low: int, high: int) -> bool:
 	return (value is int or value is float) and is_finite(float(value)) and float(value) == floorf(float(value)) and float(value) >= low and float(value) <= high
 
 func valid(data: Dictionary) -> bool:
+	if not _integer(data.get("medkits", 0), 0, MedkitRules.CONFIG.maximum):
+		return false
 	for key: String in ["day_remaining","day3_remaining","final_remaining","final_budget"]:
 		var day_key: bool = key in ["day_remaining","day3_remaining"]
 		var limit: float = DayClock.CONFIG.day_seconds if day_key else 900.0
@@ -103,6 +105,7 @@ func _read(path: String) -> Dictionary:
 	for key: String in ["version", "health", "balance", "maximum"]:
 		data[key] = int(data[key])
 	data["day"] = int(data.get("day", 1))
+	data["medkits"] = MedkitRules.count(data)
 	data["play_seconds"] = float(data["play_seconds"])
 	return data
 

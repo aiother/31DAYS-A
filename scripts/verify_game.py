@@ -9,6 +9,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('medkit inventory version-one compatibility bounds and slot persistence', 'res://tests/test_medkit_store.gd', 'MEDKIT_STORE_TESTS checks='),
+    ('medkit automatic supplies real Q Back input restrictions rollback and death reload', 'res://tests/test_medkit_session.gd', 'MEDKIT_SESSION_TESTS checks='),
     ('NPC deadline migration and ordinary enemy day configuration', 'res://tests/test_world_day_rules.gd', 'WORLD_DAY_RULES_TESTS checks='),
     ('NPC deadline real sessions cross-day save rollback legacy rescue and dynamic spawns', 'res://tests/test_world_day_session.gd', 'WORLD_DAY_SESSION_TESTS checks='),
     ('permanent pearl growth additive reach real hits reflection legacy saves and slots', 'res://tests/test_pearl_growth.gd', 'PEARL_GROWTH_TESTS checks='),

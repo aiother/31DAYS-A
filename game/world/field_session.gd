@@ -43,6 +43,9 @@ func rescue_expired(id: String) -> bool:
 func rescue_expired_text() -> String:
 	return "来得太晚，救助机会已过期。更早抵达时，这里的人仍有获救的机会。"
 
+func _medkit_session_active() -> bool:
+	return super._medkit_session_active() and not dialogue_ui.active and not dialogue_ui.confirming
+
 func _room_scenes() -> Dictionary:
 	return FIELD_ROOMS
 

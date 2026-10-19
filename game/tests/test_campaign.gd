@@ -10,6 +10,7 @@ var visited: Dictionary = {}
 var pearls: Array[String] = []
 var attack_id: int = 20000
 var shutdown_keys: Array[String] = []
+var medkit_keys: Array[String] = []
 
 func _initialize() -> void:
 	run.call_deferred()
@@ -92,6 +93,15 @@ func shutdown_environment() -> void:
 	check(hazard.disabled and session.store.load_slot(1)["events"].get(hazard.config.persistence_key,false),"campaign actual E input permanently shuts down "+session.room.config.room_id)
 	shutdown_keys.append(hazard.config.persistence_key)
 
+func collect_medkit() -> void:
+	var supply: MedkitSupply = session.medkit_supply()
+	var count: int = session.medkit_count()
+	await place(supply.position + Vector2(0, 44))
+	check(not supply.visible and session.medkit_count() == count + 1, "campaign proximity collects medkit in " + session.room.config.room_id)
+	var saved: Dictionary = session.store.load_slot(1)
+	check(saved["medkits"] == session.medkit_count() and saved["events"].get(supply.persistence_key, false), "campaign medkit pickup and inventory persist together")
+	medkit_keys.append(supply.persistence_key)
+
 func run() -> void:
 	directory = "user://tests/campaign_%d" % Time.get_ticks_usec()
 	session = (load("res://world/final_battle_session.tscn") as PackedScene).instantiate() as FinalBattleSession
@@ -111,6 +121,12 @@ func run() -> void:
 	await travel(TowerSession.TOWER_ID)
 	await travel(ExplorationSession.EXPLORATION_ID)
 	await collect()
+	await collect_medkit()
+	Input.action_press("use_item")
+	await ticks(1)
+	Input.action_release("use_item")
+	await ticks(1)
+	check(session.medkit_count() == 0 and session.player.life.health == 5 and session.store.load_slot(1)["health"] == 5, "campaign actual Q uses one medkit and saves two-point healing")
 	await travel(ConnectionSession.CONNECTION_ID)
 	session.room.exit_requested.emit(BossSession.BOSS_ID)
 	await ticks(2)
@@ -146,6 +162,7 @@ func run() -> void:
 	await shutdown_environment()
 	await travel(RavineRescueSession.RESCUE_ID)
 	await shutdown_environment()
+	await collect_medkit()
 	session.player.set_physics_process(false)
 	session.player.position = Vector2(1056, 720)
 	check(session.interact_ravine_survivor(), "campaign starts elevated ravine rescue")
@@ -161,6 +178,7 @@ func run() -> void:
 	await travel(CampSession.CAMP_ID)
 	await shutdown_environment()
 	await collect()
+	await collect_medkit()
 	await travel(CampWavesSession.WAVES_ID)
 	var camp: CampWavesRoom = session.room as CampWavesRoom
 	check(camp.start_waves(), "campaign starts three-wave camp encounter")
@@ -190,6 +208,7 @@ func run() -> void:
 	check(session.player.possibility.maximum==15 and session.data["events"].get(OutskirtsSession.OUTSKIRTS_HELPED,false),"third independent NPC completes cap 15 growth")
 	await travel(TrenchSession.TRENCH_ID)
 	await collect()
+	await collect_medkit()
 	await travel(TrenchPassageSession.PASSAGE_ID)
 	await clear()
 	await place(Vector2(880, 944))
@@ -229,6 +248,7 @@ func run() -> void:
 	check(saved["checkpoint"] == TrenchPassageSession.PASSAGE_CHECKPOINT and saved["maximum"] == 15 and saved["day"] == 3, "ending preserves real checkpoint, growth and date")
 	check(saved.has("day_remaining") and float(saved["day3_remaining"])>0 and float(saved["day3_remaining"])<1800,"continuous ending preserves consumed natural clock fields without refilling")
 	check(shutdown_keys.size()==4 and shutdown_keys.all(func(key: String) -> bool: return bool(saved["events"].get(key,false))),"ending retains all four independent environment shutdowns")
+	check(medkit_keys.size() == 4 and saved["medkits"] == 3 and medkit_keys.all(func(key: String) -> bool: return bool(saved["events"].get(key, false))), "ending retains four claimed sources and three unused medkits")
 	check(visited.size() == session._room_scenes().size() and visited.size() == 18, "continuous campaign visits all 18 delivered Rooms")
 	check(pearls.size() == 4 and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "all four pearls and Boss combine at140% at ending")
 	for key: String in pearls:
@@ -237,6 +257,7 @@ func run() -> void:
 	check(session.start_slot(1, false), "full campaign save reloads through normal production path")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
+	check(session.medkit_count() == 3, "normal ending reload preserves unused medkits")
 	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "normal reload restores finished campaign and all earned pearl and Boss growth")
 	paused = false
 	session.queue_free()
