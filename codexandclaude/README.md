@@ -4,7 +4,7 @@
 
 ## 文件入口
 
-- [协作方案 V2（提案）](plan_v2.md)：Claude 起草、已吸收 Codex 两轮审阅意见的后续协作流程，待用户确认后试行；生效前仍以协作规范为准。
+- [协作方案 V2.2（试行中）](plan_v2.md)：用户已确认试行；试行期间与协作规范冲突时以本方案为准，复盘后正式并入。
 - [协作规范](collaboration.md)：职责、冻结范围、Git 和验收规则。
 - [Claude 首次只读任务](first_review.md)：用户手工交给 Claude Code 的完整任务。
 - [HUD 试点任务](hud_pilot.md)：只在 Claude 独立工作区执行的首个实现任务。

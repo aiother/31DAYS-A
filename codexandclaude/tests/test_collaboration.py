@@ -94,7 +94,7 @@ class CollaborationTests(unittest.TestCase):
         readme = (COLLAB / "README.md").read_text(encoding="utf-8")
         self.assertIn("](plan_v2.md)", readme)
         plan = (COLLAB / "plan_v2.md").read_text(encoding="utf-8")
-        self.assertIn("状态：提案", plan)
+        self.assertIn("状态：V2.2 试行中", plan)
         headings = re.findall(r"^## (\d+)\.", plan, re.M)
         self.assertEqual(list(map(int, headings)), list(range(1, len(headings) + 1)))
         for boundary in ("用户是唯一决策者", "仓库是唯一沟通渠道", "一人写，一人审",
