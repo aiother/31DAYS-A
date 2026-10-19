@@ -70,6 +70,16 @@ python codexandclaude/tools/run_checks.py focused --python-all
 | --- | --- | --- | --- | --- | --- | --- |
 | 待验收 | — | 未验证 | 未验证 | 未验证 | 未验证 | 用户 G4 尚未完成 |
 
+## S 级交付补记
+
+实现者：Codex｜日期：2026-10-19｜实现 SHA：`0a1f1ff9fc954fcbafc7a769c6212c7f543beee5`。
+
+- 修改清单严格为本文件和 `codexandclaude/tools/sys002_acceptance.gd`；相对固定基线，game/、scripts/、tests/ 的 diff 为空；未修改主目录、未合并或推送。
+- 六入口及3组资源参数9/9通过，4组非法参数全部按预期拒绝；实际窗口自测22/22，临时目录残留0。原始启动日志与截图见上方路径，不入库。
+- 提交前 G3：81/81＋37/37，退出0，日志 `codexandclaude/runs/20261019T184641.538698Z/summary.json`；被测 SHA 为基线、dirty=true，仅上述两份新文件。
+- 干净实现 SHA 的 G3：81/81＋37/37，退出0，summary.passed=true、dirty=false；日志 `codexandclaude/runs/20261019T184716.909184Z/summary.json`。
+- 本交付提交只追加这段记录，提交前再跑G3与差异检查；交付 SHA 通过回复提供，不写入自身记录。用户G4仍未验证，不能据启动自测标为验收通过。
+
 ## Claude S 级审查（待填写）
 
 请以固定交付 SHA detached 审查；实现至交付只允许本文件的交付补记变化。重点核对临时槽隔离/清理、真实时钟与正常输入、六入口是否实际开战，以及 game/、SYS-002 实现和测试未改。审查通过后再请用户按四项检查填写上表；本小任务不授权合并 master。
