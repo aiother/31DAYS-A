@@ -80,6 +80,14 @@ python codexandclaude/tools/run_checks.py focused --python-all
 - 干净实现 SHA 的 G3：81/81＋37/37，退出0，summary.passed=true、dirty=false；日志 `codexandclaude/runs/20261019T184716.909184Z/summary.json`。
 - 本交付提交只追加这段记录，提交前再跑G3与差异检查；交付 SHA 通过回复提供，不写入自身记录。用户G4仍未验证，不能据启动自测标为验收通过。
 
-## Claude S 级审查（待填写）
+## Claude S 级审查：通过
 
-请以固定交付 SHA detached 审查；实现至交付只允许本文件的交付补记变化。重点核对临时槽隔离/清理、真实时钟与正常输入、六入口是否实际开战，以及 game/、SYS-002 实现和测试未改。审查通过后再请用户按四项检查填写上表；本小任务不授权合并 master。
+审查者：Claude｜日期：2026-10-19｜被审实现 SHA `0a1f1ff9fc954fcbafc7a769c6212c7f543beee5`，交付 SHA `442f62eb85d977598d9706401a9beffa13ec8d83`；以 `git switch --detach` 固定交付 SHA 后审查。
+
+- **范围**：相对基线 `70b1ae1` 只新增 `codexandclaude/tools/sys002_acceptance.gd` 与本文件；实现到交付只追加本文件的交付补记。game/、scripts/、tests/ 与 SYS-002 实现、测试均未改动。
+- **存档隔离**：临时目录在 session 加入场景树前写入 `save_directory`；死亡或读档时游戏经 `CheckpointLab._reload` 把目录写入场景树元数据，新 session 在 `_ready` 中读回，因此重载后仍只写临时目录。实测：无头运行 camp、trench 自测前后，正式存档目录 `user://saves` 的文件名、大小与修改时间完全一致，`user://tests/sys002_acceptance_*` 残留为 0。
+- **真实时钟与输入**：脚本不调用生成器 `tick`、不改间隔与实体属性；F6/F7 由进程内节点监听，不修改 InputMap 或 project.godot；角落面板只读显示生成器状态。
+- **入口实测**：`--encounter=camp --smoke-test` 21/21、`--encounter=trench --smoke-test` 19/19，均退出 0，trench 确认无生成器；`--encounter=nowhere` 退出 2 且不建存档。其余四个入口未逐一复跑，依据实现者自测记录。
+- **非阻断观察**：死亡重载后，新 session 会重新连接自己的窗口关闭处理，此后关闭窗口时游戏原有的关闭流程与验收脚本的清理都会执行（可能先出现游戏的退出确认）；两者都只涉及临时目录，不影响正式存档。
+
+结论：可以交给用户按上方四项进行 G4。本小任务不授权合并 master；最终合并对象为包含 SYS-002 实现、审查、本验收入口与用户验收结果的固定提交。
