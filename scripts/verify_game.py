@@ -78,6 +78,7 @@ TESTS = [
     ('outskirts optional rescue deferred growth abandonment and slot isolation', 'res://tests/test_outskirts_rescue.gd', 'OUTSKIRTS_RESCUE_TESTS checks='),
     ('permanent combat range growth physical hits reflection migration and slots', 'res://tests/test_combat_growth.gd', 'COMBAT_GROWTH_TESTS checks='),
     ('ravine monochrome composition physical pursuit rewards and reset', 'res://tests/test_ravine_monochrome.gd', 'RAVINE_MONOCHROME_TESTS checks='),
+    ('graybox HUD rows and save error prompt stack without overlap across viewports', 'res://tests/test_hud_layout.gd', 'HUD_LAYOUT_TESTS checks='),
 ]
 
 def execute(engine, project, name, extra, expected=None):

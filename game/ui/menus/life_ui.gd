@@ -21,15 +21,22 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# HUD rows grow from four to five lines; the error prompt stacks below instead of a fixed y.
+	var status: VBoxContainer = VBoxContainer.new()
+	status.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status.position = Vector2(64, 258)
+	status.custom_minimum_size.x = 900
+	status.add_theme_constant_override("separation", 8)
+	_root.add_child(status)
 	_health = Label.new()
-	_health.position = Vector2(64, 258)
 	_health.add_theme_font_size_override("font_size", 24)
-	_root.add_child(_health)
+	status.add_child(_health)
 	_error_label = Label.new()
-	_error_label.position = Vector2(64, 410)
 	_error_label.add_theme_font_size_override("font_size", 22)
 	_error_label.modulate = Color(1, 0.5, 0.35)
-	_root.add_child(_error_label)
+	_error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_error_label.hide()
+	status.add_child(_error_label)
 	_enemy_intro = PanelContainer.new()
 	_enemy_intro.position = Vector2(1390, 100)
 	_enemy_intro.size = Vector2(460, 220)
@@ -226,6 +233,7 @@ func _quit_game() -> void:
 
 func save_failed(message: String) -> void:
 	_error_label.text = message
+	_error_label.visible = not message.is_empty()
 
 func show_slots() -> void:
 	var lab: CheckpointLab = get_parent() as CheckpointLab
@@ -265,7 +273,7 @@ func show_slots() -> void:
 	_button("退出游戏", confirm_quit)
 
 func _select_slot(selected: int, new_game: bool) -> void:
-	_error_label.text = ""
+	save_failed("")
 	(get_parent() as CheckpointLab).start_slot(selected, new_game)
 
 func _confirm_new_slot(selected: int, occupied: bool) -> void:
