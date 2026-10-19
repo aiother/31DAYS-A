@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
 TESTS = [
+    ('remnant possibility five encounters threshold timing isolation rewards and cleanup', 'res://tests/test_remnant_possibility.gd', 'REMNANT_POSSIBILITY_TESTS checks='),
     ('frozen keyboard mouse and controller bindings with real arrow input', 'res://tests/test_input_bindings.gd', 'INPUT_BINDINGS_TESTS checks='),
     ('medkit inventory version-one compatibility bounds and slot persistence', 'res://tests/test_medkit_store.gd', 'MEDKIT_STORE_TESTS checks='),
     ('medkit automatic supplies real Q Back input restrictions rollback and death reload', 'res://tests/test_medkit_session.gd', 'MEDKIT_SESSION_TESTS checks='),

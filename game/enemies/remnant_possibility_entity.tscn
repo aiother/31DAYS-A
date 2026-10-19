@@ -1,0 +1,5 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://enemies/colorless_entity.tscn" id="1"]
+[ext_resource type="Script" path="res://enemies/remnant_possibility_entity.gd" id="2"]
+[node name="RemnantPossibilityEntity" instance=ExtResource("1")]
+script = ExtResource("2")

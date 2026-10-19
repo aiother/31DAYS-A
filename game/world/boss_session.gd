@@ -29,6 +29,7 @@ func _checkpoint_room(id: String) -> String:
 
 func _bind_room() -> void:
 	super._bind_room()
+	RemnantPossibilitySpawner.attach(self, room, player)
 	if room is BossRoom:
 		var actor: OverlookBoss = room.get_node("Boss") as OverlookBoss
 		actor.target = player
