@@ -12,6 +12,7 @@
 - [截图复查工具](tools/capture_hud_preview.gd)：使用独立测试存档捕获真实渲染结果，包含图像与清理验证。
 - [人工验收步骤](hud_acceptance.md)：启动固定测试状态的交互预览，检查窗口、全屏和实际输入。
 - [确认键诊断工具](tools/probe_controller_confirm.gd)：仅在测试进程预览 Xbox A 确认映射，不保存输入配置；诊断结果见独立审查记录。
+- [Xbox 确认修复与复验](controller_confirm_fix.md)：用户另行批准的 A 键映射、回归证据和实机复验步骤。
 - [规范验证](tests/test_collaboration.py)：验证入口、任务边界和项目引用。
 
 Claude 可以在整个 `D:\31days` 项目按任务工作；`codexandclaude/` 只存放双方协作规范、交接、审查记录及相关验证，不是它的项目访问边界。游戏源码及游戏测试仍按原工程组织。
@@ -21,6 +22,8 @@ Claude 可以在整个 `D:\31days` 项目按任务工作；`codexandclaude/` 只
 本轮使用 worktrees/claude-hud（分支 claude/hud-layout-pilot）实现，用 worktrees/codex-review（分支 codex/hud-layout-review）审查与集成。二者以同一个任务准备提交创建，游戏代码源自 36d0582；当前共享工作目录已有用户未提交变更，不允许双方同时编辑主工作目录。工作区准备状态以实际 git worktree list 为准。
 
 写入授权仅限 hud_pilot.md 中的文件清单；first_review.md 是保留的历史只读任务，不再作为本轮任务入口。Claude 完成后用户转交结果，再由 Codex 进行独立审查；未获得合并确认前不合并 master。
+
+后续补充授权：用户实机发现手柄无法确认并明确同意修复，Codex 在审查分支单独调整 game/project.godot 的 ui_accept，添加菜单输入测试并同步测试登记/数量，详见 controller_confirm_fix.md。其他输入和玩法仍不在此次修改范围。
 
 运行协作规范验证（在项目根目录）：
 
