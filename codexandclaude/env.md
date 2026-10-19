@@ -12,7 +12,9 @@
 Python 自动发现会验证 openpyxl，避免误选不带依赖的系统解释器。
 自动发现包括当前 Python、PATH、用户的 Codex bundled runtime、Program Files/Git，
 以及 Downloads、D:/DMyself 下的 Godot console 安装位置；其他位置请显式配置。
-Godot 必须为 `4.7.2.stable.*`。所有模式都会先检查四个工具及 openpyxl。
+每种模式只解析和校验需要的工具：`env`、`full` 检查全部四个；`focused` 运行 Python 时需要 Git、Python（含 openpyxl）、Node，
+运行 Godot 专项时需要 Git、Python、Godot，两者都有时取并集。未要求的工具记在汇总的 `tools_not_required` 中，
+因此没有 Godot 的机器也能跑纯文档任务的 G3。需要 Godot 时，版本必须为 `4.7.2.stable.*`。
 
 默认配置为各工作区自己的 `codexandclaude/env.local.json`（已忽略），可用 `--config` 指定其他文件：
 
@@ -55,6 +57,10 @@ python codexandclaude/tools/run_checks.py full --jobs 4
 工具路径和版本、命令参数数组、退出码、耗时、日志位置及 SHA256、已执行检查数量与结果。
 G2 记录预期/实际条目数（含导入和主场景），G3 记录两个完整发现目录及各自 unittest 计数。
 未完成的检查不会标通过；工具或 Git 不可用时 SHA 等尚未获取的字段为 null，原因记在 reason。
+入口自身出现意外异常时同样写出汇总并返回非零，reason 记异常类型与信息，traceback 字段记调用栈。
+
+**门禁不接受跳过的测试。** unittest 汇总为 `OK (skipped=N)` 或含 `expected failures` 时判为失败：
+跳过通常意味着缺少工具或依赖，计为通过会掩盖问题。遇到时应修复依赖，或移除跳过并让测试真实运行。
 每条命令完整输出独立保存；G2 原报告保存为同目录的 engine.txt。
 日志不入 Git，交付/审查记录需提交命令、计数和汇总结论。
 Godot full/focused 可能生成正常的 `.godot` 缓存和 `outputs/` 测试输出。

@@ -100,7 +100,7 @@ class RunChecksTests(unittest.TestCase):
             with self.assertRaises(checks.CheckFailure):
                 checks.g2_result(output, verifier)
 
-    def execute_main(self, extra=(), failure=None, version='4.7.2.stable.abc', engine_output=None):
+    def execute_main(self, extra=(), failure=None, version='4.7.2.stable.abc', engine_output=None, resolve=None):
         commands = []
         def fake_run(runner, argv, timeout=None, stdout_only=False):
             argv = list(map(str, argv))
@@ -122,7 +122,7 @@ class RunChecksTests(unittest.TestCase):
                 return 'FOCUSED_VERIFIER_PASS\n'
             return 'Ran 4 tests in 0.1s\nOK\n'
         verifier = SimpleNamespace(TESTS=[('suite', 'res://tests/suite.gd', 'SUITE checks=')])
-        with patch.object(checks, 'resolve_tool', side_effect=lambda tool, *unused: tool), patch.object(checks.Runner, 'run', fake_run), patch.object(checks, 'load_verifier', return_value=verifier), contextlib.redirect_stdout(io.StringIO()):
+        with patch.object(checks, 'resolve_tool', side_effect=resolve or (lambda tool, *unused: tool)), patch.object(checks.Runner, 'run', fake_run), patch.object(checks, 'load_verifier', return_value=verifier), contextlib.redirect_stdout(io.StringIO()):
             code = checks.main([*extra, '--root', str(self.root)])
         summary = json.loads(next((self.root / 'codexandclaude/runs').glob('*/summary.json')).read_text(encoding='utf-8'))
         return code, summary, commands
@@ -189,6 +189,62 @@ class RunChecksTests(unittest.TestCase):
         code, summary, _ = self.execute_main(['focused'])
         self.assertEqual(code, 1)
         self.assertIn('requires', summary['reason'])
+
+    @staticmethod
+    def resolve_without(*missing):
+        def resolve(tool, *unused):
+            if tool in missing:
+                raise checks.CheckFailure(f'Missing/unusable {tool}')
+            return tool
+        return resolve
+
+    def test_python_only_focused_runs_without_godot(self):
+        code, summary, commands = self.execute_main(['focused', '--python-all'], resolve=self.resolve_without('godot'))
+        self.assertEqual(code, 0, summary['reason'])
+        self.assertEqual(set(summary['tools']), {'git', 'python', 'node'})
+        self.assertEqual(summary['tools_not_required'], ['godot'])
+        self.assertFalse(any(args[0] == 'godot' for args, _ in commands))
+
+    def test_godot_only_focused_does_not_require_node(self):
+        code, summary, _ = self.execute_main(['focused', '--godot-script', 'res://tests/suite.gd'],
+                                             resolve=self.resolve_without('node'))
+        self.assertEqual(code, 0, summary['reason'])
+        self.assertEqual(set(summary['tools']), {'git', 'python', 'godot'})
+        self.assertEqual(summary['tools_not_required'], ['node'])
+
+    def test_env_and_full_still_require_every_tool(self):
+        for mode in ('env', 'full'):
+            with self.subTest(mode=mode):
+                for runs in (self.root / 'codexandclaude/runs').glob('*'):
+                    for file in runs.iterdir():
+                        file.unlink()
+                    runs.rmdir()
+                code, summary, _ = self.execute_main([mode], resolve=self.resolve_without('godot'))
+                self.assertEqual(code, 1)
+                self.assertIn('Missing/unusable godot', summary['reason'])
+
+    def test_skipped_tests_fail_with_actionable_reason(self):
+        for output, label in (('Ran 2 tests in 0s\n\nOK (skipped=1)\n', 'skipped=1'),
+                              ('Ran 2 tests in 0s\n\nOK (expected failures=1)\n', 'expected failures=1')):
+            with self.subTest(output=output):
+                with self.assertRaisesRegex(checks.CheckFailure, 'not allowed') as caught:
+                    checks.python_result(output)
+                self.assertIn(label, str(caught.exception))
+
+    def test_unexpected_exception_still_writes_summary(self):
+        def broken(tool, *unused):
+            raise KeyError('surprise')
+        code, summary, _ = self.execute_main(['env'], resolve=broken)
+        self.assertEqual(code, 1)
+        self.assertFalse(summary['passed'])
+        self.assertIn('KeyError', summary['reason'])
+        self.assertIn('Traceback', summary['traceback'])
+
+    def test_keyboard_interrupt_is_not_swallowed(self):
+        def interrupted(tool, *unused):
+            raise KeyboardInterrupt
+        with self.assertRaises(KeyboardInterrupt):
+            self.execute_main(['env'], resolve=interrupted)
 
     def test_invalid_config_is_error(self):
         config = self.root / 'bad.json'
