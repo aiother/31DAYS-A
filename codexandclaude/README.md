@@ -1,18 +1,20 @@
 # Codex 与 Claude 协作入口
 
-当前阶段：REVIEW-001 只读审查已由用户转交；用户已同意 HUD 防重叠试点。Claude Code 保持手动审批，仅授权任务清单中的局部布局修复，不开展自动协作。
+当前阶段：HUD 防重叠和 Xbox A 确认修复已获用户实机验收，并按用户明确指令合并 master。本次人工协作试点已完成；后续仍保持手动审批，不开展自动协作。
 
 ## 文件入口
 
 - [协作规范](collaboration.md)：职责、冻结范围、Git 和验收规则。
 - [Claude 首次只读任务](first_review.md)：用户手工交给 Claude Code 的完整任务。
 - [HUD 试点任务](hud_pilot.md)：只在 Claude 独立工作区执行的首个实现任务。
+- [Claude 试点交付](hud_pilot_delivery.md)：原始修复、复现前后测量及验证记录。
 - [试点基线核对](hud_baseline.md)：用户未提交输入、工作区来源及本轮冻结边界。
 - [Codex 独立审查](hud_pilot_review.md)：修复提交审查、独立复跑及真实截图复查，含剩余人工验收事项。
 - [截图复查工具](tools/capture_hud_preview.gd)：使用独立测试存档捕获真实渲染结果，包含图像与清理验证。
 - [人工验收步骤](hud_acceptance.md)：启动固定测试状态的交互预览，检查窗口、全屏和实际输入。
 - [确认键诊断工具](tools/probe_controller_confirm.gd)：仅在测试进程预览 Xbox A 确认映射，不保存输入配置；诊断结果见独立审查记录。
 - [Xbox 确认修复与复验](controller_confirm_fix.md)：用户另行批准的 A 键映射、回归证据和实机复验步骤。
+- [最终验收与集成](integration.md)：用户验收和合并授权、集成验证以及原有未提交内容的保护结果。
 - [规范验证](tests/test_collaboration.py)：验证入口、任务边界和项目引用。
 
 Claude 可以在整个 `D:\31days` 项目按任务工作；`codexandclaude/` 只存放双方协作规范、交接、审查记录及相关验证，不是它的项目访问边界。游戏源码及游戏测试仍按原工程组织。

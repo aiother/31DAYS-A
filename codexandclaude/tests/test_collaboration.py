@@ -10,6 +10,15 @@ COLLAB = ROOT / "codexandclaude"
 
 
 class CollaborationTests(unittest.TestCase):
+    def test_completed_pilot_entrypoint_reaches_each_handoff_stage(self):
+        readme = (COLLAB / "README.md").read_text(encoding="utf-8")
+        links = set(re.findall(r"\]\(([^)]+)\)", readme))
+        required = {"hud_pilot_delivery.md", "hud_pilot_review.md",
+                    "hud_acceptance.md", "controller_confirm_fix.md", "integration.md"}
+        self.assertTrue(required.issubset(links), required - links)
+        for stage in required:
+            self.assertTrue((COLLAB / stage).is_file(), stage)
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (COLLAB / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
