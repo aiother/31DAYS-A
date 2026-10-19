@@ -109,6 +109,35 @@ class PlanningDocumentsTests(unittest.TestCase):
         for stale in ("T2第10节", "幸存者死亡达到一半", "幸存者战士损失达到一半"):
             self.assertNotIn(stale, t1)
 
+    def test_user_decisions_of_2026_10_19_are_written_into_specs(self):
+        t0, t1, t3, t54 = (self.docs[key] for key in ("T0", "T1", "T3", "T5.4"))
+        # A-001 currency
+        currency = t0.split("### 3.2")[1].split("### 3.3")[0]
+        for rule in ("不能获取", "没有消费用途", "不在UI显示", "后续版本", "不做完整货币玩法"):
+            self.assertIn(rule, currency)
+        self.assertNotIn("仍待决", currency)
+        # A-010 frozen key table, arrows bound to the correct directions
+        keys = t1.split("## 7.")[1].split("## 8.")[0]
+        self.assertIn("| 动作 | 键盘 | 手柄 |", keys)
+        for row in ("| 向左移动 | A / ← |", "| 向右移动 | D / → |", "| 跳跃 | Space | A |",
+                    "| 攻击 | J / 鼠标左键 | X |", "| 闪避 | K | B |", "| 恢复（长按） | L | Y |",
+                    "| 跑步（按住） | Shift | LB |", "| 互动 | E | RB |", "| 使用药包 | Q | Back |",
+                    "| 暂停 | Esc | Start |", "| 全屏切换 | F11 | — |", "| 调试重置 | R | — |"):
+            self.assertIn(row, keys)
+        self.assertNotIn("PageUp", t1)
+        self.assertNotIn("未冻结完整键位表", t1)
+        # A-002 remnant possibility entities
+        remnant = t3.split("## 11.")[1].split("## 12.")[0]
+        for rule in ("低于当前可能性上限的50%", "每10-15秒", "1-2个", "同时最多3只", "+2",
+                     "营帐围攻", "渴望俯视", "寄生同伴者", "中心战场", "最终战", "不含堑壕"):
+            self.assertIn(rule, remnant)
+        self.assertNotIn("V0.1仍不新增Boss", t3)
+        self.assertNotIn("精确触发条件、数量选择、奖励", t3)
+        # A-003 reinforcement recovery source
+        self.assertIn("友军击杀", t54)
+        self.assertNotIn("来源与量未给出", t54)
+        self.assertNotIn("未提供周期或额外发放量", t54)
+
     def test_all_six_accepted_t2_revisions_replace_original_rules(self):
         t2 = self.docs["T2"]
         rules = ["暂不实现正式削韧数值系统", "限制同一瞬间真正执行进攻的敌人数",
@@ -256,9 +285,13 @@ class PlanningDocumentsTests(unittest.TestCase):
         content = self.docs["T5.2"]
         for rule in ("任何层级均可存在Connection", "隐藏属于未发现的Connection",
                      "Connection表现不决定Connection类型", "开放/关闭/变化",
-                     "结束指定战斗且存活后开放", "Before Day3、Day3 Event、After Day3",
-                     "玩家已完成事件永久保存", "不要求制作三张完整地图"):
+                     "结束指定战斗且存活后开放", "按天划分",
+                     "第1日、第2日、第3日（至最终胜利前）、最终胜利后",
+                     "玩家已完成事件永久保存", "不要求制作多张完整地图"):
             self.assertIn(rule, content)
+        # A-009 (2026-10-19): per-day states replace the three Day3-centred nodes.
+        for stale in ("Before Day3", "Day3 Event", "After Day3"):
+            self.assertNotIn(stale, content)
         self.assertIn("已开启连接永久存在，但时间连接仍支持开放/关闭", content)
 
     def test_t52_checkpoint_does_not_rollback_permanent_progress(self):
@@ -439,7 +472,7 @@ class PlanningDocumentsTests(unittest.TestCase):
     def test_t54_uncertainties_and_scope_remain_visible(self):
         content = self.docs["T5.4"]
         for term in ("关键功能逻辑", "普通批量敌人", "每波次重复2次",
-                     "区分首次加入事件与每波增援行为", "不自行建立自动回能系统",
+                     "区分首次加入事件与每波增援行为", "不另设自动回能或周期发放",
                      "不把“死亡不额外推进时间”解释为免费重置15分钟",
                      "不将早期Node示例里的食物任务混入最终配置"):
             self.assertIn(term, content)

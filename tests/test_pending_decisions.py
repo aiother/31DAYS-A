@@ -100,6 +100,20 @@ class PendingDecisionsTests(unittest.TestCase):
         self.assertLess(trench.index("清敌与挑战均保存后"), trench.index("攻击打碎碎石堆"))
         self.assertLess(trench.index("攻击打碎碎石堆"), trench.index("永久开前路"))
 
+    def test_decisions_of_2026_10_19_are_logged(self):
+        statuses = {row[0]: row[-1] for row in table_rows(self.section(SECTIONS["A"]))}
+        self.assertEqual(set(statuses.values()), {"已裁决"})
+        log = {row[0]: row for row in table_rows(self.section("裁决记录"))}
+        self.assertEqual(set(log), set(statuses))
+        for item_id, rules in {"A-002": ("50%", "10-15秒", "1-2个", "3只", "+2", "不含堑壕"),
+                               "A-003": ("友军击杀",), "A-008": ("HD_10002_3", "珍珠"),
+                               "A-009": ("按天划分",), "A-010": ("F11", "方向键")}.items():
+            for rule in rules:
+                with self.subTest(item=item_id, rule=rule):
+                    self.assertIn(rule, log[item_id][2])
+        for row in log.values():
+            self.assertEqual(row[1], "2026-10-19")
+
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
             with self.subTest(keyword=keyword):
