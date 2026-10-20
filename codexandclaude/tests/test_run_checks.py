@@ -248,12 +248,12 @@ class RunChecksTests(unittest.TestCase):
         self.assertIn('KeyError', summary['reason'])
         self.assertIn('Traceback', summary['traceback'])
 
-    def test_content_changed_while_checks_run_fails_even_if_commands_pass(self):
+    def test_content_drift_preserves_gate_results_but_is_not_a_reusable_source(self):
         code, summary, _ = self.execute_main(['focused', '--python-all'], snapshots=[
             {'full_sha256': 'a'}, {'full_sha256': 'b'}])
-        self.assertEqual(code, 1)
+        self.assertEqual(code, 0)
         self.assertFalse(summary['content_stable'])
-        self.assertIn('changed during checks', summary['reason'])
+        self.assertFalse(checks.evidence.compare(self.root, 'git', source_summary=summary)['reusable'])
 
     def test_unreadable_final_snapshot_is_failure_not_a_pass(self):
         code, summary, _ = self.execute_main(['env'], snapshots=[{'full_sha256': 'a'}, OSError('unreadable')])

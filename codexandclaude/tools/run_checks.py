@@ -284,9 +284,6 @@ def main(argv=None):
             except Exception as error:
                 summary['passed'] = False
                 summary['reason'] = (summary['reason'] or '') + f'; final content snapshot failed: {error}'
-            if not summary['content_stable']:
-                summary['passed'] = False
-                summary['reason'] = (summary['reason'] or '') + '; repository content changed during checks'
         summary['finished_utc'] = datetime.now(timezone.utc).isoformat()
         summary['finalized'] = True
         errors = evidence.validation_errors(summary)

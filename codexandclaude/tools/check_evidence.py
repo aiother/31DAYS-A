@@ -238,6 +238,7 @@ def render(summary):
     lines.extend(['', f'提交树：`{content.get("head_tree")}`；指纹范围：`{inline(content.get("scope"))}`。',
                   f'已提交范围指纹：`{content.get("commit_scoped_sha256")}`；工作区范围指纹（原始字节）：`{content.get("scoped_sha256")}`。',
                   f'全工作区指纹：`{content.get("full_sha256")}`；运行前后内容稳定：`{summary.get("content_stable")}`。',
+                  '内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。',
                   f'已跟踪总diff SHA256：`{content.get("tracked_diff_sha256")}`；暂存diff：`{content.get("staged_diff_sha256")}`；未暂存diff：`{content.get("unstaged_diff_sha256")}`。'])
     for row in content.get('untracked', []):
         lines.append(f'- 未跟踪 `{inline(row["path"])}` SHA256：`{row["sha256"]}`。')
