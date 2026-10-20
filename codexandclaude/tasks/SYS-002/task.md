@@ -1,6 +1,6 @@
 # SYS-002：残存可能性实体
 
-状态：待合并（2026-10-19 Claude 审查通过；G4 验收入口经 S 级审查通过；用户 G4 通过，见 acceptance.md）｜级别：L｜实现：Codex｜审查：Claude
+状态：已完成（2026-10-19 用户 G4 四项通过并授权合并，master 的 G2＋G3 全量通过；见 integration.md、acceptance.md）｜级别：L｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：SYS-001 合并、本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：DOC-003（T3 §11 规则）、SYS-001（避免同时改动验证登记与套件计数）
 
 ## 目标
