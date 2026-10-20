@@ -75,3 +75,42 @@ G4待用户挑选。请Claude先快进到本审查提交，再修订R1、R2，�
 - exp002-review-smoke.txt SHA256：`eadd40d67dfd20001d97be74e8ed81d753eb81c840c4d314b00e5dc6c5186efb`。
 - exp002-review-restored-smoke.txt SHA256：`eadd40d67dfd20001d97be74e8ed81d753eb81c840c4d314b00e5dc6c5186efb`。
 - exp002-review-exp001-smoke.txt SHA256：`eb5ee4c71fde9eacf8af6a81913c564c208e61a7580a5b704d28fed38b4d8e68`。
+
+## 第1轮修订复审（2026-10-20）
+
+固定交付SHA：`10dd5ba89f7cae05ca1fffed959090e0b53e2ba9`；修订实现SHA：`35515ca686260706aac3b63ddd1560ef769508c6`。用git switch --detach固定后检查，再从该交付建立codex/EXP-002-review-r2。结论：**需修改，R1已解决，R2剩一项原有变异漏检**。
+
+范围复核：修订实现到交付只改delivery.md和task.md状态；相对755c1b7的改动都在EXP-002原型目录，正式游戏及EXP-001差异为空。README与预览按键9说明同步；原型隔离测试未改。
+
+### R1：已解决
+
+按键9经真实Viewport输入探针得到final_from=552、final_remaining=552，实际ink_text调用为“最终战倒计时 · 余时不足”“09:12”，颜色b8382c；按键8仍为1500/900和加速演出。冒烟对两个样张分别覆盖长/短预算，去掉9入口导致4项失败。证据：runs/exp002-r2-probe.gd、exp002-r2-probe.txt。
+
+### R2：大部分解决，仍需拦住上轮的逐日实际填充色变异（P2）
+
+两个样张现在均运行HUD、暂停、设置、确认、时钟、对话框和按钮状态检查；最终倒计时等drawn记录在实际绘制路径产生。其余新增检查有效。独立变异结果与交付所列五项一致：去倒计时6项失败、去样张一暂停5项、改生命常量4项、去9入口4项、去时钟4项。
+
+但上轮R2明确列出的第三种变异是“可能性实际填充色随style.dusk(state)向生命色混合”，并非仅更改一个基础色常量。修订后`drawn["palette"]`仍在最终颜色计算之前记录Style.POSSIBILITY；测试只核对这个基础字典。将实际填充表达式改成以下形式，字典未变、画面却随日期变红，69项仍全部通过（退出0，无ERROR/WARNING）：
+
+```gdscript
+# hud_view.gd中RING的实际填充色，唯一临时变异：
+Color(palette["possibility"]).lerp(Style.LIFE, style.dusk(state)).lerp(Style.POSSIBILITY_GLOW, pulse * 0.6).lerp(palette["deny"], flash * 0.6)
+```
+
+请对实际传给_arc的语义填充色补一个独立回归：固定正常余额、gain_pulse=0、deny_left=0，比较第1日/第3日/最终战及两个样张，确保实际填充色保持README中的可能性颜色。可在_arc调用处记录最终颜色，或使用绘制调用探针；需要验证实际消耗的颜色，不能只在混色前保存调色板。该变异应失败，其余已有69项保持通过。此处没有发现未变异代码当前随日期变色；问题是上轮明确要求的同一回归仍漏检，不增加新的设计范围。
+
+证据：runs/exp002-r2-mutations.json；exp002-r2-mutation-same_day_varying_fill_as_r1_review.txt为69/69。所有变异按原始字节还原。
+
+### N1：已处理
+
+已查看两个样张重拍的稳定长预算和新增短预算截图：分别为普通倒计时14:58和朱红“余时不足/09:12”。截图等待accelerate_left归零、有600帧保护上限，当前交付截图符合预期。
+
+### 本轮独立证据
+
+- Godot --headless --path game --editor --import --quit：退出0，无ERROR/WARNING。
+- Godot --headless --path game --quit-after 180：退出0，无ERROR/WARNING。
+- Godot --headless --path game --script res://prototypes/EXP-002/tests/smoke_test.gd：69/69；EXP-001同类命令仍105/105。
+- python codexandclaude/tools/run_checks.py focused --python-all：102/102 + 47/47，complete=true、passed=true；原始汇总runs/20261020T150521.182728Z/summary.json，被测SHA为10dd5ba、dirty=false。工具版本与首轮相同（Godot4.7.2、Python3.12.14/openpyxl3.1.5、Git2.56.0、Nodev24.19.0）。
+- 原始日志：runs/exp002-r2-import.txt、exp002-r2-main180.txt、exp002-r2-smoke.txt、exp002-r2-exp001-smoke.txt；变异结果另存上述JSON。已确认仅换行的SVG.import按env.md恢复，没有保留源码、测试或生成物改动。本复审提交只更新review.md。
+
+请Claude快进至本复审提交后只补R2剩余颜色回归，再交新的实现与交付SHA复审。G4仍由用户挑选；未合并master。
