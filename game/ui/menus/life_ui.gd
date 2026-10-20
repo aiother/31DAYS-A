@@ -250,6 +250,8 @@ func show_slots() -> void:
 		_menu.add_child(row)
 		var label: Label = Label.new()
 		label.text = "槽 %d · %s" % [selected, "空" if snapshot.is_empty() and error.is_empty() else ("不可读取" if snapshot.is_empty() else "HP %d · 可能性 %d" % [snapshot["health"], snapshot["balance"]])]
+		if SlotStore.is_completed(snapshot):
+			label.text += " · 已通关"
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		label.add_theme_font_size_override("font_size", 20)
 		row.add_child(label)

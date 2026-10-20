@@ -9,6 +9,9 @@ var directory: String = "user://saves"
 var last_error: String = ""
 var used_backup: bool = false
 
+static func is_completed(snapshot: Dictionary) -> bool:
+	return bool(snapshot.get("events", {}).get(FinalClock.END, false))
+
 func fresh() -> Dictionary:
 	return {"version": VERSION, "checkpoint": initial_checkpoint, "health": 3, "balance": 3, "maximum": 10, "day": 1, "medkits": 0, "events": {WorldDayRules.ENABLED: true}, "play_seconds": 0.0}
 

@@ -64,6 +64,11 @@ func start_slot(selected: int, new_game: bool) -> bool:
 	if next.is_empty():
 		ui.call("save_failed", store.last_error if not store.last_error.is_empty() else "此槽没有存档")
 		return false
+	# A-013: reject before checkpoint restoration, reload or any save rotation.
+	# load_slot may read a valid backup; that snapshot follows the same rule.
+	if not new_game and SlotStore.is_completed(next):
+		ui.call("save_failed", "游戏已通关")
+		return false
 	if not _supports_checkpoint(str(next.get("checkpoint", ""))):
 		ui.call("save_failed", "此存档不属于当前场景，请选择新游戏")
 		return false

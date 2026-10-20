@@ -1,7 +1,7 @@
 # SYS-004：已通关存档不能再进入
 
-状态：草案（2026-10-20 起草，待用户批准）｜级别：M｜实现：Codex｜审查：Claude
-工作区：worktrees/codex｜基线：ENV-004 合并后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：ENV-004（见“依赖说明”）
+状态：进行中（2026-10-20 用户已批准，并在ENV-004合并授权中明确要求随后开工）｜级别：M｜实现：Codex｜审查：Claude
+工作区：worktrees/codex｜基线：master@30dbfcbffb09f91a478e3be5037508b9c1f02ace（ENV-004合并收尾后）｜依赖：ENV-004（已合入）
 
 ## 目标
 

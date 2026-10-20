@@ -255,11 +255,15 @@ func run() -> void:
 	for key: String in pearls:
 		check(saved["events"].get(key, false), "ending retains earlier pearl " + key)
 	check(not saved["events"].get(FieldSession.RESCUE_FAILED, false) and not saved["events"].get(RavineRescueSession.FAILED, false) and not saved["events"].get(RavineDepthSession.DEPTH_FAILED, false) and not saved["events"].get(OutskirtsSession.OUTSKIRTS_FAILED,false), "successful route does not accidentally abandon saved survivors")
-	check(session.start_slot(1, false), "full campaign save reloads through normal production path")
+	var completed_scene: int = session.get_instance_id()
+	var completed_primary: PackedByteArray = FileAccess.get_file_as_bytes(session.store.path_for(1))
+	var completed_backup: PackedByteArray = FileAccess.get_file_as_bytes(session.store.path_for(1) + ".bak")
+	check(not session.start_slot(1, false), "full completed campaign refuses re-entry through Continue")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
-	check(session.medkit_count() == 3, "normal ending reload preserves unused medkits")
-	check(paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "normal reload restores finished campaign and all earned pearl and Boss growth")
+	check(session.medkit_count() == 3, "refused ending re-entry preserves unused medkits")
+	check(session.get_instance_id() == completed_scene and paused and session.final_ui.mode == "finished" and session.player.possibility.maximum == 15 and session.player.combat.range_upgraded and session.player.combat.pearl_count == 4 and is_equal_approx(session.player.combat.range_multiplier(),1.4), "refused re-entry preserves the current finished campaign and all earned growth")
+	check(FileAccess.get_file_as_bytes(session.store.path_for(1)) == completed_primary and FileAccess.get_file_as_bytes(session.store.path_for(1) + ".bak") == completed_backup, "refused completed campaign entry preserves primary and backup bytes")
 	paused = false
 	session.queue_free()
 	await physics_frame

@@ -125,10 +125,11 @@ func run() -> void:
 	check(paused and session.final_ui.mode=="finished" and session.data["events"].get(FinalClock.END,false),"retry finishes ending with persistent completion and end screen")
 	check((session.ui.get("_error_label") as Label).text.is_empty() and not (session.ui.get("_health") as Label).visible,"finished screen clears stale save errors and hides combat HUD")
 	check(session.store.load_slot(1)["events"].get(FinalClock.END,false),"ending completion survives storage")
-	check(session.start_slot(1,false),"completed slot remains loadable")
+	var completed_scene: int = session.get_instance_id()
+	check(not session.start_slot(1,false),"completed slot cannot re-enter through Continue")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
-	check(paused and session.final_ui.mode=="finished" and not session.player.is_physics_processing(),"completed save restores end screen without replay or free gameplay")
+	check(session.get_instance_id()==completed_scene and paused and session.final_ui.mode=="finished" and not session.player.is_physics_processing(),"refused re-entry preserves the current ending screen without reload or free gameplay")
 	paused = false
 	session.queue_free()
 	await ticks(2)
