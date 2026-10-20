@@ -6,8 +6,11 @@ import unittest
 WORDS = Path(__file__).resolve().parents[1] / "Words"
 REGISTER = WORDS / "待决事项总表.md"
 DOCS = {"T0": "T0_", "T1": "T1_", "T2": "T2_", "T3": "T3_", "T4": "T4_", "T5": "T5_",
-        "T5.1": "T5.1_", "T5.2": "T5.2_", "T5.3": "T5.3_", "T5.4": "T5.4_"}
+        "T5.1": "T5.1_", "T5.2": "T5.2_", "T5.3": "T5.3_", "T5.4": "T5.4_",
+        "T6": "T6_", "T7": "T7_"}
 SECTIONS = {"A": "A 待用户裁决", "B": "B 已由后续修订解决", "C": "C 留待灰盒或实现确定"}
+FIRST_BATCH = {f"A-{number:03d}" for number in range(1, 11)}
+T7_BATCH = {f"A-{number:03d}" for number in range(11, 21)}
 
 
 def table_rows(section):
@@ -56,11 +59,11 @@ class PendingDecisionsTests(unittest.TestCase):
                     self.assertTrue(all(row), row)
 
     def test_every_source_names_an_existing_planning_document(self):
-        files = [path.name for path in WORDS.glob("*.md")]
+        files = [path.name for path in WORDS.iterdir() if path.suffix in (".md", ".xlsx")]
         for title in SECTIONS.values():
             for row in table_rows(self.section(title)):
                 with self.subTest(row=row[0]):
-                    refs = set(re.findall(r"T(?:5\.[1-4]|[0-5])(?![\d.])", row[2]))
+                    refs = set(re.findall(r"T(?:5\.[1-4]|[0-7])(?![\d.])", row[2]))
                     self.assertTrue(refs, row[2])
                     for ref in refs:
                         self.assertTrue(any(name.startswith(DOCS[ref]) for name in files), ref)
@@ -101,9 +104,11 @@ class PendingDecisionsTests(unittest.TestCase):
         self.assertLess(trench.index("攻击打碎碎石堆"), trench.index("永久开前路"))
 
     def test_decisions_of_2026_10_19_are_logged(self):
-        statuses = {row[0]: row[-1] for row in table_rows(self.section(SECTIONS["A"]))}
+        statuses = {row[0]: row[-1] for row in table_rows(self.section(SECTIONS["A"]))
+                    if row[0] in FIRST_BATCH}
+        self.assertEqual(set(statuses), FIRST_BATCH)
         self.assertEqual(set(statuses.values()), {"已裁决"})
-        log = {row[0]: row for row in table_rows(self.section("裁决记录"))}
+        log = {row[0]: row for row in table_rows(self.section("裁决记录")) if row[0] in FIRST_BATCH}
         self.assertEqual(set(log), set(statuses))
         for item_id, rules in {"A-002": ("50%", "10-15秒", "1-2个", "3只", "+2", "不含堑壕"),
                                "A-003": ("友军击杀",), "A-008": ("HD_10002_3", "珍珠"),
@@ -113,6 +118,19 @@ class PendingDecisionsTests(unittest.TestCase):
                     self.assertIn(rule, log[item_id][2])
         for row in log.values():
             self.assertEqual(row[1], "2026-10-19")
+
+    def test_t7_conflicts_are_open_a_items_citing_t7(self):
+        rows = {row[0]: row for row in table_rows(self.section(SECTIONS["A"])) if row[0] in T7_BATCH}
+        self.assertEqual(set(rows), T7_BATCH)
+        for item_id, row in rows.items():
+            with self.subTest(item=item_id):
+                self.assertIn("T7", row[2])
+                self.assertIn("①", row[3])
+                self.assertIn("②", row[3])
+                if row[-1] == "已裁决":
+                    log = {entry[0] for entry in table_rows(self.section("裁决记录"))}
+                    self.assertIn(item_id, log)
+        self.assertNotIn("T6、T7填写表格的内容不在本表范围", self.content)
 
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
