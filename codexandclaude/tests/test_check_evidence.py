@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'tools/check_evidence.py'
 spec = importlib.util.spec_from_file_location('check_evidence', SCRIPT)
@@ -80,7 +81,9 @@ class EvidenceTests(unittest.TestCase):
         self.write('codexandclaude/tasks/ENV-005/delivery.md', 'record\n')
         target = self.commit('record')
         result = evidence.compare(self.root, self.git, source_ref=self.source, target_ref=target)
-        self.assertTrue(result['reusable'])
+        self.assertFalse(result['reusable'])
+        self.assertTrue(result['gate_reuse']['G2']['reusable'])
+        self.assertFalse(result['gate_reuse']['G3']['reusable'])
         self.assertEqual(result['changed_paths'], ['codexandclaude/tasks/ENV-005/delivery.md'])
         self.assertEqual(result['non_record_changes'], [])
         self.assertNotEqual(result['source_tree'], result['target_tree'])
@@ -102,10 +105,63 @@ class EvidenceTests(unittest.TestCase):
         self.assertTrue(evidence.compare(self.root, self.git, source_summary=summary)['reusable'])
         self.write('codexandclaude/tasks/ENV-005/delivery.md', 'record')
         self.commit('record')
-        self.assertTrue(evidence.compare(self.root, self.git, source_summary=summary)['reusable'])
+        result = evidence.compare(self.root, self.git, source_summary=summary)
+        self.assertFalse(result['reusable'])
+        self.assertEqual(result['reusable_gates'], ['G2'])
+        self.assertEqual(result['rerun_gates'], ['G3'])
         self.write('code.py', 'changed')
         self.commit('code')
         self.assertFalse(evidence.compare(self.root, self.git, source_summary=summary)['reusable'])
+
+    def test_record_broken_link_really_fails_g3_and_cannot_reuse_g3(self):
+        from codexandclaude.tests import test_collaboration as collaboration
+        collab = self.root / 'codexandclaude'
+        archive = collab / 'archive/HUD-001'
+        self.write('codexandclaude/archive/HUD-001/README.md', 'valid archive\n')
+        self.source = self.commit('valid docs baseline')
+        summary = self.summary()
+        self.write('codexandclaude/tasks/ENV-005/delivery.md', '[broken](missing.md)\n')
+        target = self.commit('record with broken link')
+        result = evidence.compare(self.root, self.git, source_summary=summary, target_ref=target)
+        self.assertFalse(result['reusable'])
+        self.assertTrue(result['gate_reuse']['G2']['reusable'])
+        self.assertFalse(result['gate_reuse']['G3']['reusable'])
+        self.assertNotIn('G3', result['reusable_gates'])
+        self.assertIn('G3', result['rerun_gates'])
+        actual = unittest.TestResult()
+        case = collaboration.CollaborationTests('test_markdown_links_resolve_within_collaboration_directory')
+        with patch.object(collaboration, 'COLLAB', collab), patch.object(collaboration, 'ARCHIVE', archive):
+            case.run(actual)
+        self.assertEqual(len(actual.failures), 1)
+        self.assertEqual(actual.errors, [])
+
+    def test_identical_content_reuses_both_gates_and_code_changes_reuse_none(self):
+        summary = self.summary()
+        same = evidence.compare(self.root, self.git, source_summary=summary)
+        self.assertTrue(same['reusable'])
+        self.assertEqual(same['reusable_gates'], ['G2', 'G3'])
+        self.write('code.py', 'new code\n')
+        self.commit('code difference')
+        result = evidence.compare(self.root, self.git, source_summary=summary)
+        self.assertFalse(result['reusable'])
+        self.assertEqual(result['reusable_gates'], [])
+
+    def test_g3_only_source_never_claims_g2_and_partial_cli_returns_nonzero(self):
+        summary = self.summary()
+        summary.update(mode='focused', checks=summary['checks'][1:], planned_checks=summary['planned_checks'][1:])
+        self.write('codexandclaude/tasks/ENV-005/review.md', 'record\n')
+        self.commit('review record')
+        result = evidence.compare(self.root, self.git, source_summary=summary)
+        self.assertFalse(result['reusable'])
+        self.assertEqual(result['reusable_gates'], [])
+        self.assertEqual(result['rerun_gates'], ['G3'])
+        self.assertNotIn('G2', result['gate_reuse'])
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = evidence.main(['--root', str(self.root), '--git', self.git,
+                                  '--source-ref', self.source, '--target-ref', 'HEAD'])
+        self.assertEqual(code, 1)
+        self.assertFalse(json.loads(output.getvalue())['reusable'])
 
     def test_mutations_missing_final_incomplete_gate_dirty_source_and_code_are_rejected(self):
         summary = self.summary()

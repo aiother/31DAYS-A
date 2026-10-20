@@ -159,7 +159,8 @@ def stable_content(start, end):
 
 def compare(root, git, *, source_ref=None, source_summary=None, target_ref='HEAD'):
     """A content eligibility verdict; never skips gates or grants merge authorization."""
-    result = {'reusable': False, 'scope': list(SCOPE), 'changed_paths': [], 'non_record_changes': []}
+    result = {'reusable': False, 'scope': list(SCOPE), 'changed_paths': [], 'non_record_changes': [],
+              'gate_reuse': {}, 'reusable_gates': [], 'rerun_gates': []}
     try:
         if source_summary is not None:
             errors = validation_errors(source_summary)
@@ -197,10 +198,24 @@ def compare(root, git, *, source_ref=None, source_summary=None, target_ref='HEAD
         non_records = [p for p in changed if not record_path(p)]
         result.update(changed_paths=changed, non_record_changes=non_records,
                       source_fingerprint=manifest_digest(left, True), target_fingerprint=manifest_digest(right, True))
-        result['reusable'] = not non_records
-        result['reason'] = ('可复用：内容条件满足；' +
-                            ('仅限源摘要已通过的关卡' if source_summary is not None else '提交比较不证明门禁曾通过，仍须有效源摘要') +
-                            '；工具、参数与外部依赖仍须核对一致' if not non_records else '不可复用：存在非记录路径变化')
+        # G3 reads excluded Markdown records (notably the collaboration link check).
+        # The scoped content identity is sufficient only for G2 when records change.
+        gates = list(dict.fromkeys(c['gate'] for c in source_summary['checks'])) if source_summary is not None else ['G2', 'G3']
+        for gate in gates:
+            eligible = not non_records and (not changed or gate == 'G2')
+            reason = ('不可复用：存在非记录路径变化' if non_records else
+                      '须重跑：记录变化会影响G3及其他非G2检查' if not eligible else
+                      '可复用：内容条件满足；仍须核对工具、参数和外部依赖')
+            result['gate_reuse'][gate] = {'reusable': eligible, 'reason': reason}
+            result['reusable_gates' if eligible else 'rerun_gates'].append(gate)
+        result['reusable'] = bool(gates) and not result['rerun_gates']
+        if non_records:
+            result['reason'] = '不可复用：存在非记录路径变化'
+        elif result['rerun_gates']:
+            result['reason'] = ('部分可复用：' + '、'.join(result['reusable_gates']) + '内容条件满足；' if result['reusable_gates'] else '不可复用：') + '记录变化，' + '、'.join(result['rerun_gates']) + '必须重跑'
+        else:
+            result['reason'] = '可复用：全部来源关卡的内容条件满足'
+        result['reason'] += ('；仅限有效源摘要已通过的关卡' if source_summary is not None else '；提交比较不证明门禁曾通过，仍须有效源摘要') + '；工具、参数与外部依赖须核对一致'
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         result['reason'] = '不可复用：' + str(error)
     return result
@@ -250,7 +265,7 @@ def render(summary):
             lines.append(f'- 报告 `{inline(c["report"])}` SHA256=`{c.get("sha256")}`。')
     lines.extend(['', '失败清单：' + ('；'.join(inline(e) for e in errors) if errors else '无。'),
                   '失败归因：未提供基线失败证据，不自动区分旧失败与新失败。',
-                  '复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；另核对工具、命令和外部依赖。'])
+                  '复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。'])
     return '\n'.join(lines) + '\n'
 
 
