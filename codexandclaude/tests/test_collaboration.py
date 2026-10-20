@@ -166,6 +166,40 @@ class CollaborationTests(unittest.TestCase):
         for detail in ("safe.directory", "git commit -F", "CRLF", ".svg.import"):
             self.assertIn(detail, env)
 
+    def section(self, text, number):
+        return re.split(r"^## \d+\. ", text, flags=re.M)[number]
+
+    def test_proposals_live_outside_task_directories(self):
+        # R1: a proposal must not create tasks/<ID>/ before its task card is registered.
+        protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")
+        discussion = protocol.split("### 3.2")[1].split("### 3.3")[0]
+        self.assertIn("proposals/<ID>.md", discussion)
+        self.assertNotIn("在 `tasks/<ID>/proposal.md` 写出", protocol)
+        self.assertIn("随任务卡一并移入", discussion)
+        for proposal in (COLLAB / "proposals").glob("*.md") if (COLLAB / "proposals").is_dir() else []:
+            with self.subTest(proposal=proposal.name):
+                self.assertRegex(proposal.stem, r"^[A-Z]+-\d{3}$")
+        exploration = protocol.split("### 3.3")[1].split("## 4.")[0]
+        for rule in ("game/prototypes/<ID>/", "codexandclaude/prototypes/<ID>/", "最小测试"):
+            self.assertIn(rule, exploration)
+
+    def test_required_evidence_and_failure_attribution_are_kept(self):
+        # R2: V2.2 section 7 evidence obligations stay in the current rulebook.
+        gates = self.section((COLLAB / "collaboration.md").read_text(encoding="utf-8"), 7)
+        for field in ("被测 SHA", "工作区是否有未提交改动", "工具版本", "实际执行的命令",
+                      "套件完整性", "计数", "原有失败与新引入失败分开报告", "必填"):
+            with self.subTest(field=field):
+                self.assertIn(field, gates)
+
+    def test_document_change_logs_and_decision_records_keep_their_fields(self):
+        # R3: V2.2 section 9 traceability obligations stay in the current rulebook.
+        docs = self.section((COLLAB / "collaboration.md").read_text(encoding="utf-8"), 10)
+        for rule in ("每份规格文档", "日期、改了什么、来源", "其他文档只放链接",
+                     "日期、结论、来源链接", "不直接删除"):
+            with self.subTest(rule=rule):
+                self.assertIn(rule, docs)
+        self.assertNotIn("已改写为现行版的文档在文末保留变更记录表", docs)
+
     def test_protocol_preserves_pending_work_and_requires_tested_commits(self):
         protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")
         for boundary in ("现有未提交变更必须保留", "未提交内容不会自动进入新 worktree",
