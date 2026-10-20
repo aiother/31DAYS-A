@@ -74,14 +74,44 @@ class CollaborationTests(unittest.TestCase):
                 backlog[cells[0]] = cells
         referenced = set(re.findall(r"BL-\d{3}", roadmap))
         self.assertEqual(referenced - set(backlog), set())
+        # Only milestone/batch rows and the tooling line count as an assignment.
+        units = {}
+        for line in roadmap.splitlines():
+            unit = re.match(r"^\| (M\d(?:-[a-z])?) \|", line)
+            if unit:
+                units[unit.group(1)] = set(re.findall(r"BL-\d{3}", line))
+            elif line.startswith("并行的工具线"):
+                units["工具线"] = set(re.findall(r"BL-\d{3}", line))
+        assigned = set().union(*units.values())
         for item_id, cells in backlog.items():
             open_item = cells[5].startswith(("待立项", "已立项", "进行中"))
             if open_item and cells[1] in ("P1", "P2") and item_id != "BL-021":
                 with self.subTest(item=item_id):
-                    self.assertIn(item_id, referenced)
+                    self.assertIn(item_id, assigned)
         self.assertTrue(backlog["BL-021"][5].startswith("已立项 DOC-007"))
         for milestone in ("M1", "M2", "M3", "M4", "M5"):
-            self.assertIn(f"| {milestone} |", roadmap)
+            self.assertIn(milestone, units)
+        # Spec-required UI needs (T7 checklist §3.1) trace to a backlog item and its batch.
+        for need in ("G-02", "G-03", "G-04", "G-07", "G-08"):
+            with self.subTest(need=need):
+                rows = [line for line in roadmap.splitlines() if line.startswith(f"| {need} ")]
+                self.assertEqual(len(rows), 1)
+                cells = [cell.strip() for cell in rows[0].split("|")[1:-1]]
+                items = re.findall(r"BL-\d{3}", cells[1])
+                self.assertTrue(items)
+                for item_id in items:
+                    self.assertIn(need, backlog[item_id][2] + backlog[item_id][3])
+                    self.assertIn(item_id, units[cells[2]])
+
+    def test_roadmap_snapshot_mentions_existing_graybox_settings_and_audio(self):
+        roadmap = (COLLAB / "ROADMAP.md").read_text(encoding="utf-8")
+        life_ui = (ROOT / "game/ui/menus/life_ui.gd").read_text(encoding="utf-8")
+        visual = (ROOT / "game/player/placeholder_visual.gd").read_text(encoding="utf-8")
+        if "window_set_size" in life_ui:
+            self.assertIn("窗口尺寸", roadmap)
+        if "_hit_sound" in visual:
+            self.assertIn("命中音", roadmap)
+            self.assertIn("game/player/placeholder_visual.gd`（命中音", roadmap)
 
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")

@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-20（DOC-007 实现时，汇总基线 master@2013c34）
+更新：2026-10-20（DOC-007 第1轮修订时，汇总基线 master@b572c7e）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -18,7 +18,7 @@
 | DOC-004 | M | V2.3 修订并正式并入协作规范 | Claude | Codex | 已完成 | [tasks/DOC-004](tasks/DOC-004/task.md) |
 | DOC-005 | M | T7 与现行规格核对 | Claude | Codex | 已完成 | [tasks/DOC-005](tasks/DOC-005/task.md) |
 | DOC-006 | M | 记录 T7 冲突裁决并写入主文档 | Claude | Codex | 已完成 | [tasks/DOC-006](tasks/DOC-006/task.md) |
-| SYS-003 | M | 最终战同帧胜利优先 | Codex | Claude | 待合并（审查通过） | [tasks/SYS-003](tasks/SYS-003/task.md) |
-| DOC-007 | M | V0.1 剩余开发清单与路线 | Claude | Codex | 待审查 | [tasks/DOC-007](tasks/DOC-007/task.md) |
+| SYS-003 | M | 最终战同帧胜利优先 | Codex | Claude | 已完成 | [tasks/SYS-003](tasks/SYS-003/task.md) |
+| DOC-007 | M | V0.1 剩余开发清单与路线 | Claude | Codex | 待复审（第1轮修订） | [tasks/DOC-007](tasks/DOC-007/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
