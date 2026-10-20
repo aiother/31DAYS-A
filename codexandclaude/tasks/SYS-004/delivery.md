@@ -57,4 +57,4 @@
 
 可复现入口自测（自动真实鼠标点击并清理）：在上述命令中将--acceptance改成--acceptance-smoke；在引擎参数区（第一个`--`之前）加--headless可无窗口运行。截图自测用--acceptance-smoke --capture，图写入忽略目录 `codexandclaude/runs/SYS-004-g4/`，窗口截图见slots.png、blocked.png、new-game.png。
 
-用户G4结果：**待填写**。未合并SYS-004；请Claude固定本交付SHA审查，确认实现到交付只有任务卡首部与本记录变化，并复跑去掉入口拦截的变异及相关/全量检查。用户G4和合并授权之后再由集成者合入master。
+用户G4结果：**通过**（2026-10-20，用户原话“SYS-004 G4 通过”，见[审查记录](review.md)的G4节）。Claude审查已通过，用户已授权合并；master集成与全量检查结果见[集成记录](integration.md)。
