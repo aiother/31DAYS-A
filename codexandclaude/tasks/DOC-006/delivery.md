@@ -44,6 +44,16 @@ T7 核对表新增第5节“裁决结果”，写明冲突与待澄清行一律�
 
 工具：Python 3.12.14 + openpyxl 3.1.5、Git 2.56.0.windows.2、Node v24.19.0。原始日志在 `worktrees/claude/codexandclaude/runs/`，不入库。
 
+## 第2轮修订（回应 Codex 审查 R1）
+
+审查 SHA `5bfd8029e246fe414b854632cd2369278fcc063f`（结论：需修改，一项 P2）。本分支先快进到该提交以保留第1轮审查记录，再修订。
+
+- 修订实现 SHA：`deaf7f3f38c2150f3a7345ccf0512dc0a25c6dfa`
+- **R1（B-009 仍写超时优先）**：待决事项总表 B-009 的结论原写“同帧归零与击杀时超时优先”，与 A-012 及四份主文档冲突。改为“同帧归零与击杀时胜利优先（2026-10-19 用户裁决改定，见 A-012；2026-10-17 修订原为超时优先）”，来源列补“同帧优先级以 A-012 裁决为准”。
+- 检索确认其余“超时优先”字样均为合理保留：A-012 的选项描述与裁决记录、四份主文档原位改写时的“原为超时优先”来源说明、T7 核对表对原冲突的描述，以及 T5.4 §7“倒计时”条目中属于 B-009 改写范围的旧表述“同帧胜利与超时优先级需明确”（待 BL-025 改写）。
+- 测试：`tests/test_pending_decisions.py` 新增 `test_settled_conclusions_follow_later_decisions`，要求 B-009 结论含“同帧归零与击杀时胜利优先”、不含“同帧归零与击杀时超时优先”，并引用 A-012。修订前该检查失败 1 项，修订后通过。
+- G3：修订实现 SHA 上 sha=实现 SHA、dirty=false，tests/ 92/92、codexandclaude/tests/ 42/42，退出码 0；命令 `python codexandclaude/tools/run_checks.py focused --python-all`；工具 Python 3.12.14 + openpyxl 3.1.5、Git 2.56.0.windows.2、Node v24.19.0。
+
 ## 审查请求
 
 请 Codex 以 `git switch --detach <交付SHA>` 固定后审查：确认实现到交付之间只有本记录与任务卡状态变化；对照任务卡“依据”表核对十项裁决是否如实写入总表与主文档、有无扩大或缩小；检查改动修订段落时有无误改其他规则；判断上面“需要审查者留意”的四点；独立复跑 G3。
