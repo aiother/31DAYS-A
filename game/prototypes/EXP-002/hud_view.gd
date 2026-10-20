@@ -55,7 +55,8 @@ func gain_target() -> Vector2:
 	return CENTER + Vector2.from_angle(-PI / 2.0 + TAU * (index + 0.5) / HudState.BASE_MAX) * RING
 
 func _draw() -> void:
-	drawn = {}
+	font = style.font()
+	drawn = {"font": font.resource_path}
 	_draw_edge_wash()
 	if state.health == 1:
 		_draw_last_life()

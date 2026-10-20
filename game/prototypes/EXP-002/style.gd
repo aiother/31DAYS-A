@@ -28,8 +28,22 @@ const DAY_RANGE: Array[Vector2] = [Vector2.ZERO, Vector2(0.0, 0.25), Vector2(0.3
 const FIXED_DUSK: float = 0.5
 const FINAL_GLOW_SCALE: float = 0.7
 
+const HAND_FONT_PATH: String = "res://prototypes/EXP-002/fonts/LXGWWenKai-Regular.ttf"
+
 var sample: int = 0
 var progressive: bool = true
+## User G4: handwriting font kept (霞鹜文楷, SIL OFL 1.1). Toggle for comparison.
+var handwriting: bool = true
+var _hand_font: Font
+
+## The font every EXP-002 view draws with.
+func font() -> Font:
+	if handwriting:
+		if _hand_font == null and ResourceLoader.exists(HAND_FONT_PATH):
+			_hand_font = load(HAND_FONT_PATH) as Font
+		if _hand_font != null:
+			return _hand_font
+	return ThemeDB.fallback_font
 
 func title() -> String:
 	return SAMPLES[sample]

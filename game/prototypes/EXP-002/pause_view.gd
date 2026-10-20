@@ -101,7 +101,8 @@ func _draw() -> void:
 	text(Vector2(84, 340), "暂停", 46)
 	Ink.rough_line(self, Vector2(84, 356), Vector2(250, 356), Color(Style.LIFE, 0.8), 2.4, 202, style.wobble())
 	text(Vector2(84, size.y - 90), "第 %d 日 · 末日前 %d 天" % [state.day, state.days_left()], 20, Color(Style.INK, 0.7))
-	drawn = {"sample": style.sample}
+	font = style.font()
+	drawn = {"sample": style.sample, "font": font.resource_path}
 	if mode.is_empty():
 		_draw_clock(Vector2(LEFT_WIDTH + (size.x - LEFT_WIDTH) * 0.5, 360))
 	elif mode == "settings":

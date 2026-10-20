@@ -14,6 +14,7 @@ func setup(value: String, font_size: int, stroke_seed: int, visual: RefCounted) 
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
 	custom_minimum_size = Vector2(360, 60)
 	add_theme_font_size_override("font_size", font_size)
+	add_theme_font_override("font", visual.font())
 	for name: String in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color", "font_hover_pressed_color"]:
 		add_theme_color_override(name, Style.INK)
 	add_theme_color_override("font_disabled_color", Color(Style.INK, 0.35))
@@ -44,6 +45,12 @@ func ink_state() -> String:
 	if is_hovered():
 		return "hover"
 	return "normal"
+
+## Keeps the button text in the current preview font (handwriting toggle).
+func _process(_delta: float) -> void:
+	var wanted: Font = style.font()
+	if get_theme_font("font") != wanted:
+		add_theme_font_override("font", wanted)
 
 func _draw() -> void:
 	var current: String = ink_state()

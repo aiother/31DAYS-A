@@ -89,6 +89,13 @@ func hud_states(state: HudState, tag: String) -> void:
 	preview.call("press", KEY_5)
 	await frames(2)
 	var drawn: Dictionary = hud.get("drawn")
+	check(drawn.get("font", "") == Style.HAND_FONT_PATH, tag + "HUD draws with the handwriting font (user G4)")
+	preview.call("press", KEY_J)
+	await frames(2)
+	check(hud.get("drawn").get("font", "x") != Style.HAND_FONT_PATH, tag + "J switches back to the built-in font for comparison")
+	preview.call("press", KEY_J)
+	await frames(2)
+	drawn = hud.get("drawn")
 	check(drawn.has("emblem") and drawn["emblem"]["life"] == HudState.MAX_HEALTH and drawn["emblem"]["reach"] == 100, tag + "emblem draws life and zero-pearl reach")
 	check(drawn.get("horizon", "") == state.clock_text(), tag + "horizon draws the clock time")
 	for i: int in range(6):
@@ -139,6 +146,7 @@ func pause_menu(state: HudState, sample: int, tag: String) -> void:
 	await frames(2)
 	var drawn: Dictionary = pause.get("drawn")
 	check(pause.visible and state.paused and drawn.get("sample", -1) == sample, tag + "Esc opens the pause menu in this sample")
+	check(drawn.get("font", "") == Style.HAND_FONT_PATH and (pause.get("buttons")[0] as Control).get_theme_font("font").resource_path == Style.HAND_FONT_PATH, tag + "pause menu text and buttons use the handwriting font")
 	check(drawn.has("clock") and drawn["clock"]["time"] == state.clock_text() and drawn["clock"]["day"] == 2, tag + "the clock is drawn with the current time and day")
 	check(pause.get("buttons")[0].call("ink_state") == "focus", tag + "first option shows the selected ink state")
 	var held: Array = [state.balance, state.health]

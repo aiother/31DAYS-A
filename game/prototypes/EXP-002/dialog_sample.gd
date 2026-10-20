@@ -41,6 +41,7 @@ func close() -> void:
 	visible = false
 
 func _draw() -> void:
+	font = style.font()
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.03, 0.04, 0.55))
 	Ink.glow(self, BOX.get_center(), 260, Style.DUSK_BOTTOM, style.glow_strength(state) * 0.7)
 	style.panel(self, BOX, state, 700)

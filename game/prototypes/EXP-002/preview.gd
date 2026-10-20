@@ -10,7 +10,7 @@ const DialogSample = preload("res://prototypes/EXP-002/dialog_sample.gd")
 const HELP: String = """1 / 2  切换样张（手札为主 / 黄昏为主）      H  显示或隐藏说明
 5 / 6 / 7  跳到第1日 / 第2日 / 第3日      0  开关“随天数变化”
 8 / 9  最终战：开战时第3日余25分钟（加速定格到15:00）/ 只余9分12秒（余时不足警示）
-Esc 暂停菜单（左选项、右时钟；设置等二级页盖住时钟，Esc 返回）    K 通用对话框与按钮样式
+Esc 暂停菜单（左选项、右时钟；设置等二级页盖住时钟，Esc 返回）    K 通用对话框与按钮样式    J 手写字体开/关
 Q 受伤   E 尝试恢复   F 尝试闪避（连闪成本1/2/3）   A / S / D 消耗1 / 获得1 / 获得3
 G 成长上限   Z / X 珍珠 -1 / +1   C / V 药包显示 / 数量   R 重置
 T 时间 +1分钟   Y 换日前3分钟   U 立即换日   L 时间 ×1/×30   空格 暂停时间"""
@@ -78,6 +78,7 @@ func _process(delta: float) -> void:
 	distortion.visible = distortion_strength > 0.001
 	(distortion.material as ShaderMaterial).set_shader_parameter("strength", distortion_strength)
 	title_label.text = "%s · %s · 黄昏 %d%% · 随天数变化：%s" % [style.title(), stage(), roundi(style.dusk(state) * 100), "开" if style.progressive else "关"]
+	title_label.add_theme_font_override("font", style.font())
 	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -120,6 +121,7 @@ func press(code: Key) -> void:
 		KEY_8: jump(4)
 		KEY_9: jump(5)
 		KEY_0: style.progressive = not style.progressive
+		KEY_J: style.handwriting = not style.handwriting
 		KEY_K: dialog.call("open")
 		KEY_H: help_label.visible = not help_label.visible
 		KEY_Q: state.hurt()
