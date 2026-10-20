@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在单独的提交中串行更新，可能短暂滞后。规则见 [协作方案 V2.2](plan_v2.md) 第 4、5 节。
 
-更新：2026-10-19（SYS-001、SYS-002 起草时）
+更新：2026-10-19（阶段 1 收尾时）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -12,8 +12,8 @@
 | ENV-003 | M | 协作检查入口的三项改进 | Claude | Codex | 已完成 | [tasks/ENV-003](tasks/ENV-003/task.md) |
 | DOC-001 | M | T0、T1 改写为现行版 | Claude | Codex | 已完成 | [tasks/DOC-001](tasks/DOC-001/task.md) |
 | DOC-002 | M | 策划待决事项总表 | Claude | Codex | 已完成 | [tasks/DOC-002](tasks/DOC-002/task.md) |
-| DOC-003 | M | 记录待决事项裁决并写入主文档 | Claude | Codex | 待合并（审查通过） | [tasks/DOC-003](tasks/DOC-003/task.md) |
-| SYS-001 | M | 冻结V0.1键位并修复方向键 | Codex | Claude | 待批准（依赖DOC-003） | [tasks/SYS-001](tasks/SYS-001/task.md) |
-| SYS-002 | L | 残存可能性实体 | Codex | Claude | 待批准（依赖DOC-003、SYS-001） | [tasks/SYS-002](tasks/SYS-002/task.md) |
+| DOC-003 | M | 记录待决事项裁决并写入主文档 | Claude | Codex | 已完成 | [tasks/DOC-003](tasks/DOC-003/task.md) |
+| SYS-001 | M | 冻结V0.1键位并修复方向键 | Codex | Claude | 已完成 | [tasks/SYS-001](tasks/SYS-001/task.md) |
+| SYS-002 | L | 残存可能性实体 | Codex | Claude | 合并收尾中 | [tasks/SYS-002](tasks/SYS-002/task.md) |
 
-SYS-002 即阶段 1 中由 Codex 实现、Claude 审查的系统类任务。A-004～A-007（日期地形、换怪、秘密路线、剩余 Room 补充）按用户裁决排在最后，届时先起草设计稿任务。
+阶段 1 计划的任务均已完成或在收尾。尚未立项的事项（复盘、T7 核对、剩余开发清单、文档改写、UI 与资源开发、A-004～A-007 等）见 [待办清单](BACKLOG.md)。

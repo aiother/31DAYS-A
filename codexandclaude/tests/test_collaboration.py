@@ -43,6 +43,23 @@ class CollaborationTests(unittest.TestCase):
                 self.assertTrue((task / "task.md").is_file())
                 self.assertIn(task.name, rows)
 
+    def test_backlog_is_linked_and_well_formed(self):
+        self.assertIn("BACKLOG.md", links_in(COLLAB / "README.md"))
+        self.assertIn("BACKLOG.md", links_in(COLLAB / "BOARD.md"))
+        rows = [[cell.strip() for cell in line.split("|")[1:-1]]
+                for line in (COLLAB / "BACKLOG.md").read_text(encoding="utf-8").splitlines()
+                if re.match(r"^\| BL-", line)]
+        self.assertTrue(rows)
+        ids = [row[0] for row in rows]
+        self.assertEqual(len(ids), len(set(ids)))
+        for row in rows:
+            with self.subTest(item=row[0]):
+                self.assertRegex(row[0], r"^BL-\d{3}$")
+                self.assertEqual(len(row), 6)
+                self.assertIn(row[1], ("P0", "P1", "P2", "P3"))
+                self.assertTrue(all(row), row)
+                self.assertRegex(row[5], r"^(待立项|进行中|观察中|已立项 \S+|已完成|已完成（\S+）|已取消)")
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
