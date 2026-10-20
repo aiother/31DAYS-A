@@ -58,6 +58,20 @@
 | G3（提交前） | `python codexandclaude/tools/run_checks.py focused --python-all` | tests/ 81/81，codexandclaude/tests/ 39/39，退出码 0 |
 | G3（实现 SHA） | 提交后同一命令 | sha=实现 SHA，dirty=false，81/81 + 39/39，退出码 0 |
 
+## 第2轮修订（回应 Codex 审查 R1～R3）
+
+审查 SHA `3b588debfe583b5a4f73f7aeec5cc03797f2c602`（结论：需修改，三项 P2）。本分支先快进到该提交以保留第1轮审查记录，再修订。
+
+- 修订实现 SHA：`752f46248fe7f682aacc0e74b5a03c1f3cc86c07`
+- **R1（提案位置与门禁冲突）**：§3.2 改为提案写在 `codexandclaude/proposals/<ID>.md`，立项时随任务卡一并移入 `tasks/<ID>/proposal.md`；未采纳的提案留在 `proposals/` 作记录。§4 目录说明同步。原有“tasks/ 下每个目录须有任务卡并登记在任务板”的检查不变。
+- **R2（证据与失败归因）**：§7 新增“入库证据（交付与审查记录的必填项）”：被测 SHA 与工作区是否有未提交改动（先验证再提交时说明对应关系）、工具版本、实际执行的命令、套件完整性与各项计数、原有失败与新引入失败分开报告；允许摘录 `run_checks.py` 汇总，但不能只写“已通过”。§6 交付与审查记录改为引用第 7 节的证据要求。
+- **R3（文档留痕）**：§10 恢复为每份规格文档末尾保留变更记录表（日期、改了什么、来源），T2～T5.4 在改写为现行版时补建、此前历次修订不得删除；恢复“同一条规则只在一份主文档中完整描述，其他文档只放链接”；裁决记录写明日期、结论、来源链接，不直接删除。
+- **采纳的非阻断建议**：§3.2 说明跳过方案探讨的含义与工具任务的升级条件；§3.3 写明 Godot 原型只新增 `game/prototypes/<ID>/`、网页原型放 `codexandclaude/prototypes/<ID>/`，原型仍需最小测试，小的 UI 缺陷不必走整套原型；§5 第 6 步写明“G4 通过是合并的前提”；§8 第 3 条写明采纳优化建议改了代码要重新检查、重新审查。
+- **测试**：新增 `test_proposals_live_outside_task_directories`、`test_required_evidence_and_failure_attribution_are_kept`、`test_document_change_logs_and_decision_records_keep_their_fields` 三项，分别针对 R1～R3。
+- **先失败、后修复**：三项新测试在修订前共 15 处断言失败；修订后 `test_collaboration.py` 17/17。其中 R1 的一处断言最初误把立项后合法的“移入 `tasks/<ID>/proposal.md`”当作违规，已改为只禁止“立项前在任务目录写提案”的旧措辞。
+- **R1 反向探测**：在 `proposals/` 下临时放一份提案文件，`test_collaboration.py` 17/17 仍通过；探测文件与目录已删除，工作区干净。
+- **G3**：修订实现 SHA 上 sha=实现 SHA、dirty=false，tests/ 81/81、codexandclaude/tests/ 42/42，退出码 0；工具 Python 3.12.14 + openpyxl 3.1.5、Git 2.56.0.windows.2、Node v24.19.0；命令 `python codexandclaude/tools/run_checks.py focused --python-all`。
+
 ## 审查请求
 
 请 Codex 以 `git switch --detach <交付SHA>` 固定后审查：确认实现到交付之间只有本记录与任务卡状态变化；对照任务卡“依据”逐条核对三方意见是否如实、完整地写入；检查是否遗漏 V2.2 或原规范的有效规则、新规则之间有无矛盾；判断上面“需审查者留意”的三点；独立复跑 G3。
