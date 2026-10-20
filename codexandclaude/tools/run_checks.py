@@ -15,6 +15,9 @@ import traceback
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS = ('godot', 'python', 'git', 'node')
+_evidence_spec = importlib.util.spec_from_file_location('days31_check_evidence', Path(__file__).with_name('check_evidence.py'))
+evidence = importlib.util.module_from_spec(_evidence_spec)
+_evidence_spec.loader.exec_module(evidence)
 
 
 class CheckFailure(RuntimeError):
@@ -162,6 +165,19 @@ def parser():
     return result
 
 
+def planned_checks(args):
+    if args.mode == 'full':
+        return ['G2', 'G3:tests', 'G3:codexandclaude/tests']
+    planned = []
+    if args.mode == 'focused':
+        if args.godot_script:
+            planned += ['G1 Godot:editor import', *['G1 Godot:' + s for s in args.godot_script]]
+        if args.python_all:
+            planned += ['G3:tests', 'G3:codexandclaude/tests']
+        planned += ['G1 Python:' + m for m in args.python_module]
+    return planned
+
+
 def main(argv=None):
     args = parser().parse_args(argv)
     args.root = args.root.resolve()
@@ -172,6 +188,10 @@ def main(argv=None):
     summary = {'mode': args.mode, 'root': str(args.root), 'started_utc': datetime.now(timezone.utc).isoformat(),
                'sha': None, 'dirty': None, 'tools': {}, 'checks': [], 'commands': runner.commands,
                'passed': False, 'reason': None}
+    summary.update(evidence_schema=1, finalized=False, planned_checks=planned_checks(args),
+                   content=None, content_end=None, content_stable=False,
+                   invocation=[sys.executable, str(Path(__file__).resolve()), *(list(argv) if argv is not None else sys.argv[1:])])
+    git = None
     try:
         if args.timeout <= 0:
             raise CheckFailure('--timeout must be positive')
@@ -193,6 +213,7 @@ def main(argv=None):
         status = runner.run([git, 'status', '--porcelain', '--untracked-files=all'], 30, stdout_only=True)
         summary['dirty'] = bool(status.strip())
         summary['status'] = status.splitlines()
+        summary['content'] = evidence.snapshot(args.root, git)
         needed = required_tools(args)
         summary['tools_not_required'] = [tool for tool in TOOLS if tool not in needed]
         for tool in needed:
@@ -252,11 +273,31 @@ def main(argv=None):
     except Exception as error:  # Keep evidence for bugs too; BaseException (Ctrl+C) still propagates.
         summary['reason'] = f'Unexpected {type(error).__name__}: {error}'
         summary['traceback'] = traceback.format_exc()
-    summary['finished_utc'] = datetime.now(timezone.utc).isoformat()
-    summary_path = directory / 'summary.json'
-    summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
-    print(f'Summary: {summary_path}')
+    except KeyboardInterrupt:
+        summary['reason'] = 'Interrupted by user; checks are incomplete'
+        raise
+    finally:
+        if git and summary['content']:
+            try:
+                summary['content_end'] = evidence.snapshot(args.root, git)
+                summary['content_stable'] = evidence.stable_content(summary['content'], summary['content_end'])
+            except Exception as error:
+                summary['passed'] = False
+                summary['reason'] = (summary['reason'] or '') + f'; final content snapshot failed: {error}'
+            if not summary['content_stable']:
+                summary['passed'] = False
+                summary['reason'] = (summary['reason'] or '') + '; repository content changed during checks'
+        summary['finished_utc'] = datetime.now(timezone.utc).isoformat()
+        summary['finalized'] = True
+        errors = evidence.validation_errors(summary)
+        if errors:
+            summary['passed'] = False
+            summary['reason'] = summary['reason'] or '; '.join(errors)
+        summary_path = directory / 'summary.json'
+        summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+        (directory / 'evidence.md').write_text(evidence.render(summary), encoding='utf-8')
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        print(f'Summary: {summary_path}')
     return 0 if summary['passed'] else 1
 
 

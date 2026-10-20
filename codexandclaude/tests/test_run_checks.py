@@ -100,7 +100,7 @@ class RunChecksTests(unittest.TestCase):
             with self.assertRaises(checks.CheckFailure):
                 checks.g2_result(output, verifier)
 
-    def execute_main(self, extra=(), failure=None, version='4.7.2.stable.abc', engine_output=None, resolve=None):
+    def execute_main(self, extra=(), failure=None, version='4.7.2.stable.abc', engine_output=None, resolve=None, snapshots=None):
         commands = []
         def fake_run(runner, argv, timeout=None, stdout_only=False):
             argv = list(map(str, argv))
@@ -122,9 +122,13 @@ class RunChecksTests(unittest.TestCase):
                 return 'FOCUSED_VERIFIER_PASS\n'
             return 'Ran 4 tests in 0.1s\nOK\n'
         verifier = SimpleNamespace(TESTS=[('suite', 'res://tests/suite.gd', 'SUITE checks=')])
-        with patch.object(checks, 'resolve_tool', side_effect=resolve or (lambda tool, *unused: tool)), patch.object(checks.Runner, 'run', fake_run), patch.object(checks, 'load_verifier', return_value=verifier), contextlib.redirect_stdout(io.StringIO()):
+        content = {'schema': 1, 'sha': 'a' * 40, 'scope': checks.evidence.SCOPE, 'dirty': True, 'full_sha256': 'f' * 64}
+        with patch.object(checks.evidence, 'snapshot', return_value=content, side_effect=snapshots), patch.object(checks, 'resolve_tool', side_effect=resolve or (lambda tool, *unused: tool)), patch.object(checks.Runner, 'run', fake_run), patch.object(checks, 'load_verifier', return_value=verifier), contextlib.redirect_stdout(io.StringIO()):
             code = checks.main([*extra, '--root', str(self.root)])
         summary = json.loads(next((self.root / 'codexandclaude/runs').glob('*/summary.json')).read_text(encoding='utf-8'))
+        rendered = next((self.root / 'codexandclaude/runs').glob('*/evidence.md')).read_text(encoding='utf-8')
+        self.assertIn('总结果：**通过**' if code == 0 else '总结果：**不通过**', rendered)
+        self.assertTrue(summary['finalized'])
         return code, summary, commands
 
     def test_environment_records_sha_dirty_paths_versions(self):
@@ -134,6 +138,8 @@ class RunChecksTests(unittest.TestCase):
         self.assertTrue(summary['dirty'])
         self.assertEqual(set(summary['tools']), set(checks.TOOLS))
         self.assertEqual(summary['checks'], [])
+        self.assertIn('content', summary)
+        self.assertIn('invocation', summary)
 
     def test_wrong_godot_version_fails(self):
         code, summary, _ = self.execute_main(['env'], version='4.6.stable.abc')
@@ -241,6 +247,18 @@ class RunChecksTests(unittest.TestCase):
         self.assertFalse(summary['passed'])
         self.assertIn('KeyError', summary['reason'])
         self.assertIn('Traceback', summary['traceback'])
+
+    def test_content_changed_while_checks_run_fails_even_if_commands_pass(self):
+        code, summary, _ = self.execute_main(['focused', '--python-all'], snapshots=[
+            {'full_sha256': 'a'}, {'full_sha256': 'b'}])
+        self.assertEqual(code, 1)
+        self.assertFalse(summary['content_stable'])
+        self.assertIn('changed during checks', summary['reason'])
+
+    def test_unreadable_final_snapshot_is_failure_not_a_pass(self):
+        code, summary, _ = self.execute_main(['env'], snapshots=[{'full_sha256': 'a'}, OSError('unreadable')])
+        self.assertEqual(code, 1)
+        self.assertIn('final content snapshot failed', summary['reason'])
 
     def test_keyboard_interrupt_is_not_swallowed(self):
         def interrupted(tool, *unused):
