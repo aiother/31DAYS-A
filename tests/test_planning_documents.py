@@ -138,6 +138,33 @@ class PlanningDocumentsTests(unittest.TestCase):
         self.assertNotIn("来源与量未给出", t54)
         self.assertNotIn("未提供周期或额外发放量", t54)
 
+    def test_t7_decisions_of_2026_10_19_are_written_into_specs(self):
+        # A-012: same-frame victory now wins wherever the 2026-10-17 final-battle revision appears.
+        for key in ("T2", "T4", "T5.3", "T5.4"):
+            with self.subTest(document=key):
+                self.assertNotIn("同帧归零与击杀超时优先", self.docs[key])
+                self.assertIn("同帧归零与击杀时胜利优先", self.docs[key])
+        # A-014: death menu options.
+        self.assertNotIn("死亡菜单包括返回检查点、返回标题、设置；", self.docs["T3"])
+        # A-017: settings scope; custom key binding deferred.
+        keys = self.docs["T1"].split("## 7.")[1].split("## 8.")[0]
+        for rule in ("全屏/窗口", "帧率", "按键列表", "自定义按键推迟到V0.1之后"):
+            self.assertIn(rule, keys)
+        self.assertNotIn("玩家自定义按键按T7提供", self.docs["T1"])
+        # A-011: timeout shows the "未来已失" screen with retry and return to title.
+        t4_force = self.docs["T4"].split("| 是否强制失败 |")[1].split("\n")[0]
+        for rule in ("未来已失", "重试", "返回标题"):
+            self.assertIn(rule, t4_force)
+        self.assertNotIn("具体V0.1状态映射待明确", self.docs["T4"])
+        t54_edges = self.docs["T5.4"].split("## 7.")[1].split("## 8.")[0]
+        self.assertIn("未来已失", t54_edges)
+        # A-013: a finished save cannot be entered again.
+        self.assertIn("游戏已通关", t54_edges)
+        # A-016: countdown display.
+        countdown = self.docs["T5.4"].split("### 6.4")[1].split("### 6.5")[0]
+        for rule in ("只是视觉表现", "不被消耗", "真实剩余"):
+            self.assertIn(rule, countdown)
+
     def test_all_six_accepted_t2_revisions_replace_original_rules(self):
         t2 = self.docs["T2"]
         rules = ["暂不实现正式削韧数值系统", "限制同一瞬间真正执行进攻的敌人数",
@@ -187,7 +214,7 @@ class PlanningDocumentsTests(unittest.TestCase):
         for rule in ("余额下界为-9", "死亡后负数清零", "非负余额保留死亡时当前可能性的50%",
                      "当前可能性小于3时禁止启动", "不能据此把余额扣到-9以下",
                      "主动攻击不提前解除复活无敌", "已完成NPC事件不回滚",
-                     "返回检查点、返回标题、设置", "任务永久失败", "不能返回补救"):
+                     "从检查点继续、返回标题、设置、退出游戏", "任务永久失败", "不能返回补救"):
             self.assertIn(rule, t3)
 
     def test_t3_unresolved_edges_are_visible(self):

@@ -145,6 +145,24 @@ class PendingDecisionsTests(unittest.TestCase):
         for boundary in ("不足15分钟", "真实剩余", "固定显示15分钟"):
             self.assertIn(boundary, rows["A-016"][3])
 
+    def test_t7_decisions_are_logged(self):
+        statuses = {row[0]: row[-1] for row in table_rows(self.section(SECTIONS["A"])) if row[0] in T7_BATCH}
+        self.assertEqual(set(statuses.values()), {"已裁决"})
+        log = {row[0]: row for row in table_rows(self.section("裁决记录")) if row[0] in T7_BATCH}
+        self.assertEqual(set(log), T7_BATCH)
+        expected = {"A-011": ("未来已失", "重试", "返回标题"), "A-012": ("胜利优先",),
+                    "A-013": ("游戏已通关",), "A-014": ("从检查点继续", "返回标题", "设置", "退出游戏"),
+                    "A-015": ("不采用", "原型"), "A-016": ("不被消耗", "真实剩余"),
+                    "A-017": ("全屏", "帧率", "按键列表", "自定义按键推迟"), "A-018": ("发红",),
+                    "A-019": ("NPC",), "A-020": ("可取消",)}
+        for item_id, rules in expected.items():
+            for rule in rules:
+                with self.subTest(item=item_id, rule=rule):
+                    self.assertIn(rule, log[item_id][2])
+        for item_id, row in log.items():
+            with self.subTest(item=item_id):
+                self.assertEqual(row[1], "2026-10-20" if item_id in ("A-016", "A-017") else "2026-10-19")
+
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
             with self.subTest(keyword=keyword):
