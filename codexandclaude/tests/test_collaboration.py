@@ -157,18 +157,13 @@ class CollaborationTests(unittest.TestCase):
         self.assertIn("/runs/", ignores)
 
     def test_referenced_test_count_assertions_remain_present(self):
-        # The handoff authorizes a count update, not removal of manifest checks.
-        tree = ast.parse((ROOT / "tests/test_verification_runner.py").read_text(encoding="utf-8"))
-        assertions = [node for node in ast.walk(tree)
-                      if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-                      and node.func.attr == "assertEqual" and len(node.args) == 2
-                      and isinstance(node.args[1], ast.Constant)
-                      and isinstance(node.args[1].value, int)
-                      and isinstance(node.args[0], ast.Call)
-                      and isinstance(node.args[0].func, ast.Name)
-                      and node.args[0].func.id == "len"
-                      and "verifier.TESTS" in ast.unparse(node.args[0])]
-        self.assertEqual(len(assertions), 2)
+        # ENV-004 replaces the archived pilot's fixed counts with file coverage.
+        from scripts import verify_game as verifier
+        files = {"res://" + path.relative_to(ROOT / "game").as_posix()
+                 for path in (ROOT / "game/tests").rglob("test_*.gd")}
+        registered = [path for _, path, _ in verifier.TESTS]
+        self.assertEqual(set(registered), files - set(verifier.EXCLUDED_TESTS))
+        self.assertEqual(len(registered), len(set(registered)))
 
     def test_clean_worktree_validation_generates_reports_before_resource_checks(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")

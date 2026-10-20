@@ -1,3 +1,4 @@
+# verify-suite: {"name": "NPC deadline migration and ordinary enemy day configuration", "path": "res://tests/test_world_day_rules.gd", "marker": "WORLD_DAY_RULES_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

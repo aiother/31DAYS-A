@@ -1,3 +1,4 @@
+# verify-suite: {"name": "TileMap wall backsteps same-level obstacles and moving target regression", "path": "res://tests/test_platform_obstacles.gd", "marker": "PLATFORM_OBSTACLES_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends "res://tests/test_platform_pursuit.gd"
 
 func navigation() -> EnemyPlatformPursuit:

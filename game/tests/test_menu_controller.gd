@@ -1,3 +1,4 @@
+# verify-suite: {"name": "controller confirmation and keyboard compatibility through real pause menus", "path": "res://tests/test_menu_controller.gd", "marker": "MENU_CONTROLLER_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 ## Exercise real GUI focus and confirmation without changing runtime bindings.
 var checks: int = 0

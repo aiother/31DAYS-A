@@ -226,9 +226,9 @@ def main(argv=None):
             adapter = ('import importlib.util,sys; '
                        's=importlib.util.spec_from_file_location("v",sys.argv[1]); '
                        'v=importlib.util.module_from_spec(s); s.loader.exec_module(v); '
-                       'row=next((r for r in v.TESTS if r[1]==sys.argv[4]),None); '
-                       'r=v.execute(sys.argv[2],sys.argv[3],row[0] if row else "editor import",'
-                       '["--script",row[1]] if row else ["--editor","--import","--quit"],row[2] if row else None); '
+                       'row=next((r for r in v.SUITES if r.path==sys.argv[4]),None); '
+                       'r=v.execute_suite(sys.argv[2],sys.argv[3],row) if row else '
+                       'v.execute(sys.argv[2],sys.argv[3],"editor import",["--editor","--import","--quit"]); '
                        'print(r[2]); print("FOCUSED_VERIFIER_PASS" if r[3] else "FOCUSED_VERIFIER_FAIL"); sys.exit(0 if r[3] else 1)')
             for script in ['', *args.godot_script]:
                 output = runner.run([python, '-c', adapter, args.root / 'scripts/verify_game.py',

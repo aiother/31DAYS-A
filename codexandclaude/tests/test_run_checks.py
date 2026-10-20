@@ -179,6 +179,8 @@ class RunChecksTests(unittest.TestCase):
         adapters = [args for args, _ in commands if '-c' in args and 'v.execute' in args[2]]
         self.assertEqual([args[-1] for args in adapters], ['', 'res://tests/suite.gd'])
         self.assertEqual(len(summary['checks']), 2)
+        self.assertIn('v.execute_suite', adapters[0][2])
+        self.assertIn('v.SUITES', adapters[0][2])
 
     def test_unregistered_godot_script_rejected(self):
         code, summary, _ = self.execute_main(['focused', '--godot-script', 'res://other.gd'])

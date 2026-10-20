@@ -1,3 +1,4 @@
+# verify-suite: {"name": "starting Room and persistent Nodes", "path": "res://tests/test_start_room.gd", "marker": "START_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

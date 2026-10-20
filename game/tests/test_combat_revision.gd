@@ -1,3 +1,4 @@
+# verify-suite: {"name": "combat tuning revision", "path": "res://tests/test_combat_revision.gd", "marker": "COMBAT_REVISION_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var _checks: int = 0
 var _failures: int = 0

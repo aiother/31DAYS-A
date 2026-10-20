@@ -1,3 +1,4 @@
+# verify-suite: {"name": "Boss pressure and summoned colorless enemies", "path": "res://tests/test_boss_pressure.gd", "marker": "BOSS_PRESSURE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

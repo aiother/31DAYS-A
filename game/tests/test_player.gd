@@ -1,3 +1,4 @@
+# verify-suite: {"name": "player physics regression", "path": "res://tests/test_player.gd", "marker": "PLAYER_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 ## Run with --headless --path game --script res://tests/test_player.gd
 var _failures: int = 0

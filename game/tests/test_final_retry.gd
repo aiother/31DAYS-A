@@ -1,3 +1,4 @@
+# verify-suite: {"name": "final timer death load timeout and explicit retry", "path": "res://tests/test_final_retry.gd", "marker": "FINAL_RETRY_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

@@ -1,3 +1,4 @@
+# verify-suite: {"name": "Ten rescue interception cinematic persistence and cooperation", "path": "res://tests/test_ten_rescue.gd", "marker": "TEN_RESCUE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

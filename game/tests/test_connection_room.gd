@@ -1,3 +1,4 @@
+# verify-suite: {"name": "connection Room and permanent mechanism", "path": "res://tests/test_connection_room.gd", "marker": "CONNECTION_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

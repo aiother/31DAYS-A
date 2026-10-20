@@ -1,3 +1,4 @@
+# verify-suite: {"name": "enemy multi-platform pursuit overhang wall and cliff safety", "path": "res://tests/test_platform_pursuit.gd", "marker": "PLATFORM_PURSUIT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

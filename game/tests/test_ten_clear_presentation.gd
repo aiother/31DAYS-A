@@ -1,3 +1,4 @@
+# verify-suite: {"name": "real input Ten clear aftermath and distinct reinforcement arrival", "path": "res://tests/test_ten_clear_presentation.gd", "marker": "TEN_CLEAR_PRESENTATION_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

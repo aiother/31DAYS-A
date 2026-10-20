@@ -1,3 +1,4 @@
+# verify-suite: {"name": "outskirts optional rescue deferred growth abandonment and slot isolation", "path": "res://tests/test_outskirts_rescue.gd", "marker": "OUTSKIRTS_RESCUE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

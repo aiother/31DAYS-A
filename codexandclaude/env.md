@@ -70,6 +70,23 @@ ENV-001 首次验收须在没有 outputs/ 的新工作区只跑 G3，证明它�
 
 ## Git 与提交（V2.3）
 
+### 引擎套件登记（ENV-004）
+
+每个可独立执行的 `game/tests/test_*.gd` 在**第一行**用一个 JSON 注释登记，例如：
+
+```gdscript
+# verify-suite: {"name":"example regression","path":"res://tests/test_example.gd","marker":"EXAMPLE_TESTS checks=","fixed_fps":null,"timeout":60}
+extends SceneTree
+```
+
+新增或删除套件只改它自己的文件；不要再改公共列表或固定总数。五个字段必须齐全，不接受额外字段：name为唯一非空报告名称（不能使用导入/主场景的名称），path必须是自身文件的规范res://路径，marker为唯一的`大写字母数字下划线 checks=`前缀；timeout为正整数秒，fixed_fps为null（真实时间）或正整数。运行参数跟随该行，不根据文件名推断。名称/路径/结果标记均不可重复。
+
+`verify_game.discover_suites()`按路径排序扫描tests下所有`test_*.gd`，漏掉登记、无效元数据、指向不存在的文件或其他文件均失败。非独立运行的同名辅助脚本必须在`verify_game.EXCLUDED_TESTS`中以`res://路径: 排除理由`显式说明；排除项必须存在且不能同时登记，目前清单为空。普通辅助脚本宜使用不以`test_`开头的文件名。
+
+`SUITES`携带完整参数，`TESTS`只是由它派生的三元组兼容视图，供门禁统计及现有消费者使用。执行入口逐个收集实际完成的套件路径，核对多重集合：漏执行、多执行、重复执行均失败；G2外层仍核对全部PASS名称和成功汇总，不能用注册表长度代替文件覆盖检查。专项入口也通过`execute_suite()`使用相同运行参数。
+
+ENV-004只迁移73个原有套件的头部注释，未改测试逻辑；报告及提交调度顺序改为路径排序，套件集合、名称、结果标记、固定帧率和超时保持不变。新增套件后数量自动变化，文件覆盖与执行集合检查持续生效。
+
 - **仓库所有权**：`.git` 属于 Codex 的沙盒用户。Claude 侧每次 Git 调用都临时放行，例如 `git -c safe.directory=D:/31days -c safe.directory=D:/31days/codexandclaude/worktrees/claude ...`；不修改全局配置。
 - **提交说明**：多行、含英文引号或特殊字符的说明，写入 UTF-8 文本文件后用 `git commit -F <文件>`。Windows PowerShell 5.1 把含英文双引号的字符串作为参数传给 git 时会拆坏参数，导致提交失败或说明错乱。说明文件放在系统临时目录等不会被误暂存的位置；简单单行说明仍可用 `-m`。暂存始终使用显式路径。
 - **换行符**：工作区检出为 CRLF。用脚本按多行文本替换时，先确认换行符一致，否则替换会静默失败；多行替换优先用编辑工具。

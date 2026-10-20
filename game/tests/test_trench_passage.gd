@@ -1,3 +1,4 @@
+# verify-suite: {"name": "second trench negative-resource route and permanent passage", "path": "res://tests/test_trench_passage.gd", "marker": "TRENCH_PASSAGE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

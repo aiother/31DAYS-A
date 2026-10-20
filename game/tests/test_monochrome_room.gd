@@ -1,3 +1,4 @@
+# verify-suite: {"name": "monochrome trench integration rewards and persistence", "path": "res://tests/test_monochrome_room.gd", "marker": "MONOCHROME_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

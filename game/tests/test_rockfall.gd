@@ -1,3 +1,4 @@
+# verify-suite: {"name": "falling debris collision damage scheduler and rubble attacks", "path": "res://tests/test_rockfall.gd", "marker": "ROCKFALL_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

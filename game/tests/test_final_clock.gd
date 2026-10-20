@@ -1,3 +1,4 @@
+# verify-suite: {"name": "final clock migration bounds and validation", "path": "res://tests/test_final_clock.gd", "marker": "FINAL_CLOCK_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

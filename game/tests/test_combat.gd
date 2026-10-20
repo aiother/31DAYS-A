@@ -1,3 +1,4 @@
+# verify-suite: {"name": "basic combat regression", "path": "res://tests/test_combat.gd", "marker": "COMBAT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var _checks: int = 0
 var _failures: int = 0

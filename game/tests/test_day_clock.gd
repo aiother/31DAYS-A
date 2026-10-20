@@ -1,3 +1,4 @@
+# verify-suite: {"name": "natural day clock migration rollover and final budget handoff", "path": "res://tests/test_day_clock.gd", "marker": "DAY_CLOCK_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

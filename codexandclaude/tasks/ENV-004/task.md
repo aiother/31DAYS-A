@@ -1,7 +1,7 @@
 # ENV-004：引擎测试分散登记
 
-状态：草案（2026-10-20 起草，待用户批准）｜级别：M（工具）｜实现：Codex｜审查：Claude
-工作区：worktrees/codex｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无
+状态：待审查（2026-10-20 用户批准并授权开工；本会话另批准仅同步 tests/test_game_project.py 中登记检查一项；G2+G3通过）｜级别：M（工具）｜实现：Codex｜审查：Claude
+工作区：worktrees/codex｜基线：master@66ee2b5ff0abaf110186a00760605efde17b4fb7｜依赖：无
 
 ## 目标
 

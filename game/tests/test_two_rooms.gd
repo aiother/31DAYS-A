@@ -1,3 +1,4 @@
+# verify-suite: {"name": "adjacent Rooms and first encounter", "path": "res://tests/test_two_rooms.gd", "marker": "TWO_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

@@ -1,3 +1,4 @@
+# verify-suite: {"name": "Boss ordinary monochrome lifecycle and summon separation", "path": "res://tests/test_boss_ordinary.gd", "marker": "BOSS_ORDINARY_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

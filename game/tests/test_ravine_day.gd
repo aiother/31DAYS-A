@@ -1,3 +1,4 @@
+# verify-suite: {"name": "ravine checkpoint and persistent second-day event", "path": "res://tests/test_ravine_day.gd", "marker": "RAVINE_DAY_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

@@ -1,3 +1,4 @@
+# verify-suite: {"name": "medkit inventory version-one compatibility bounds and slot persistence", "path": "res://tests/test_medkit_store.gd", "marker": "MEDKIT_STORE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

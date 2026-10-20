@@ -1,3 +1,4 @@
+# verify-suite: {"name": "all-Room flying monochrome detours and recovery", "path": "res://tests/test_air_pursuit.gd", "marker": "AIR_PURSUIT_TESTS checks=", "fixed_fps": 60, "timeout": 180}
 extends "res://tests/pursuit_survey.gd"
 ## Advanced flying unit: actual body traversal in every delivered layout.
 var air_records: Array[Dictionary] = []

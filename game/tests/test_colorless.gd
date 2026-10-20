@@ -1,3 +1,4 @@
+# verify-suite: {"name": "colorless enemy regression", "path": "res://tests/test_colorless.gd", "marker": "COLORLESS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var _world: Node2D
 var _player: PlayerController

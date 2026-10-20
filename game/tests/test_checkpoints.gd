@@ -1,3 +1,4 @@
+# verify-suite: {"name": "checkpoint and resume integration", "path": "res://tests/test_checkpoints.gd", "marker": "CHECKPOINT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

@@ -1,3 +1,4 @@
+# verify-suite: {"name": "frozen keyboard mouse and controller bindings with real arrow input", "path": "res://tests/test_input_bindings.gd", "marker": "INPUT_BINDINGS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 ## Validate the loaded InputMap against T1 with engine enums, then inject keys.
 var checks: int = 0

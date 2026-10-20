@@ -1,3 +1,4 @@
+# verify-suite: {"name": "attack jumping and airborne dodge regression", "path": "res://tests/test_air_actions.gd", "marker": "AIR_ACTION_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0
