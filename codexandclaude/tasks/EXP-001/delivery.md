@@ -82,6 +82,11 @@
 - G3：在修订 SHA、dirty=false 执行 `python codexandclaude/tools/run_checks.py focused --python-all` → `tests` 92/92、`codexandclaude/tests` 45/45，complete=true、passed=true。
 - 正式游戏仍零改动：`git diff --stat e2b69d9 29aa1bf -- . ':!game/prototypes' ':!codexandclaude/tests' ':!codexandclaude/tasks/EXP-001' ':!codexandclaude/BOARD.md'` 输出为空。
 
-## G4 第2轮：等待用户确认方案四
+## G4 第2轮：用户选定方案四（2026-10-20）
 
-用户试玩方案四（按 4，再按 Esc 看暂停菜单），确认后本任务转为“选定”，据此另立 BL-042、BL-043（以及采纳暂停菜单布局时的 BL-046）正式任务。
+用户原话：“我觉得没问题，你现在的方案4处理比较符合我的意向”。据此：
+
+- 选定方案四作为 HUD 与时间显示的交互方向：徽记 HUD、地平线时刻、可能性不足时闪烁与透支失真滤镜并存、完整时间放在暂停菜单右侧时钟（不新增按键）。
+- 暂停菜单采用左侧选项、右侧时钟、二级界面盖住时钟的布局；当前任务作为时钟下方的一行（用户确认“没问题”）。正式任务需同步修订 T7 暂停菜单“右侧显示当前任务”的描述。
+- 原型只确定布局与交互，视觉品质（形状、配色、字体、动效、质感）不是定稿，留待 UI 视觉方向探索（M2-b 前）与正式实现任务。
+- 后续正式任务：BL-042（HUD）、BL-043（时间显示）、BL-046（暂停菜单），立项时以本节与原型为依据。
