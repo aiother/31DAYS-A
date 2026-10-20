@@ -6,6 +6,7 @@ var _start_pending: bool = false
 var _win_pending: bool = false
 var _timeout_pending: bool = false
 var _timeout_active: bool = false
+var _final_resolution_room: int = 0
 var _ending_pending: bool = false
 var _ending_active: bool = false
 var _ending_remaining: float = 0
@@ -32,6 +33,7 @@ func _final_arena() -> FinalBattlefieldRoom:
 	return room as FinalBattlefieldRoom
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
+	_final_resolution_room = 0
 	var normalized: Dictionary = snapshot.duplicate(true)
 	DayClock.normalize(normalized)
 	super._restore(normalized,revive)
@@ -97,9 +99,7 @@ func _clock_tick(delta: float) -> void:
 		return
 	var elapsed: Dictionary = DayClock.tick(data,delta)
 	if FinalClock.tick(data,float(elapsed["third_delta"])):
-		_timeout_pending = true
-		save_current("最终战超时")
-		_show_timeout()
+		_queue_final_resolution()
 		return
 	if DayClock.expired(data):
 		_expire_day()
@@ -163,19 +163,47 @@ func _on_stage_completed() -> void:
 	if area==null or area.phase!=RescueBattlefieldRoom.Phase.COOP:
 		super._on_stage_completed()
 		return
-	if bool(data["events"].get(FinalClock.WON,false)):
+	if _timeout_active or bool(data["events"].get(FinalClock.TIMEOUT,false)) or bool(data["events"].get(FinalClock.WON,false)):
 		return
-	if float(data.get("final_remaining",900))<=0 or float(data.get("day3_remaining",1800))<=0:
-		_timeout_pending = true
-		save_current("最终战超时")
-		_show_timeout()
+	_queue_final_resolution()
+
+func _queue_final_resolution() -> void:
+	if _final_resolution_room!=0:
 		return
-	if area.wave_state==FinalBattlefieldRoom.WaveState.COMPLETE or not area.advance_wave():
+	_final_resolution_room = room.get_instance_id()
+	_resolve_final_frame.call_deferred(_final_resolution_room)
+
+func _resolve_final_frame(room_id: int) -> void:
+	if _final_resolution_room!=room_id:
+		return
+	_final_resolution_room = 0
+	if not has_session() or room.get_instance_id()!=room_id or _timeout_active or bool(data["events"].get(FinalClock.TIMEOUT,false)) or bool(data["events"].get(FinalClock.WON,false)):
+		return
+	var area: FinalBattlefieldRoom = _final_arena()
+	# Settle after this physics frame's actors: the Room (-10) may have checked
+	# before the final enemy (0) died. Only the last complete wave can beat zero.
+	if area!=null and area.phase==RescueBattlefieldRoom.Phase.COOP and area.wave_state!=FinalBattlefieldRoom.WaveState.WARNING and area.wave_index==area.battle.tian_counts.size()-1 and area.arrivals==2 and _wave_is_clear(area):
+		area.completed = true
+		area.wave_state = FinalBattlefieldRoom.WaveState.COMPLETE
+		area.stop_attempt()
+		_timeout_pending = false
 		_win_pending = true
 		if save_current("最终战胜利 · 靠近10对话"):
 			area.set_victory()
 		else:
 			_notify("胜利尚未保存 · E / RB 重试")
+	elif float(data.get("final_remaining",900))<=0 or float(data.get("day3_remaining",1800))<=0:
+		_timeout_pending = true
+		save_current("最终战超时")
+		_show_timeout()
+	elif area!=null and area.completed:
+		area.advance_wave()
+
+func _wave_is_clear(area: FinalBattlefieldRoom) -> bool:
+	for child: Node in area.get_node("Enemies").get_children():
+		if child is ColorlessEntity and (child as ColorlessEntity).health>0:
+			return false
+	return true
 
 func save_current(message: String = "已自动保存") -> bool:
 	var before: Dictionary = data.get("events",{}).duplicate()
