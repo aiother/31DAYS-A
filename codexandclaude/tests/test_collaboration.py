@@ -88,7 +88,7 @@ class CollaborationTests(unittest.TestCase):
             if open_item and cells[1] in ("P1", "P2") and item_id != "BL-021":
                 with self.subTest(item=item_id):
                     self.assertIn(item_id, assigned)
-        self.assertTrue(backlog["BL-021"][5].startswith("已立项 DOC-007"))
+        self.assertIn(backlog["BL-021"][5], ("已立项 DOC-007", "已完成（DOC-007）"))
         for milestone in ("M1", "M2", "M3", "M4", "M5"):
             self.assertIn(milestone, units)
         # Spec-required UI needs (T7 checklist §3.1) trace to a backlog item and its batch.
