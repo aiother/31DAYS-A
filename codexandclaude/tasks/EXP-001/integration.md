@@ -1,4 +1,6 @@
-# 第一批任务规划集成记录
+# EXP-001 集成记录
+
+## 前序：第一批任务规划集成
 
 本记录仅覆盖 EXP-001、ENV-004、SYS-004 的规划批次；不表示 EXP-001 原型已获准合并，也不表示三项任务完成。
 
@@ -12,3 +14,13 @@
 - 原始证据：主工作区 `codexandclaude/runs/20261020T114723.959233Z/summary.json` 及同目录日志（忽略，不入库）。本记录提交前再跑 G3 和 `git diff --check`。
 
 EXP-001 的交付审查在 Codex 工作区固定 `bb4aedf21aac056906ef4a350bd1c71f548bebba` 独立执行；实现者可在收到本记录提交 SHA 后合并 master，补写基线。没有开工 ENV-004 或 SYS-004，也没有合并 EXP-001 实现。
+
+## EXP-001 原型合并与收尾（2026-10-20）
+
+- 用户授权：本会话“EXP-001合并吧”，授权后才执行本次合并。此前用户已选定方案四，交付记录G4第2轮保留原话“我觉得没问题，你现在的方案4处理比较符合我的意向”；这是探索原型的方案选择，不代表正式视觉品质定稿。
+- 合并前master：`66ee2b5ff0abaf110186a00760605efde17b4fb7`；无重叠未提交修改。普通沙箱可见的未跟踪`.claude/`目录未触碰，门禁记录dirty=false、status=[]。
+- 固定审查SHA：`baf09fef8522d2c307c06c7696a9d8edc73cef06`。执行 `git merge --ff-only baf09fef8522d2c307c06c7696a9d8edc73cef06`，无冲突；快进后master即该SHA，没有另造合并提交，未合并可移动分支名。
+- 合并后在master执行 `python codexandclaude/tools/run_checks.py focused --python-all`：tests **92/92**、协作测试 **45/45**，complete=true、passed=true，所有子命令退出0。被测SHA为上述固定审查SHA，dirty=false。原始日志 `codexandclaude/runs/20261020T123659.645664Z/summary.json` 及同目录日志（忽略，不入库）。
+- 同一master补跑 `Godot --headless --path game --script res://prototypes/EXP-001/tests/smoke_test.gd`：**EXP001_SMOKE checks=105 failures=0**，退出0，无ERROR/WARNING。工具Godot4.7.2.stable.official.ed1daf0bf、Python3.12.14/openpyxl3.1.5、Git2.56.0.windows.2、Nodev24.19.0。
+- 本次按用户授权入库隔离原型，正式游戏、输入、存档、验证流水线均未修改；按§3.3不跑全套G2。选中方案的正式HUD/时间/暂停菜单实现及T7同步仍由BL-042/043/046后续任务承担。
+- 收尾只更新本记录与任务卡首部为已完成；BOARD/BACKLOG由规划维护者后续串行刷新。提交前再跑G3及差异检查。ENV-004仍在独立实现分支待Claude审查，本次未合入，SYS-004未开工。
