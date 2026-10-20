@@ -41,5 +41,40 @@
 
 ## 已知限制
 
-- SYS-003 合并后，任务板与路线图中“待合并”字样需要规划维护者刷新（BL-090 改为已完成）。
 - 路线图只排序，不估工期。
+
+## 第1轮修订（回应审查 SHA `7a6c2299a571be44bf22d35d6badee127bda3b50`）
+
+分支先快进到审查提交，再合并 master@`b572c7efb6bffa5dca2044d35b77b9ad0969e68c`（SYS-003 已合入，无冲突，合并提交 `209221d`）。修订 SHA：`4924ed73ad9f6b228f6d60a9f1b5d041f03409e0`。
+
+| 意见 | 处理 |
+| --- | --- |
+| R1 快照漏记 | UI 行补记设置中的窗口尺寸（1280×720、1920×1080，`life_ui.gd` 第 215 行起）；音频行改为“警示音与玩家命中音”等程序占位音效，补 `placeholder_visual.gd` 依据。另把已有的珍珠/范围文字、普通敌人介绍卡、探索超时、前摇警示、错失机会文本写进快照，避免后续当作从零新增 |
+| R2 必需需求无编号 | G-02→BL-042（M2-a）、G-03→BL-051（M2-b）、G-04→新增 BL-054（P2，M2-c）、G-07→BL-065 与 BL-066（M3）、G-08→BL-048（M2-c）；待办条目写明对应 G 编号和现有灰盒；路线图第 4 节新增“需求、待办、批次、现有灰盒”对照表，删除原 M2-d 行 |
+| R3 BL-107 对象错误 | 改为 Room 实例 ID（`_final_resolution_room = room.get_instance_id()`）排除切房后的过期回调，保留“没有对象池，暂作观察” |
+| N1 | 第一批写明各自文件范围；ENV-004 与 SYS-004 都由 Codex 做，按 ENV-004 → SYS-004 先后，或在 SYS-004 不新增套件时独立工作区并行 |
+| N2 | 第 4 节开头与 M2-c 改为：新增或明显改变交互先做原型，只沿用已选交互或小修复才直接实现 |
+| N3 | M1 改为“结算与存档逻辑收尾”，注明界面相关裁决在 M2 实现 |
+| N4 | P3 段补 BL-106、BL-107；BL-106 写明父类 `BattlefieldRoom` 与继承链 |
+| SYS-003 刷新 | BL-090 已完成（SYS-003）；任务板 SYS-003 已完成；快照与 M1 同步 |
+
+测试改动：
+- `test_roadmap_covers_every_open_backlog_item`：只有里程碑行、M2 批次行和工具线这一行算作分配；新增 G-02/03/04/07/08 的追踪检查（对照表有且只有一行，引用的待办在 BACKLOG 中写明该 G 编号，且该待办确实在所写批次里）。
+- 新增 `test_roadmap_snapshot_mentions_existing_graybox_settings_and_audio`：代码中有窗口尺寸、命中音时，快照必须提到。
+
+变异检查（在内存中替换 `Path.read_text`，只跑上述两个测试，磁盘文件不变）：
+
+| 变异 | 结果 |
+| --- | --- |
+| 从 M2-b 删去 BL-040，只在文末写“未分配：BL-040” | 1 个失败 |
+| 添加不存在的 BL-999 | 1 个失败 |
+| 删除 G-04 对照行 | 1 个失败 |
+| 把 G-03 的批次改成 M2-a | 1 个失败 |
+| BACKLOG 删去所有 G-02 字样 | 1 个失败 |
+| 快照删去“窗口尺寸” | 1 个失败 |
+| 快照删去“命中音” | 1 个失败 |
+
+修订后证据：
+- 未提交时：`python codexandclaude/tools/run_checks.py focused --python-all` → `tests` 92/92、`codexandclaude/tests` 44/44 通过。
+- 提交后：同一命令，被测 SHA `4924ed73ad9f6b228f6d60a9f1b5d041f03409e0`，dirty=false → `tests` 92/92、`codexandclaude/tests` 44/44，complete=true、passed=true；摘要 `codexandclaude/runs/20261020T093200.026213Z/summary.json`（不入库）。协作测试由 43 项增至 44 项，是新增的快照测试。
+- 旧失败：无；新失败：无。工具版本同上。
