@@ -82,6 +82,26 @@ func key_palette(tag: String) -> void:
 		for key: String in palette:
 			hex[key] = (palette[key] as Color).to_html(false)
 		check(hex == KEY_PALETTE, tag + "key palette unchanged at stage %d: %s" % [stage - KEY_0, hex])
+	# The colours actually handed to the draw calls, at rest (no pulse, no flash),
+	# on day 1, day 3 and in the final battle: they must not drift with dusk.
+	var state: HudState = preview.get("state")
+	for stage: int in [KEY_5, KEY_7, KEY_8]:
+		preview.call("press", KEY_R)
+		preview.call("press", stage)
+		state.balance = 5
+		state.health = 3
+		state.gain_pulse = 0.0
+		state.deny_left = 0.0
+		state.frozen = true
+		await frames(2)
+		var drawn: Dictionary = hud.get("drawn")
+		var fills: Array = [Color(drawn.get("possibility_fill", Color.BLACK)).to_html(false), Color(drawn.get("life_fill", Color.BLACK)).to_html(false)]
+		check(fills == [KEY_PALETTE["possibility"], KEY_PALETTE["life"]], tag + "ring and life are drawn in the key colours at stage %d: %s" % [stage - KEY_0, fills])
+		state.balance = -4
+		await frames(2)
+		check(Color(hud.get("drawn").get("overdraft_fill", Color.BLACK)).to_html(false) == KEY_PALETTE["overdraft"], tag + "overdraft is drawn in its key colour at stage %d" % (stage - KEY_0))
+		state.frozen = false
+	preview.call("press", KEY_R)
 
 func hud_states(state: HudState, tag: String) -> void:
 	var hud: Control = preview.get("hud")

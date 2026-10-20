@@ -107,9 +107,14 @@ func _draw_emblem() -> void:
 		_arc(RING, i, Color(Style.INK, 0.14).lerp(Style.DENY, flash * 0.35), 15.0)
 		if i < state.balance:
 			_arc(RING, i, Color(Style.POSSIBILITY_GLOW, 0.3 * glow), 24.0)
-			_arc(RING, i, Color(palette["possibility"]).lerp(Style.POSSIBILITY_GLOW, pulse * 0.6).lerp(palette["deny"], flash * 0.6), 12.0)
+			var fill: Color = Color(palette["possibility"]).lerp(Style.POSSIBILITY_GLOW, pulse * 0.6).lerp(palette["deny"], flash * 0.6)
+			_arc(RING, i, fill, 12.0)
+			# Record the colour the ring segment was really drawn with.
+			drawn["possibility_fill"] = fill
 		elif i >= HudState.BASE_MAX - state.overdraft():
-			_arc(RING, i, Color(palette["overdraft"]).lerp(palette["deny"], flash * 0.6), 12.0)
+			var debt: Color = Color(palette["overdraft"]).lerp(palette["deny"], flash * 0.6)
+			_arc(RING, i, debt, 12.0)
+			drawn["overdraft_fill"] = debt
 	Ink.rough_circle(self, CENTER, RING + 10, Color(Style.INK, 0.5 + flash * 0.4), 1.4 + flash * 1.5, seed + 2, style.wobble() * 0.6)
 	Ink.rough_circle(self, CENTER, RING - 10, Color(Style.INK, 0.5), 1.4, seed + 3, style.wobble() * 0.6)
 	for i: int in range(state.growth * HudState.GROWTH_STEP):
@@ -121,7 +126,9 @@ func _draw_emblem() -> void:
 	for i: int in range(count):
 		var c: Vector2 = Vector2(left + i * 24.0, CENTER.y)
 		var shard: PackedVector2Array = PackedVector2Array([c + Vector2(0, -26), c + Vector2(9, 0), c + Vector2(0, 26), c + Vector2(-9, 0)])
-		draw_colored_polygon(shard, palette["life"])
+		var life_fill: Color = palette["life"]
+		draw_colored_polygon(shard, life_fill)
+		drawn["life_fill"] = life_fill
 		shard.append(shard[0])
 		draw_polyline(shard, Color(Style.INK, 0.8), 1.6, true)
 	# Pearls and reach on a small paper tag.
