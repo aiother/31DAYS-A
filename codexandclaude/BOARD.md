@@ -20,7 +20,7 @@
 | DOC-006 | M | 记录 T7 冲突裁决并写入主文档 | Claude | Codex | 已完成 | [tasks/DOC-006](tasks/DOC-006/task.md) |
 | SYS-003 | M | 最终战同帧胜利优先 | Codex | Claude | 已完成 | [tasks/SYS-003](tasks/SYS-003/task.md) |
 | DOC-007 | M | V0.1 剩余开发清单与路线 | Claude | Codex | 已完成 | [tasks/DOC-007](tasks/DOC-007/task.md) |
-| EXP-001 | M | HUD 与时间显示探索原型 | Claude | Codex | 草案（待批准） | [tasks/EXP-001](tasks/EXP-001/task.md) |
+| EXP-001 | M | HUD 与时间显示探索原型 | Claude | Codex | 待审查（G4 待挑选） | [tasks/EXP-001](tasks/EXP-001/task.md) |
 | ENV-004 | M | 引擎测试分散登记 | Codex | Claude | 草案（待批准） | [tasks/ENV-004](tasks/ENV-004/task.md) |
 | SYS-004 | M | 已通关存档不能再进入 | Codex | Claude | 草案（待批准，依赖ENV-004） | [tasks/SYS-004](tasks/SYS-004/task.md) |
 
