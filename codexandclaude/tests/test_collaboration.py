@@ -134,27 +134,37 @@ class CollaborationTests(unittest.TestCase):
                          "不要声称测试通过", "独立 worktree"):
             self.assertIn(boundary, review)
 
-    def test_plan_v2_is_a_linked_proposal_with_core_safeguards(self):
-        readme = (COLLAB / "README.md").read_text(encoding="utf-8")
-        self.assertIn("](plan_v2.md)", readme)
+    def test_plan_v2_is_kept_as_merged_history(self):
         plan = (COLLAB / "plan_v2.md").read_text(encoding="utf-8")
-        self.assertIn("状态：V2.2 试行中", plan)
-        headings = re.findall(r"^## (\d+)\.", plan, re.M)
+        self.assertIn("状态：已并入", plan)
+        self.assertIn("](collaboration.md)", plan)
+        self.assertNotIn("V2.2 试行中", plan)
+        readme = (COLLAB / "README.md").read_text(encoding="utf-8")
+        self.assertIn("协作规范 V2.3](collaboration.md)", readme)
+        self.assertNotIn("试行中", readme)
+
+    def test_collaboration_v23_keeps_v22_safeguards_and_adds_retrospective_rules(self):
+        protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")
+        self.assertIn("状态：现行规范", protocol)
+        headings = re.findall(r"^## (\d+)\.", protocol, re.M)
         self.assertEqual(list(map(int, headings)), list(range(1, len(headings) + 1)))
-        for boundary in ("用户是唯一决策者", "仓库是唯一沟通渠道", "一人写，一人审",
-                         "不超过两轮", "合并后", "全量", "主目录 `D:\\31days` 只属于用户",
-                         "不用 `git add -A`", "不推送远程", "冻结范围",
-                         "不让两个 Agent 自动互相调用", "规格优先于代码",
-                         "git switch --detach", "git revert", "暂停后续所有集成",
-                         "不记录自身所在提交的哈希", "立即停止并报告",
-                         "不能审查自己的实现后直接集成", "不重新触发 G2",
-                         "交付 SHA", "审查 SHA", "不合并可继续移动的分支名",
-                         "res://../", "依赖 ENV-001", "以用户批准的本方案为准",
-                         "审查通过后、合并前"):
-            with self.subTest(boundary=boundary):
-                self.assertIn(boundary, plan)
+        carried = ("用户是唯一决策者", "仓库是唯一沟通渠道", "一人写，一人审", "不超过两轮",
+                   "规格优先于代码", "冻结范围", "git switch --detach", "git revert",
+                   "暂停后续所有集成", "不记录自身所在提交的哈希", "立即停止并报告",
+                   "不能审查自己的实现后直接集成", "不重新触发 G2", "交付 SHA", "审查 SHA",
+                   "不合并可移动的分支名", "不用 `git add -A`", "不推送远程",
+                   "审查通过后、合并前", "主目录 `D:\\31days` 属于用户")
+        added = ("方案探讨", "探索型任务", "变异检查", "优化建议", "批量合入",
+                 "验收入口在任务卡阶段就要规划", "git commit -F",
+                 "汇总所依据的 master SHA", "集成者可以在 master 上直接提交")
+        for rule in carried + added:
+            with self.subTest(rule=rule):
+                self.assertIn(rule, protocol)
         for level in ("| S 小 |", "| M 中 |", "| L 大 |"):
-            self.assertIn(level, plan)
+            self.assertIn(level, protocol)
+        env = (COLLAB / "env.md").read_text(encoding="utf-8")
+        for detail in ("safe.directory", "git commit -F", "CRLF", ".svg.import"):
+            self.assertIn(detail, env)
 
     def test_protocol_preserves_pending_work_and_requires_tested_commits(self):
         protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")

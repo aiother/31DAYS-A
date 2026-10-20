@@ -67,3 +67,10 @@ Godot full/focused 可能生成正常的 `.godot` 缓存和 `outputs/` 测试输
 
 资源检查只忽略完整引用前缀 `res://../` 的工程外运行时输出；工程内资源不存在仍失败。
 ENV-001 首次验收须在没有 outputs/ 的新工作区只跑 G3，证明它不再依赖 G2。
+
+## Git 与提交（V2.3）
+
+- **仓库所有权**：`.git` 属于 Codex 的沙盒用户。Claude 侧每次 Git 调用都临时放行，例如 `git -c safe.directory=D:/31days -c safe.directory=D:/31days/codexandclaude/worktrees/claude ...`；不修改全局配置。
+- **提交说明**：多行、含英文引号或特殊字符的说明，写入 UTF-8 文本文件后用 `git commit -F <文件>`。Windows PowerShell 5.1 把含英文双引号的字符串作为参数传给 git 时会拆坏参数，导致提交失败或说明错乱。说明文件放在系统临时目录等不会被误暂存的位置；简单单行说明仍可用 `-m`。暂存始终使用显式路径。
+- **换行符**：工作区检出为 CRLF。用脚本按多行文本替换时，先确认换行符一致，否则替换会静默失败；多行替换优先用编辑工具。
+- **导入生成物**：Godot 全量或专项运行会让两份 `.svg.import` 出现仅换行符变化（`git diff --ignore-cr-at-eol` 为空），检查后用 `git restore` 还原，不提交。
