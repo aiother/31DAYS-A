@@ -62,7 +62,7 @@
 
 ## 第2轮修订（方案四）
 
-修订 SHA 见提交记录（本节提交前写入）。
+修订 SHA：`29aa1bffe9115425fbd674d93029a90124e8aa60`。
 
 | 文件 | 内容 |
 | --- | --- |
@@ -79,8 +79,8 @@
 第2轮证据：
 - 冒烟测试：`EXP001_SMOKE checks=85 failures=0`，无 ERROR、WARNING。
 - 截图 11 张逐张人工查看；查看中发现并修正暂停页“距下一日”与“当前任务”重叠、背景过亮。
-- G3：见下方提交后记录。
-- 正式游戏仍零改动（提交后复核，命令同上）。
+- G3：在修订 SHA、dirty=false 执行 `python codexandclaude/tools/run_checks.py focused --python-all` → `tests` 92/92、`codexandclaude/tests` 45/45，complete=true、passed=true。
+- 正式游戏仍零改动：`git diff --stat e2b69d9 29aa1bf -- . ':!game/prototypes' ':!codexandclaude/tests' ':!codexandclaude/tasks/EXP-001' ':!codexandclaude/BOARD.md'` 输出为空。
 
 ## G4 第2轮：等待用户确认方案四
 
