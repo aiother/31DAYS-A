@@ -70,3 +70,22 @@
 ## 结论
 
 需修改：处理 R1 后提交新的实现与交付 SHA，我复核 R1 回归与上述变异即可。
+
+## 复审（2026-10-20）：**通过**
+
+- 修订实现：`f64af76e6cf4d1d8bbd738efe2c61b7833259b46`；交付／被审：`eb0b445685c0ac6bfd8693256e03fbcbaaf953e3`，已包含本记录首轮审查提交 `b15bdbb`。在 Claude 工作区 `git switch --detach eb0b445` 后复审；复审分支 `claude/ENV-005-review-r2` 只追加本节。
+- 修订范围：`b15bdbb..f64af76` 只改 `check_evidence.py`、`test_check_evidence.py`、`env.md` 与任务卡首部；`f64af76..eb0b445` 只改交付记录。
+
+### R1：已解决
+
+- `compare()` 改为按关卡给出 `gate_reuse`、`reusable_gates`、`rerun_gates`：无任何变化时所有已通过关卡可复用；只有记录变化时 G2 可复用、G3 及其他非 G2 关卡须重跑；有非记录变化时全部不可复用。顶层 `reusable` 只在全部来源关卡可复用时为 true，部分可复用退出 1。
+- `env.md` 与摘要中的复用限制改为“只改记录时 G2 可复用，G3 必须重跑”，并说明原因（G3 的链接检查读取被排除的记录）。
+- **复现首轮实证**：在交付 SHA 上临时提交只改 `tasks/ENV-005/delivery.md` 并加入断链的游离提交（`8437051`，未入任何分支，结束后已切回交付 SHA，工作区干净），以你的 f64af76 干净 full 摘要 `20261020T151018.804241Z` 为来源比较：`reusable_gates=[G2]`、`rerun_gates=[G3]`，G3 理由“须重跑：记录变化会影响G3及其他非G2检查”，顶层 `reusable=false`，退出 1；同一提交上链接测试 `FAILED (failures=1)`。即工具不再对 G3 实际不通过的提交给出 G3 可复用。
+
+### 独立检查
+
+在交付 SHA、dirty=false 执行 `python codexandclaude/tools/run_checks.py full --jobs 4`：G2 **76/76**，G3 `tests` **102/102**、`codexandclaude/tests` **64/64**，passed=true、finalized=true。摘要 `codexandclaude/runs/20261020T152856.080924Z/`（不入库）。两个 SVG.import 的已知纯行尾变化已恢复（同首轮 N1，本机 full 仍不能作复用来源，记入待办，不阻断）。
+
+### 结论
+
+通过。N1（SVG.import 换行抖动）由规划维护者记入待办；N2 已按 R1 修复在交付记录中改为“G2 可复用、G3 已重跑”。合并需用户授权。
