@@ -27,6 +27,85 @@ func enter() -> void:
 	session.player.reset_kinematics()
 	await ticks(4)
 	quiet()
+func prepare_boundary(snapshot: Dictionary, wave: int, clock_field: String = "final_remaining") -> void:
+	check(session.store.save_slot(3,snapshot) and session.start_slot(3,false),"boundary scenario starts from an independent rescued slot")
+	await ticks(4)
+	session = current_scene as FinalBattleSession
+	await enter()
+	session.set_physics_process(false)
+	var area: FinalBattlefieldRoom = session.room as FinalBattlefieldRoom
+	area.set_physics_process(false)
+	area.wave_index = wave
+	area.wave_state = FinalBattlefieldRoom.WaveState.ACTIVE
+	area.arrivals = 2
+	area.arrival_remaining = -1
+	session.data[clock_field] = 0.01
+
+func clear_current_wave(notify_room: bool = true) -> void:
+	var area: FinalBattlefieldRoom = session.room as FinalBattlefieldRoom
+	for child: Node in area.get_node("Enemies").get_children():
+		if child is ColorlessEntity:
+			var enemy: ColorlessEntity = child as ColorlessEntity
+			enemy.hurtbox.receive_attack(enemy.health,Vector2.ZERO,session.player,8000)
+	# Use the real Room completion signal after actual damage/reward callbacks.
+	if notify_room:
+		area._physics_process(0)
+
+func kill_after_room_check() -> void:
+	session._clock_tick(0.02)
+	clear_current_wave(false)
+	check(not (session.room as FinalBattlefieldRoom).completed,"late actor kill precedes the Room's next completion scan")
+
+func finish_in_one_frame(clock_first: bool) -> void:
+	if clock_first:
+		session._clock_tick(0.02)
+	clear_current_wave()
+	if not clock_first:
+		session._clock_tick(0.02)
+
+func boundary_cases(snapshot: Dictionary) -> void:
+	for clock_field: String in ["final_remaining","day3_remaining"]:
+		for wave: int in [0,1,2]:
+			var last_wave: bool = wave==2
+			for clock_first: bool in [true,false]:
+				await prepare_boundary(snapshot,wave,clock_field)
+				physics_frame.connect(finish_in_one_frame.bind(clock_first),CONNECT_ONE_SHOT)
+				await ticks(2)
+				var saved_case: Dictionary = session.store.load_slot(3)
+				var label: String = "%s wave=%d clock_first=%s" % [clock_field,wave+1,clock_first]
+				if last_wave:
+					check(saved_case["events"].get(FinalClock.WON,false) and not saved_case["events"].get(FinalClock.TIMEOUT,false),"same-frame final clear saves victory without timeout: "+label)
+					check(not paused and not session._timeout_active and (session.room as FinalBattlefieldRoom).victory and session.final_ui.mode!="timeout","same-frame final clear opens Ten dialogue path without failure UI: "+label)
+				else:
+					check(saved_case["events"].get(FinalClock.TIMEOUT,false) and not saved_case["events"].get(FinalClock.WON,false),"same-frame intermediate clear remains timeout: "+label)
+					check(paused and session._timeout_active and (session.room as FinalBattlefieldRoom).wave_index==wave,"intermediate zero neither advances a wave nor opens victory: "+label)
+	await prepare_boundary(snapshot,2)
+	physics_frame.connect(kill_after_room_check,CONNECT_ONE_SHOT)
+	await ticks(2)
+	check(session.store.load_slot(3)["events"].get(FinalClock.WON,false) and not paused,"end-of-frame arbitration sees a final kill after the Room's earlier scan")
+	await prepare_boundary(snapshot,2)
+	physics_frame.connect(session._clock_tick.bind(0.02),CONNECT_ONE_SHOT)
+	await ticks(2)
+	check(paused and session._timeout_active,"earlier-frame expiry has already committed timeout")
+	clear_current_wave()
+	session._on_stage_completed()
+	await ticks(2)
+	check(session.store.load_slot(3)["events"].get(FinalClock.TIMEOUT,false) and not session.data["events"].get(FinalClock.WON,false),"late final kill cannot overturn a timeout committed in an earlier frame")
+	await prepare_boundary(snapshot,2)
+	var real_directory: String = session.store.directory
+	session.store.directory = real_directory.path_join("slot_3.json")
+	physics_frame.connect(finish_in_one_frame.bind(true),CONNECT_ONE_SHOT)
+	await ticks(2)
+	check(session._win_pending and not session._timeout_active and not session.data["events"].get(FinalClock.WON,false) and not session.data["events"].get(FinalClock.TIMEOUT,false),"failed same-frame victory save keeps retryable win without committing timeout")
+	check((session.room.get_node("LeftBoundary") as StaticBody2D).collision_layer==1,"failed same-frame victory save keeps return gate closed")
+	session.store.directory = real_directory
+	session.set_physics_process(true)
+	Input.action_press("interact")
+	await ticks(1)
+	Input.action_release("interact")
+	await ticks(2)
+	check(session.data["events"].get(FinalClock.WON,false) and not session.data["events"].get(FinalClock.TIMEOUT,false) and (session.room as FinalBattlefieldRoom).victory,"E retries zero-time victory save without converting it to timeout")
+
 func run() -> void:
 	directory = "user://tests/final_retry_%d" % Time.get_ticks_usec()
 	session = (load("res://world/final_battle_session.tscn") as PackedScene).instantiate() as FinalBattleSession
@@ -79,11 +158,9 @@ func run() -> void:
 	check(session.player.life.health==5 and session.player.possibility.balance==0 and session.cinematic==RescueBattlefieldSession.Cinematic.NONE,"explicit retry does not replay rescue or refill possibility")
 	check((session.ui.get("_error_label") as Label).text.is_empty(),"successful explicit retry clears failed-save feedback")
 	check((session.room as FinalBattlefieldRoom).wave_index==0 and session.room.get_node("FinalPlatforms").get_child_count()==0,"retry resets waves and final platforms")
-	session.data["final_remaining"] = 0
-	(session.room as FinalBattlefieldRoom).wave_index = 2
-	session._on_stage_completed()
-	check(session._timeout_active and not session.data["events"].get(FinalClock.WON,false),"same-frame zero time and final clear resolves as timeout")
+	await boundary_cases(snapshot)
 	# A persisted timeout stays a failure on read; it cannot restart itself.
+	check(session.store.save_slot(1,saved),"previously persisted timeout remains valid after boundary scenarios")
 	check(session.start_slot(1,false),"timeout slot can be loaded")
 	await ticks(4)
 	session = current_scene as FinalBattleSession
