@@ -163,6 +163,13 @@ class PendingDecisionsTests(unittest.TestCase):
             with self.subTest(item=item_id):
                 self.assertEqual(row[1], "2026-10-20" if item_id in ("A-016", "A-017") else "2026-10-19")
 
+    def test_settled_conclusions_follow_later_decisions(self):
+        # B-009 must not keep the timeout-wins rule that A-012 replaced on 2026-10-19.
+        conclusion, source = self.b_row("B-009")[3], self.b_row("B-009")[4]
+        self.assertIn("同帧归零与击杀时胜利优先", conclusion)
+        self.assertNotIn("同帧归零与击杀时超时优先", conclusion)
+        self.assertIn("A-012", conclusion + source)
+
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
             with self.subTest(keyword=keyword):
