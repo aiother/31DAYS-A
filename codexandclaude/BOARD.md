@@ -18,5 +18,6 @@
 | DOC-004 | M | V2.3 修订并正式并入协作规范 | Claude | Codex | 已完成 | [tasks/DOC-004](tasks/DOC-004/task.md) |
 | DOC-005 | M | T7 与现行规格核对 | Claude | Codex | 已完成 | [tasks/DOC-005](tasks/DOC-005/task.md) |
 | DOC-006 | M | 记录 T7 冲突裁决并写入主文档 | Claude | Codex | 进行中 | [tasks/DOC-006](tasks/DOC-006/task.md) |
+| SYS-003 | M | 最终战同帧胜利优先 | Codex | Claude | 待批准（依赖DOC-006） | [tasks/SYS-003](tasks/SYS-003/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项（剩余开发清单、文档改写、UI 与资源开发、A-004～A-007 等）见 [待办清单](BACKLOG.md)。
