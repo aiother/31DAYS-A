@@ -119,6 +119,17 @@ class CollaborationTests(unittest.TestCase):
             self.assertIn("命中音", rows["音频"][1])
             self.assertIn("game/player/placeholder_visual.gd`（命中音", rows["音频"][2])
 
+    def test_exp001_prototype_stays_isolated_from_the_formal_game(self):
+        folder = ROOT / "game/prototypes/EXP-001"
+        for name in ("README.md", "hud_preview.tscn", "run_preview.cmd", "tests/smoke_test.gd"):
+            with self.subTest(file=name):
+                self.assertTrue((folder / name).is_file())
+        for script in folder.rglob("*.gd"):
+            with self.subTest(script=script.name):
+                self.assertNotRegex(script.read_text(encoding="utf-8"), r"(?m)^class_name ")
+        self.assertNotIn("prototypes/", (ROOT / "scripts/verify_game.py").read_text(encoding="utf-8"))
+        self.assertNotIn("prototypes/", (ROOT / "game/project.godot").read_text(encoding="utf-8"))
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
