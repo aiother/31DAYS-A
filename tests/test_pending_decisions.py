@@ -132,6 +132,19 @@ class PendingDecisionsTests(unittest.TestCase):
                     self.assertIn(item_id, log)
         self.assertNotIn("T6、T7填写表格的内容不在本表范围", self.content)
 
+    def test_t7_items_separate_original_text_from_interpretation(self):
+        rows = {row[0]: row for row in table_rows(self.section(SECTIONS["A"])) if row[0] in T7_BATCH}
+        # R2: clarification items state the ambiguity and keep the compatible reading.
+        for item_id in ("A-017", "A-019", "A-020"):
+            with self.subTest(item=item_id):
+                self.assertRegex(rows[item_id][1] + rows[item_id][3], "未明确|解读")
+        self.assertIn("全屏", rows["A-017"][3].split("②")[0])
+        self.assertNotIn("不提供取消", rows["A-020"][3].split("②")[0])
+        self.assertIn("可取消", rows["A-020"][3])
+        # R3: the final-countdown item covers the below-15-minute display boundary.
+        for boundary in ("不足15分钟", "真实剩余", "固定显示15分钟"):
+            self.assertIn(boundary, rows["A-016"][3])
+
     def test_known_open_items_are_collected(self):
         for keyword in ("货币", "剧情奖励", "重复帮助", "残存可能性实体"):
             with self.subTest(keyword=keyword):
