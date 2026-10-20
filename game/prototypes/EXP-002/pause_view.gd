@@ -13,6 +13,8 @@ var mode: String = ""
 var was_paused: bool = false
 var buttons: Array[Button] = []
 var page_buttons: Array[Button] = []
+## What the last _draw showed on the right-hand side; read by the smoke test.
+var drawn: Dictionary = {}
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -99,6 +101,7 @@ func _draw() -> void:
 	text(Vector2(84, 340), "暂停", 46)
 	Ink.rough_line(self, Vector2(84, 356), Vector2(250, 356), Color(Style.LIFE, 0.8), 2.4, 202, style.wobble())
 	text(Vector2(84, size.y - 90), "第 %d 日 · 末日前 %d 天" % [state.day, state.days_left()], 20, Color(Style.INK, 0.7))
+	drawn = {"sample": style.sample}
 	if mode.is_empty():
 		_draw_clock(Vector2(LEFT_WIDTH + (size.x - LEFT_WIDTH) * 0.5, 360))
 	elif mode == "settings":
@@ -124,6 +127,7 @@ func _draw_clock(center: Vector2) -> void:
 	Ink.rough_line(self, center, center + Vector2.from_angle(hour_angle) * radius * 0.5, Style.INK, 7.0, 530, 0.8)
 	Ink.rough_line(self, center, center + Vector2.from_angle(minute_angle) * radius * 0.78, Style.INK, 3.5, 531, 0.8)
 	draw_circle(center, 9, Style.SUN)
+	drawn["clock"] = {"time": state.clock_text(), "day": state.day}
 	var label: Rect2 = Rect2(center + Vector2(-330, radius + 40), Vector2(660, 250))
 	style.panel(self, label, state, 540)
 	text(label.position + Vector2(0, 64), state.clock_text(), 54, Style.INK, HORIZONTAL_ALIGNMENT_CENTER, label.size.x)
@@ -156,6 +160,7 @@ func _page(title: String) -> Rect2:
 
 func _draw_settings() -> void:
 	var sheet: Rect2 = _page("设置")
+	drawn["settings"] = true
 	var rows: Array = [["总音量", 0.7], ["效果音量", 0.6], ["背景音量", 0.5], ["分辨率", "1920 × 1080"], ["显示模式", "全屏 / 窗口"], ["帧率", "60"], ["按键列表", "（自定义按键在 V0.1 之后）"]]
 	for i: int in range(rows.size()):
 		var y: float = sheet.position.y + 160 + i * 64
@@ -172,4 +177,5 @@ func _draw_settings() -> void:
 
 func _draw_confirm() -> void:
 	var sheet: Rect2 = _page("保存并退出？")
+	drawn["confirm"] = true
 	text(Vector2(sheet.position.x + 60, sheet.position.y + 190), "将保存进度并回到最近的检查点。", 28)

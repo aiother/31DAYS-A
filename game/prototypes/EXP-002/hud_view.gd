@@ -15,6 +15,8 @@ var style: RefCounted
 var font: Font
 var banner_left: float = 0.0
 var flyers: Array[Dictionary] = []
+## What the last _draw actually put on screen; read by the smoke test.
+var drawn: Dictionary = {}
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -53,6 +55,7 @@ func gain_target() -> Vector2:
 	return CENTER + Vector2.from_angle(-PI / 2.0 + TAU * (index + 0.5) / HudState.BASE_MAX) * RING
 
 func _draw() -> void:
+	drawn = {}
 	_draw_edge_wash()
 	if state.health == 1:
 		_draw_last_life()
@@ -89,6 +92,9 @@ func _draw_emblem() -> void:
 	var flash: float = deny_flash()
 	var glow: float = style.glow_strength(state) * style.breath(state)
 	var seed: int = 7
+	# Key colours: the same on every day and in both samples.
+	var palette: Dictionary = {"life": Style.LIFE, "possibility": Style.POSSIBILITY, "overdraft": Style.OVERDRAFT, "growth": Style.GROWTH, "deny": Style.DENY}
+	drawn["palette"] = palette
 	Ink.paper_disc(self, CENTER + Vector2(3, 4), OUTER + 18, Color(0, 0, 0, 0.25), seed)
 	Ink.paper_disc(self, CENTER, OUTER + 16, Color(style.paper_color(state), style.panel_alpha()), seed, style.wobble())
 	var g: float = style.glass(state)
@@ -100,21 +106,21 @@ func _draw_emblem() -> void:
 		_arc(RING, i, Color(Style.INK, 0.14).lerp(Style.DENY, flash * 0.35), 15.0)
 		if i < state.balance:
 			_arc(RING, i, Color(Style.POSSIBILITY_GLOW, 0.3 * glow), 24.0)
-			_arc(RING, i, Style.POSSIBILITY.lerp(Style.POSSIBILITY_GLOW, pulse * 0.6).lerp(Style.DENY, flash * 0.6), 12.0)
+			_arc(RING, i, Color(palette["possibility"]).lerp(Style.POSSIBILITY_GLOW, pulse * 0.6).lerp(palette["deny"], flash * 0.6), 12.0)
 		elif i >= HudState.BASE_MAX - state.overdraft():
-			_arc(RING, i, Style.OVERDRAFT.lerp(Style.DENY, flash * 0.6), 12.0)
+			_arc(RING, i, Color(palette["overdraft"]).lerp(palette["deny"], flash * 0.6), 12.0)
 	Ink.rough_circle(self, CENTER, RING + 10, Color(Style.INK, 0.5 + flash * 0.4), 1.4 + flash * 1.5, seed + 2, style.wobble() * 0.6)
 	Ink.rough_circle(self, CENTER, RING - 10, Color(Style.INK, 0.5), 1.4, seed + 3, style.wobble() * 0.6)
 	for i: int in range(state.growth * HudState.GROWTH_STEP):
 		var filled: bool = state.balance > HudState.BASE_MAX + i
-		_arc(OUTER, i, Style.GROWTH if filled else Color(Style.GROWTH, 0.35), 7.0)
+		_arc(OUTER, i, palette["growth"] if filled else Color(palette["growth"], 0.35), 7.0)
 	# Life: inked vermilion shards, current count only.
 	var count: int = state.health
 	var left: float = CENTER.x - (count - 1) * 12.0
 	for i: int in range(count):
 		var c: Vector2 = Vector2(left + i * 24.0, CENTER.y)
 		var shard: PackedVector2Array = PackedVector2Array([c + Vector2(0, -26), c + Vector2(9, 0), c + Vector2(0, 26), c + Vector2(-9, 0)])
-		draw_colored_polygon(shard, Style.LIFE)
+		draw_colored_polygon(shard, palette["life"])
 		shard.append(shard[0])
 		draw_polyline(shard, Color(Style.INK, 0.8), 1.6, true)
 	# Pearls and reach on a small paper tag.
@@ -127,6 +133,7 @@ func _draw_emblem() -> void:
 	var tag: Rect2 = Rect2(CENTER + Vector2(OUTER + 34, -22), Vector2(150, 40))
 	style.panel(self, tag, state, 21)
 	ink_text(tag.position + Vector2(14, 28), "范围 %d%%" % state.reach_percent(), 22)
+	drawn["emblem"] = {"life": count, "reach": state.reach_percent()}
 	if state.show_medkit:
 		var med: Rect2 = Rect2(tag.position + Vector2(0, 50), Vector2(110, 38))
 		style.panel(self, med, state, 23)
@@ -144,6 +151,7 @@ func _draw_horizon() -> void:
 	var tag: Rect2 = Rect2(Vector2(clampf(x - 46, 8, size.x - 100), y - 52), Vector2(92, 34))
 	style.panel(self, tag, state, 63)
 	ink_text(tag.position + Vector2(0, 25), state.clock_text(), 22, Style.INK, HORIZONTAL_ALIGNMENT_CENTER, tag.size.x)
+	drawn["horizon"] = state.clock_text()
 	var date: Rect2 = Rect2(Vector2(size.x - 230, y + 6), Vector2(210, 28))
 	style.panel(self, date, state, 64)
 	ink_text(date.position + Vector2(0, 21), "第%d日 · 末日前%d天" % [state.day, state.days_left()], 17, Style.INK, HORIZONTAL_ALIGNMENT_CENTER, date.size.x)
@@ -156,6 +164,7 @@ func _draw_banner() -> void:
 	Ink.glow(self, box.get_center(), 120, Style.SUN, style.glow_strength(state) * alpha)
 	style.panel(self, box, state, 71)
 	ink_text(box.position + Vector2(0, 66), "第 %d 日" % state.day, 52, Color(Style.INK, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
+	drawn["banner"] = state.day
 	ink_text(box.position + Vector2(0, 106), "末日前 %d 天" % state.days_left(), 26, Color(Style.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
 
 func _draw_warning() -> void:
@@ -163,6 +172,7 @@ func _draw_warning() -> void:
 	var box: Rect2 = Rect2(Vector2(size.x - 420, size.y - 150), Vector2(380, 50))
 	style.panel(self, box, state, 81)
 	ink_text(box.position + Vector2(18, 34), "即将进入第 %d 日 · %d:%02d" % [state.day + 1, int(left / 60.0), left % 60], 23)
+	drawn["warning"] = true
 	var blink: float = 0.5 + 0.5 * sin(state.clock * 5.0)
 	Ink.rough_line(self, box.position + Vector2(16, 42), box.position + Vector2(box.size.x - 16, 42), Color(Style.LIFE, 0.4 + 0.5 * blink), 2.2, 82, style.wobble())
 
@@ -187,7 +197,9 @@ func _draw_final() -> void:
 	draw_circle(dial, 4, Style.SUN)
 	var seconds: int = int(ceil(value))
 	ink_text(box.position + Vector2(118, 36), label, 21, Color(color, 0.85))
-	ink_text(box.position + Vector2(118, 92), "%02d:%02d" % [int(seconds / 60.0), seconds % 60], 50, color)
+	var digits: String = "%02d:%02d" % [int(seconds / 60.0), seconds % 60]
+	ink_text(box.position + Vector2(118, 92), digits, 50, color)
+	drawn["final"] = {"label": label, "digits": digits, "color": color}
 
 func _draw_flyers() -> void:
 	var to: Vector2 = gain_target()

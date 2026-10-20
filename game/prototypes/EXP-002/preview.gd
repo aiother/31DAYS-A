@@ -8,7 +8,8 @@ const HudView = preload("res://prototypes/EXP-002/hud_view.gd")
 const PauseView = preload("res://prototypes/EXP-002/pause_view.gd")
 const DialogSample = preload("res://prototypes/EXP-002/dialog_sample.gd")
 const HELP: String = """1 / 2  切换样张（手札为主 / 黄昏为主）      H  显示或隐藏说明
-5 / 6 / 7 / 8  跳到第1日 / 第2日 / 第3日 / 最终战      0  开关“随天数变化”
+5 / 6 / 7  跳到第1日 / 第2日 / 第3日      0  开关“随天数变化”
+8 / 9  最终战：开战时第3日余25分钟（加速定格到15:00）/ 只余9分12秒（余时不足警示）
 Esc 暂停菜单（左选项、右时钟；设置等二级页盖住时钟，Esc 返回）    K 通用对话框与按钮样式
 Q 受伤   E 尝试恢复   F 尝试闪避（连闪成本1/2/3）   A / S / D 消耗1 / 获得1 / 获得3
 G 成长上限   Z / X 珍珠 -1 / +1   C / V 药包显示 / 数量   R 重置
@@ -66,7 +67,7 @@ func _label(font_size: int, color: Color) -> Label:
 	return label
 
 func stage() -> String:
-	return "最终战" if state.final_active else "第%d日" % state.day
+	return ("最终战（余时不足）" if state.final_from <= HudState.FINAL_SECONDS else "最终战") if state.final_active else "第%d日" % state.day
 
 func _process(delta: float) -> void:
 	state.tick(delta)
@@ -85,11 +86,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	press(key.keycode)
 
-## Moves the simulation to a given day (1-3) or the final battle (4).
+## Moves the simulation to a given day (1-3), the final battle with time to
+## spare (4, A-016 spin-down) or with under fifteen minutes left (5).
 func jump(stage_index: int) -> void:
 	state.stop_final()
-	if stage_index >= 4:
+	if stage_index == 4:
 		state.start_final(25.0 * 60.0)
+		return
+	if stage_index >= 5:
+		state.start_final(9.0 * 60.0 + 12.0)
 		return
 	state.day = stage_index
 	state.day_remaining = HudState.DAY_SECONDS * 0.5
@@ -113,6 +118,7 @@ func press(code: Key) -> void:
 		KEY_6: jump(2)
 		KEY_7: jump(3)
 		KEY_8: jump(4)
+		KEY_9: jump(5)
 		KEY_0: style.progressive = not style.progressive
 		KEY_K: dialog.call("open")
 		KEY_H: help_label.visible = not help_label.visible

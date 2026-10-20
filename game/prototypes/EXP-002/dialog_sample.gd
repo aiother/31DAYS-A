@@ -10,6 +10,7 @@ var state: RefCounted
 var style: RefCounted
 var font: Font
 var buttons: Array[Button] = []
+var drawn: Dictionary = {}
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -43,6 +44,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.03, 0.04, 0.55))
 	Ink.glow(self, BOX.get_center(), 260, Style.DUSK_BOTTOM, style.glow_strength(state) * 0.7)
 	style.panel(self, BOX, state, 700)
+	drawn = {"title": "要放弃这次救助吗？", "sample": style.sample}
 	draw_string(font, BOX.position + Vector2(60, 90), "要放弃这次救助吗？", HORIZONTAL_ALIGNMENT_LEFT, -1, 38, Style.INK)
 	Ink.rough_line(self, BOX.position + Vector2(60, 108), BOX.position + Vector2(330, 108), Color(Style.LIFE, 0.8), 2.4, 704, style.wobble())
 	draw_string(font, BOX.position + Vector2(60, 170), "放弃后，这位幸存者将不再等你。", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color(Style.INK, 0.85))

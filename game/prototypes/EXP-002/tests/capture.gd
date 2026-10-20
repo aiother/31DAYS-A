@@ -58,10 +58,18 @@ func run() -> void:
 		state.frozen = false
 		preview.call("press", KEY_R)
 		preview.call("press", KEY_8)
-		for i: int in range(200):
+		# Wait (bounded) for the spin-down to really finish, not a frame count.
+		var waited: int = 0
+		while state.accelerate_left > 0.0 and waited < 600:
 			await process_frame
+			waited += 1
 		state.frozen = true
 		await shot(tag + "_final_countdown")
+		state.frozen = false
+		preview.call("press", KEY_9)
+		await frames(3)
+		state.frozen = true
+		await shot(tag + "_final_short")
 		await normal(state, KEY_6)
 		state.frozen = false
 		preview.call("press", KEY_ESCAPE)
