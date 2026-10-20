@@ -121,7 +121,8 @@ class CollaborationTests(unittest.TestCase):
 
     def test_exp001_prototype_stays_isolated_from_the_formal_game(self):
         folder = ROOT / "game/prototypes/EXP-001"
-        for name in ("README.md", "hud_preview.tscn", "run_preview.cmd", "tests/smoke_test.gd"):
+        for name in ("README.md", "hud_preview.tscn", "run_preview.cmd", "tests/smoke_test.gd",
+                     "screenshots/.gdignore"):
             with self.subTest(file=name):
                 self.assertTrue((folder / name).is_file())
         for script in folder.rglob("*.gd"):

@@ -3,19 +3,25 @@ extends Control
 ## Raw keycodes only; the frozen project input map is not touched.
 const HudState = preload("res://prototypes/EXP-001/hud_state.gd")
 const Overlay = preload("res://prototypes/EXP-001/shared_overlay.gd")
+const PauseMenu = preload("res://prototypes/EXP-001/pause_menu.gd")
+const DISTORTION: Shader = preload("res://prototypes/EXP-001/overdraft_distortion.gdshader")
+const COMBO: int = 3
 const VARIANTS: Array[Script] = [
 	preload("res://prototypes/EXP-001/variant_corner.gd"),
 	preload("res://prototypes/EXP-001/variant_emblem.gd"),
 	preload("res://prototypes/EXP-001/variant_fracture.gd"),
+	preload("res://prototypes/EXP-001/variant_combo.gd"),
 ]
-const HELP: String = """1 / 2 / 3  切换方案        H  显示/隐藏本说明
+const HELP: String = """1 / 2 / 3 / 4  切换方案（4 为组合方案）    H  显示/隐藏本说明
 Q 受伤（最低1点）   E 尝试恢复（消耗3）   R 全部重置
 A 消耗1可能性（可透支到-9）   S 获得1   D 获得3（光效飞入）
 F 尝试闪避（不足时透支并发红）   G 切换成长上限 0/1/2 段
 Z / X 珍珠 -1 / +1      C 显示药包（G-01，可选）   V 药包数量
 T 时间 +1分钟   Y 跳到换日前3分钟   U 立即进入下一日
 O 最终战：第3日余25分钟（加速定格）   P 最终战：余9分12秒   I 结束最终战
-L 时间流速 ×1 / ×30     空格 暂停时间     Tab（方案二）按住展开时间"""
+L 时间流速 ×1 / ×30     空格 暂停时间     Tab（方案二）按住展开时间
+Esc 暂停菜单：左侧选项，右侧时钟与天数；进入设置等二级界面会盖住时钟，Esc 返回
+方案四：可能性低于0时画面出现失真滤镜，透支越多越强"""
 
 var state: HudState = HudState.new()
 var variant_index: int = 0
@@ -23,9 +29,21 @@ var variant: Control
 var overlay: Control
 var title_label: Label
 var help_label: Label
+var distortion: ColorRect
+var distortion_strength: float = 0.0
+var pause: Control
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Distortion sits under the HUD so only the game scene is distorted.
+	distortion = ColorRect.new()
+	distortion.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	distortion.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var material: ShaderMaterial = ShaderMaterial.new()
+	material.shader = DISTORTION
+	distortion.material = material
+	distortion.visible = false
+	add_child(distortion)
 	overlay = Overlay.new()
 	overlay.state = state
 	overlay.target = func() -> Vector2: return variant.call("gain_target") if variant != null else Vector2.ZERO
@@ -39,6 +57,9 @@ func _ready() -> void:
 	help_label.position = Vector2(1100, 340)
 	add_child(title_label)
 	add_child(help_label)
+	pause = PauseMenu.new()
+	pause.state = state
+	add_child(pause)
 	select_variant(0)
 
 func _label(font_size: int, color: Color) -> Label:
@@ -57,11 +78,17 @@ func select_variant(index: int) -> void:
 	variant = VARIANTS[variant_index].new() as Control
 	variant.set("state", state)
 	add_child(variant)
-	move_child(variant, 0)
+	move_child(variant, distortion.get_index() + 1)
 	title_label.text = variant.call("title")
 
 func _process(delta: float) -> void:
 	state.tick(delta)
+	var target: float = 0.0
+	if variant_index == COMBO and state.balance < 0:
+		target = 0.35 + 0.65 * state.overdraft() / float(-HudState.FLOOR)
+	distortion_strength = move_toward(distortion_strength, target, delta * 1.5)
+	distortion.visible = distortion_strength > 0.001
+	(distortion.material as ShaderMaterial).set_shader_parameter("strength", distortion_strength)
 	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -76,10 +103,19 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Single entry point for keyboard and the smoke test.
 func press(code: Key) -> void:
+	if code == KEY_ESCAPE:
+		if pause.visible:
+			pause.call("back")
+		else:
+			pause.call("open")
+		return
+	if pause.visible:
+		return
 	match code:
 		KEY_1: select_variant(0)
 		KEY_2: select_variant(1)
 		KEY_3: select_variant(2)
+		KEY_4: select_variant(3)
 		KEY_H: help_label.visible = not help_label.visible
 		KEY_Q: state.hurt()
 		KEY_E: state.try_heal()

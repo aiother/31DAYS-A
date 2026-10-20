@@ -25,13 +25,14 @@ func run() -> void:
 	await frames(2)
 	var state: HudState = preview.get("state")
 	check(state != null, "preview owns a simulated state")
-	for index: int in range(3):
+	for index: int in range(4):
 		preview.call("press", KEY_1 + index)
 		await frames(2)
 		check(preview.get("variant_index") == index, "variant %d selected" % (index + 1))
 		check(preview.get("variant").get_script() == preview.VARIANTS[index], "variant %d script is live" % (index + 1))
 		check(not String(preview.get("variant").call("title")).is_empty(), "variant %d has a title" % (index + 1))
 		await walk_states(state, index)
+	await combo_checks(state)
 	print("EXP001_SMOKE checks=%d failures=%d" % [checks, failures])
 	quit(1 if failures > 0 else 0)
 
@@ -96,3 +97,45 @@ func walk_states(state: HudState, index: int) -> void:
 	preview.call("press", KEY_I)
 	preview.call("press", KEY_R)
 	await frames(1)
+
+func combo_checks(state: HudState) -> void:
+	preview.call("press", KEY_4)
+	preview.call("press", KEY_R)
+	await frames(3)
+	check(not preview.get("distortion").visible, "combo: no distortion while possibility is not negative")
+	for i: int in range(6):
+		preview.call("press", KEY_A)
+	for i: int in range(60):
+		await process_frame
+	check(state.balance == -3 and preview.get("distortion").visible and preview.get("distortion_strength") > 0.3, "combo: overdraft distorts the scene")
+	preview.call("press", KEY_F)
+	check(state.deny_kind == "闪避" and state.deny_left > 0.0, "combo: short dodge still flashes the container alongside the filter")
+	preview.call("press", KEY_1)
+	for i: int in range(60):
+		await process_frame
+	check(not preview.get("distortion").visible, "distortion stays a combo-variant idea")
+	preview.call("press", KEY_4)
+	var pause: Control = preview.get("pause")
+	var before: float = state.day_remaining
+	preview.call("press", KEY_ESCAPE)
+	await frames(3)
+	check(pause.visible and state.paused and pause.get("clock").visible, "Esc opens the pause menu with the clock on the right")
+	check(is_equal_approx(state.day_remaining, before), "pause menu holds the day clock")
+	var held: Array = [state.balance, state.health]
+	preview.call("press", KEY_Q)
+	preview.call("press", KEY_S)
+	check([state.balance, state.health] == held, "debug keys are ignored while paused")
+	pause.call("show_settings")
+	await frames(2)
+	check(pause.get("mode") == "settings" and not pause.get("clock").visible and pause.get("page").visible, "settings page covers the clock")
+	preview.call("press", KEY_ESCAPE)
+	await frames(2)
+	check(pause.visible and pause.get("clock").visible and not pause.get("page").visible, "Esc on a secondary page returns to the clock")
+	pause.call("show_confirm")
+	await frames(2)
+	check(pause.get("mode") == "confirm" and not pause.get("clock").visible, "save-and-quit confirm covers the clock")
+	preview.call("press", KEY_ESCAPE)
+	preview.call("press", KEY_ESCAPE)
+	await frames(2)
+	check(not pause.visible and not state.paused, "Esc closes the menu and resumes time")
+	preview.call("press", KEY_R)

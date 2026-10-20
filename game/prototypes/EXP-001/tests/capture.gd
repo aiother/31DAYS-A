@@ -27,7 +27,7 @@ func run() -> void:
 	root.add_child(preview)
 	preview.get("help_label").visible = false
 	var state: HudState = preview.get("state")
-	for index: int in range(3):
+	for index: int in range(4):
 		preview.call("press", KEY_1 + index)
 		# Normal play: some possibility, one growth segment, two pearls, day 2.
 		state.reset()
@@ -52,4 +52,23 @@ func run() -> void:
 		state.frozen = true
 		await shot("variant%d_pressure" % (index + 1))
 		state.frozen = false
+	# Combo variant: overdraft distortion, then the pause menu and its settings page.
+	preview.call("press", KEY_4)
+	state.reset()
+	state.balance = -6
+	state.day = 2
+	state.day_remaining = 700.0
+	for i: int in range(90):
+		await process_frame
+	await shot("variant4_overdraft_distortion")
+	state.reset()
+	state.balance = 6
+	state.day = 2
+	state.day_remaining = 700.0
+	for i: int in range(90):
+		await process_frame
+	preview.call("press", KEY_ESCAPE)
+	await shot("pause_menu_clock")
+	preview.get("pause").call("show_settings")
+	await shot("pause_menu_settings")
 	quit(0)
