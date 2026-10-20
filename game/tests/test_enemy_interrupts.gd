@@ -1,3 +1,4 @@
+# verify-suite: {"name": "protected enemy actions and future stagger interrupt hook", "path": "res://tests/test_enemy_interrupts.gd", "marker": "ENEMY_INTERRUPTS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

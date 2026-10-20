@@ -1,3 +1,4 @@
+# verify-suite: {"name": "four-Room environmental hazards real traversal permanent switches and save recovery", "path": "res://tests/test_environment_batch.gd", "marker": "ENVIRONMENT_BATCH_TESTS checks=", "fixed_fps": 60, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

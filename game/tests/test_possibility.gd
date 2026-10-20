@@ -1,3 +1,4 @@
+# verify-suite: {"name": "possibility dodge and healing regression", "path": "res://tests/test_possibility.gd", "marker": "POSSIBILITY_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

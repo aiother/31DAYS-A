@@ -1,3 +1,4 @@
+# verify-suite: {"name": "trench traversal checkpoint and pearl persistence", "path": "res://tests/test_trench.gd", "marker": "TRENCH_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

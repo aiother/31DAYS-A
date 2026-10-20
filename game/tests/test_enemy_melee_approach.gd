@@ -1,3 +1,4 @@
+# verify-suite: {"name": "enemy melee approach regression", "path": "res://tests/test_enemy_melee_approach.gd", "marker": "ENEMY_MELEE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var _world: Node2D
 var _player: PlayerController

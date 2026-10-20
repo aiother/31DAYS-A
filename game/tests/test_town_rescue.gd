@@ -1,3 +1,4 @@
+# verify-suite: {"name": "town rescue and first permanent growth", "path": "res://tests/test_town_rescue.gd", "marker": "TOWN_RESCUE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

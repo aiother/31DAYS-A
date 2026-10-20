@@ -1,3 +1,4 @@
+# verify-suite: {"name": "platform detours around wide overhangs and real ravine video regression", "path": "res://tests/test_platform_detour.gd", "marker": "PLATFORM_DETOUR_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends "res://tests/test_platform_pursuit.gd"
 
 func navigation() -> EnemyPlatformPursuit:

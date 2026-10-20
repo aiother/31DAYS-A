@@ -1,3 +1,4 @@
+# verify-suite: {"name": "natural day session pause persistence story rollover and timeout retry", "path": "res://tests/test_day_clock_session.gd", "marker": "DAY_CLOCK_SESSION_TESTS checks=", "fixed_fps": 60, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

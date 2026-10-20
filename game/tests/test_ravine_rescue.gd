@@ -1,3 +1,4 @@
+# verify-suite: {"name": "ravine survivor rescue and deferred growth", "path": "res://tests/test_ravine_rescue.gd", "marker": "RAVINE_RESCUE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

@@ -1,3 +1,4 @@
+# verify-suite: {"name": "graybox HUD rows and save error prompt stack without overlap across viewports", "path": "res://tests/test_hud_layout.gd", "marker": "HUD_LAYOUT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 ## Graybox HUD rows and save error feedback must never overlap on screen.
 var checks: int = 0

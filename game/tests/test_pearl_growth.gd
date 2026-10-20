@@ -1,3 +1,4 @@
+# verify-suite: {"name": "permanent pearl growth additive reach real hits reflection legacy saves and slots", "path": "res://tests/test_pearl_growth.gd", "marker": "PEARL_GROWTH_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

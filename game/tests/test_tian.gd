@@ -1,3 +1,4 @@
+# verify-suite: {"name": "Tian warrior combos guard counter blink and shared attacks", "path": "res://tests/test_tian.gd", "marker": "TIAN_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

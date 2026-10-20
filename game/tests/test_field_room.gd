@@ -1,3 +1,4 @@
+# verify-suite: {"name": "golden wheat field dialogue and rescue departure", "path": "res://tests/test_field_room.gd", "marker": "FIELD_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

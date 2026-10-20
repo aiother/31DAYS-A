@@ -1,5 +1,8 @@
 """Strict Godot validation; import first, then isolated suites in optional parallel workers."""
 import argparse
+from collections import Counter
+import json
+from typing import NamedTuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
@@ -8,89 +11,92 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 ERROR_MARKERS = ('SCRIPT ERROR:', 'ERROR:', 'Parse Error', 'ObjectDB instances were leaked')
-TESTS = [
-    ('remnant possibility five encounters threshold timing isolation rewards and cleanup', 'res://tests/test_remnant_possibility.gd', 'REMNANT_POSSIBILITY_TESTS checks='),
-    ('frozen keyboard mouse and controller bindings with real arrow input', 'res://tests/test_input_bindings.gd', 'INPUT_BINDINGS_TESTS checks='),
-    ('medkit inventory version-one compatibility bounds and slot persistence', 'res://tests/test_medkit_store.gd', 'MEDKIT_STORE_TESTS checks='),
-    ('medkit automatic supplies real Q Back input restrictions rollback and death reload', 'res://tests/test_medkit_session.gd', 'MEDKIT_SESSION_TESTS checks='),
-    ('NPC deadline migration and ordinary enemy day configuration', 'res://tests/test_world_day_rules.gd', 'WORLD_DAY_RULES_TESTS checks='),
-    ('NPC deadline real sessions cross-day save rollback legacy rescue and dynamic spawns', 'res://tests/test_world_day_session.gd', 'WORLD_DAY_SESSION_TESTS checks='),
-    ('permanent pearl growth additive reach real hits reflection legacy saves and slots', 'res://tests/test_pearl_growth.gd', 'PEARL_GROWTH_TESTS checks='),
-    ('four-Room environmental hazards real traversal permanent switches and save recovery', 'res://tests/test_environment_batch.gd', 'ENVIRONMENT_BATCH_TESTS checks='),
-    ('natural day clock migration rollover and final budget handoff', 'res://tests/test_day_clock.gd', 'DAY_CLOCK_TESTS checks='),
-    ('natural day session pause persistence story rollover and timeout retry', 'res://tests/test_day_clock_session.gd', 'DAY_CLOCK_SESSION_TESTS checks='),
-    ('all-Room flying monochrome detours and recovery', 'res://tests/test_air_pursuit.gd', 'AIR_PURSUIT_TESTS checks='),
-    ('all-Room rounded platform contact perturbations', 'res://tests/test_pursuit_contacts.gd', 'PURSUIT_CONTACTS_TESTS checks='),
-    ('dynamic pursuit recovery and multi-platform video regression', 'res://tests/test_pursuit_recovery.gd', 'PURSUIT_RECOVERY_TESTS checks='),
-    ('all-Room pursuit survey A', 'res://tests/test_pursuit_survey_a.gd', 'PURSUIT_SURVEY_A_TESTS checks='),
-    ('all-Room pursuit survey B', 'res://tests/test_pursuit_survey_b.gd', 'PURSUIT_SURVEY_B_TESTS checks='),
-    ('all-Room pursuit survey C', 'res://tests/test_pursuit_survey_c.gd', 'PURSUIT_SURVEY_C_TESTS checks='),
-    ('all-Room pursuit survey D', 'res://tests/test_pursuit_survey_d.gd', 'PURSUIT_SURVEY_D_TESTS checks='),
-    ('all-Room pursuit gate-state survey E', 'res://tests/test_pursuit_survey_e.gd', 'PURSUIT_SURVEY_E_TESTS checks='),
-    ('TileMap wall backsteps same-level obstacles and moving target regression', 'res://tests/test_platform_obstacles.gd', 'PLATFORM_OBSTACLES_TESTS checks='),
-    ('platform detours around wide overhangs and real ravine video regression', 'res://tests/test_platform_detour.gd', 'PLATFORM_DETOUR_TESTS checks='),
-    ('Boss ordinary monochrome lifecycle and summon separation', 'res://tests/test_boss_ordinary.gd', 'BOSS_ORDINARY_TESTS checks='),
-    ('player physics regression', 'res://tests/test_player.gd', 'PLAYER_TESTS checks='),
-    ('basic combat regression', 'res://tests/test_combat.gd', 'COMBAT_TESTS checks='),
-    ('combat tuning revision', 'res://tests/test_combat_revision.gd', 'COMBAT_REVISION_TESTS checks='),
-    ('colorless enemy regression', 'res://tests/test_colorless.gd', 'COLORLESS_TESTS checks='),
-    ('player life and death regression', 'res://tests/test_player_life.gd', 'PLAYER_LIFE_TESTS checks='),
-    ('enemy melee approach regression', 'res://tests/test_enemy_melee_approach.gd', 'ENEMY_MELEE_TESTS checks='),
-    ('possibility dodge and healing regression', 'res://tests/test_possibility.gd', 'POSSIBILITY_TESTS checks='),
-    ('attack jumping and airborne dodge regression', 'res://tests/test_air_actions.gd', 'AIR_ACTION_TESTS checks='),
-    ('versioned slot persistence regression', 'res://tests/test_slot_store.gd', 'SLOT_STORE_TESTS checks='),
-    ('checkpoint and resume integration', 'res://tests/test_checkpoints.gd', 'CHECKPOINT_TESTS checks='),
-    ('starting Room and persistent Nodes', 'res://tests/test_start_room.gd', 'START_ROOM_TESTS checks='),
-    ('adjacent Rooms and first encounter', 'res://tests/test_two_rooms.gd', 'TWO_ROOM_TESTS checks='),
-    ('vertical tower Room and checkpoint return', 'res://tests/test_tower_room.gd', 'TOWER_ROOM_TESTS checks='),
-    ('exploration Room and persistent pearl placeholder', 'res://tests/test_exploration_room.gd', 'EXPLORATION_ROOM_TESTS checks='),
-    ('connection Room and permanent mechanism', 'res://tests/test_connection_room.gd', 'CONNECTION_ROOM_TESTS checks='),
-    ('overlook Boss battle and permanent victory', 'res://tests/test_overlook_boss.gd', 'OVERLOOK_BOSS_TESTS checks='),
-    ('Boss pressure and summoned colorless enemies', 'res://tests/test_boss_pressure.gd', 'BOSS_PRESSURE_TESTS checks='),
-    ('golden wheat field dialogue and rescue departure', 'res://tests/test_field_room.gd', 'FIELD_ROOM_TESTS checks='),
-    ('town rescue and first permanent growth', 'res://tests/test_town_rescue.gd', 'TOWN_RESCUE_TESTS checks='),
-    ('ravine checkpoint and persistent second-day event', 'res://tests/test_ravine_day.gd', 'RAVINE_DAY_TESTS checks='),
-    ('ravine survivor rescue and deferred growth', 'res://tests/test_ravine_rescue.gd', 'RAVINE_RESCUE_TESTS checks='),
-    ('ravine depth clear rescue and pearl persistence', 'res://tests/test_ravine_depth.gd', 'RAVINE_DEPTH_TESTS checks='),
-    ('deserter camp exploration and persistent pearl', 'res://tests/test_camp_room.gd', 'CAMP_ROOM_TESTS checks='),
-    ('deserter camp waves and formal checkpoint', 'res://tests/test_camp_waves.gd', 'CAMP_WAVES_TESTS checks='),
-    ('parasite Boss lifesteal reflection and third-day victory', 'res://tests/test_parasite_boss.gd', 'PARASITE_BOSS_TESTS checks='),
-    ('parasite flying support and resource rewards', 'res://tests/test_parasite_support.gd', 'PARASITE_SUPPORT_TESTS checks='),
-    ('reverse-time battlefield outskirts and optional spike branch', 'res://tests/test_outskirts.gd', 'OUTSKIRTS_TESTS checks='),
-    ('trench traversal checkpoint and pearl persistence', 'res://tests/test_trench.gd', 'TRENCH_TESTS checks='),
-    ('monochrome enemy movement attacks dodge and reflection', 'res://tests/test_monochrome.gd', 'MONOCHROME_TESTS checks='),
-    ('monochrome trench integration rewards and persistence', 'res://tests/test_monochrome_room.gd', 'MONOCHROME_ROOM_TESTS checks='),
-    ('Tian warrior combos guard counter blink and shared attacks', 'res://tests/test_tian.gd', 'TIAN_TESTS checks='),
-    ('Tian first introduction freedom rewards and save retries', 'res://tests/test_tian_room.gd', 'TIAN_ROOM_TESTS checks='),
-    ('falling debris collision damage scheduler and rubble attacks', 'res://tests/test_rockfall.gd', 'ROCKFALL_TESTS checks='),
-    ('second trench negative-resource route and permanent passage', 'res://tests/test_trench_passage.gd', 'TRENCH_PASSAGE_TESTS checks='),
-    ('protected enemy actions and future stagger interrupt hook', 'res://tests/test_enemy_interrupts.gd', 'ENEMY_INTERRUPTS_TESTS checks='),
-    ('battlefield allied combat reinforcement and checkpoint reset', 'res://tests/test_battlefield.gd', 'BATTLEFIELD_TESTS checks='),
-    ('Ten rescue interception cinematic persistence and cooperation', 'res://tests/test_ten_rescue.gd', 'TEN_RESCUE_TESTS checks='),
-    ('real input Ten clear aftermath and distinct reinforcement arrival', 'res://tests/test_ten_clear_presentation.gd', 'TEN_CLEAR_PRESENTATION_TESTS checks='),
-    ('Ten aggression mobility physical dash and repeated attacks', 'res://tests/test_ten_mobility.gd', 'TEN_MOBILITY_TESTS checks='),
-    ('final clock migration bounds and validation', 'res://tests/test_final_clock.gd', 'FINAL_CLOCK_TESTS checks='),
-    ('final waves support permanent victory and ending', 'res://tests/test_final_battle.gd', 'FINAL_BATTLE_TESTS checks='),
-    ('final timer death load timeout and explicit retry', 'res://tests/test_final_retry.gd', 'FINAL_RETRY_TESTS checks='),
-    ('continuous new-game campaign through all Rooms and ending', 'res://tests/test_campaign.gd', 'CAMPAIGN_TESTS checks='),
-    ('enemy multi-platform pursuit overhang wall and cliff safety', 'res://tests/test_platform_pursuit.gd', 'PLATFORM_PURSUIT_TESTS checks='),
-    ('permanent dodge growth migration physical movement and slot isolation', 'res://tests/test_dodge_growth.gd', 'DODGE_GROWTH_TESTS checks='),
-    ('enemy downward platform pursuit safe ledge descent and replanning', 'res://tests/test_platform_descent.gd', 'PLATFORM_DESCENT_TESTS checks='),
-    ('outskirts enhanced dodge spike challenge persistence and retry', 'res://tests/test_outskirts_challenge.gd', 'OUTSKIRTS_CHALLENGE_TESTS checks='),
-    ('outskirts optional rescue deferred growth abandonment and slot isolation', 'res://tests/test_outskirts_rescue.gd', 'OUTSKIRTS_RESCUE_TESTS checks='),
-    ('permanent combat range growth physical hits reflection migration and slots', 'res://tests/test_combat_growth.gd', 'COMBAT_GROWTH_TESTS checks='),
-    ('ravine monochrome composition physical pursuit rewards and reset', 'res://tests/test_ravine_monochrome.gd', 'RAVINE_MONOCHROME_TESTS checks='),
-    ('graybox HUD rows and save error prompt stack without overlap across viewports', 'res://tests/test_hud_layout.gd', 'HUD_LAYOUT_TESTS checks='),
-    ('controller confirmation and keyboard compatibility through real pause menus', 'res://tests/test_menu_controller.gd', 'MENU_CONTROLLER_TESTS checks='),
-]
+# Each runnable test owns its registration. Exclusions are only for non-runnable
+# test_*.gd helpers and must state why they are excluded; currently there are none.
+EXCLUDED_TESTS = {}
+HEADER = '# verify-suite: '
 
-def execute(engine, project, name, extra, expected=None):
-    survey = any('test_pursuit_survey_' in str(arg) for arg in extra)
-    contacts = any('test_pursuit_contacts.gd' in str(arg) or 'test_air_pursuit.gd' in str(arg) for arg in extra)
-    accelerated = survey or contacts or any('test_pursuit_recovery.gd' in str(arg) or 'test_day_clock_session.gd' in str(arg) or 'test_environment_batch.gd' in str(arg) for arg in extra)
-    timeout = 600 if survey else (180 if contacts else 60)
-    if accelerated:
-        extra = ['--fixed-fps', '60', *extra]
+
+class Suite(NamedTuple):
+    name: str
+    path: str
+    marker: str
+    fixed_fps: int | None
+    timeout: int
+
+
+def discover_suites(project, excluded=None):
+    project = Path(project)
+    excluded = EXCLUDED_TESTS if excluded is None else excluded
+    files = {'res://' + file.relative_to(project).as_posix(): file
+             for file in sorted((project / 'tests').rglob('test_*.gd'))}
+    if not files:
+        raise ValueError('No test_*.gd files found in ' + str(project / 'tests'))
+    for uri, reason in excluded.items():
+        if uri not in files or not isinstance(reason, str) or not reason.strip():
+            raise ValueError('Exclusion requires an existing test file and a reason: ' + uri)
+    suites = []
+    seen = {field: set() for field in ('path', 'name', 'marker')}
+    for owner, file in files.items():
+        first = file.read_text(encoding='utf-8-sig').splitlines()[0:1]
+        registered = bool(first and first[0].startswith(HEADER))
+        if owner in excluded:
+            if registered:
+                raise ValueError('Excluded test is also registered: ' + owner)
+            continue
+        if not registered:
+            raise ValueError('Missing suite metadata: ' + owner)
+        try:
+            data = json.loads(first[0][len(HEADER):])
+        except ValueError as error:
+            raise ValueError('Invalid suite JSON: ' + owner) from error
+        if not isinstance(data, dict) or set(data) != set(Suite._fields):
+            raise ValueError('Suite must declare exactly ' + ', '.join(Suite._fields) + ': ' + owner)
+        for field in ('path', 'name', 'marker'):
+            value = data[field]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError('Invalid ' + field + ': ' + owner)
+            if value in seen[field]:
+                raise ValueError('Duplicate suite ' + field + ': ' + value)
+            seen[field].add(value)
+        uri = data['path']
+        if not re.fullmatch(r'res://tests/(?:[A-Za-z0-9_-]+/)*test_[A-Za-z0-9_-]+\.gd', uri):
+            raise ValueError('Invalid suite resource path: ' + uri)
+        if not (project / uri.removeprefix('res://')).is_file():
+            raise ValueError('Registered file does not exist: ' + uri)
+        if uri != owner:
+            raise ValueError('Suite path must point to its own file: ' + owner)
+        if data['name'] in ('editor import', 'main scene180 frames'):
+            raise ValueError('Suite name is reserved: ' + data['name'])
+        if not re.fullmatch(r'[A-Z][A-Z0-9_]* checks=', data['marker']):
+            raise ValueError('Invalid result marker: ' + owner)
+        if type(data['timeout']) is not int or data['timeout'] <= 0:
+            raise ValueError('timeout must be a positive integer: ' + owner)
+        if data['fixed_fps'] is not None and (type(data['fixed_fps']) is not int or data['fixed_fps'] <= 0):
+            raise ValueError('fixed_fps must be null or a positive integer: ' + owner)
+        suites.append(Suite(**data))
+    return suites
+
+
+def validate_executed(suites, executed):
+    expected = Counter(suite.path for suite in suites)
+    actual = Counter(executed)
+    if actual != expected:
+        raise ValueError(f'Incorrect execution set: missing={list((expected-actual).elements())}, extra={list((actual-expected).elements())}')
+
+
+SUITES = discover_suites(ROOT / 'game')
+# Compatibility for report accounting and existing consumers; never a second list.
+TESTS = [(suite.name, suite.path, suite.marker) for suite in SUITES]
+
+
+def execute_suite(engine, project, suite):
+    return execute(engine, project, suite.name, ['--script', suite.path], suite.marker,
+                   fixed_fps=suite.fixed_fps, timeout=suite.timeout)
+
+def execute(engine, project, name, extra, expected=None, *, fixed_fps=None, timeout=60):
+    if fixed_fps is not None:
+        extra = ['--fixed-fps', str(fixed_fps), *extra]
     try:
         result = subprocess.run([engine, '--headless', '--path', project, *extra],
                                 capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
@@ -118,7 +124,13 @@ def main():
     version = subprocess.run([engine, '--version'], capture_output=True, text=True, check=True).stdout.strip()
     if not version.startswith('4.7.2.stable.'):
         sys.exit(f'Expected4.7.2 stable, got {version}')
+    try:
+        suites = discover_suites(args.project)
+    except ValueError as error:
+        print('Invalid suite registry: ' + str(error), file=sys.stderr)
+        return 1
     results = {}
+    executed = []
     def record(index, result):
         results[index] = result
         logs = [f'Engine: {version}\nWorkers: {args.jobs}']
@@ -140,9 +152,18 @@ def main():
         record(index,result)
         if not result[3]: return 1
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(execute,engine,args.project,name,['--script',path],expected): index+2
-                   for index,(name,path,expected) in enumerate(TESTS)}
-        for future in as_completed(futures): record(futures[future],future.result())
+        futures = {pool.submit(execute_suite, engine, args.project, suite): (index+2, suite.path)
+                   for index, suite in enumerate(suites)}
+        for future in as_completed(futures):
+            index, uri = futures[future]
+            result = future.result()
+            executed.append(uri)
+            record(index, result)
+    try:
+        validate_executed(suites, executed)
+    except ValueError as error:
+        print(str(error), file=sys.stderr)
+        return 1
     if not all(result[3] for result in results.values()):
         print(f'Validation failed; report: {report}')
         return 1

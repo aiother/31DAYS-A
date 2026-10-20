@@ -1,3 +1,4 @@
+# verify-suite: {"name": "deserter camp exploration and persistent pearl", "path": "res://tests/test_camp_room.gd", "marker": "CAMP_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

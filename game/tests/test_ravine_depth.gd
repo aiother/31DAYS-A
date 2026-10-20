@@ -1,3 +1,4 @@
+# verify-suite: {"name": "ravine depth clear rescue and pearl persistence", "path": "res://tests/test_ravine_depth.gd", "marker": "RAVINE_DEPTH_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

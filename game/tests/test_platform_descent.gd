@@ -1,3 +1,4 @@
+# verify-suite: {"name": "enemy downward platform pursuit safe ledge descent and replanning", "path": "res://tests/test_platform_descent.gd", "marker": "PLATFORM_DESCENT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends "res://tests/test_platform_pursuit.gd"
 
 func pursuit() -> EnemyPlatformPursuit:

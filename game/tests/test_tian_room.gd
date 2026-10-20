@@ -1,3 +1,4 @@
+# verify-suite: {"name": "Tian first introduction freedom rewards and save retries", "path": "res://tests/test_tian_room.gd", "marker": "TIAN_ROOM_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

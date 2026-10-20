@@ -1,3 +1,4 @@
+# verify-suite: {"name": "remnant possibility five encounters threshold timing isolation rewards and cleanup", "path": "res://tests/test_remnant_possibility.gd", "marker": "REMNANT_POSSIBILITY_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

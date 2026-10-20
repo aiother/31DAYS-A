@@ -1,3 +1,4 @@
+# verify-suite: {"name": "dynamic pursuit recovery and multi-platform video regression", "path": "res://tests/test_pursuit_recovery.gd", "marker": "PURSUIT_RECOVERY_TESTS checks=", "fixed_fps": 60, "timeout": 60}
 extends "res://tests/test_platform_pursuit.gd"
 
 func navigation() -> EnemyPlatformPursuit:

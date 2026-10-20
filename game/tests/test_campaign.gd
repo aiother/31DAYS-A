@@ -1,3 +1,4 @@
+# verify-suite: {"name": "continuous new-game campaign through all Rooms and ending", "path": "res://tests/test_campaign.gd", "marker": "CAMPAIGN_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 # Continuous production-session integration. Travel requests and positioning are
 # driven by the test; terrain physics and combat AI have separate regressions.

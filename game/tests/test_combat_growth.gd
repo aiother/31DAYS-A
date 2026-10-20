@@ -1,3 +1,4 @@
+# verify-suite: {"name": "permanent combat range growth physical hits reflection migration and slots", "path": "res://tests/test_combat_growth.gd", "marker": "COMBAT_GROWTH_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

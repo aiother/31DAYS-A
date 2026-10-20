@@ -1,3 +1,4 @@
+# verify-suite: {"name": "ravine monochrome composition physical pursuit rewards and reset", "path": "res://tests/test_ravine_monochrome.gd", "marker": "RAVINE_MONOCHROME_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

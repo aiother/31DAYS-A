@@ -1,3 +1,4 @@
+# verify-suite: {"name": "monochrome enemy movement attacks dodge and reflection", "path": "res://tests/test_monochrome.gd", "marker": "MONOCHROME_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

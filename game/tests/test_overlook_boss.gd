@@ -1,3 +1,4 @@
+# verify-suite: {"name": "overlook Boss battle and permanent victory", "path": "res://tests/test_overlook_boss.gd", "marker": "OVERLOOK_BOSS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

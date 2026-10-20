@@ -1,3 +1,4 @@
+# verify-suite: {"name": "all-Room rounded platform contact perturbations", "path": "res://tests/test_pursuit_contacts.gd", "marker": "PURSUIT_CONTACTS_TESTS checks=", "fixed_fps": 60, "timeout": 180}
 extends "res://tests/pursuit_survey.gd"
 var contact_records: Array[Dictionary] = []
 

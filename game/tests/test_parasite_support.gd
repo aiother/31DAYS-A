@@ -1,3 +1,4 @@
+# verify-suite: {"name": "parasite flying support and resource rewards", "path": "res://tests/test_parasite_support.gd", "marker": "PARASITE_SUPPORT_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

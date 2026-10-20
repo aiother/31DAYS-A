@@ -1,3 +1,4 @@
+# verify-suite: {"name": "player life and death regression", "path": "res://tests/test_player_life.gd", "marker": "PLAYER_LIFE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var _checks: int = 0
 var _failures: int = 0

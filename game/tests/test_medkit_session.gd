@@ -1,3 +1,4 @@
+# verify-suite: {"name": "medkit automatic supplies real Q Back input restrictions rollback and death reload", "path": "res://tests/test_medkit_session.gd", "marker": "MEDKIT_SESSION_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

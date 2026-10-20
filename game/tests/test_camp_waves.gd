@@ -1,3 +1,4 @@
+# verify-suite: {"name": "deserter camp waves and formal checkpoint", "path": "res://tests/test_camp_waves.gd", "marker": "CAMP_WAVES_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

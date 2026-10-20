@@ -1,3 +1,4 @@
+# verify-suite: {"name": "final waves support permanent victory and ending", "path": "res://tests/test_final_battle.gd", "marker": "FINAL_BATTLE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

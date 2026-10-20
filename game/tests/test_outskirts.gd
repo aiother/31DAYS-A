@@ -1,3 +1,4 @@
+# verify-suite: {"name": "reverse-time battlefield outskirts and optional spike branch", "path": "res://tests/test_outskirts.gd", "marker": "OUTSKIRTS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

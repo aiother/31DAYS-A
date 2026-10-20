@@ -141,8 +141,8 @@ class GameProjectTests(unittest.TestCase):
         self.assertIn('Node.PROCESS_MODE_ALWAYS', ui)
 
     def test_enemy_melee_approach_regression_is_in_verification(self):
-        verifier = (GAME.parent / 'scripts/verify_game.py').read_text(encoding='utf-8')
-        self.assertIn('res://tests/test_enemy_melee_approach.gd', verifier)
+        from scripts import verify_game as verifier
+        self.assertIn('res://tests/test_enemy_melee_approach.gd', {path for _, path, _ in verifier.TESTS})
         doc = (GAME / 'docs/colorless_implementation.md').read_text(encoding='utf-8')
         self.assertIn('400px', doc)
         self.assertIn('AI修复', doc)

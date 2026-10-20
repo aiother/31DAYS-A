@@ -1,3 +1,4 @@
+# verify-suite: {"name": "versioned slot persistence regression", "path": "res://tests/test_slot_store.gd", "marker": "SLOT_STORE_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

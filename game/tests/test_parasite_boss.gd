@@ -1,3 +1,4 @@
+# verify-suite: {"name": "parasite Boss lifesteal reflection and third-day victory", "path": "res://tests/test_parasite_boss.gd", "marker": "PARASITE_BOSS_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

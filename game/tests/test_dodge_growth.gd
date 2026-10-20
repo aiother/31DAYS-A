@@ -1,3 +1,4 @@
+# verify-suite: {"name": "permanent dodge growth migration physical movement and slot isolation", "path": "res://tests/test_dodge_growth.gd", "marker": "DODGE_GROWTH_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0

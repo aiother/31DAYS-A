@@ -1,3 +1,4 @@
+# verify-suite: {"name": "NPC deadline real sessions cross-day save rollback legacy rescue and dynamic spawns", "path": "res://tests/test_world_day_session.gd", "marker": "WORLD_DAY_SESSION_TESTS checks=", "fixed_fps": null, "timeout": 60}
 extends SceneTree
 var checks: int = 0
 var failures: int = 0
