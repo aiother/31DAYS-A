@@ -60,6 +60,29 @@ class CollaborationTests(unittest.TestCase):
                 self.assertTrue(all(row), row)
                 self.assertRegex(row[5], r"^(待立项|进行中|观察中|已立项 \S+|已完成|已完成（\S+）|已取消)")
 
+    def test_roadmap_covers_every_open_backlog_item(self):
+        self.assertIn("ROADMAP.md", links_in(COLLAB / "README.md"))
+        self.assertIn("ROADMAP.md", links_in(COLLAB / "BOARD.md"))
+        roadmap = (COLLAB / "ROADMAP.md").read_text(encoding="utf-8")
+        self.assertTrue(roadmap.startswith("# "))
+        headings = re.findall(r"^## (\d+)\.", roadmap, re.M)
+        self.assertEqual(list(map(int, headings)), list(range(1, len(headings) + 1)))
+        backlog = {}
+        for line in (COLLAB / "BACKLOG.md").read_text(encoding="utf-8").splitlines():
+            if re.match(r"^\| BL-\d{3} \|", line):
+                cells = [cell.strip() for cell in line.split("|")[1:-1]]
+                backlog[cells[0]] = cells
+        referenced = set(re.findall(r"BL-\d{3}", roadmap))
+        self.assertEqual(referenced - set(backlog), set())
+        for item_id, cells in backlog.items():
+            open_item = cells[5].startswith(("待立项", "已立项", "进行中"))
+            if open_item and cells[1] in ("P1", "P2") and item_id != "BL-021":
+                with self.subTest(item=item_id):
+                    self.assertIn(item_id, referenced)
+        self.assertTrue(backlog["BL-021"][5].startswith("已立项 DOC-007"))
+        for milestone in ("M1", "M2", "M3", "M4", "M5"):
+            self.assertIn(f"| {milestone} |", roadmap)
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",

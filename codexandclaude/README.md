@@ -12,6 +12,7 @@
 
 - [任务板](BOARD.md)：所有任务的汇总；权威状态以各任务卡首部为准。
 - [待办清单](BACKLOG.md)：尚未立项的事项，按优先级排列，立项时登记任务 ID。
+- [V0.1 开发路线](ROADMAP.md)：现状快照、里程碑与第一批建议，回答还剩什么、先做什么。
 - `tasks/<ID>/`：进行中与近期完成的任务，每个目录含 `task.md`，M/L 级另有 `delivery.md`、`review.md` 及集成记录。
 - [archive/](archive/HUD-001/README.md)：已归档的任务，目前为 HUD-001 人工协作试点。
 
