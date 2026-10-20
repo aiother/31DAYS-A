@@ -107,11 +107,17 @@ class CollaborationTests(unittest.TestCase):
         roadmap = (COLLAB / "ROADMAP.md").read_text(encoding="utf-8")
         life_ui = (ROOT / "game/ui/menus/life_ui.gd").read_text(encoding="utf-8")
         visual = (ROOT / "game/player/placeholder_visual.gd").read_text(encoding="utf-8")
+        snapshot = roadmap.split("\n## 2.", 1)[1].split("\n## 3.", 1)[0]
+        rows = {}
+        for line in snapshot.splitlines():
+            if line.startswith("| ") and not line.startswith(("| 领域", "| ---")):
+                cells = [cell.strip() for cell in line.split("|")[1:-1]]
+                rows[cells[0]] = cells
         if "window_set_size" in life_ui:
-            self.assertIn("窗口尺寸", roadmap)
+            self.assertIn("窗口尺寸", rows["UI"][1])
         if "_hit_sound" in visual:
-            self.assertIn("命中音", roadmap)
-            self.assertIn("game/player/placeholder_visual.gd`（命中音", roadmap)
+            self.assertIn("命中音", rows["音频"][1])
+            self.assertIn("game/player/placeholder_visual.gd`（命中音", rows["音频"][2])
 
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
