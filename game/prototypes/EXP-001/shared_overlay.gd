@@ -98,10 +98,10 @@ func _draw_final() -> void:
 	var label: String = "最终战倒计时"
 	var color: Color = Color(1.0, 0.92, 0.85)
 	if state.accelerate_left > 0.0:
-		# A-016 (一)①: purely visual spin-down to 15:00; the real third-day
-		# remainder is not consumed.
+		# A-016 (一)①: purely visual spin-down onto the live budget (15:00 and
+		# already counting); real time keeps running underneath.
 		var progress: float = 1.0 - state.accelerate_left / HudState.ACCELERATE_SECONDS
-		value = lerpf(state.final_from, HudState.FINAL_SECONDS, ease(progress, 2.2))
+		value = lerpf(state.final_from, state.final_remaining, ease(progress, 2.2))
 		label = "时间加速……"
 		color = Color(0.8, 0.9, 1.0).lerp(Color.WHITE, progress)
 		origin.x += sin(state.clock * 60.0) * 3.0 * (1.0 - progress)

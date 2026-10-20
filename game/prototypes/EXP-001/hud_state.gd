@@ -20,6 +20,8 @@ const FINAL_SECONDS: float = 900.0
 const WARNING_SECONDS: float = 180.0
 const ACCELERATE_SECONDS: float = 2.5
 const DENY_SECONDS: float = 0.9
+const COMBO_RESET: float = 1.3
+const MAX_CHAIN: int = 3
 
 var health: int = MAX_HEALTH
 var balance: int = 3
@@ -41,6 +43,8 @@ var accelerate_left: float = 0.0
 var clock: float = 0.0
 ## Capture only: hold every animation still.
 var frozen: bool = false
+var chain: int = 0
+var since_dodge: float = 100.0
 
 func maximum() -> int:
 	return BASE_MAX + growth * GROWTH_STEP
@@ -77,14 +81,18 @@ func tick(delta: float) -> void:
 	clock += delta
 	deny_left = maxf(0.0, deny_left - delta)
 	gain_pulse = maxf(0.0, gain_pulse - delta)
-	if accelerate_left > 0.0:
-		accelerate_left = maxf(0.0, accelerate_left - delta)
-		return
+	# One pause rule for everything: real clocks, the dodge chain window and
+	# the A-016 spin-down presentation all hold while paused.
 	if paused:
 		return
+	since_dodge += delta
+	# The spin-down is presentation only; it never decides whether real time
+	# is spent (A-016 (一)①, T5.4 §6.4).
+	accelerate_left = maxf(0.0, accelerate_left - delta)
 	var step: float = delta * time_scale
 	if final_active:
 		final_remaining = maxf(0.0, final_remaining - step)
+		day_remaining = maxf(0.0, day_remaining - step)
 		return
 	day_remaining -= step
 	if day_remaining <= 0.0:
@@ -110,6 +118,8 @@ func reset() -> void:
 	final_active = false
 	accelerate_left = 0.0
 	deny_left = 0.0
+	chain = 0
+	since_dodge = 100.0
 
 func gain(amount: int) -> void:
 	balance = mini(maximum(), balance + amount)
@@ -126,15 +136,27 @@ func try_heal() -> bool:
 	health = mini(MAX_HEALTH, health + HEAL_AMOUNT)
 	return true
 
-## A dodge still happens when short of possibility (it overdraws), but A-018
-## asks the container to flash because it was not fully paid for.
+## Chained dodges cost 1, 2, 3 within COMBO_RESET seconds, at most three in a
+## chain (T3 §4, PlayerPossibility.try_dodge). A dodge still happens when short
+## of possibility (it overdraws), but A-018 asks the container to flash because
+## it was not fully paid for. The chain count itself is never displayed.
+func dodge_cost() -> int:
+	return 1 if since_dodge >= COMBO_RESET else chain + 1
+
 func try_dodge() -> bool:
-	if balance - 1 < FLOOR:
+	if since_dodge >= COMBO_RESET:
+		chain = 0
+	var cost: int = chain + 1
+	if chain >= MAX_CHAIN:
+		return false
+	if balance - cost < FLOOR:
 		_deny("闪避")
 		return false
-	if balance < 1:
+	if balance < cost:
 		_deny("闪避")
-	balance -= 1
+	balance -= cost
+	chain += 1
+	since_dodge = 0.0
 	return true
 
 func cycle_growth() -> void:

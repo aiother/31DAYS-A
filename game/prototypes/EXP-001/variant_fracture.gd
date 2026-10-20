@@ -22,6 +22,19 @@ func _draw() -> void:
 	if state.health == 1:
 		_draw_cracks()
 
+## Empty glow is grey, but the A-018 red flash must still show on top of it.
+func blob_color(flash: float, glow: float) -> Color:
+	var base: Color = POSSIBILITY.lerp(Color.WHITE, glow * 0.5)
+	if state.balance < 0:
+		base = OVERDRAFT
+	elif state.balance == 0:
+		base = Color(0.3, 0.35, 0.42)
+	return base.lerp(DENY, flash * 0.7)
+
+## G-02: the current reach is shown even with no pearls.
+func reach_text() -> String:
+	return "范围 %d%%" % state.reach_percent()
+
 func _draw_blob() -> void:
 	var flash: float = deny_flash()
 	var glow: float = pulse()
@@ -35,10 +48,7 @@ func _draw_blob() -> void:
 			# Overdraft turns the glow into an inward spiked shard.
 			wobble = (8.0 if i % 2 == 0 else -10.0) + sin(state.clock * 6.0 + i) * 2.0
 		points.append(BLOB + Vector2.from_angle(angle) * (radius + wobble))
-	var color: Color = (OVERDRAFT if overdrawn else POSSIBILITY.lerp(Color.WHITE, glow * 0.5)).lerp(DENY, flash * 0.7)
-	if state.balance == 0:
-		color = Color(0.3, 0.35, 0.42)
-	draw_colored_polygon(points, Color(color, 0.85))
+	draw_colored_polygon(points, Color(blob_color(flash, glow), 0.85))
 	# Growth shows as orbit rings the glow can expand into.
 	for g: int in range(state.growth):
 		draw_arc(BLOB, 22.0 + 6.0 * (HudState.BASE_MAX + (g + 1) * HudState.GROWTH_STEP), 0, TAU, 64, Color(GROWTH, 0.5), 2.0, true)
@@ -55,8 +65,7 @@ func _draw_pearls() -> void:
 	for i: int in range(state.pearls):
 		var angle: float = state.clock * 0.8 + TAU * i / HudState.PEARL_MAX
 		draw_circle(BLOB + Vector2.from_angle(angle) * orbit, 6, Color(0.95, 0.95, 1.0))
-	if state.pearls > 0:
-		text(BLOB + Vector2(150, 20), "范围 %d%%" % state.reach_percent(), 20, MUTED)
+	text(BLOB + Vector2(150, 20), reach_text(), 20, MUTED)
 
 func _draw_horizon() -> void:
 	var y: float = size.y - 36

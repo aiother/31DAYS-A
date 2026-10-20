@@ -33,6 +33,9 @@ func run() -> void:
 		check(not String(preview.get("variant").call("title")).is_empty(), "variant %d has a title" % (index + 1))
 		await walk_states(state, index)
 	await combo_checks(state)
+	clock_rules()
+	dodge_rules()
+	fracture_feedback()
 	print("EXP001_SMOKE checks=%d failures=%d" % [checks, failures])
 	quit(1 if failures > 0 else 0)
 
@@ -89,8 +92,8 @@ func walk_states(state: HudState, index: int) -> void:
 		preview.call("_unhandled_input", tab)
 	preview.call("press", KEY_O)
 	await frames(2)
-	check(state.final_active and state.accelerate_left > 0.0 and state.final_remaining == HudState.FINAL_SECONDS, tag + "over 15 minutes spins down visually to 15:00")
-	check(is_equal_approx(state.day_remaining, 25.0 * 60.0), tag + "accelerate does not consume third-day time (A-016)")
+	check(state.final_active and state.accelerate_left > 0.0 and state.final_remaining < HudState.FINAL_SECONDS and state.final_remaining > HudState.FINAL_SECONDS - 1.0, tag + "over 15 minutes: budget is 15:00 and already counting during the spin-down")
+	check(state.day_remaining < 25.0 * 60.0 and state.day_remaining > 25.0 * 60.0 - 1.0, tag + "third-day time is not cut to 15:00 and keeps running (A-016)")
 	preview.call("press", KEY_P)
 	await frames(2)
 	check(state.accelerate_left == 0.0 and state.final_remaining <= 552.0 and state.final_remaining > 550.0, tag + "under 15 minutes shows the real budget")
@@ -139,3 +142,58 @@ func combo_checks(state: HudState) -> void:
 	await frames(2)
 	check(not pause.visible and not state.paused, "Esc closes the menu and resumes time")
 	preview.call("press", KEY_R)
+
+## Deterministic A-016 timing: the spin-down never decides whether real time runs.
+func clock_rules() -> void:
+	var s: HudState = HudState.new()
+	s.start_final(1500.0)
+	check(s.final_remaining == HudState.FINAL_SECONDS and s.accelerate_left == HudState.ACCELERATE_SECONDS, "clock: over 15 minutes starts at 15:00 with the spin-down")
+	s.tick(1.0)
+	check(is_equal_approx(s.final_remaining, 899.0) and is_equal_approx(s.day_remaining, 1499.0) and is_equal_approx(s.accelerate_left, 1.5), "clock: during the spin-down both real clocks run")
+	s.paused = true
+	s.tick(1.0)
+	check(is_equal_approx(s.final_remaining, 899.0) and is_equal_approx(s.day_remaining, 1499.0) and is_equal_approx(s.accelerate_left, 1.5), "clock: pause holds real clocks and the spin-down alike")
+	s.paused = false
+	s.tick(1.5)
+	check(is_equal_approx(s.final_remaining, 897.5) and is_equal_approx(s.day_remaining, 1497.5) and s.accelerate_left == 0.0, "clock: spin-down ends without a jump in real time")
+	s.tick(1.0)
+	check(is_equal_approx(s.final_remaining, 896.5) and is_equal_approx(s.day_remaining, 1496.5), "clock: after the spin-down both keep running")
+	var short: HudState = HudState.new()
+	short.start_final(552.0)
+	check(short.accelerate_left == 0.0 and short.final_remaining == 552.0, "clock: under 15 minutes shows the real budget at once")
+	short.tick(2.0)
+	check(is_equal_approx(short.final_remaining, 550.0) and is_equal_approx(short.day_remaining, 550.0), "clock: under 15 minutes budget and third day run together")
+
+## Deterministic chained dodge costs 1/2/3 and the A-018 shortfall boundary.
+func dodge_rules() -> void:
+	var s: HudState = HudState.new()
+	s.balance = 2
+	check(s.try_dodge() and s.balance == 1 and s.deny_left == 0.0, "dodge: first costs 1, balance 2 is enough")
+	check(s.dodge_cost() == 2, "dodge: next chained dodge costs 2")
+	check(s.try_dodge() and s.balance == -1 and s.deny_kind == "闪避" and s.deny_left > 0.0, "dodge: cost 2 with balance 1 overdraws and flashes though balance was positive")
+	s.deny_left = 0.0
+	s.balance = 3
+	check(s.try_dodge() and s.balance == 0 and s.deny_left == 0.0, "dodge: third costs 3, balance equal to cost does not flash")
+	check(not s.try_dodge() and s.balance == 0, "dodge: a fourth dodge in the chain is refused")
+	s.tick(HudState.COMBO_RESET)
+	check(s.dodge_cost() == 1, "dodge: chain resets after the combo window")
+	s.balance = 1
+	check(s.try_dodge() and s.balance == 0 and s.deny_left == 0.0, "dodge: after reset the cost is 1 again")
+	s.balance = HudState.FLOOR + 1
+	s.tick(HudState.COMBO_RESET)
+	check(s.try_dodge() and s.balance == HudState.FLOOR, "dodge: may overdraw down to the floor")
+	check(not s.try_dodge() and s.balance == HudState.FLOOR and s.deny_left > 0.0, "dodge: below the floor is refused and flashes")
+
+## Old variant three keeps A-018 and G-02 at the zero boundaries.
+func fracture_feedback() -> void:
+	preview.call("press", KEY_3)
+	preview.call("press", KEY_R)
+	var state: HudState = preview.get("state")
+	var fracture: Control = preview.get("variant")
+	state.balance = 0
+	check(fracture.call("blob_color", 1.0, 0.0).r > 0.7, "variant 3: empty glow still flashes red at balance 0")
+	check(fracture.call("blob_color", 0.0, 0.0).r < 0.5, "variant 3: empty glow is grey without a flash")
+	check(fracture.call("reach_text") == "范围 100%", "variant 3: reach shows with zero pearls")
+	preview.call("press", KEY_X)
+	preview.call("press", KEY_Z)
+	check(fracture.call("reach_text") == "范围 100%", "variant 3: reach stays after 0 -> 1 -> 0 pearls")
