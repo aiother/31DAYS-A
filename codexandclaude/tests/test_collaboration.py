@@ -103,6 +103,17 @@ class CollaborationTests(unittest.TestCase):
                     self.assertIn(need, backlog[item_id][2] + backlog[item_id][3])
                     self.assertIn(item_id, units[cells[2]])
 
+    def test_planning_documents_share_one_refresh_baseline(self):
+        # A planning refresh updates the roadmap, board and backlog together.
+        baselines = {}
+        for name in ("ROADMAP.md", "BOARD.md", "BACKLOG.md"):
+            header = re.search(r"^更新：[^\n]*", (COLLAB / name).read_text(encoding="utf-8"), re.M)
+            self.assertIsNotNone(header, name)
+            found = re.findall(r"master@([0-9a-f]{7,40})", header.group(0))
+            self.assertTrue(found, name)
+            baselines[name] = found[-1]
+        self.assertEqual(len(set(baselines.values())), 1, baselines)
+
     def test_roadmap_snapshot_mentions_existing_graybox_settings_and_audio(self):
         roadmap = (COLLAB / "ROADMAP.md").read_text(encoding="utf-8")
         life_ui = (ROOT / "game/ui/menus/life_ui.gd").read_text(encoding="utf-8")
