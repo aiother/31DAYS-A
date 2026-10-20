@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-20（第一批任务卡起草时，汇总基线 master@e568f84）
+更新：2026-10-20（本次仅刷新EXP-001收尾，依据master@7483c8e；其他任务行沿用前次汇总）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@
 | DOC-006 | M | 记录 T7 冲突裁决并写入主文档 | Claude | Codex | 已完成 | [tasks/DOC-006](tasks/DOC-006/task.md) |
 | SYS-003 | M | 最终战同帧胜利优先 | Codex | Claude | 已完成 | [tasks/SYS-003](tasks/SYS-003/task.md) |
 | DOC-007 | M | V0.1 剩余开发清单与路线 | Claude | Codex | 已完成 | [tasks/DOC-007](tasks/DOC-007/task.md) |
-| EXP-001 | M | HUD 与时间显示探索原型 | Claude | Codex | 待审查（用户已选定方案四） | [tasks/EXP-001](tasks/EXP-001/task.md) |
+| EXP-001 | M | HUD 与时间显示探索原型 | Claude | Codex | 已完成（用户已选定方案四） | [tasks/EXP-001](tasks/EXP-001/task.md) |
 | ENV-004 | M | 引擎测试分散登记 | Codex | Claude | 草案（待批准） | [tasks/ENV-004](tasks/ENV-004/task.md) |
 | SYS-004 | M | 已通关存档不能再进入 | Codex | Claude | 草案（待批准，依赖ENV-004） | [tasks/SYS-004](tasks/SYS-004/task.md) |
 

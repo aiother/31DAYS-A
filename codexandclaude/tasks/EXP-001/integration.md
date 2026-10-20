@@ -24,3 +24,18 @@ EXP-001 的交付审查在 Codex 工作区固定 `bb4aedf21aac056906ef4a350bd1c7
 - 同一master补跑 `Godot --headless --path game --script res://prototypes/EXP-001/tests/smoke_test.gd`：**EXP001_SMOKE checks=105 failures=0**，退出0，无ERROR/WARNING。工具Godot4.7.2.stable.official.ed1daf0bf、Python3.12.14/openpyxl3.1.5、Git2.56.0.windows.2、Nodev24.19.0。
 - 本次按用户授权入库隔离原型，正式游戏、输入、存档、验证流水线均未修改；按§3.3不跑全套G2。选中方案的正式HUD/时间/暂停菜单实现及T7同步仍由BL-042/043/046后续任务承担。
 - 收尾只更新本记录与任务卡首部为已完成；BOARD/BACKLOG由规划维护者后续串行刷新。提交前再跑G3及差异检查。ENV-004仍在独立实现分支待Claude审查，本次未合入，SYS-004未开工。
+
+
+## 按用户追加要求补跑完整G2+G3（2026-10-20）
+
+用户明确要求：EXP-001新增Godot原型脚本与shader会进入编辑器导入，本次合并补跑全量，并刷新任务板EXP-001状态。前节保留的是首次收尾的实际执行历史；本节补齐最新验收要求。
+
+- 本次开始时master为 `7483c8e7c349c8d9e367f3b73a1ca81498462960`，已包含固定审查SHA `baf09fef8522d2c307c06c7696a9d8edc73cef06`，用祖先检查确认，无需重复合并。与审查SHA相比仅有此前两份收尾记录改动，没有未审查代码。无重叠未提交修改；普通沙箱可见的`.claude/`目录未触碰。
+- 在该master、dirty=false、status=[]执行：`python codexandclaude/tools/run_checks.py full --jobs 4`。
+- G2 **75/75**：编辑器导入、主场景180帧及全部原73套件通过。原型未登记为正式引擎套件，但已随本次编辑器导入纳入检查。无退出错误、解析错误、泄漏或超时。
+- G3：tests **92/92**，codexandclaude/tests **45/45**，两组complete=true、passed=true；汇总passed=true，所有子命令退出0。
+- 工具：Godot4.7.2.stable.official.ed1daf0bf、Python3.12.14/openpyxl3.1.5、Git2.56.0.windows.2、Nodev24.19.0。
+- 原始证据：`codexandclaude/runs/20261020T123853.737701Z/summary.json`、同目录engine.txt与逐命令日志；引擎报告SHA256：`0d11c3b983f3eef1076cc38392d1099793a0fbb4166fe1ee9d37afe0f0ed7756`。原始日志忽略，不入库。
+- 全量执行后检查两份SVG.import无内容差异，清理检查后没有正式游戏文件或已审查原型的改动。
+- 本次仅追加集成记录、任务卡首部注明全量通过、BOARD中EXP-001改为已完成并注明本项汇总基线；用户已选定方案四。BL-042、BL-043及BACKLOG不改，选中方案的正式任务待规划立项。提交前再跑G3和差异检查。
+- ENV-004仍由Claude审查，不在本次合并范围，SYS-004未开工。未来获授权合并ENV-004时，test_collaboration.py若有冲突须保留双方测试，本次不提前合并该分支。
