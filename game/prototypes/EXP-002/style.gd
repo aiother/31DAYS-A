@@ -26,6 +26,7 @@ const SUN: Color = Color("f4b860")
 ## Per-day dusk ranges (start of day, end of day); final battle is 1.0.
 const DAY_RANGE: Array[Vector2] = [Vector2.ZERO, Vector2(0.0, 0.25), Vector2(0.35, 0.6), Vector2(0.7, 0.95)]
 const FIXED_DUSK: float = 0.5
+const FINAL_GLOW_SCALE: float = 0.7
 
 var sample: int = 0
 var progressive: bool = true
@@ -55,7 +56,9 @@ func glass(state: RefCounted) -> float:
 	return 0.0 if sample == 0 else 0.35 + 0.5 * dusk(state)
 
 func glow_strength(state: RefCounted) -> float:
-	return (0.35 + 0.65 * dusk(state)) * (0.7 if sample == 0 else 1.0)
+	var strength: float = (0.35 + 0.65 * dusk(state)) * (0.7 if sample == 0 else 1.0)
+	# User G4 (2026-10-20): the final battle's dusk glow about 30% softer.
+	return strength * (FINAL_GLOW_SCALE if state.final_active else 1.0)
 
 ## Slow breathing pulse, stronger at dusk (丙).
 func breath(state: RefCounted) -> float:

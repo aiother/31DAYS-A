@@ -55,6 +55,10 @@ func dusk_rules(state: HudState, style: Style, sample: int, tag: String) -> void
 	check(is_equal_approx(amounts[3], 0.55 if sample == 0 else 1.0), tag + "final battle reaches this sample's full dusk")
 	check(style.paper_color(state) != Style.PAPER_DAY, tag + "paper takes on dusk colour at the end")
 	check(style.glow_strength(state) > 0.0 and (style.glass(state) > 0.0) == (sample == 1), tag + "glow everywhere, glass only in the dusk-led sample")
+	# User G4: final-battle glow is 30% softer than the same dusk outside it.
+	var final_glow: float = style.glow_strength(state)
+	var unscaled: float = (0.35 + 0.65 * style.dusk(state)) * (0.7 if sample == 0 else 1.0)
+	check(state.final_active and is_equal_approx(final_glow, unscaled * 0.7), tag + "final battle glow is 30%% softer than at the same dusk (%.3f vs %.3f)" % [final_glow, unscaled])
 	preview.call("press", KEY_0)
 	var fixed: Array[float] = []
 	for stage: int in [KEY_5, KEY_8]:
