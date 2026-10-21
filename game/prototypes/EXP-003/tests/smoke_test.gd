@@ -80,6 +80,7 @@ func run() -> void:
 		var cards: Dictionary = view.get("drawn")["cards"]
 		check(cards[0]["state"] == "progress" and cards[1]["state"] == "completed" and cards[2]["state"] == "unreadable", "slot variant %d draws progress, completed and unreadable slots" % v)
 		check(str(cards[0]["lines"][3]).contains("沟壑入口") and str(cards[0]["lines"][1]).contains("1:23:45"), "slot variant %d shows checkpoint and play time" % v)
+		check(str(cards[1].get("seal", "")).contains("已通关") and cards[2].get("label") == "无法读取", "slot variant %d draws the completed mark and the unreadable label" % v)
 		check(view.get("drawn")["focused"] == 0, "slot variant %d focuses the first loadable slot" % v)
 		await key(KEY_RIGHT)
 		check(view.get("drawn")["focused"] == 1, "slot variant %d right arrow moves to the next slot" % v)
@@ -110,7 +111,7 @@ func run() -> void:
 	for page: String in ["death", "end", "timeout"]:
 		screen().call("open_page", page)
 		await frames()
-		check(screen().get("drawn").get("page") == page, "%s page opens" % page)
+		check(screen().get("drawn").get("page_title") == {"death": "你倒下了", "end": "夕阳将至", "timeout": "未来已失"}[page], "%s page draws its title" % page)
 		var target: Button = null
 		for button: Button in screen().get("buttons"):
 			if button.text == "返回标题":
@@ -124,7 +125,7 @@ func run() -> void:
 	check(data.call("state", 2) == "progress", "dying and timing out keep the slot in progress")
 	await key(KEY_ESCAPE)
 	await frames()
-	check(screen().get("drawn").get("page") == "pause", "Esc in game opens pause")
+	check(screen().get("drawn").get("page_title") == "已暂停", "Esc in game opens and draws pause")
 	preview.call("open_title")
 	await frames()
 	var quit_button: Button = (screen().get("buttons") as Array)[-1]

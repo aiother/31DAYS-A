@@ -25,7 +25,6 @@ func open_page(name: String) -> void:
 		button.queue_free()
 	buttons.clear()
 	page = name
-	drawn["page"] = name
 	match name:
 		"pause":
 			make_button(menu, "继续游戏", func() -> void: open_page(""))
@@ -70,6 +69,7 @@ func _draw() -> void:
 	draw_rect(Rect2(420, size.y * 0.8 - 90, 50, 90), Color(0.5, 0.85, 0.85))
 	ink_text(Vector2(0, 160), "（原型）游戏中 · 槽 %d · 第 %d 日" % [slot + 1, int(time["day"])], UiTheme.SIZE_HEADING, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	ink_text(Vector2(0, 210), "Esc 暂停 · K 模拟死亡 · F 模拟通关 · T 模拟最终战超时", UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x)
+	drawn.erase("page_title")
 	if page.is_empty():
 		return
 	var titles: Dictionary = {"pause": "已暂停", "death": "你倒下了", "end": "夕阳将至", "timeout": "未来已失"}
@@ -77,9 +77,8 @@ func _draw() -> void:
 	var sheet: Rect2 = Rect2(660, 300, 600, 520)
 	InkDraw.paper(self, sheet, Color(DuskStyle.paper_color(MOOD), 0.95), 140, DuskStyle.WOBBLE, 6)
 	DuskStyle.panel(self, sheet, MOOD, 141)
-	ink_text(sheet.position + Vector2(0, 110), str(titles[page]), UiTheme.SIZE_TITLE, DuskStyle.LIFE if page in ["death", "timeout"] else DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x)
+	draw_recorded(self, "page_title", sheet.position + Vector2(0, 110), str(titles[page]), UiTheme.SIZE_TITLE, DuskStyle.LIFE if page in ["death", "timeout"] else DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x)
 	if page in ["end", "timeout"]:
 		ink_text(sheet.position + Vector2(0, 170), "游玩时长 " + Slots.play_time(played), UiTheme.SIZE_BODY, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x)
 	if page == "pause":
 		ink_text(sheet.position + Vector2(0, 170), "正式暂停菜单见 UI-003；主界面完成后加入“返回标题”", UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.6), HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x)
-	drawn["page_title"] = titles[page]

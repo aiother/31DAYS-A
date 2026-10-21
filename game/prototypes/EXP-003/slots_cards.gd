@@ -34,7 +34,7 @@ func _draw_card(card: Button, index: int, focused: bool) -> void:
 			var b: Vector2 = corners[(side + 1) % 4]
 			for step: int in range(0, 16, 2):
 				card.draw_line(a.lerp(b, step / 16.0), a.lerp(b, (step + 1) / 16.0), Color(DuskStyle.PAPER_DAY, 0.7 if focused else 0.4), 2.0)
-		card.draw_string(font, rect.position + Vector2(0, rect.size.y * 0.5), "＋ 新的开始" if mode == "new" else "空槽", HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, UiTheme.SIZE_HEADING, Color(DuskStyle.PAPER_DAY, 0.8))
+		record["label"] = drawn_text(card, rect.position + Vector2(0, rect.size.y * 0.5), "＋ 新的开始" if mode == "new" else "空槽", UiTheme.SIZE_HEADING, Color(DuskStyle.PAPER_DAY, 0.8), HORIZONTAL_ALIGNMENT_CENTER, rect.size.x)
 		card.draw_string(font, rect.position + Vector2(0, 50), "槽 " + NUMERALS[index], HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, UiTheme.SIZE_BODY, Color(DuskStyle.PAPER_DAY, 0.6))
 		_record(index, record)
 		return
@@ -43,7 +43,7 @@ func _draw_card(card: Button, index: int, focused: bool) -> void:
 	var dusk: float = DuskStyle.dusk(time)
 	if state == "unreadable":
 		card.draw_rect(sky, Color(0.3, 0.28, 0.28))
-		card.draw_string(font, sky.position + Vector2(0, 82), "无法读取", HORIZONTAL_ALIGNMENT_CENTER, sky.size.x, UiTheme.SIZE_HEADING, DuskStyle.PAPER_DAY)
+		record["label"] = drawn_text(card, sky.position + Vector2(0, 82), "无法读取", UiTheme.SIZE_HEADING, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, sky.size.x)
 	else:
 		InkDraw.wash(card, sky, DuskStyle.DUSK_TOP.lerp(Color("8fb3c8"), 1.0 - dusk), DuskStyle.DUSK_BOTTOM.lerp(Color("f3e2b8"), 1.0 - dusk))
 		var horizon: float = sky.end.y - 28
@@ -64,14 +64,15 @@ func _draw_card(card: Button, index: int, focused: bool) -> void:
 		return
 	var slot: Dictionary = data.slots[index]
 	var lines: Array[String] = slot_lines(index)
-	card.draw_string(font, rect.position + Vector2(30, 186), lines[0], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, DuskStyle.LIFE)
-	card.draw_string(font, rect.position + Vector2(30, 228), lines[1], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_SMALL, DuskStyle.INK)
+	var shown: Array[String] = []
+	shown.append(drawn_text(card, rect.position + Vector2(30, 186), lines[0], UiTheme.SIZE_BODY, DuskStyle.LIFE))
+	shown.append(drawn_text(card, rect.position + Vector2(30, 228), lines[1], UiTheme.SIZE_SMALL, DuskStyle.INK))
 	draw_shards(card, rect.position + Vector2(300, 222), int(slot["health"]), 0.8)
-	card.draw_string(font, rect.position + Vector2(30, 268), lines[2], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_SMALL, DuskStyle.INK)
-	card.draw_string(font, rect.position + Vector2(30, 308), lines[3], HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_SMALL, DuskStyle.INK)
+	shown.append(drawn_text(card, rect.position + Vector2(30, 268), lines[2], UiTheme.SIZE_SMALL, DuskStyle.INK))
+	shown.append(drawn_text(card, rect.position + Vector2(30, 308), lines[3], UiTheme.SIZE_SMALL, DuskStyle.INK))
 	if state == "completed":
-		card.draw_string(font, rect.position + Vector2(30, 360), "已通关 · 夕阳将至", HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, DuskStyle.GROWTH.darkened(0.25))
-	record["lines"] = lines
+		record["seal"] = drawn_text(card, rect.position + Vector2(30, 360), "已通关 · 夕阳将至", UiTheme.SIZE_BODY, DuskStyle.GROWTH.darkened(0.25))
+	record["lines"] = shown
 	_record(index, record)
 
 func _record(index: int, record: Dictionary) -> void:

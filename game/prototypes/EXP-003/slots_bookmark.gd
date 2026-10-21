@@ -41,23 +41,24 @@ func _draw_card(card: Button, index: int, focused: bool) -> void:
 	match state:
 		"empty":
 			card.draw_string(font, Vector2(0, h * 0.45 + lift), "空", HORIZONTAL_ALIGNMENT_CENTER, w, 72, Color(DuskStyle.INK, 0.35))
-			card.draw_string(font, Vector2(0, h * 0.45 + 60 + lift), "新的开始" if mode == "new" else "没有存档", HORIZONTAL_ALIGNMENT_CENTER, w, UiTheme.SIZE_BODY, Color(DuskStyle.INK, 0.5))
+			record["label"] = drawn_text(card, Vector2(0, h * 0.45 + 60 + lift), "新的开始" if mode == "new" else "没有存档", UiTheme.SIZE_BODY, Color(DuskStyle.INK, 0.5), HORIZONTAL_ALIGNMENT_CENTER, w)
 		"unreadable":
 			for i: int in range(6):
 				InkDraw.rough_line(card, Vector2(20 + i * 50, h * 0.42 + lift), Vector2(50 + i * 50, h * 0.48 + lift), Color(DuskStyle.INK, 0.5), 2.0, 110 + i, 2.0)
-			card.draw_string(font, Vector2(0, h * 0.58 + lift), "无法读取", HORIZONTAL_ALIGNMENT_CENTER, w, UiTheme.SIZE_HEADING, DuskStyle.LIFE)
+			record["label"] = drawn_text(card, Vector2(0, h * 0.58 + lift), "无法读取", UiTheme.SIZE_HEADING, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, w)
 		_:
 			var slot: Dictionary = data.slots[index]
 			card.draw_string(font, Vector2(0, top + 70), "末日前31天", HORIZONTAL_ALIGNMENT_CENTER, w, UiTheme.SIZE_BODY, Color(DuskStyle.INK, 0.75))
 			var lines: Array[String] = slot_lines(index)
 			var y: float = top + 140
+			var shown: Array[String] = []
 			for line: String in lines:
-				card.draw_multiline_string(font, Vector2(28, y), line, HORIZONTAL_ALIGNMENT_LEFT, w - 56, UiTheme.SIZE_SMALL, 2, DuskStyle.INK)
+				shown.append(drawn_text(card, Vector2(28, y), line, UiTheme.SIZE_SMALL, DuskStyle.INK, HORIZONTAL_ALIGNMENT_LEFT, w - 56))
 				y += 58
 			draw_shards(card, Vector2(40, y + 10), int(slot["health"]))
-			record["lines"] = lines
+			record["lines"] = shown
 			if state == "completed":
-				draw_seal(card, Vector2(w * 0.68, h - 150 + lift), "已通关")
+				record["seal"] = draw_seal(card, Vector2(w * 0.68, h - 150 + lift), "已通关")
 	if drawn.get("cards") == null:
 		drawn["cards"] = {}
 	drawn["cards"][index] = record

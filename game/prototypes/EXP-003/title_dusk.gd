@@ -30,10 +30,10 @@ func _draw() -> void:
 		draw_circle(Vector2(x, y), 1.2 + InkDraw.noise(i, 9) * 1.8, Color(DuskStyle.PAPER_DAY, 0.25))
 	var title: Rect2 = title_rect()
 	ink_text(Vector2(0, title.end.y - 92) + Vector2(4, 5), TITLE, 132, Color(0, 0, 0, 0.35), HORIZONTAL_ALIGNMENT_CENTER, size.x)
-	ink_text(Vector2(0, title.end.y - 92), TITLE, 132, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, size.x)
+	var shown: String = drawn_text(self, Vector2(0, title.end.y - 92), TITLE, 132, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	InkDraw.rough_line(self, Vector2(size.x * 0.5 - 220, title.end.y - 64), Vector2(size.x * 0.5 + 220, title.end.y - 64), Color(DuskStyle.LIFE, 0.85), 3.0, 41, 1.2)
 	ink_text(Vector2(0, title.end.y - 22), "V0.1 灰盒", UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7), HORIZONTAL_ALIGNMENT_CENTER, size.x)
-	drawn["title"] = {"text": TITLE, "rect": title, "variant": variant_name()}
+	drawn["title"] = {"text": shown, "rect": title, "variant": variant_name()}
 
 ## Broken building silhouettes with ragged tops, deterministic per seed.
 func _skyline(base: float, height: float, seed: int, color: Color) -> void:

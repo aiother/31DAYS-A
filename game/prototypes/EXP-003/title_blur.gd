@@ -75,7 +75,7 @@ func _draw_overlay() -> void:
 	overlay.draw_polygon(PackedVector2Array([Vector2(size.x - 260, 0), Vector2(size.x, 0), Vector2(size.x, size.y), Vector2(size.x - 260, size.y)]), PackedColorArray([clear, dark, dark, clear]))
 	overlay.draw_rect(Rect2(0, size.y * 0.78, size.x, size.y * 0.22), Color(0.03, 0.01, 0.02, 0.45))
 	var title: Rect2 = title_rect()
-	overlay.draw_string(font, Vector2(0, title.end.y - 92), TITLE, HORIZONTAL_ALIGNMENT_CENTER, size.x, 132, DuskStyle.PAPER_DAY)
+	var shown: String = drawn_text(overlay, Vector2(0, title.end.y - 92), TITLE, 132, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	InkDraw.rough_line(overlay, Vector2(size.x * 0.5 - 220, title.end.y - 64), Vector2(size.x * 0.5 + 220, title.end.y - 64), Color(DuskStyle.SUN, 0.8), 3.0, 42, 1.2)
 	overlay.draw_string(font, Vector2(0, title.end.y - 22), "V0.1 灰盒", HORIZONTAL_ALIGNMENT_CENTER, size.x, UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7))
-	drawn["title"] = {"text": TITLE, "rect": title, "variant": variant_name()}
+	drawn["title"] = {"text": shown, "rect": title, "variant": variant_name()}

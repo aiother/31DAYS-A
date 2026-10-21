@@ -33,6 +33,16 @@ func _process(delta: float) -> void:
 func ink_text(at: Vector2, value: String, size_px: int, color: Color = DuskStyle.INK, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> void:
 	draw_string(font, at, value, align, width, size_px, color)
 
+## Draws text and records it under key in the same call, so the record exists
+## only when the text was really drawn this frame (review R1).
+func draw_recorded(ci: CanvasItem, key: String, at: Vector2, value: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER, width: float = -1.0) -> void:
+	drawn[key] = drawn_text(ci, at, value, size_px, color, align, width)
+
+## Draws text and hands it back, so a record can only come from a real draw.
+func drawn_text(ci: CanvasItem, at: Vector2, value: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> String:
+	ci.draw_multiline_string(font, at, value, align, width, size_px, -1, color)
+	return value
+
 func make_button(parent: Node, value: String, action: Callable, size_px: int = 30, button_tone: String = "ink") -> Button:
 	var button: Button = InkButton.new().setup(value, size_px, 300 + buttons.size(), button_tone)
 	button.pressed.connect(action)
@@ -72,7 +82,6 @@ func ask(text: String, yes_label: String, yes: Callable, no_label: String = "返
 	cancel.pressed.connect(close_dialog)
 	row.add_child(cancel)
 	cancel.grab_focus()
-	drawn["dialog"] = text
 
 func close_dialog() -> void:
 	if dialog != null:
@@ -88,7 +97,7 @@ func _draw_dialog() -> void:
 	var sheet: Rect2 = Rect2(560, 380, 800, 320)
 	InkDraw.paper(dialog, sheet, Color(DuskStyle.paper_color(MOOD), 0.95), 870, DuskStyle.WOBBLE, 6)
 	DuskStyle.panel(dialog, sheet, MOOD, 871)
-	dialog.draw_multiline_string(font, sheet.position + Vector2(40, 100), dialog_text, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x - 80, UiTheme.SIZE_HEADING, -1, DuskStyle.INK)
+	draw_recorded(dialog, "dialog", sheet.position + Vector2(40, 100), dialog_text, UiTheme.SIZE_HEADING, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x - 80)
 
 ## Esc / B / Back closes an open dialog first; screens decide the rest.
 func _unhandled_input(event: InputEvent) -> void:

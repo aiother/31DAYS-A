@@ -69,7 +69,6 @@ func _process(delta: float) -> void:
 func say(text: String) -> void:
 	message = text
 	message_left = 2.5
-	drawn["message"] = text
 
 func activate(index: int) -> void:
 	var state: String = data.call("state", index)
@@ -112,12 +111,13 @@ func draw_shards(ci: CanvasItem, at: Vector2, count: int, scale: float = 1.0) ->
 		var c: Vector2 = at + Vector2(i * 22.0 * scale, 0)
 		ci.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -16) * scale, c + Vector2(6, 0) * scale, c + Vector2(0, 16) * scale, c + Vector2(-6, 0) * scale]), DuskStyle.LIFE)
 
-func draw_seal(ci: CanvasItem, center: Vector2, text: String, radius: float = 54.0) -> void:
+func draw_seal(ci: CanvasItem, center: Vector2, text: String, radius: float = 54.0) -> String:
 	ci.draw_set_transform(center, -0.25, Vector2.ONE)
 	InkDraw.rough_circle(ci, Vector2.ZERO, radius, Color(DuskStyle.LIFE, 0.9), 4.0, 77, 1.5)
 	InkDraw.rough_circle(ci, Vector2.ZERO, radius - 8, Color(DuskStyle.LIFE, 0.7), 2.0, 78, 1.0)
-	ci.draw_string(font, Vector2(-radius, 12), text, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0, 30, DuskStyle.LIFE)
+	var shown: String = drawn_text(ci, Vector2(-radius, 12), text, 30, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	return shown
 
 func _draw_card(_card: Button, _index: int, _focused: bool) -> void:
 	pass
@@ -126,10 +126,11 @@ func _draw_header() -> void:
 	ink_text(Vector2(140, 130), heading(), UiTheme.SIZE_TITLE, DuskStyle.PAPER_DAY)
 	InkDraw.rough_line(self, Vector2(140, 150), Vector2(520, 150), Color(DuskStyle.LIFE, 0.85), 2.6, 91, 1.2)
 	ink_text(Vector2(140, 190), "← → 选择 · Enter / A 确认 · Esc 返回", UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7))
+	drawn.erase("message")
 	if message_left > 0.0:
 		var alpha: float = clampf(message_left / 0.4, 0.0, 1.0)
 		var box: Rect2 = Rect2(Vector2((size.x - 560) * 0.5, 880), Vector2(560, 56))
 		DuskStyle.panel(self, box, MOOD, 95)
-		ink_text(box.position + Vector2(0, 38), message, UiTheme.SIZE_BODY, Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
+		draw_recorded(self, "message", box.position + Vector2(0, 38), message, UiTheme.SIZE_BODY, Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
 	drawn["heading"] = heading()
 	drawn["focused"] = cards.find(get_viewport().gui_get_focus_owner())

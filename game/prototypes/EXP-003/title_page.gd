@@ -31,7 +31,7 @@ func _draw() -> void:
 			draw_rect(Rect2(outline.position + Vector2(14, 30 + w * 52), Vector2(16, 22)), Color(DuskStyle.INK, 0.12))
 	InkDraw.rough_line(self, Vector2(size.x * 0.45, base), Vector2(size.x - 60, base), Color(DuskStyle.INK, 0.6), 2.4, 80, 1.6)
 	var title: Rect2 = title_rect()
-	ink_text(Vector2(0, title.end.y - 96), TITLE, 132, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, size.x)
+	var shown: String = drawn_text(self, Vector2(0, title.end.y - 96), TITLE, 132, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	# A vermilion seal beside the title.
 	var seal: Rect2 = Rect2(size.x * 0.5 + 360, title.end.y - 214, 70, 70)
 	draw_rect(seal, Color(DuskStyle.LIFE, 0.85))
@@ -39,4 +39,4 @@ func _draw() -> void:
 	ink_text(Vector2(0, title.end.y - 40), "V0.1 灰盒", UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.6), HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	# Table-of-contents rule beside the menu.
 	InkDraw.rough_line(self, Vector2(226, 560), Vector2(226, 560 + buttons.size() * 64), Color(DuskStyle.LIFE, 0.6), 2.0, 81, 1.0)
-	drawn["title"] = {"text": TITLE, "rect": title, "variant": variant_name()}
+	drawn["title"] = {"text": shown, "rect": title, "variant": variant_name()}
