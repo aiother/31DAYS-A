@@ -20,7 +20,7 @@
 | 战斗与敌人 | 玩家操作、三类敌人、两场 Boss、10 与幸存者友军、平台追击均已实现 | `game/player/`、`game/enemies/`、`game/allies/` |
 | 系统 | 分槽存档、三日自然计时与最终战计时、NPC 救助与日期过期、永久成长（上限、攻击范围、闪避速度）、应急药包、残存可能性实体、最终战同帧胜利优先（SYS-003）、已通关存档不能再进入（SYS-004）均已实现 | `game/systems/`；`game/world/final_battle_session.gd`；`game/debug/checkpoint_lab.gd`；`codexandclaude/tasks/SYS-003/`、`SYS-004/` |
 | 输入 | V0.1 键位已冻结并与配置一致 | T1 §7；`game/project.godot`；`game/tests/test_input_bindings.gd` |
-| UI | 仍为灰盒文字界面：HUD 以文字显示生命、可能性、珍珠与攻击范围等；暂停菜单为继续、设置、存档槽、退出；设置有音量、全屏和窗口尺寸（1280×720、1920×1080 两档）；死亡菜单为从检查点继续与退出游戏；另有普通敌人介绍卡、探索超时与最终战超时、结束画面与对话框。**没有主界面**，启动后直接显示存档槽；已有的返回按钮与退出确认不等于“返回标题”已实现。**HUD 与时间显示已正式化**（UI-002：徽记、地平线时刻、透支失真、换日与最终战倒计时，样张二视觉与霞鹜文楷，样式模块见 UI-001）；其余界面仍为灰盒。暂停菜单交互已由原型选定（EXP-001 方案四），尚未接入 | `game/ui/hud/formal_hud.gd`；`game/ui/style/`；`game/ui/menus/life_ui.gd`；`game/ui/menus/final_battle_ui.gd`；`game/ui/dialogue/field_dialogue.gd`；`game/debug/checkpoint_lab.gd`（启动时调用 `show_slots`）；原型 `game/prototypes/EXP-001/`、`EXP-002/` |
+| UI | **HUD 与时间显示已正式化**（UI-002：徽记、地平线时刻、透支失真、换日与最终战倒计时，样张二视觉与霞鹜文楷，样式模块见 UI-001）。其余界面仍为灰盒：暂停菜单为继续、设置、存档槽、退出；设置有音量、全屏和窗口尺寸（1280×720、1920×1080 两档）；死亡菜单为从检查点继续与退出游戏；另有普通敌人介绍卡、探索超时与最终战超时、结束画面与对话框。**没有主界面**，启动后直接显示存档槽；已有的返回按钮与退出确认不等于“返回标题”已实现。暂停菜单交互已由原型选定（EXP-001 方案四），尚未接入 | `game/ui/hud/formal_hud.gd`；`game/ui/style/`；`game/ui/menus/life_ui.gd`；`game/ui/menus/final_battle_ui.gd`；`game/ui/dialogue/field_dialogue.gd`；`game/debug/checkpoint_lab.gd`（启动时调用 `show_slots`）；原型 `game/prototypes/EXP-001/`、`EXP-002/` |
 | 美术 | 只有两张占位 SVG；角色、敌人、友军由代码绘制几何占位，敌人攻击前摇有灰盒警示 | `game/assets/`；`game/player/placeholder_visual.gd`、`game/enemies/*_visual.gd`、`game/allies/ten_visual.gd` |
 | 音频 | 没有外部音频资源；只有程序生成的占位音效：警示音与玩家命中音 | `game/core/utilities/graybox_audio.gd`（警示音）；`game/player/placeholder_visual.gd`（命中音，由 `combat.hit_confirmed` 触发） |
 | 文本与演出 | 对话资源 3 份，其余对白为代码内临时文本（含已过期 NPC 处的错失机会文本）；救场、结局等演出为几何与文字占位 | `game/data/dialogue/`；`game/ui/cinematics/rescue_overlay.gd`；`game/ui/menus/final_battle_ui.gd` |
@@ -98,7 +98,16 @@
 | SYS-007 设置数据（BL-047 的系统部分） | Codex 实现，Claude 审查 | 效果音 / 背景音总线、帧率上限、只读按键列表、`user://settings.cfg` 保存与读取 | 三者可并行 |
 | EXP-003 主界面与存档选择原型（BL-040、BL-041） | Claude 实现，Codex 审查 | 各 2～3 个方案，含“返回标题”流程；用户挑选 | 三者可并行；Claude 两项按 UI-003 → EXP-003 顺序 |
 
-第五批预计：正式设置界面（BL-047，接 SYS-007）、主界面与存档选择（按 EXP-003 选定）、死亡界面（BL-050）、结束与超时界面（BL-051）。
+**第五批（2026-10-21 用户批准）**：用户选定“四张卡”拆分；EXP-003 已选定主界面 A · 黄昏远景、存档选择为书签加天空条。
+
+| 任务 | 负责 | 内容 | 先后 |
+| --- | --- | --- | --- |
+| SYS-008 主界面流程与存档摘要（BL-040、BL-041 的系统部分） | Codex 实现，Claude 审查 | 启动先请求主界面、`return_to_title()`、只读 `slot_summaries()` / `has_any_save()` | 先做 |
+| UI-004 正式主界面与存档选择（BL-040、BL-041） | Claude 实现，Codex 审查 | 方案 A 主界面；书签 + 天空条存档选择；A-013 提示与覆盖确认 | SYS-008、UI-003 之后 |
+| UI-005 死亡、结束与超时界面，暂停菜单返回标题（BL-050、BL-051） | Claude 实现，Codex 审查 | A-014 死亡四项、夕阳将至、未来已失、探索超时，均可返回标题；暂停菜单存档槽换返回标题 | UI-004 之后 |
+| UI-006 正式设置界面（BL-047） | Claude 实现，Codex 审查 | A-017 全部设置项经 SYS-007 接口；暂停菜单与主界面共用 | SYS-007 之后，可与 UI-004/005 并行 |
+
+完成第五批后 M2-b 收尾；之后为 M2-c（对话、交互提示、任务信息、区域名称、敌人介绍卡）。
 ## 6. 需要用户提供或决定的事项
 
 | 事项 | 影响 | 建议时间 |
@@ -122,3 +131,5 @@
 | 2026-10-21 | 新增 BL-114（用户决定 SYS-005 审查 N2：被透支下限拒绝的闪避也闪红），归入 M2-a，起草 SYS-006 | 规划刷新 SYS-006 起草 |
 | 2026-10-21 | 第三批完成后刷新：M2-a 完成（UI-002、SYS-005、UI-001、ENV-006、SYS-006）；快照更新 UI 与测试两行；第三批改为存档表 | 规划刷新 refresh-3 |
 | 2026-10-21 | 起草第四批：UI-003、SYS-007、EXP-003（用户选定拆分与两项决定），第五批预计内容 | 第四批起草 |
+| 2026-10-21 | 快照 UI 行删去“HUD 以文字显示”的旧描述（Codex 合入刷新时的非阻断提示） | 第四批起草 |
+| 2026-10-21 | EXP-003 完成（用户选定 A 主界面与书签 + 天空条）；起草第五批 SYS-008、UI-004、UI-005、UI-006 | 第五批起草 |
