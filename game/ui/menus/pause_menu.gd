@@ -159,14 +159,22 @@ func _draw() -> void:
 	InkDraw.rough_line(self, Vector2(84, 356), Vector2(250, 356), Color(DuskStyle.LIFE, 0.8), 2.4, 202, DuskStyle.WOBBLE)
 	drawn["sheet"] = sheet
 	if page.is_empty():
+		var quest: String = str(session.call("quest_status_text")) if session != null and session.has_method("quest_status_text") else ""
+		drawn["quest"] = quest
+		var center: Vector2 = Vector2(LEFT_WIDTH + (size.x - LEFT_WIDTH) * 0.5, CLOCK_CENTER_Y)
 		if bool(time.get("has_session", false)):
-			_draw_clock(time, Vector2(LEFT_WIDTH + (size.x - LEFT_WIDTH) * 0.5, CLOCK_CENTER_Y))
+			_draw_clock(time, center, quest)
+		elif not quest.is_empty():
+			# Sessions without the day clock still show the current task.
+			var tag: Rect2 = Rect2(center + Vector2(-330, -40), Vector2(660, 80))
+			_solid_panel(tag, time, 545)
+			ink_text(tag.position + Vector2(0, 50), "当前任务：" + quest, UiTheme.SIZE_SMALL, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, tag.size.x)
 	elif page == "settings":
 		_draw_settings(time)
 	else:
 		_draw_confirm(time)
 
-func _draw_clock(time: Dictionary, center: Vector2) -> void:
+func _draw_clock(time: Dictionary, center: Vector2, quest: String) -> void:
 	var radius: float = CLOCK_RADIUS
 	InkDraw.glow(self, center, radius * 0.9, DuskStyle.DUSK_BOTTOM, DuskStyle.glow_strength(time) * DuskStyle.breath(time, Time.get_ticks_msec() / 1000.0))
 	InkDraw.paper_disc(self, center, radius + 16, Color(DuskStyle.paper_color(time), DuskStyle.PANEL_ALPHA), 501, DuskStyle.WOBBLE)
@@ -192,7 +200,6 @@ func _draw_clock(time: Dictionary, center: Vector2) -> void:
 	ink_text(label.position + Vector2(0, 104), date, 26, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, label.size.x)
 	var record: Dictionary = {"time": clock, "date": date, "rect": Rect2(center - Vector2.ONE * (radius + 16), Vector2.ONE * (radius + 16) * 2.0).merge(label)}
 	record.merge(_draw_days(time, label.position + Vector2(40, 132), label.size.x - 80))
-	var quest: String = str(session.call("quest_status_text")) if session.has_method("quest_status_text") else ""
 	if not quest.is_empty():
 		ink_text(label.position + Vector2(0, 236), "当前任务：" + quest, UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.7), HORIZONTAL_ALIGNMENT_CENTER, label.size.x)
 	record["quest"] = quest
