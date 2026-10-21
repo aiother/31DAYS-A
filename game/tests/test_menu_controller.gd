@@ -73,7 +73,10 @@ func run() -> void:
 		check(paused and session.ui.get("_mode") == "settings", "A activates settings for device %d" % device)
 		check(focus_text() == "返回", "settings focuses return for device %d" % device)
 		await pad(JOY_BUTTON_A, device)
-		check(session.ui.get("_mode") == "pause" and focus_text() == "继续游戏", "A returns to pause for device %d" % device)
+		# UI-003: returning from a page focuses the option that opened it (EXP-001 variant four).
+		check(session.ui.get("_mode") == "pause" and focus_text() == "设置", "A returns to pause on settings for device %d" % device)
+		await pad(JOY_BUTTON_DPAD_UP, device)
+		check(focus_text() == "继续游戏", "D-pad returns to continue for device %d" % device)
 		await pad(JOY_BUTTON_A, device)
 		check(not paused and session.ui.get("_mode") == "", "A confirms continue for device %d" % device)
 		var action: InputEventJoypadButton = InputEventJoypadButton.new()
