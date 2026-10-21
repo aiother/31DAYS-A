@@ -6,7 +6,7 @@
 
 `player.possibility` 保留 `balance_changed(current, maximum)`，新增：
 
-- `shortfall(kind: ShortfallKind)`：`HEAL=0`、`DODGE=1`。通过其他恢复资格检查且未满血，余额严格小于恢复成本时发一次 HEAL；成功执行的透支闪避发一次 DODGE。余额等于成本不发。空中、硬直、控制锁、满血、动作忙碌等拒绝恢复的路径不发；第四次连闪或触及债务下限而拒绝的闪避也不发。
+- `shortfall(kind: ShortfallKind)`：`HEAL=0`、`DODGE=1`。通过其他恢复资格检查且未满血，余额严格小于恢复成本时发一次 HEAL；成功执行的透支闪避发一次 DODGE。SYS-006 按用户决定补充：通过控制、落地硬直、动作状态和连闪次数检查后，若本次闪避会使 `balance - cost < floor_balance`，拒绝时也发一次 DODGE，但仍返回 false，不扣费、不进入闪避、不发 balance_changed。刚好到达下限仍可执行；余额等于成本不发不足信号。空中、硬直、控制锁、满血、动作忙碌等拒绝恢复的路径不发；不能控制、落地硬直、正处于闪避中或一串已闪满三次而拒绝的闪避也不发，连闪上限优先于余额不足。闪避沿用 `is_action_just_pressed` 调用路径，长按只在按下帧尝试一次，松开再按才是新的尝试。
 - `gained(amount, source_world_position)`：每次实际入账的正数量，不是未经上限裁剪的请求量。满额、非正请求、死亡后不发。负余额还债也算获得。
 - `gain(amount, source_world_position = Vector2.INF)`：旧单参数调用兼容。调用方知道来源时可提供世界坐标；未知（包括现有只传奖励数量的敌人转发链）默认玩家的 `global_position`。`Vector2.ZERO` 是有效显式坐标，`Vector2.INF` 仅作省略参数标记。
 

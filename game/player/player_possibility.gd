@@ -55,7 +55,10 @@ func try_dodge() -> bool:
 	if since_dodge + 0.00001 >= config.combo_reset:
 		chain = 0
 	var cost: int = chain + 1
-	if chain >= 3 or balance - cost < config.floor_balance:
+	if chain >= 3:
+		return false
+	if balance - cost < config.floor_balance:
+		shortfall.emit(ShortfallKind.DODGE)
 		return false
 	poor_dodge = balance < cost
 	balance -= cost
