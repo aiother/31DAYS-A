@@ -202,6 +202,8 @@ func _button(text: String, callback: Callable, focus: bool = false) -> Button:
 func show_pause() -> void:
 	_panel.hide()
 	_hide_screens()
+	_settings_from_title = false
+	_pause_below_screens()
 	_mode = "pause"
 	get_tree().paused = true
 	_pause.open()
@@ -300,6 +302,7 @@ func show_title() -> void:
 		return
 	_panel.hide()
 	_pause.close()
+	_pause_below_screens()
 	_hide_screens()
 	_settings_from_title = false
 	_mode = "title"
@@ -361,16 +364,33 @@ func _confirm_new_slot(selected: int, occupied: bool) -> void:
 	_slots.ask("在%s开始新游戏？%s" % [name, "\n将覆盖此槽现有进度" if occupied else ""], "覆盖并开始" if occupied else "开始",
 		_select_slot.bind(selected, true), _slots.cards[selected - 1])
 
+## UI-006: the same settings page as the pause menu, centred over the
+## dimmed title; 返回 / Esc / Back come back to the title on 设置.
 func _title_settings() -> void:
 	_settings_from_title = true
-	_hide_screens()
-	show_settings()
+	_title.close_dialog(false)
+	_root.move_child(_pause, -1)
+	_pause.visible = true
+	_mode = "settings"
+	get_tree().paused = true
+	_pause.show_settings(true)
 
 func _on_pause_returned() -> void:
-	if _settings_from_title:
-		show_title()
-	else:
+	if not _settings_from_title:
 		_mode = "pause"
+		return
+	_settings_from_title = false
+	_pause.close()
+	_pause_below_screens()
+	_mode = "title"
+	var entry: Button = _title.button("设置")
+	if entry != null:
+		entry.grab_focus()
+
+## The pause menu normally sits under the title and slot screens.
+func _pause_below_screens() -> void:
+	if _pause.get_index() > _title.get_index():
+		_root.move_child(_pause, _title.get_index())
 
 ## The title already asked; nothing is open to save.
 func _quit_now() -> void:
