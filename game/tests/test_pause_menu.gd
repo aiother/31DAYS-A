@@ -101,6 +101,7 @@ func run() -> void:
 	session.ui.set("_quit_handler", func() -> void: quits += 1)
 	await clock_cases()
 	await navigation_cases()
+	await direct_settings_cases()
 	await quit_cases()
 	await toast_cases()
 	await layout_cases()
@@ -136,6 +137,40 @@ func clock_cases() -> void:
 	var before: float = DayClock.remaining(session.data)
 	await frames(60)
 	check(DayClock.remaining(session.data) == before and paused, "game clock does not run while the pause menu is open")
+
+## Review R1: the public show_settings() must keep working when called from
+## normal play or from a graybox panel, not only from inside the pause menu.
+func direct_settings_cases() -> void:
+	check(not paused and not menu().visible, "playing before the direct settings call")
+	session.ui.call("show_settings")
+	await frames(2)
+	check(paused and menu().visible and mode() == "settings" and menu().page == "settings" and focus_text() == "返回", "direct show_settings from play opens a visible, paused settings page")
+	var slider: HSlider = null
+	var resolution: OptionButton = null
+	var fullscreen: CheckButton = null
+	for node: Node in menu().get_children():
+		if node is HSlider: slider = node as HSlider
+		elif node is OptionButton: resolution = node as OptionButton
+		elif node is CheckButton: fullscreen = node as CheckButton
+	check(slider != null and resolution != null and fullscreen != null and slider.is_visible_in_tree(), "all three settings controls are on screen")
+	var volume: float = AudioServer.get_bus_volume_linear(0)
+	slider.value = 40.0
+	check(is_equal_approx(AudioServer.get_bus_volume_linear(0), 0.4), "the volume control still changes the master bus")
+	slider.value = volume * 100.0
+	await key(KEY_ESCAPE)
+	await frames(2)
+	check(paused and mode() == "pause" and menu().drawn.has("clock"), "Esc from a directly opened settings page returns to the pause clock")
+	await key(KEY_ESCAPE)
+	await frames(2)
+	check(not paused and not menu().visible and mode() == "", "and Esc again resumes play")
+	session.ui.call("show_slots")
+	await frames(2)
+	check((session.ui.get("_panel") as Control).visible and not menu().visible, "graybox slot panel is open")
+	session.ui.call("show_settings")
+	await frames(2)
+	check(menu().visible and menu().page == "settings" and not (session.ui.get("_panel") as Control).visible, "settings from a graybox panel replaces it instead of stacking")
+	session.ui.call("resume_game")
+	await frames(2)
 
 func navigation_cases() -> void:
 	await key(KEY_DOWN)

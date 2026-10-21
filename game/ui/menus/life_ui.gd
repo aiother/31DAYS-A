@@ -222,6 +222,10 @@ func restart_challenge() -> void:
 
 ## Settings is a secondary page of the formal pause menu, covering its clock.
 func show_settings() -> void:
+	# Public entry from anywhere (review R1): outside the pause menu, open it
+	# visible and paused first, which also closes any graybox panel.
+	if not _pause.visible:
+		show_pause()
 	_mode = "settings"
 	_pause.show_settings()
 
