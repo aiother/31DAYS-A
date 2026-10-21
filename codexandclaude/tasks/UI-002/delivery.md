@@ -97,3 +97,26 @@
 3. 用验收入口进入最终战：第三日余额大于15分钟（如25分钟）看“时间加速”走到15:00；余额不足15分钟（如9:12）看朱红“余时不足”。
 4. 切换 1280×720 与 1920×1080，确认没有遮挡。
 5. 回答上面的 N2。
+
+## 第1轮审查后修正（Codex R1）
+
+审查 SHA：`4b13df5b306bcf5d2a3e2f21bd859acbf3631674`（`codex/UI-002-review`），结论需修改，R1（P2）：灰盒帮助文字移到右上后被敌人介绍卡（LifeUI 第20层，进入后 `(1460,100,460,220)`）遮挡。确认成立：介绍卡由普通遭遇、天人、Boss、最终战波次共用，原测试只测 FormalHud 自己的区域，漏掉了它。
+
+修正实现 SHA：`be97ad142926905894aacdee2116ffc4c5d89c7e`
+
+| 文件 | 修改 |
+| --- | --- |
+| `game/world/start_room_session.tscn` | 灰盒说明仍在右侧右对齐、自动换行，但整列下移到介绍卡之下：Title y=340、Help y=400、EnemyStatus y=620、Status y=670（留足帮助文字换行的高度）。没有隐藏任何文字，文字与节点路径不变 |
+| `game/tests/test_hud_layout.gd` | `regions()` 增加 Instructions 下全部可见且非空的 Label 与真实介绍卡；新增 `show_intro()`，调用真实 `show_enemy_intro(6.0)` 并等入场结束。新增四个用例：起始区与最终战 × 1920×1080 与 1280×720；所有区域两两不重叠、不与错误提示重叠、都在窗口内；最终战中断言帮助与标题确实被测量。268 项 |
+
+回归能抓住问题（同一测试，只换 `start_room_session.tscn`）：
+
+| 布局 | 结果 |
+| --- | --- |
+| 本次修正 | 268 / 0 |
+| 第1轮交付（右上 y=34 起） | 14 项失败，均为 `instructions Help` 与 `enemy intro` 相交 |
+| 基线（左上 x=64） | 17 项失败，均为 `emblem` 与灰盒说明相交 |
+
+另在有渲染的真实会话里截了最终战加速 + 介绍卡同时显示的图，确认互不遮挡（截图不入库）。
+
+检查：在修正 SHA、起止 dirty=false 执行 `full --jobs 4`：G2 **79/79**，G3 `tests` **102/102**、`codexandclaude/tests` **66/66**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T053056.533962Z/`（不入库）。单项：`FORMAL_HUD_TESTS 49/0`、`FIELD_ROOM_TESTS 50/0`、`TWO_ROOM_TESTS 38/0`。审查记录中未完成的项目（四项变异复现、其余功能审查）请复审继续覆盖。
