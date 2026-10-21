@@ -146,3 +146,16 @@
 | 可能性填充随黄昏漂移 | 5 |
 
 检查：在修正 SHA、起止 dirty=false 执行 `full --jobs 4`：G2 **79/79**，G3 `tests` **102/102**、`codexandclaude/tests` **66/66**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T063704.108148Z/`（不入库）。
+
+## 同步 master 与验收适配（第3轮复审通过后）
+
+Codex 第3轮复审通过（审查 SHA `3009c4b0d8cc09390eb7c57a4e2588d61c050cad`，`codex/UI-002-review-r3`；独立 full G2 79/79、G3 102/102 + 66/66、content_stable=True，七项变异均复现），未合并。ENV-006 已合入 master `3650b726631b299663ddb09183d03bff65b05f32`。
+
+- `c0ea5f3`：把 master `3650b72` 普通合并进 `claude/UI-002`，无冲突（只带入 ENV-006 的文件）。
+- 新增 `game/tests/acceptance/ui002_hud.gd`（ENV-006 启动器适配，任务卡与 ENV-006 卡约定由 UI-002 自己写）：三个临时槽——槽1 第1日剩200秒；槽2、槽3 第三日堑壕通道检查点、剩1500 / 552秒。只读面板：选槽界面在左侧显示完整说明（避开徽记与提示纸签），进入游戏后只留一行状态放在右侧（避开地平线、换日前提示、最终战倒计时；ENV-006 审查 N2）。`self_test()` 逐槽载入：第1日无载入纸签、可到换日前提示；槽2 进入中心战场显示“时间加速……”；槽3 显示朱红“余时不足”。
+- 新增 `game/tests/test_hud_acceptance.gd`（首行登记）：通过启动器跑上述自测并确认临时目录被清理。
+- `game/docs/formal_hud_implementation.md` 增加“G4 验收入口”。
+- 有渲染截图自测：`run_acceptance.gd -- --adapter=res://tests/acceptance/ui002_hud.gd --self-test --capture` 27/0；看过选槽、换日前提示、最终战长/短预算四张图，面板与 HUD、房间说明互不遮挡（截图不入库）。
+- 实现 SHA：`f502eea034e47f4171786bb452eeb661af65d172`。检查：起止 dirty=false 执行 `full --jobs 4`：G2 **81/81**（含 ENV-006 的启动器套件与新 `test_hud_acceptance.gd`），G3 `tests` **102/102**、`codexandclaude/tests` **67/67**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T071831.927514Z/`（不入库）。单项：`HUD_ACCEPTANCE_TESTS 3/0`（内部适配 19/0）。
+- 本节只新增验收适配与说明，HUD 代码与已复审的 `7889615` 相同（`git diff 7889615 f502eea -- game/ui game/world` 只有 master 合并带入的内容，为空）。
+
