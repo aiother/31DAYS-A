@@ -134,7 +134,8 @@ func player_cases(actions: PlayerPossibility) -> void:
 	actions.reset_actions()
 	actions.balance = actions.config.floor_balance
 	await press("dodge")
-	check(shortfalls.is_empty() and actions.balance == actions.config.floor_balance, "floor-rejected dodge does not report an executed overdraft")
+	check(shortfalls == [PlayerPossibility.ShortfallKind.DODGE] and actions.balance == actions.config.floor_balance and not actions.busy() and actions.chain == 0, "floor-rejected real dodge emits one DODGE without charge or entering dodge")
+	await dodge_rejection_cases(actions)
 	actions.reset_actions()
 	actions.balance = 9
 	actions.call("gain", 7, Vector2(12, 34))
@@ -162,6 +163,61 @@ func player_cases(actions: PlayerPossibility) -> void:
 	check(kill_rewards == [2], "dead player receives no gain signal")
 	world.queue_free()
 	await process_frame
+
+func dodge_rejection_cases(actions: PlayerPossibility) -> void:
+	var charges: Array[int] = []
+	var on_charge: Callable = func(current: int, _maximum: int) -> void: charges.append(current)
+	actions.balance_changed.connect(on_charge)
+	var serial: int = actions.dodge_serial
+	shortfalls.clear()
+	check(not actions.try_dodge() and shortfalls == [PlayerPossibility.ShortfallKind.DODGE] and actions.dodge_serial == serial and charges.is_empty(), "floor rejection returns false and emits no balance change or dodge start")
+	shortfalls.clear()
+	Input.action_press("dodge")
+	await frames(1)
+	check(shortfalls == [PlayerPossibility.ShortfallKind.DODGE], "held floor-rejected dodge reports its initial press once")
+	await frames(90)
+	check(shortfalls == [PlayerPossibility.ShortfallKind.DODGE] and actions.balance == actions.config.floor_balance and actions.dodge_serial == serial and not actions.busy() and charges.is_empty(), "holding rejected dodge beyond combo reset never repeats or charges")
+	Input.action_release("dodge")
+	await frames(1)
+	await press("dodge")
+	check(shortfalls == [PlayerPossibility.ShortfallKind.DODGE, PlayerPossibility.ShortfallKind.DODGE], "release and press again reports a new rejected attempt")
+	shortfalls.clear()
+	session.player.life.scripted_control_locked = true
+	await press("dodge")
+	check(shortfalls.is_empty() and not actions.busy(), "control-locked dodge at the floor has no shortfall")
+	session.player.life.scripted_control_locked = false
+	session.player.life.hurt_remaining = 1.0
+	await press("dodge")
+	check(shortfalls.is_empty() and not actions.busy(), "hurt-locked dodge at the floor has no shortfall")
+	session.player.life.hurt_remaining = 0.0
+	session.player.landing_lock_remaining = 1.0
+	await press("dodge")
+	check(shortfalls.is_empty() and not actions.busy(), "landing-locked dodge at the floor has no shortfall")
+	session.player.landing_lock_remaining = 0.0
+	actions.reset_actions()
+	actions.balance = 1
+	await press("dodge")
+	check(actions.busy() and shortfalls.is_empty(), "exact-cost dodge starts before busy rejection case")
+	serial = actions.dodge_serial
+	actions.balance = actions.config.floor_balance
+	await press("dodge")
+	check(shortfalls.is_empty() and actions.dodge_serial == serial and actions.balance == actions.config.floor_balance, "already-dodging input at the floor emits no extra shortfall or cost")
+	actions.reset_actions()
+	actions.balance = 10
+	for i: int in range(3):
+		await press("dodge")
+		await frames(24)
+	check(actions.chain == 3 and not actions.busy() and actions.balance == 4 and shortfalls.is_empty(), "three real affordable dodges prepare the fourth-attempt limit")
+	serial = actions.dodge_serial
+	charges.clear()
+	await press("dodge")
+	check(shortfalls.is_empty() and actions.chain == 3 and actions.dodge_serial == serial and actions.balance == 4 and charges.is_empty(), "fourth real dodge is rejected silently even with enough balance")
+	actions.balance = actions.config.floor_balance
+	await press("dodge")
+	check(shortfalls.is_empty() and actions.chain == 3 and actions.dodge_serial == serial and actions.balance == actions.config.floor_balance and charges.is_empty(), "three-dodge limit takes priority when floor rejection also applies")
+	actions.balance_changed.disconnect(on_charge)
+	actions.reset_actions()
+	shortfalls.clear()
 
 func session_cases() -> void:
 	session.player.possibility.reset_actions()
