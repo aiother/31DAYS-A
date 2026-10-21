@@ -3,6 +3,7 @@ extends Node2D
 var warning: AudioStreamPlayer
 func _ready() -> void:
 	warning = AudioStreamPlayer.new()
+	warning.bus = &"效果音"
 	warning.stream = GrayboxAudio.make_warning()
 	warning.volume_db = -20
 	add_child(warning)

@@ -16,6 +16,7 @@ func _ready() -> void:
 	player.landed.connect(_on_landed)
 	player.facing_changed.connect(_on_facing_changed)
 	_hit_sound = AudioStreamPlayer.new()
+	_hit_sound.bus = &"效果音"
 	_hit_sound.stream = _make_hit_sound()
 	_hit_sound.volume_db = -16.0
 	add_child(_hit_sound)

@@ -7,6 +7,12 @@ run/main_scene="res://world/final_battle_session.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/characters/player_placeholder.svg"
 
+[autoload]
+GameSettings="*res://systems/game_settings.gd"
+
+[audio]
+buses/default_bus_layout="res://default_bus_layout.tres"
+
 [display]
 window/size/viewport_width=1920
 window/size/viewport_height=1080

@@ -84,23 +84,27 @@ func back() -> void:
 	returned.emit()
 
 func show_settings() -> void:
+	# Resolve at runtime: custom SceneTree preloads compile before autoload
+	# global names are available. Keep the UI independent of that order.
+	var settings: Node = get_node("/root/GameSettings")
+	var values: Dictionary = settings.call("get_values")
 	_open_page("settings", buttons.find(button("设置")))
 	var volume: HSlider = HSlider.new()
 	volume.min_value = 0
 	volume.max_value = 100
-	volume.value = AudioServer.get_bus_volume_linear(0) * 100.0
-	volume.value_changed.connect(func(value: float) -> void: AudioServer.set_bus_volume_linear(0, value / 100.0))
+	volume.value = float(values["master_volume"])
+	volume.value_changed.connect(func(value: float) -> void: settings.call("set_value", "master_volume", value))
 	_place(volume, Vector2(260, 150), Vector2(420, 36))
 	var resolution: OptionButton = OptionButton.new()
 	resolution.add_item("1280 × 720")
 	resolution.add_item("1920 × 1080")
-	resolution.select(1 if DisplayServer.window_get_size().x >= 1920 else 0)
-	resolution.item_selected.connect(func(index: int) -> void: DisplayServer.window_set_size(Vector2i(1280, 720) if index == 0 else Vector2i(1920, 1080)))
+	resolution.select(1 if values["window_size"].x >= 1920 else 0)
+	resolution.item_selected.connect(func(index: int) -> void: settings.call("set_value", "window_size", Vector2i(1280, 720) if index == 0 else Vector2i(1920, 1080)))
 	_place(resolution, Vector2(260, 220), Vector2(300, 50))
 	var fullscreen: CheckButton = CheckButton.new()
 	fullscreen.text = "全屏"
-	fullscreen.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-	fullscreen.toggled.connect(func(enabled: bool) -> void: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if enabled else DisplayServer.WINDOW_MODE_WINDOWED))
+	fullscreen.button_pressed = bool(values["fullscreen"])
+	fullscreen.toggled.connect(func(enabled: bool) -> void: settings.call("set_value", "fullscreen", enabled))
 	_place(fullscreen, Vector2(260, 296), Vector2(300, 50))
 	_page_button("返回", back, Vector2(60, 690)).grab_focus()
 
