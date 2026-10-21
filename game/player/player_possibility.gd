@@ -1,6 +1,10 @@
 class_name PlayerPossibility
 extends Node
 signal balance_changed(current: int, maximum: int)
+signal shortfall(kind: ShortfallKind)
+signal gained(amount: int, source_world_position: Vector2)
+
+enum ShortfallKind { HEAL, DODGE }
 enum State { IDLE, DODGE_WINDUP, DODGE_ACTIVE, DODGE_RECOVERY, HEALING }
 @export var config: PossibilityConfig
 @onready var player: PlayerController = get_parent().get_parent() as PlayerController
@@ -21,11 +25,14 @@ func _ready() -> void:
 	balance = config.initial
 	maximum = config.maximum
 
-func gain(amount: int) -> void:
+func gain(amount: int, source_world_position: Vector2 = Vector2.INF) -> void:
 	if amount <= 0 or not player.life.is_alive():
 		return
+	var before: int = balance
 	balance = mini(maximum, balance + amount)
 	balance_changed.emit(balance, maximum)
+	if balance > before:
+		gained.emit(balance - before, player.global_position if source_world_position == Vector2.INF else source_world_position)
 
 func busy() -> bool:
 	return state != State.IDLE
@@ -53,6 +60,8 @@ func try_dodge() -> bool:
 	poor_dodge = balance < cost
 	balance -= cost
 	balance_changed.emit(balance, maximum)
+	if poor_dodge:
+		shortfall.emit(ShortfallKind.DODGE)
 	chain += 1
 	dodge_serial += 1
 	since_dodge = 0.0
@@ -66,7 +75,10 @@ func try_dodge() -> bool:
 func try_heal() -> bool:
 	if busy() or not player.life.can_control() or not player.is_on_floor() or player.landing_lock_remaining > 0.0 or player.combat.is_attacking():
 		return false
-	if balance < config.heal_cost or player.life.health >= player.life.config.max_health:
+	if player.life.health >= player.life.config.max_health:
+		return false
+	if balance < config.heal_cost:
+		shortfall.emit(ShortfallKind.HEAL)
 		return false
 	balance -= config.heal_cost
 	balance_changed.emit(balance, maximum)

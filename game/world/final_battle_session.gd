@@ -1,5 +1,6 @@
 class_name FinalBattleSession
 extends RescueBattlefieldSession
+signal day_changed(day: int)
 const FINAL_ROOM: PackedScene = preload("res://world/rooms/final_battlefield.tscn")
 const FINAL_DIALOGUE: DialogueConfig = preload("res://data/dialogue/ten_victory.tres")
 var _start_pending: bool = false
@@ -15,6 +16,9 @@ var _final_talk: bool = false
 var _clock_save_remaining: float = 0.5
 var _exploration_timeout: bool = false
 var _announced_day: int = 0
+# Presentation-only history: deliberately unknown after loading existing saves.
+var _ui_day: int = 0
+var _final_start_day3_remaining: float = -1.0
 @onready var final_ui: FinalBattleUI = $FinalBattleUI
 
 func _ready() -> void:
@@ -34,11 +38,13 @@ func _final_arena() -> FinalBattlefieldRoom:
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	_final_resolution_room = 0
+	_final_start_day3_remaining = -1.0
 	var normalized: Dictionary = snapshot.duplicate(true)
 	DayClock.normalize(normalized)
 	super._restore(normalized,revive)
 	FinalClock.normalize(data)
 	_announced_day = int(data.get("day",1))
+	_publish_ui_day(_announced_day)
 	if bool(data["events"].get(FinalClock.END,false)):
 		_show_finished()
 	elif bool(data["events"].get(FinalClock.TALK,false)):
@@ -74,12 +80,14 @@ func _on_final_started() -> void:
 
 func _try_start_clock() -> bool:
 	var before: Dictionary = data.duplicate(true)
+	var starting_day3: float = float(data.get("day3_remaining",1800.0))
 	FinalClock.start(data)
 	if not save_current("最终战计时已保存"):
 		data = before
 		_notify("计时尚未保存 · E / RB 重试")
 		return false
 	_start_pending = false
+	_final_start_day3_remaining = starting_day3
 	intro_active = false
 	player.life.scripted_control_locked = false
 	player.set_physics_process(true)
@@ -120,6 +128,32 @@ func blocks_resume() -> bool:
 func _announce_day(day: int) -> void:
 	final_ui.show_day(day)
 	_announced_day = day
+	_publish_ui_day(day)
+
+func _publish_ui_day(day: int) -> void:
+	if day != _ui_day:
+		_ui_day = day
+		day_changed.emit(day)
+
+func ui_time_state() -> Dictionary:
+	# Detached values only; never normalize, tick, save or drive a presentation.
+	var active: bool = has_session()
+	var day: int = int(data.get("day",1)) if active else 0
+	var remaining: float = DayClock.remaining(data) if active else 0.0
+	var events: Dictionary = data.get("events",{})
+	var started: bool = active and bool(events.get(FinalClock.STARTED,false))
+	var final_active: bool = started and not bool(events.get(FinalClock.WON,false)) and not bool(events.get(FinalClock.TIMEOUT,false)) and not bool(events.get(FinalClock.END,false))
+	var warning: bool = active and day < 3 and remaining > 0.0 and remaining <= 180.0
+	return {
+		"has_session":active, "day":day, "day_remaining":remaining,
+		"day_warning":warning, "day_warning_remaining":remaining if warning else 0.0,
+		"day_progress":clampf(1.0 - remaining / DayClock.CONFIG.day_seconds,0.0,1.0) if active else 0.0,
+		"final_started":started, "final_active":final_active,
+		"final_remaining":float(data.get("final_remaining",900.0)) if started else 0.0,
+		"final_start_known":_final_start_day3_remaining >= 0.0,
+		"final_start_day3_remaining":_final_start_day3_remaining,
+		"final_acceleration":final_active and _final_start_day3_remaining > 900.0,
+	}
 
 func _physics_process(delta: float) -> void:
 	if _final_talk:
