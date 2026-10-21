@@ -114,3 +114,98 @@ Color(palette["possibility"]).lerp(Style.LIFE, style.dusk(state)).lerp(Style.POS
 - 原始日志：runs/exp002-r2-import.txt、exp002-r2-main180.txt、exp002-r2-smoke.txt、exp002-r2-exp001-smoke.txt；变异结果另存上述JSON。已确认仅换行的SVG.import按env.md恢复，没有保留源码、测试或生成物改动。本复审提交只更新review.md。
 
 请Claude快进至本复审提交后只补R2剩余颜色回归，再交新的实现与交付SHA复审。G4仍由用户挑选；未合并master。
+
+
+## 第2轮修订复审（2026-10-20）
+
+固定交付 SHA：`6e37f73580b5269f845ab355b97ffa3852910361`；修订实现 SHA：`f09cdb7e90643f513c262b923a13b7492290694e`。已用 git switch --detach 固定交付，再从该交付建立 codex/EXP-002-review-r3。结论：**通过，无阻断项，R2 剩余问题已解决**。此前 R1、N1 的通过结论保持有效。
+
+### 范围与用户选定后的增量
+
+- f09cdb7 到交付只改 delivery.md 与任务卡状态；合并复审记录的 ffc0822 到 f09cdb7 只改 hud_view.gd 和 smoke_test.gd。
+- 从规划基线 43e7dc2 到修订实现，排除 EXP-002 原型目录、协作测试及本任务记录后差异为空；正式游戏与 EXP-001 没有改动。普通合并 ffc0822 保留了 3c2da53 的复审记录和此前用户选定后的光晕、字体提交，没有绕过复审。
+- 交付记录保存用户原话“用样张2的样式，随天数变化和手写字体保留，最终战时的黄昏光晕可以适当的缩减30%左右的强度”，并记录用户随后批准下载指定字体。这些授权足以覆盖本轮原型内的选择与接入；原任务卡不下载外部字体的约束已有该明确授权补充。
+- FINAL_GLOW_SCALE=0.7 仅在最终战降低光晕，未改变纸色、玻璃与边缘渐变；两个样张均有同黄昏程度下 70% 的断言。字体由 style.font() 提供，J 可切回内置字体；HUD、暂停、对话框、按钮、标题均使用该入口。原型字体文件 25,928,940 字节，SHA256 为 `2D73EEA94AD808999D90C0000C239A84A33B09D4BC6AB6C5B8BBF1EDA8A7FC8B`，与 fonts/README.md 记录一致。没有把字体接入正式游戏。
+- 人工查看样张二第3日 HUD、暂停时钟、最终战稳定倒计时与余时不足截图，手写字体、较弱光晕及 14:58 / 朱红 09:12 的表现与记录相符。用户已选定样张二，最新颜色记录修订不改变画面。
+
+### R2：已解决及独立变异
+
+现在在实际 _arc / draw_colored_polygon 调用处记录最终消费的可能性环、透支、生命碎片颜色；测试在两个样张、第1日、第3日、最终战逐一检查。固定 gain_pulse=0、deny_left=0 和正常余额，另以负余额检查透支，避免混色前调色板的断言掩盖实际颜色漂移。89 项同时保留长短预算、暂停二级页遮钟、对话框、按钮和字体切换的覆盖。
+
+以下变异由审查者独立执行，每次恢复原始字节后再进行下一项；均退出 1：
+
+| 变异 | 89 项中的失败数 |
+| --- | --- |
+| 可能性实际填充色随黄昏向生命色混合（上轮明确的漏检） | 6 |
+| 生命实际填充色随黄昏漂移 | 6 |
+| 去掉最终战倒计时绘制 | 6 |
+| 去掉样张一暂停绘制 | 6 |
+| 改生命关键色常量 | 10 |
+| 去掉按键 9 入口 | 4 |
+| 去掉时钟绘制 | 4 |
+
+原始结果：runs/exp002-r3-mutations.json、exp002-r3-mutation-*.txt。全部恢复后冒烟再次 89/89。没有保留实现或测试修改；本审查提交只追加 review.md。
+
+### 独立检查与证据来源
+
+被测内容为固定交付 6e37f735，Godot 4.7.2.stable.official.ed1daf0bf；Python 3.12.14/openpyxl 3.1.5、Git 2.56.0、Node v24.19.0。
+
+| 检查 | 结果 |
+| --- | --- |
+| Godot --headless --path game --editor --import --quit | 退出 0，无 ERROR/WARNING |
+| Godot --headless --path game --quit-after 180 | 退出 0，无 ERROR/WARNING |
+| Godot --headless --path game --script res://prototypes/EXP-002/tests/smoke_test.gd | 89/89，变异还原后复跑同样通过，无 ERROR/WARNING |
+| Godot --headless --path game --script res://prototypes/EXP-001/tests/smoke_test.gd | 105/105，无 ERROR/WARNING |
+| G3 focused --python-all | 102/102 + 47/47，complete=true、passed=true |
+
+导入产生两个 SVG.import 和原型字体 .ttf.import 的换行差异；逐文件确认 ignore-space-at-eol 差异为空后恢复。最终 G3 在干净交付上运行，运行前后内容稳定。探索任务未运行正式全量 76 套件，符合本任务矩阵。
+
+按用户允许，G3 使用刚合入 ENV-005 的外部验证入口：`D:/31days/codexandclaude/tools/run_checks.py`，其来源 master 为 `c5c520a3256b7c23f6b05a58e67045ee64f29b1f`；通过 `--root D:/31days/codexandclaude/worktrees/codex` 验证固定 EXP-002 内容，未将 ENV-005 代码移入被审分支。因此被审目录协作测试仍为 47 项，而 master 为 64 项。未将 ENV-005 的全量摘要复用于这个不同内容的原型分支；本轮 G3 是独立重跑。
+
+以下为新工具自动生成的干净 G3 evidence.md 原文（时间为 UTC，对应本地 2026-10-20）：
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`6e37f73580b5269f845ab355b97ffa3852910361`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-21T01:10:00.074840+00:00；结束：2026-10-21T01:10:05.195065+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all", "--root", "D:/31days/codexandclaude/worktrees/codex"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际102 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际47 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.19.0`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`2429731ed6b82aacfa36014d89486d8d6ed9979a`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`7617cd02460cca48ea45ed3f0feb2a927d82753b95a71d9206e2bfdc443f9fc1`；工作区范围指纹（原始字节）：`7bf838df462dcbd14129510d6559ca16d4fa8142a7f058c59cdac792976908eb`。
+全工作区指纹：`a17ad1b3032d753eb9afbbd914ab18e26f2b477383b73a14ecb7d80f46deca79`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\001.txt`；SHA256=`8add5cb38ddd5791914ce0319f4c141b6a82b3bb09c9e104dae9d1a2f93d0c63`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.297秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\005.txt`；SHA256=`bc697de995dc791df53d688ef69c08994cdffc8ce30c906b1ffc65b131ccd0eb`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.453秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\006.txt`；SHA256=`b298add8051cbb3fa74d201687c814eaae7d5e28d078f2f68e2253a3b079967b`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=0.25秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261021T011000.074840Z\007.txt`；SHA256=`16faa02c17d56d743db610cdcd02f8d3b4e9604404abdd1fa006b102d39584a6`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+
+引擎与变异日志身份（均在忽略的 codexandclaude/runs/）：
+
+- exp002-r3-import.txt SHA256：`8a93a6a259bc1cfbb3b8336ed4a40049037bfd887be54da0fb36355f001dc27e`。
+- exp002-r3-main180.txt SHA256：`83cf0b082206af2aa236c83064fbcfa76be1e00a4aa3558574b2f65965d9481c`。
+- exp002-r3-exp001.txt SHA256：`eb5ee4c71fde9eacf8af6a81913c564c208e61a7580a5b704d28fed38b4d8e68`。
+- exp002-r3-restored-smoke.txt SHA256：`986c29ee0b022a626e46cdc479f1d1c8a3270a337c0bbcb68f9a7f4d78380bf6`。
+- exp002-r3-mutations.json SHA256：`da5a12b68c55ffb51158b172946549be27527edb71708f232e7c4ea4cd132004`。
+
+本轮没有新增非阻断建议。EXP-002 尚未合并 master；请用户授权后按固定审查 SHA 集成。
