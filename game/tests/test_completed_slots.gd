@@ -186,45 +186,6 @@ func unfinished_case(kind: String) -> void:
 		check(paused and session.final_ui.mode == "finished" and bool(session.store.load_slot(1)["events"].get(FinalClock.END, false)), "current resumed ending still saves END and displays finished screen")
 	await stop()
 
-func acceptance() -> void:
-	await launch()
-	write_pair("end")
-	session.ui.show_slots()
-	if root.close_requested.is_connected(session._on_close_requested):
-		root.close_requested.disconnect(session._on_close_requested)
-	root.close_requested.connect(finish)
-	var banner: CanvasLayer = CanvasLayer.new()
-	banner.layer = 90
-	var note: Label = Label.new()
-	note.position = Vector2(820, 900)
-	note.text = "SYS-004 独立临时槽1（已通关）\n点继续：游戏已通关且停留选槽。\n点新游戏并确认：正常开始；关闭窗口清理临时存档。"
-	note.add_theme_font_size_override("font_size", 22)
-	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	banner.add_child(note)
-	root.add_child(banner)
-	await frames()
-	print("SYS004_ACCEPTANCE_READY directory=", directory)
-	await capture("slots")
-	if "--acceptance-smoke" in OS.get_cmdline_user_args():
-		var before: Dictionary = disk_bytes()
-		await click(slot_button(1, "继续"))
-		check(session.ui.get("_mode") == "slots" and not session.has_session(), "acceptance continue stays in the real slot menu")
-		check((session.ui.get("_error_label") as Label).text == "游戏已通关" and disk_bytes() == before, "acceptance prompt and byte preservation")
-		await capture("blocked")
-		await click(slot_button(1, "新游戏"))
-		await click(menu_button("确认开始"))
-		check(session.has_session() and not bool(session.data["events"].get(FinalClock.END, false)), "acceptance new game starts")
-		await capture("new-game")
-		await finish()
-
-func capture(label: String) -> void:
-	if not "--capture" in OS.get_cmdline_user_args() or DisplayServer.get_name() == "headless":
-		return
-	await RenderingServer.frame_post_draw
-	var path: String = ProjectSettings.globalize_path("res://../codexandclaude/runs/SYS-004-g4/" + label + ".png")
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	check(root.get_texture().get_image().save_png(path) == OK, "acceptance screenshot saved: " + label)
-
 func cleanup() -> void:
 	if directory.is_empty() or not DirAccess.dir_exists_absolute(directory):
 		return
@@ -246,10 +207,13 @@ func finish() -> void:
 	quit(1 if failures else 0)
 
 func run() -> void:
-	directory = OS.get_cache_dir().path_join("31days_sys004_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()])
 	if "--acceptance" in OS.get_cmdline_user_args() or "--acceptance-smoke" in OS.get_cmdline_user_args():
-		await acceptance()
+		var launcher: Node = preload("res://tests/acceptance/completed_slots.gd").new()
+		root.add_child(launcher)
+		launcher.connect("finished",quit)
+		await launcher.call("run",OS.get_cmdline_user_args())
 		return
+	directory = OS.get_cache_dir().path_join("31days_sys004_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()])
 	for mode: String in ["valid", "corrupt", "missing"]:
 		await blocked_case(mode)
 	await blocked_case("valid", true)
