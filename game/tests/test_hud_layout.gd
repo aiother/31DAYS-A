@@ -50,13 +50,26 @@ func text_rect(label: Label) -> Rect2:
 func drawn_rect(local: Rect2) -> Rect2:
 	return formal.get_viewport().get_final_transform() * formal.get_global_transform_with_canvas() * local
 
-## Every region the formal HUD drew this frame, as screen rectangles.
+## Every region on screen this frame: what the formal HUD drew, the graybox
+## Instructions labels and the enemy intro card that share the screen with it.
 func regions() -> Dictionary:
 	var result: Dictionary = {}
 	for key: String in ["emblem", "hint", "horizon", "warning", "banner", "final"]:
 		if formal.drawn.has(key):
 			result[key] = drawn_rect(formal.drawn[key]["rect"])
+	for label: Node in session.get_node("Instructions").get_children():
+		if label is Label and (label as Label).is_visible_in_tree() and not (label as Label).text.strip_edges().is_empty():
+			result["instructions " + label.name] = screen_rect(label as Label)
+	var intro: Control = ui.get("_enemy_intro") as Control
+	if intro.is_visible_in_tree():
+		result["enemy intro"] = screen_rect(intro)
 	return result
+
+## Real enemy intro card, left on screen after its slide-in finishes.
+func show_intro() -> void:
+	ui.call("show_enemy_intro", 6.0)
+	await ticks(30)
+	check((ui.get("_enemy_intro") as Control).is_visible_in_tree() and regions().has("enemy intro"), "enemy intro card is on screen and measured")
 
 func set_state(case: String) -> void:
 	var actions: PlayerPossibility = session.player.possibility
@@ -155,6 +168,8 @@ func run() -> void:
 	await layout("healing 1920x1080")
 	set_state("idle")
 	await layout("idle 1920x1080")
+	await show_intro()
+	await layout("enemy intro 1920x1080")
 	set_state("warning")
 	await layout("next-day warning 1920x1080")
 	check(formal.drawn.has("warning"), "warning region is measured")
@@ -179,14 +194,21 @@ func run() -> void:
 	await layout("idle 1280x720")
 	set_state("healing")
 	await layout("healing 1280x720")
+	await show_intro()
+	await layout("enemy intro 1280x720")
 	set_state("warning")
 	await layout("next-day warning 1280x720")
 	await start_final()
 	ui.call("save_failed", LONG_ERROR)
 	await layout("final countdown long error 1280x720")
+	await show_intro()
+	await layout("final countdown enemy intro 1280x720")
 	check(formal.drawn.has("final"), "final countdown region is measured")
 	await viewport(Vector2i(1920, 1080))
 	await layout("final countdown long error 1920x1080")
+	await show_intro()
+	await layout("final countdown enemy intro 1920x1080")
+	check(regions().has("instructions Help") and regions().has("instructions Title"), "graybox help and title are measured in the final battle")
 	var node: Node = hud
 	var passive: bool = formal.mouse_filter == Control.MOUSE_FILTER_IGNORE and formal.filter_rect.mouse_filter == Control.MOUSE_FILTER_IGNORE
 	while node != ui:
