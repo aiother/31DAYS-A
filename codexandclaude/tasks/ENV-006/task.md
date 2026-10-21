@@ -1,6 +1,6 @@
 # ENV-006：通用 G4 验收启动器
 
-状态：已批准（2026-10-21 用户批准，待规划合入 master 后开工）｜级别：M（工具）｜实现：Codex｜审查：Claude
+状态：已完成（Claude 审查及 N1 复核通过；master G2 + G3 通过）｜级别：M（工具）｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；与 SYS-005 同由 Codex 实现，建议排在 SYS-005 之后
 
 ## 目标

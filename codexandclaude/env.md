@@ -116,3 +116,65 @@ ENV-004只迁移73个原有套件的头部注释，未改测试逻辑；报告�
 - **提交说明**：多行、含英文引号或特殊字符的说明，写入 UTF-8 文本文件后用 `git commit -F <文件>`。Windows PowerShell 5.1 把含英文双引号的字符串作为参数传给 git 时会拆坏参数，导致提交失败或说明错乱。说明文件放在系统临时目录等不会被误暂存的位置；简单单行说明仍可用 `-m`。暂存始终使用显式路径。
 - **换行符**：工作区检出为 CRLF。用脚本按多行文本替换时，先确认换行符一致，否则替换会静默失败；多行替换优先用编辑工具。
 - **导入生成物**：Godot 全量或专项运行会让两份 `.svg.import` 出现仅换行符变化（`git diff --ignore-cr-at-eol` 为空），检查后用 `git restore` 还原，不提交。
+
+## 通用 G4 验收启动器（ENV-006）
+
+独立验收进程从入口启动，不改项目主场景或正式按键。默认适配 SYS-004：
+
+```powershell
+# 用户点击验收；关闭窗口自动清理临时存档
+Godot --path game --script res://tests/acceptance/run_acceptance.gd
+# 无头自测，注入实际鼠标事件；不替代物理帧或推进计时器
+Godot --headless --path game --script res://tests/acceptance/run_acceptance.gd -- --self-test
+# 有渲染的截图自测；headless 不支持截图，会明确失败
+Godot --path game --script res://tests/acceptance/run_acceptance.gd -- --self-test --capture
+```
+
+旧 SYS-004 命令 `--script res://tests/test_completed_slots.gd -- --acceptance` / `--acceptance-smoke` / `--capture` 仍兼容，转交同一个适配器；普通已通关槽回归测试不改逻辑。
+
+参数：`--self-test`（兼容 `--acceptance-smoke`）、`--no-panel`、`--slot=1..3`、`--checkpoint=<ID>`、`--capture`、`--capture-dir=<目录>`、`--adapter=res://<适配脚本.gd>`。未知参数或非法槽位会失败。截图默认保存到忽略目录 `codexandclaude/runs/<任务ID>-g4/`，分别为 slots、blocked、new-game；可用 capture-dir 改输出目录。
+
+适配脚本继承 `res://tests/acceptance/acceptance_harness.gd`，提供 `configuration()`：
+
+- `scene`：继承 CheckpointLab 的会话 PackedScene；正式主入口可用 FinalBattleSession 场景。
+- `snapshots`：槽编号到真实存档字典的映射；值也可以是按保存顺序排列的字典数组，用来准备主档和备份。
+- `enter`：true 则加载指定 slot 的检查点，false 留在真实选槽界面；检查点由存档决定，也可用 checkpoint 参数覆盖。
+- `id`、`instructions`：输出目录标识和说明；`marker` 可选，决定自测汇总前缀。
+
+可覆盖 `status_fields()` 返回只读显示字段；可覆盖异步 `self_test()`，用基类 `check()`、`click()`、`frames()`、`capture()` 实现该任务的实际操作检查。UI-002 自己提供其适配，不需复制目录创建、参数处理、面板或清理代码。默认面板读当前日、余额、生命，不写状态。
+
+启动器在 OS 缓存目录新建 `31days_acceptance_<进程>_<唯一时间>/`，在场景 ready 前设置 save_directory，随后核对 store.directory，确认隔离后才写夹具。退出或关闭窗口清理该进程生成的平面槽文件和目录；截图留在上述输出目录。重定向失败会在写夹具前终止，正式玩家存档不参与。不能把启动器注入已运行的玩家会话；它只用于独立验收进程。
+
+### 导入行尾（BL-113）
+
+`.gitattributes` 固定 `*.import text eol=lf`，覆盖 SVG 和字体导入描述；不改 Godot 输出、测试或证据稳定性判定。新检出会直接得到与 Godot 相同的 LF 字节。已有 CRLF 检出的工作区采用该已提交规则后，文件可能仍为 `i/lf w/crlf`，且 Git 状态干净。`git checkout-index --force` 加 `git add --renormalize` 不保证重写这些工作树字节，不能把“暂存为空”当成迁移完成。
+
+在仓库根目录先运行 `git ls-files --eol -- '*.import'`，只选出其中 `w/crlf` 的文件。逐个核对 `eol: lf` 属性已生效、该文件无暂存修改，并将工作树与 `git show HEAD:<文件>` 的原始字节仅归一 CRLF 后比较；含实质编辑就停止，保留原文件。确认后才删除这个明确文件并重新检出。以下是 PowerShell 单文件示例；将 `$importPath` 换成刚查到的一个路径，每个文件重复执行（Python 通过 subprocess 读取 Git 原始字节，避免 PowerShell 管道重编码）：
+
+```powershell
+$importPath = 'game/assets/characters/player_placeholder.svg.import'
+$importRule = git check-attr eol -- $importPath
+if ($LASTEXITCODE -ne 0 -or -not $importRule.EndsWith(': eol: lf')) { throw 'LF 属性未生效，停止' }
+git diff --cached --quiet -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '该文件有暂存修改，停止' }
+@'
+from pathlib import Path
+import subprocess
+import sys
+path = sys.argv[1]
+committed = subprocess.check_output(['git', 'show', 'HEAD:' + path])
+working = Path(path).read_bytes()
+same_content = working.replace(b'\r\n', b'\n') == committed.replace(b'\r\n', b'\n')
+sys.exit(0 if same_content else '存在实质编辑，停止；未删除文件')
+'@ | python - $importPath
+if ($LASTEXITCODE -ne 0) { throw '内容核对失败，停止；未删除文件' }
+Remove-Item -LiteralPath $importPath -ErrorAction Stop
+git checkout -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '重新检出失败，停止并报告' }
+git ls-files --eol -- $importPath
+git status --short
+```
+
+全部目标处理后，再运行 `git ls-files --eol -- '*.import'`，确认所有已跟踪导入描述均为 `w/lf`；原本干净的工作区应仍然 `git status --short` 无输出。不要删除整目录、刷新无关文件的索引或使用全局重置；其他既有用户改动照常保留。重新检出失败时先报告，不继续运行导入或检查。
+
+原先“检查后还原导入生成物”的做法仅适用于采用该规则之前的旧提交。新规则下，正常导入不应再改变这些文件的原始字节，full 的 `content_stable` 应为 true；若仍为 false，查看起止快照，不能忽略变化或手改摘要。
