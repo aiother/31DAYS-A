@@ -121,10 +121,9 @@ func run() -> void:
 	await ticks(2)
 	check(session.dialogue_ui.active and session.player.life.can_control(), "manual NPC dialogue leaves player free to move")
 	session.ui.call("show_pause")
-	var task_in_pause: bool = false
-	for child: Node in session.ui.get("_menu").get_children():
-		if child is Label and child.text.contains("麦秆镇"):
-			task_in_pause = true
+	await ticks(1)
+	# UI-003: the formal pause menu draws the task line; read its drawn record.
+	var task_in_pause: bool = str((session.ui.get("_pause") as PauseMenu).drawn.get("quest", "")).contains("麦秆镇")
 	check(task_in_pause, "pause menu includes current rescue objective")
 	session.ui.call("resume_game")
 	await finish_dialogue()
