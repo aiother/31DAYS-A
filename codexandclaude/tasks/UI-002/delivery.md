@@ -159,3 +159,12 @@ Codex 第3轮复审通过（审查 SHA `3009c4b0d8cc09390eb7c57a4e2588d61c050cad
 - 实现 SHA：`f502eea034e47f4171786bb452eeb661af65d172`。检查：起止 dirty=false 执行 `full --jobs 4`：G2 **81/81**（含 ENV-006 的启动器套件与新 `test_hud_acceptance.gd`），G3 `tests` **102/102**、`codexandclaude/tests` **67/67**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T071831.927514Z/`（不入库）。单项：`HUD_ACCEPTANCE_TESTS 3/0`（内部适配 19/0）。
 - 本节只新增验收适配与说明，HUD 代码与已复审的 `7889615` 相同（`git diff 7889615 f502eea -- game/ui game/world` 只有 master 合并带入的内容，为空）。
 
+## G4 用户验收（2026-10-21）
+
+用户在 `claude/UI-002`（`e240c6c`）上用 UI-002 验收入口（`run_acceptance.gd -- --adapter=res://tests/acceptance/ui002_hud.gd`）完成槽1～3 的检查，并从工作区项目正常开新游戏玩到第2日。结论：**通过**（用户原话：“测试完成了，没问题”）。
+
+- 最后1点生命的边缘脉动：保持现在的强度（用户：“边缘脉动我觉得现在的效果没问题”）。
+- 灰盒说明文字的右侧位置：可以接受（用户：“说明文字也可以”）。
+- SYS-005 审查 N2（透支下限拒绝的闪避也闪红）：用户决定要闪红，由 SYS-006 单独实现，不在本任务内；本次验收时该情况不闪红属于预期。
+- 用户授权合入（用户原话：“同意合入 UI-002”）。
+
