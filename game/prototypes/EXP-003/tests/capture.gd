@@ -2,7 +2,6 @@ extends SceneTree
 ## EXP-003 screenshots for the delivery record. Needs a rendering display:
 ## Godot --path game --resolution 1920x1080 --script res://prototypes/EXP-003/tests/capture.gd
 var preview: Control
-const OUT: String = "res://prototypes/EXP-003/screenshots/"
 
 func _initialize() -> void:
 	run.call_deferred()
@@ -14,7 +13,9 @@ func frames(count: int) -> void:
 func shot(name: String) -> void:
 	await frames(4)
 	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(OUT + name + ".png"))
+	# screenshots/ sits beside tests/ in this prototype folder.
+	var folder: String = (get_script() as Script).resource_path.get_base_dir().get_base_dir().path_join("screenshots")
+	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(folder.path_join(name + ".png")))
 
 func run() -> void:
 	root.size = Vector2i(1920, 1080)
