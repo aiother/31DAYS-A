@@ -142,6 +142,20 @@ class CollaborationTests(unittest.TestCase):
         self.assertNotIn("prototypes/", (ROOT / "scripts/verify_game.py").read_text(encoding="utf-8"))
         self.assertNotIn("prototypes/", (ROOT / "game/project.godot").read_text(encoding="utf-8"))
 
+    def test_exp002_prototype_stays_isolated_and_reuses_exp001_read_only(self):
+        folder = ROOT / "game/prototypes/EXP-002"
+        for name in ("README.md", "preview.tscn", "run_preview.cmd", "tests/smoke_test.gd",
+                     "screenshots/.gdignore"):
+            with self.subTest(file=name):
+                self.assertTrue((folder / name).is_file())
+        for script in list(folder.rglob("*.gd")) + list(folder.rglob("*.tscn")):
+            source = script.read_text(encoding="utf-8")
+            with self.subTest(script=script.name):
+                self.assertNotRegex(source, r"(?m)^class_name ")
+                for path in re.findall(r"res://([^\"\s)]+)", source):
+                    self.assertRegex(path, r"^prototypes/EXP-00[12]/")
+        self.assertNotIn("prototypes/", (ROOT / "scripts/verify_game.py").read_text(encoding="utf-8"))
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
