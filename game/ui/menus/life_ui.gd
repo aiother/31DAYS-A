@@ -51,10 +51,11 @@ func _ready() -> void:
 	status.add_child(_health)
 	_health.visibility_changed.connect(func() -> void: _hud.visible = _health.visible)
 	_hud.setup(player, get_parent(), _health)
-	# UI-003 save feedback: shown when a new checkpoint reaches the disk.
+	# UI-003 save feedback: shown when a new checkpoint reaches the disk, in the
+	# top-right corner (user, 2026-10-21).
 	_save_toast = SaveToast.new()
 	_save_toast.session = get_parent()
-	status.add_child(_save_toast)
+	_root.add_child(_save_toast)
 	if get_parent().has_signal("checkpoint_saved"):
 		get_parent().connect("checkpoint_saved", func(_id: String) -> void: _save_toast.show_saved())
 	_error_label = Label.new()

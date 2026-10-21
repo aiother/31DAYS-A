@@ -253,6 +253,8 @@ func layout_cases() -> void:
 	var hud: FormalHud = session.ui.get("_hud") as FormalHud
 	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
 		root.size = window
+		session.ui.call("show_enemy_intro", 6.0)
+		await frames(30)
 		toast().show_saved()
 		session.ui.call("save_failed", "存档写入失败，请稍后重试")
 		await frames(3)
@@ -265,6 +267,16 @@ func layout_cases() -> void:
 			if hud.drawn.has(key_name) and (to_screen * (hud.drawn[key_name]["rect"] as Rect2)).intersects(toast_box):
 				clear = false
 		check(clear and screen.encloses(toast_box), "save feedback keeps clear of the HUD and the error prompt at %dx%d" % [window.x, window.y])
+		# User 2026-10-21: top-right corner, inset from both edges.
+		var inset: float = SaveToast.MARGIN * to_screen.get_scale().x
+		check(toast_box.position.x > screen.size.x * 0.75 and is_equal_approx(screen.end.x - toast_box.end.x, inset) and is_equal_approx(toast_box.position.y, inset), "save feedback sits in the top-right corner, inset from the edges at %dx%d" % [window.x, window.y])
+		var intro: Rect2 = to_screen * (session.ui.get("_enemy_intro") as Control).get_global_rect()
+		var beside: bool = (session.ui.get("_enemy_intro") as Control).is_visible_in_tree() and not toast_box.intersects(intro)
+		for label: Node in session.get_node("Instructions").get_children():
+			if label is Label and (label as Label).is_visible_in_tree() and not (label as Label).text.strip_edges().is_empty():
+				if toast_box.intersects(to_screen * (label as Label).get_global_rect()):
+					beside = false
+		check(beside, "save feedback clears the enemy intro card and the graybox room text at %dx%d" % [window.x, window.y])
 		session.ui.call("save_failed", "")
 		session.ui.call("show_pause")
 		await frames(3)
