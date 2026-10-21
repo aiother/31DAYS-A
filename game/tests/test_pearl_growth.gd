@@ -118,7 +118,7 @@ func run() -> void:
 	check(config.damage == 5 and config.side_size == Vector2(112,72) and config.vertical_size == Vector2(80,100) and config.side_offset == 76 and config.vertical_offset == 64 and config.enhanced_range_multiplier == 1.2 and config.pearl_range_bonus == 0.05, "shared Resource remains unchanged by all combinations")
 	check(config.windup == 0.08 and config.active_duration == 0.1 and config.recovery_first == 0.14 and config.recovery_second == 0.28 and config.running_timing_multiplier == 2 and config.combo_timeout == 0.5 and config.down_bounce_jump_height_ratio == 0.5, "timings combo and bounce remain unchanged")
 	await ticks(2)
-	check(str(session.ui.get("_health").text).contains("珍珠 4 / 4 · 近战范围 140%"), "HUD reports combined real reach")
+	check((session.ui.get("_hud") as FormalHud).drawn["emblem"]["pearls"] == 4 and (session.ui.get("_hud") as FormalHud).drawn["emblem"]["reach"] == "范围 140%", "HUD reports combined real reach")
 	# A swing snapshots geometry; permanent changes only affect the next swing.
 	for action: String in ["aim_up", "aim_down"]: Input.action_release(action)
 	session.player.combat._start_attack()

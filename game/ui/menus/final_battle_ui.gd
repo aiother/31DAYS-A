@@ -3,30 +3,15 @@ extends CanvasLayer
 signal retry_requested
 signal quit_requested
 signal slots_requested
-var clock_label: Label
 var panel: PanelContainer
 var column: VBoxContainer
 var message: Label
 var curtain: ColorRect
 var mode: String = ""
-var day_notice: Label
-var _day_notice_remaining: float = 0
 
 func _ready() -> void:
 	layer = 18
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	clock_label = Label.new()
-	clock_label.position = Vector2(1360,360)
-	clock_label.add_theme_font_size_override("font_size",24)
-	add_child(clock_label)
-	day_notice = Label.new()
-	day_notice.position = Vector2(660,80)
-	day_notice.size = Vector2(600,80)
-	day_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	day_notice.add_theme_font_size_override("font_size",34)
-	day_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(day_notice)
-	day_notice.hide()
 	curtain = ColorRect.new()
 	curtain.size = Vector2(1920,1080)
 	curtain.color = Color(0.12,0.055,0.035,1)
@@ -63,25 +48,14 @@ func _button(text: String, action: Callable) -> void:
 	if column.get_child_count()==2:
 		button.grab_focus()
 
-func _process(delta: float) -> void:
-	if not get_tree().paused:
-		_day_notice_remaining = maxf(0,_day_notice_remaining-delta)
-	day_notice.visible = _day_notice_remaining>0 and mode.is_empty()
-
 func _input(event: InputEvent) -> void:
 	if mode in ["timeout","day_timeout","finished"] and event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
-
-func show_day(day: int) -> void:
-	day_notice.text = "第 %d 日" % day
-	_day_notice_remaining = DayClock.CONFIG.announcement_seconds
-	day_notice.show()
 
 func show_day_timeout() -> void:
 	if mode=="day_timeout":
 		return
 	_clear("day_timeout")
-	clock_label.hide()
 	message.text = "第三日时间已耗尽\n确认重试后返回当前检查点，恢复本日30分钟。\n保留当前生命、可能性与已保存进度；敌人重置。"
 	_button("确认重试第三日（返回检查点）",func() -> void: retry_requested.emit())
 	_button("存档槽 / 新游戏",func() -> void: slots_requested.emit())
@@ -99,7 +73,6 @@ func show_timeout(can_retry: bool = true, budget: float = 900) -> void:
 	if mode=="timeout":
 		return
 	_clear("timeout")
-	clock_label.hide()
 	message.text = "最终战超时\n可确认重新开始本次最终战的计时预算。\n敌人重置，不重复救场或补满可能性。"
 	if can_retry:
 		var seconds: int = ceili(budget)
@@ -111,7 +84,6 @@ func show_timeout(can_retry: bool = true, budget: float = 900) -> void:
 	_button("保存并退出",func() -> void: quit_requested.emit())
 
 func show_ending(progress: float = 1.0) -> void:
-	clock_label.hide()
 	if mode!="ending":
 		_clear("ending")
 		curtain.show()
@@ -119,7 +91,6 @@ func show_ending(progress: float = 1.0) -> void:
 	curtain.modulate.a = clampf(progress,0,1)
 
 func show_finished() -> void:
-	clock_label.hide()
 	_clear("finished")
 	curtain.show()
 	curtain.modulate.a = 1

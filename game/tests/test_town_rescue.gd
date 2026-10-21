@@ -123,7 +123,7 @@ func run() -> void:
 	check(not session.intro_active and session.player.life.can_control() and session.ui.get("_health").visible, "successful growth retry restores control and HUD")
 	check(session.player.possibility.maximum == 12 and session.player.possibility.balance == 4 and session.player.possibility.config.maximum == 10, "gaze raises runtime cap 10 to 12 without refill or shared-config mutation")
 	check(session.store.load_slot(1)["maximum"] == 12 and session.store.load_slot(1)["events"].get(TownSession.GAZE, false), "raised cap is saved together with permanent gaze source")
-	check(session.ui.get("_health").text.contains("4 / 12") and session.quest_status_text().contains("已获得7的注视"), "HUD and quest reflect grown cap")
+	check((session.ui.get("_hud") as FormalHud).drawn["emblem"]["balance"] == 4 and (session.ui.get("_hud") as FormalHud).drawn["emblem"]["growth"] == 2 and session.quest_status_text().contains("已获得7的注视"), "HUD and quest reflect grown cap")
 	check(session.interact_seven(), "Seven remains interactable after settlement")
 	await finish_dialogue()
 	check(session.player.possibility.maximum == 12 and session.player.possibility.balance == 4, "repeat Seven dialogue cannot repeat growth or resources")

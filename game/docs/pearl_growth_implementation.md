@@ -12,7 +12,7 @@
 
 伤害仍5、前后摇/活跃时间、跑攻时序、0.5秒连击窗口、击退和下攻击弹起为最大跳高一半均保持。珍珠不增加生命、可能性、上限或日期，不需要Q使用；使用道具的输入仍只是预留映射，未追加消耗品、完整背包、武器成长、地图或收集点。
 
-HUD显示“珍珠 n / 4 · 近战范围 n%”，拾取后反馈实际总倍率。`AttackConfig.pearl_range_bonus=0.05`为可调Resource参数，Boss原`enhanced_range_multiplier=1.2`保留。
+HUD徽记下方显示珍珠颗数、右侧纸签显示“范围 n%”（UI-002 起；此前为文字行“珍珠 n / 4 · 近战范围 n%”），拾取后反馈实际总倍率。`AttackConfig.pearl_range_bonus=0.05`为可调Resource参数，Boss原`enhanced_range_multiplier=1.2`保留。
 
 ## 存档与事务
 

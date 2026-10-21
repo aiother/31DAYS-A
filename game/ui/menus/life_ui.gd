@@ -2,7 +2,12 @@ extends CanvasLayer
 ## T7 graybox menus; checkpoint sessions expose disk slots and safe exit.
 @onready var player: PlayerController = get_parent().get_node("Player") as PlayerController
 var _root: Control
+## Control hint kept by the user at UI-002 (small paper tag under the emblem).
+const HINT: String = "K / B 滑步 · 长按 L / Y 恢复"
+const MEDKIT_HINT: String = " · Q / Back 药包"
+const HINT_TOP: float = 322.0
 var _health: Label
+var _hud: FormalHud
 var _black: ColorRect
 var _edges: Array[ColorRect] = []
 var _panel: PanelContainer
@@ -21,16 +26,26 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# HUD rows grow from four to five lines; the error prompt stacks below instead of a fixed y.
+	# UI-002: the formal HUD draws life, possibility, pearls and time. _health is
+	# now only the control hint under the emblem; story scenes still hide the
+	# HUD through it, so the HUD follows its visibility.
+	_hud = FormalHud.new()
+	_root.add_child(_hud)
+	# The error prompt stacks below the hint instead of a fixed y.
 	var status: VBoxContainer = VBoxContainer.new()
 	status.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	status.position = Vector2(64, 258)
+	status.position = Vector2(40, HINT_TOP)
 	status.custom_minimum_size.x = 900
-	status.add_theme_constant_override("separation", 8)
+	status.add_theme_constant_override("separation", 16)
 	_root.add_child(status)
 	_health = Label.new()
-	_health.add_theme_font_size_override("font_size", 24)
+	_health.theme = UiTheme.get_theme()
+	_health.add_theme_font_size_override("font_size", UiTheme.SIZE_SMALL)
+	_health.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_health.text = HINT
 	status.add_child(_health)
+	_health.visibility_changed.connect(func() -> void: _hud.visible = _health.visible)
+	_hud.setup(player, get_parent(), _health)
 	_error_label = Label.new()
 	_error_label.add_theme_font_size_override("font_size", 22)
 	_error_label.modulate = Color(1, 0.5, 0.35)
@@ -87,20 +102,7 @@ func _process(_delta: float) -> void:
 			_intro_tween.tween_property(_enemy_intro, "position:x", 1920.0, 0.2)
 			_intro_tween.tween_callback(_enemy_intro.hide)
 	var life: PlayerLife = player.life
-	var protection: String = ""
-	if life.protection_remaining > 0.0 and life.is_alive():
-		protection = " · 保护 %.1f 秒" % life.protection_remaining
-	_health.text = "生命 %d / %d%s" % [life.health, life.config.max_health, protection]
-	var actions: PlayerPossibility = player.possibility
-	_health.text += "\n可能性 %d / %d · K/B 滑步 · 长按 L/Y 恢复" % [actions.balance, actions.maximum]
-	if actions.state == PlayerPossibility.State.HEALING:
-		_health.text += "\n恢复中 %.1f / %.1f 秒" % [actions.config.heal_duration - actions.remaining, actions.config.heal_duration]
-	elif actions.busy():
-		_health.text += "\n%s滑步 · 连续 %d / 3" % ["透支" if actions.poor_dodge else "", actions.chain]
-	_health.text += "\n珍珠 %d / 4 · 近战范围 %d%%" % [player.combat.pearl_count, roundi(player.combat.range_multiplier() * 100)]
-	if get_parent().has_method("medkit_count"):
-		_health.text += "\n药包 %d / %d · Q / Back 使用" % [int(get_parent().call("medkit_count")), MedkitRules.CONFIG.maximum]
-	_health.modulate = Color(1, 0.5, 0.4) if life.health <= 1 else Color.WHITE
+	_health.text = HINT + (MEDKIT_HINT if get_parent().has_method("medkit_count") else "")
 	var edge_alpha: float = 0.0
 	var black_alpha: float = 0.0
 	if life.state == PlayerLife.State.DOWNED:

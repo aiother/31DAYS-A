@@ -169,9 +169,9 @@ func run() -> void:
 	back.pressed = false
 	Input.parse_input_event(back)
 	await ticks(1)
-	(session.ui.get("_health") as Label).text = ""
-	session.ui.call("_process", 0.0)
-	check((session.ui.get("_health") as Label).text.contains("药包 1 / 3"), "HUD exposes actual inventory and use action")
+	await ticks(1)
+	var hud: Dictionary = (session.ui.get("_hud") as FormalHud).drawn
+	check(hud["emblem"]["medkits"] == "× 1" and (session.ui.get("_health") as Label).text.contains("Q / Back 药包"), "HUD exposes actual inventory and use action")
 	# Revisit and real death/reload preserve consumed supply keys and count.
 	await enter(TowerSession.TOWER_ID)
 	await enter(ExplorationSession.EXPLORATION_ID)
