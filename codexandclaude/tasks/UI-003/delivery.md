@@ -82,3 +82,15 @@ Godot --path game --script res://tests/acceptance/run_acceptance.gd -- --adapter
 2. 走到下一个检查点，看“检查点已保存”纸签。
 3. 槽2 / 槽3（第3日）：向右进入中心战场后暂停，看“最终战剩余”。
 4. 切换 1280×720 与 1920×1080。
+
+## 第1轮审查后修正（Codex R1）
+
+审查 SHA：`7fed5dea15eb367476d6478f3eda59800f70f892`，R1（P2）：正常游戏中直接调用公开方法 `show_settings()` 时，设置页不可见、游戏也未暂停，改变了公开方法行为（任务卡要求6）。确认成立：旧实现经 `_clear_menu` 显示面板并暂停，新实现只建了二级页。
+
+修正实现 SHA：`5e15a82ac1f77677bc9778adfcbb7b44ca8db21d`
+
+- `life_ui.gd` 的 `show_settings()`：暂停菜单未打开时先 `show_pause()`（暂停、显示菜单、关闭灰盒面板），再进入设置页；已在暂停菜单中时行为不变（返回时焦点回到“设置”）。
+- `test_pause_menu.gd` 新增 `direct_settings_cases()`：正常游戏中直接调用后已暂停、菜单可见、设置页焦点在“返回”；三个控件都在屏幕上，音量滑块确实改变主音量；Esc 回到时钟、再按 Esc 恢复游戏；从灰盒存档槽面板调用时替换该面板而不叠加。49 项。
+- 变异：撤掉修复后 3 项失败，恢复后 49/0。
+- 检查：起止 dirty=false 执行 `full --jobs 4`：G2 **83/83**，G3 102/102 + 67/67，**content_stable=True**。摘要 `codexandclaude/runs/20261021T120131.208159Z/`（不入库）。
+
