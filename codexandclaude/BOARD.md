@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-20（第二批完成后的规划刷新，汇总基线 master@20c73b7；第一、二批全部完成；第三批 SYS-005、UI-001、UI-002、ENV-006 已批准；本次仅补记 SYS-005 完成）
+更新：2026-10-20（第二批完成后的规划刷新，汇总基线 master@20c73b7；第一、二批全部完成；第三批 SYS-005、UI-001、UI-002、ENV-006 已批准；本次仅补记 SYS-005、UI-001 完成）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -26,7 +26,7 @@
 | EXP-002 | M | UI 整体视觉基调探索 | Claude | Codex | 已完成 | [tasks/EXP-002](tasks/EXP-002/task.md) |
 | ENV-005 | M | 检查证据自动汇总 | Codex | Claude | 已完成 | [tasks/ENV-005](tasks/ENV-005/task.md) |
 | SYS-005 | M | UI 数据接口 | Codex | Claude | 已完成 | [tasks/SYS-005](tasks/SYS-005/task.md) |
-| UI-001 | M | 正式视觉基础与手写字体接入 | Claude | Codex | 已批准 | [tasks/UI-001](tasks/UI-001/task.md) |
+| UI-001 | M | 正式视觉基础与手写字体接入 | Claude | Codex | 已完成 | [tasks/UI-001](tasks/UI-001/task.md) |
 | UI-002 | L | 正式 HUD 与时间显示 | Claude | Codex | 已批准（依赖SYS-005、UI-001） | [tasks/UI-002](tasks/UI-002/task.md) |
 | ENV-006 | M | 通用 G4 验收启动器 | Codex | Claude | 已批准 | [tasks/ENV-006](tasks/ENV-006/task.md) |
 

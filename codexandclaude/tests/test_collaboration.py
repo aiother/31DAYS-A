@@ -156,6 +156,17 @@ class CollaborationTests(unittest.TestCase):
                     self.assertRegex(path, r"^prototypes/EXP-00[12]/")
         self.assertNotIn("prototypes/", (ROOT / "scripts/verify_game.py").read_text(encoding="utf-8"))
 
+    def test_formal_style_ships_licence_and_is_not_a_project_default_theme(self):
+        fonts = ROOT / "game/assets/fonts"
+        for name in ("LXGWWenKai-Regular.ttf", "OFL.txt", "README.md"):
+            with self.subTest(file=name):
+                self.assertTrue((fonts / name).is_file())
+        notice = (fonts / "README.md").read_text(encoding="utf-8")
+        self.assertIn("保留字体名", notice)
+        self.assertIn("SIL Open Font License", (fonts / "OFL.txt").read_text(encoding="utf-8"))
+        # UI-001: the theme is applied per formal screen, never project-wide.
+        self.assertNotIn("theme/custom", (ROOT / "game/project.godot").read_text(encoding="utf-8"))
+
     def test_hud_pilot_scope_matches_real_inputs_and_future_test_paths(self):
         task = (ARCHIVE / "hud_pilot.md").read_text(encoding="utf-8")
         for path in ("game/ui/menus/life_ui.gd", "scripts/verify_game.py",
