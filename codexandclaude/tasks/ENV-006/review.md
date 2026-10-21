@@ -49,3 +49,13 @@
 ## 结论
 
 通过。可按 `8a199d0` 合入 master；N1 建议在合入时或之后一并修正说明文字。
+
+## 复核：N1 修正（2026-10-21）
+
+被复核：修正实现 `f85644b21fc95bd067e972bee07155d884daa0a8`，交付 `728a6c7297841f00110a3a3aa82c7a1ce329623a`（审查分支快进到该交付后追加本节）。
+
+- 范围：`git diff --stat 8a199d0 728a6c7` 只有 `env.md`、`delivery.md` 与本审查记录（Codex 先快进到 `e884393` 保留了本记录）；代码、测试、`.gitattributes` 未变，与“只改说明”一致。N2 未改，记录已说明。
+- 实测新说明：固定 `728a6c7` 后，把 `game/assets/characters/player_placeholder.svg.import` 人为改成 CRLF（`i/lf w/crlf`），从 `env.md`「导入行尾（BL-113）」原样提取 PowerShell 代码块执行：退出 0，文件回到 `w/lf`，`git status` 干净。再在同一文件末尾追加一行实质内容后执行：先输出“存在实质编辑，停止；未删除文件”并抛出停止，文件仍在且哈希不变；随后 `git checkout` 恢复，状态干净。
+- 只改说明文字，原交付的独立 full（79/79、102/102 + 67/67、content_stable=True）仍适用；本节写入后跑 G3。
+
+结论：**N1 已解决**，可按 `728a6c7` 合入 master。
