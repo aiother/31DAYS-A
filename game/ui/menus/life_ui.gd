@@ -8,6 +8,10 @@ const MEDKIT_HINT: String = " · Q / Back 药包"
 const HINT_TOP: float = 322.0
 var _health: Label
 var _hud: FormalHud
+var _pause: PauseMenu
+var _save_toast: SaveToast
+## Quitting is replaceable so tests can confirm save-and-quit without ending the run.
+var _quit_handler: Callable
 var _black: ColorRect
 var _edges: Array[ColorRect] = []
 var _panel: PanelContainer
@@ -22,6 +26,7 @@ var _intro_tween: Tween
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 20
+	_quit_handler = get_tree().quit
 	_root = Control.new()
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
@@ -46,6 +51,12 @@ func _ready() -> void:
 	status.add_child(_health)
 	_health.visibility_changed.connect(func() -> void: _hud.visible = _health.visible)
 	_hud.setup(player, get_parent(), _health)
+	# UI-003 save feedback: shown when a new checkpoint reaches the disk.
+	_save_toast = SaveToast.new()
+	_save_toast.session = get_parent()
+	status.add_child(_save_toast)
+	if get_parent().has_signal("checkpoint_saved"):
+		get_parent().connect("checkpoint_saved", func(_id: String) -> void: _save_toast.show_saved())
 	_error_label = Label.new()
 	_error_label.add_theme_font_size_override("font_size", 22)
 	_error_label.modulate = Color(1, 0.5, 0.35)
@@ -91,6 +102,16 @@ func _ready() -> void:
 	_menu.add_theme_constant_override("separation", 16)
 	_panel.add_child(_menu)
 	_panel.hide()
+	# UI-003: the pause page is formal; death, slots and other panels stay graybox.
+	_pause = PauseMenu.new()
+	var actions: Dictionary = {"continue": resume_game, "settings": show_settings, "quit": _quit_game,
+		"quit_label": "保存并退出" if get_parent().has_method("save_current") else "退出游戏"}
+	# User 2026-10-21: keep the slot entry until the main menu exists.
+	if get_parent().has_method("start_slot"):
+		actions["slots"] = show_slots
+	_pause.setup(get_parent(), _hud, actions)
+	_root.add_child(_pause)
+	_pause.returned.connect(func() -> void: _mode = "pause")
 	player.life.death_menu_ready.connect(show_death)
 
 func _process(_delta: float) -> void:
@@ -129,6 +150,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			show_death()
 		elif _mode == "pause":
 			resume_game()
+		elif _pause.visible and _mode in ["settings", "confirm_quit"]:
+			_pause.back()
 		else:
 			show_pause()
 		get_viewport().set_input_as_handled()
@@ -137,6 +160,7 @@ func _clear_menu(title: String, mode: String) -> void:
 	for child: Node in _menu.get_children():
 		_menu.remove_child(child)
 		child.queue_free()
+	_pause.close()
 	_mode = mode
 	_panel.show()
 	get_tree().paused = true
@@ -157,22 +181,17 @@ func _button(text: String, callback: Callable, focus: bool = false) -> Button:
 		button.grab_focus()
 	return button
 
+## UI-003: formal pause menu (current task now sits under the clock).
 func show_pause() -> void:
-	_clear_menu("已暂停", "pause")
-	if get_parent().has_method("quest_status_text"):
-		var task: Label = Label.new()
-		task.text = str(get_parent().call("quest_status_text"))
-		task.add_theme_font_size_override("font_size", 20)
-		_menu.add_child(task)
-	_button("继续游戏", resume_game, true)
-	_button("设置", show_settings)
-	if get_parent().has_method("start_slot"):
-		_button("存档槽", show_slots)
-	_button("退出游戏", _quit_game)
+	_panel.hide()
+	_mode = "pause"
+	get_tree().paused = true
+	_pause.open()
 
 func resume_game() -> void:
 	if get_parent().has_method("blocks_resume") and get_parent().call("blocks_resume"):
 		_panel.hide()
+		_pause.close()
 		_mode = ""
 		get_tree().paused = true
 		return
@@ -180,6 +199,7 @@ func resume_game() -> void:
 		show_death()
 		return
 	_panel.hide()
+	_pause.close()
 	_mode = ""
 	get_tree().paused = false
 
@@ -200,38 +220,17 @@ func restart_challenge() -> void:
 	get_tree().paused = false
 	get_parent().call("restart_challenge")
 
+## Settings is a secondary page of the formal pause menu, covering its clock.
 func show_settings() -> void:
-	_clear_menu("设置", "settings")
-	var volume_label: Label = Label.new()
-	volume_label.text = "音量"
-	volume_label.add_theme_font_size_override("font_size", 22)
-	_menu.add_child(volume_label)
-	var volume: HSlider = HSlider.new()
-	volume.min_value = 0
-	volume.max_value = 100
-	volume.value = AudioServer.get_bus_volume_linear(0) * 100.0
-	volume.custom_minimum_size.y = 36
-	volume.value_changed.connect(func(value: float) -> void: AudioServer.set_bus_volume_linear(0, value / 100.0))
-	_menu.add_child(volume)
-	var resolution: OptionButton = OptionButton.new()
-	resolution.add_item("窗口尺寸 1280 × 720")
-	resolution.add_item("窗口尺寸 1920 × 1080")
-	resolution.select(1 if DisplayServer.window_get_size().x >= 1920 else 0)
-	resolution.item_selected.connect(func(index: int) -> void: DisplayServer.window_set_size(Vector2i(1280, 720) if index == 0 else Vector2i(1920, 1080)))
-	_menu.add_child(resolution)
-	var fullscreen: CheckButton = CheckButton.new()
-	fullscreen.text = "全屏"
-	fullscreen.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-	fullscreen.toggled.connect(func(enabled: bool) -> void: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if enabled else DisplayServer.WINDOW_MODE_WINDOWED))
-	_menu.add_child(fullscreen)
-	_button("返回", show_pause, true)
+	_mode = "settings"
+	_pause.show_settings()
 
 func _quit_game() -> void:
 	if get_parent().has_method("save_current"):
 		confirm_quit()
 		return
 	get_tree().paused = false
-	get_tree().quit()
+	_quit_handler.call()
 
 func save_failed(message: String) -> void:
 	_error_label.text = message
@@ -286,6 +285,10 @@ func _confirm_new_slot(selected: int, occupied: bool) -> void:
 	_button("返回", show_slots)
 
 func confirm_quit() -> void:
+	if _pause.visible:
+		_mode = "confirm_quit"
+		_pause.show_confirm(_save_and_quit, _error_label.text)
+		return
 	_clear_menu("保存并退出游戏？", "confirm_quit")
 	_button("保存并退出", _save_and_quit, true)
 	_button("返回", _return_from_quit)
@@ -300,9 +303,11 @@ func _return_from_quit() -> void:
 
 func _save_and_quit() -> void:
 	if not (get_parent() as CheckpointLab).save_current():
+		# The pause sheet covers the error prompt, so the page repeats it.
+		_pause.set_error(_error_label.text)
 		return
 	get_tree().paused = false
-	get_tree().quit()
+	_quit_handler.call()
 
 func show_room_boundary(_target: String) -> void:
 	_clear_menu("前方道路", "room_boundary")

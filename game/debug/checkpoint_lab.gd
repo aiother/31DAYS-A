@@ -1,5 +1,9 @@
 class_name CheckpointLab
 extends EnemyLab
+## UI-003: a save just wrote a checkpoint different from the last one on disk
+## (save feedback). Periodic, resource and event autosaves, loads and failed
+## writes never emit it.
+signal checkpoint_saved(id: String)
 @export var save_directory: String = "user://saves"
 var store: SlotStore = SlotStore.new()
 var slot: int = 0
@@ -9,6 +13,7 @@ var _loading: bool = false
 var _reloading: bool = false
 var _notice: String = ""
 var _notice_remaining: float = 0.0
+var _saved_checkpoint: String = ""
 @onready var ui: CanvasLayer = $LifeUI
 
 func _ready() -> void:
@@ -101,6 +106,7 @@ func _restore(snapshot: Dictionary, revive: bool) -> void:
 	player.possibility.balance_changed.emit(player.possibility.balance, player.possibility.maximum)
 	player.position = _checkpoint(str(data["checkpoint"])).config.spawn_position
 	_update_flags()
+	_saved_checkpoint = str(data["checkpoint"])
 	_loading = false
 	ui.call("resume_game")
 
@@ -143,6 +149,9 @@ func save_current(message: String = "已自动保存") -> bool:
 		ui.call("save_failed", store.last_error)
 		return false
 	_notify(message)
+	if str(data["checkpoint"]) != _saved_checkpoint:
+		_saved_checkpoint = str(data["checkpoint"])
+		checkpoint_saved.emit(_saved_checkpoint)
 	return true
 
 func _on_death() -> void:
