@@ -218,7 +218,8 @@ func continue_cases() -> void:
 	check(cards.get(0, {}).get("state") == "progress" and cards.get(1, {}).get("state") == "completed" and cards.get(2, {}).get("state") == "unreadable", "the three bookmarks draw their real states")
 	var lines: Array = cards.get(0, {}).get("lines", [])
 	check(lines.size() == 6 and lines[0] == "第 2 日 · 末日前 2 天" and lines[1] == "游戏时长 1:23:45" and lines[3] == "可能性 6 / 10" and lines[4] == "珍珠 0", "a slot in progress shows day, countdown, play time, possibility and pearls")
-	check(str(lines[5]).begins_with("最后检查点\n") and not str(lines[5]).ends_with("\n"), "and its last checkpoint by name")
+	# Review N1: the exact display name of the fixtures' checkpoints.
+	check(lines[5] == "最后检查点\n深谷检查点" and cards.get(1, {}).get("lines", [])[5] == "最后检查点\n堑壕第二间 · 入口", "and its last checkpoint by name")
 	var shards: Dictionary = cards.get(0, {}).get("shards", {})
 	check(shards.get("filled") == 4 and shards.get("slots") == session.player.life.config.max_health, "life shards show health against the maximum")
 	check(cards.get(1, {}).get("seal") == "已通关" and not cards.get(0, {}).has("seal"), "only the completed bookmark wears the 已通关 seal")
@@ -229,6 +230,7 @@ func continue_cases() -> void:
 	check(slots().focused() == 1 and float(slots().drawn["cards"][1]["lift"]) < 0.0, "right moves to the next bookmark")
 	await key(KEY_ENTER)
 	check(slots().visible and mode() == "slots" and not session.has_session() and slots().drawn.get("prompt", {}).get("text") == "游戏已通关", "a completed slot answers 游戏已通关 and stays")
+	check(slots().drawn.get("prompt", {}).get("color") == DuskStyle.LIFE, "the prompt is drawn in the fixed vermilion")
 	await pad(JOY_BUTTON_DPAD_RIGHT)
 	check(slots().focused() == 2, "D-pad right reaches the third bookmark")
 	await pad(JOY_BUTTON_A)
@@ -297,6 +299,16 @@ func layout_cases() -> void:
 	var prompt: Dictionary = slots().drawn.get("prompt", {})
 	check(not session.has_session() and slots().visible and not str(prompt.get("text", "")).is_empty() and prompt.get("text") == (session.ui.get("_error_label") as Label).text, "a failed save shows the existing error on the slot screen")
 	check(not (session.ui.get("_error_label") as Label).visible, "the graybox error label does not show behind the bookmarks")
+	# Review R1: after the failed start the keys and pad still work, with no
+	# focus repaired by the test.
+	check(root.gui_get_focus_owner() == slots().cards[2] and slots().dialog == null, "after a failed start the focus is back on the bookmark that asked")
+	await key(KEY_LEFT)
+	check(slots().focused() == 1, "and left still moves between bookmarks")
+	await pad(JOY_BUTTON_DPAD_RIGHT)
+	await key(KEY_ENTER)
+	check(slots().dialog != null and focus_text() == "返回", "and Enter asks again for the same slot")
+	await pad(JOY_BUTTON_BACK)
+	check(slots().dialog == null and slots().focused() == 2 and slots().visible, "and Back closes the question back onto it")
 	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
 		root.size = window
 		for focus: int in [0, 1, 2]:

@@ -80,8 +80,15 @@ func draw_prompt(time: Dictionary) -> void:
 	var box: Rect2 = prompt_rect()
 	InkDraw.paper(self, box, Color(DuskStyle.paper_color(time), 0.95), 950, DuskStyle.WOBBLE, 0)
 	InkDraw.rough_rect(self, box, Color(DuskStyle.INK, 0.85), DuskStyle.INK_WIDTH, 951, DuskStyle.WOBBLE)
-	draw_string(font, box.position + Vector2(0, 40), prompt, HORIZONTAL_ALIGNMENT_CENTER, box.size.x, UiTheme.SIZE_BODY, DuskStyle.LIFE)
-	drawn["prompt"] = {"text": prompt, "rect": box, "color": DuskStyle.LIFE}
+	var record: Dictionary = ink(self, box.position + Vector2(0, 40), prompt, UiTheme.SIZE_BODY, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
+	record["rect"] = box
+	drawn["prompt"] = record
+
+## Draws text and returns what it drew: the record a test reads can only come
+## from this call, with the same text and colour (review R2).
+func ink(ci: CanvasItem, at: Vector2, text: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> Dictionary:
+	ci.draw_multiline_string(font, at, text, align, width, size_px, -1, color)
+	return {"text": text, "color": color}
 
 func focus_first() -> void:
 	for button: Button in buttons:
@@ -113,7 +120,15 @@ func ask(text: String, yes_label: String, yes: Callable, refocus: Button = null)
 	cancel.focus_neighbor_left = cancel.get_path_to(accept)
 	accept.pressed.connect(func() -> void:
 		close_dialog(false)
-		yes.call())
+		yes.call()
+		# Still here (e.g. the save failed): give the focus back to what asked,
+		# so keys and pads can carry on (review R1).
+		# The freed sheet's button may still hold the focus until deletion.
+		if is_visible_in_tree() and dialog == null and not buttons.has(get_viewport().gui_get_focus_owner()):
+			if is_instance_valid(refocus):
+				refocus.grab_focus()
+			else:
+				focus_first())
 	cancel.pressed.connect(func() -> void: close_dialog())
 	dialog.set_meta("accept", accept)
 	dialog.set_meta("cancel", cancel)
@@ -154,8 +169,9 @@ func _draw_dialog(sheet_node: Control) -> void:
 	var sheet: Rect2 = sheet_rect()
 	InkDraw.paper(dialog, sheet, Color(DuskStyle.paper_color(time), 0.96), 870, DuskStyle.WOBBLE, 6)
 	DuskStyle.panel(dialog, sheet, time, 871)
-	dialog.draw_multiline_string(font, sheet.position + Vector2(40, 96), dialog_text, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x - 80, UiTheme.SIZE_HEADING, -1, DuskStyle.INK)
-	drawn["dialog"] = {"text": dialog_text, "rect": sheet}
+	var record: Dictionary = ink(dialog, sheet.position + Vector2(40, 96), dialog_text, UiTheme.SIZE_HEADING, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x - 80)
+	record["rect"] = sheet
+	drawn["dialog"] = record
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_visible_in_tree():

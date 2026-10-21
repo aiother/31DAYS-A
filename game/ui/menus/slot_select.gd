@@ -129,12 +129,12 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.10, 0.06, 0.08))
 	InkDraw.wash(self, Rect2(Vector2.ZERO, size), Color(DuskStyle.DUSK_TOP, 0.35), Color(DuskStyle.DUSK_BOTTOM, 0.25))
 	InkDraw.glow(self, Vector2(size.x * 0.5, size.y * 0.55), 520, DuskStyle.SUN, 0.35)
-	draw_string(font, Vector2(140, 120), heading(), HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_TITLE, DuskStyle.PAPER_DAY)
+	var shown_heading: String = ink(self, Vector2(140, 120), heading(), UiTheme.SIZE_TITLE, DuskStyle.PAPER_DAY)["text"]
 	InkDraw.rough_line(self, Vector2(140, 140), Vector2(520, 140), Color(DuskStyle.LIFE, 0.85), 2.6, 91, 1.2)
 	var hint: String = "← → 选择 · Enter / A 确认 · Esc / Back 返回"
 	draw_string(font, Vector2(140, 182), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7))
 	var hint_size: Vector2 = font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_SMALL)
-	drawn["heading"] = heading()
+	drawn["heading"] = shown_heading
 	drawn["header_rect"] = Rect2(140, 120 - font.get_ascent(UiTheme.SIZE_TITLE), maxf(380.0, hint_size.x), 182 - 120 + font.get_ascent(UiTheme.SIZE_TITLE) + font.get_descent(UiTheme.SIZE_SMALL))
 	drawn["focused"] = focused()
 	drawn["back_rect"] = back_button.get_global_rect()
@@ -175,54 +175,59 @@ func _draw_card(card: Button, index: int) -> void:
 		"unreadable":
 			for i: int in range(6):
 				InkDraw.rough_line(card, Vector2(20 + i * 50, top + 140), Vector2(50 + i * 50, top + 176), Color(DuskStyle.INK, 0.5), 2.0, 110 + i, 2.0)
-			record["label"] = _text(card, Vector2(0, top + 240), "无法读取", UiTheme.SIZE_HEADING, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, w)
-			keys["label"] = DuskStyle.LIFE
+			record["label"] = _key(keys, "label", card, Vector2(0, top + 240), "无法读取", UiTheme.SIZE_HEADING, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, w)
 			record["note"] = _text(card, Vector2(28, top + 300), "存档文件损坏或版本不符\n可在新游戏中覆盖此槽", UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.75), HORIZONTAL_ALIGNMENT_CENTER, w - 56)
 		_:
 			var row: Dictionary = rows[index]
 			var day: int = int(row["day"])
 			var lines: Array[String] = []
 			card.draw_string(font, Vector2(0, top + 44), "末日前31天", HORIZONTAL_ALIGNMENT_CENTER, w, UiTheme.SIZE_BODY, Color(DuskStyle.INK, 0.75))
-			lines.append(_text(card, Vector2(28, top + 96), "第 %d 日 · 末日前 %d 天" % [day, 4 - day], UiTheme.SIZE_BODY, DuskStyle.LIFE))
-			keys["date"] = DuskStyle.LIFE
+			lines.append(_key(keys, "date", card, Vector2(28, top + 96), "第 %d 日 · 末日前 %d 天" % [day, 4 - day], UiTheme.SIZE_BODY, DuskStyle.LIFE))
 			lines.append(_text(card, Vector2(28, top + 142), "游戏时长 " + play_time(float(row["play_seconds"])), UiTheme.SIZE_SMALL, DuskStyle.INK))
 			lines.append(_text(card, Vector2(28, top + 188), "生命", UiTheme.SIZE_SMALL, DuskStyle.INK))
-			record["shards"] = _shards(card, Vector2(96, top + 182), int(row["health"]), int(row["max_health"]))
-			keys["shard"] = DuskStyle.LIFE
-			lines.append(_text(card, Vector2(28, top + 234), "可能性 %d / %d" % [int(row["balance"]), int(row["maximum"])], UiTheme.SIZE_SMALL, DuskStyle.POSSIBILITY.darkened(0.2)))
-			keys["possibility"] = DuskStyle.POSSIBILITY.darkened(0.2)
+			record["shards"] = _shards(card, Vector2(96, top + 182), int(row["health"]), int(row["max_health"]), DuskStyle.LIFE)
+			keys["shard"] = record["shards"]["color"]
+			lines.append(_key(keys, "possibility", card, Vector2(28, top + 234), "可能性 %d / %d" % [int(row["balance"]), int(row["maximum"])], UiTheme.SIZE_SMALL, DuskStyle.POSSIBILITY.darkened(0.2)))
 			lines.append(_text(card, Vector2(28, top + 274), "珍珠 %d" % int(row["pearls"]), UiTheme.SIZE_SMALL, DuskStyle.INK))
 			var checkpoint: String = str(row["checkpoint_name"]) if not str(row["checkpoint_name"]).is_empty() else str(row["checkpoint"])
 			lines.append(_text(card, Vector2(28, top + 320), "最后检查点\n" + checkpoint, UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.85), HORIZONTAL_ALIGNMENT_LEFT, w - 56))
 			record["lines"] = lines
 			if current == "completed":
-				record["seal"] = _seal(card, Vector2(w * 0.72, h - 88 + lift), "已通关")
-				keys["seal"] = DuskStyle.LIFE
+				var seal: Dictionary = _seal(card, Vector2(w * 0.72, h - 88 + lift), "已通关", DuskStyle.LIFE)
+				record["seal"] = seal["text"]
+				keys["seal"] = seal["color"]
 	record["keys"] = keys
 	var cards_record: Dictionary = drawn.get("cards", {})
 	cards_record[index] = record
 	drawn["cards"] = cards_record
 
 ## Draws text and hands it back, so a record can only come from a real draw.
+## Draws a key-coloured text and records the colour it was really drawn in.
+func _key(keys: Dictionary, name: String, ci: CanvasItem, at: Vector2, value: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> String:
+	var shown: Dictionary = ink(ci, at, value, size_px, color, align, width)
+	keys[name] = shown["color"]
+	return shown["text"]
+
 func _text(ci: CanvasItem, at: Vector2, value: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> String:
 	ci.draw_multiline_string(font, at, value, align, width, size_px, -1, color)
 	return value
 
-func _shards(ci: CanvasItem, at: Vector2, count: int, maximum: int) -> Dictionary:
+## The colour returned is the one the filled shards were drawn in.
+func _shards(ci: CanvasItem, at: Vector2, count: int, maximum: int, color: Color) -> Dictionary:
 	for i: int in range(maxi(count, maximum)):
 		var c: Vector2 = at + Vector2(i * 24.0, 0)
 		var points: PackedVector2Array = PackedVector2Array([c + Vector2(0, -14), c + Vector2(6, 0), c + Vector2(0, 14), c + Vector2(-6, 0)])
 		if i < count:
-			ci.draw_colored_polygon(points, DuskStyle.LIFE)
+			ci.draw_colored_polygon(points, color)
 		else:
 			points.append(points[0])
 			ci.draw_polyline(points, Color(DuskStyle.INK, 0.4), 1.4, true)
-	return {"filled": count, "slots": maxi(count, maximum), "color": DuskStyle.LIFE}
+	return {"filled": count, "slots": maxi(count, maximum), "color": color}
 
-func _seal(ci: CanvasItem, center: Vector2, text: String, radius: float = 54.0) -> String:
+func _seal(ci: CanvasItem, center: Vector2, text: String, color: Color, radius: float = 54.0) -> Dictionary:
 	ci.draw_set_transform(center, -0.25, Vector2.ONE)
-	InkDraw.rough_circle(ci, Vector2.ZERO, radius, Color(DuskStyle.LIFE, 0.9), 4.0, 77, 1.5)
-	InkDraw.rough_circle(ci, Vector2.ZERO, radius - 8, Color(DuskStyle.LIFE, 0.7), 2.0, 78, 1.0)
-	var shown: String = _text(ci, Vector2(-radius, 12), text, 30, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0)
+	InkDraw.rough_circle(ci, Vector2.ZERO, radius, Color(color, 0.9), 4.0, 77, 1.5)
+	InkDraw.rough_circle(ci, Vector2.ZERO, radius - 8, Color(color, 0.7), 2.0, 78, 1.0)
+	var shown: Dictionary = ink(ci, Vector2(-radius, 12), text, 30, color, HORIZONTAL_ALIGNMENT_CENTER, radius * 2.0)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	return shown

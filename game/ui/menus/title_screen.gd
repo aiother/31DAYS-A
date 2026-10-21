@@ -68,12 +68,12 @@ func _draw() -> void:
 	var title: Rect2 = title_rect()
 	var baseline: float = title.end.y - 92
 	draw_string(font, Vector2(4, baseline + 5), TITLE, HORIZONTAL_ALIGNMENT_CENTER, size.x, 132, Color(0, 0, 0, 0.35))
-	draw_string(font, Vector2(0, baseline), TITLE, HORIZONTAL_ALIGNMENT_CENTER, size.x, 132, DuskStyle.PAPER_DAY)
+	var shown: Dictionary = ink(self, Vector2(0, baseline), TITLE, 132, DuskStyle.PAPER_DAY, HORIZONTAL_ALIGNMENT_CENTER, size.x)
 	var text_size: Vector2 = font.get_string_size(TITLE, HORIZONTAL_ALIGNMENT_LEFT, -1, 132)
 	var text_rect: Rect2 = Rect2(Vector2((size.x - text_size.x) * 0.5, baseline - font.get_ascent(132)), text_size)
 	InkDraw.rough_line(self, Vector2(size.x * 0.5 - 220, title.end.y - 64), Vector2(size.x * 0.5 + 220, title.end.y - 64), Color(DuskStyle.LIFE, 0.85), 3.0, 41, 1.2)
 	draw_string(font, Vector2(0, title.end.y - 22), "V0.1", HORIZONTAL_ALIGNMENT_CENTER, size.x, UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.7))
-	drawn["title"] = {"text": TITLE, "rect": text_rect, "band": title, "font": font.resource_path}
+	drawn["title"] = {"text": shown["text"], "rect": text_rect, "band": title, "font": font.resource_path}
 	drawn["menu_rect"] = menu.get_rect()
 	draw_prompt(MOOD)
 
