@@ -82,7 +82,8 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	# Allow the audio thread to release playback after the real combat scene exits.
-	await create_timer(0.25).timeout
+	# --fixed-fps advances SceneTree timers faster than the audio thread's wall time.
+	OS.delay_msec(500)
 	for selected: int in [1, 2, 3]:
 		for suffix: String in ["", ".bak", ".tmp"]:
 			var path: String = directory.path_join("slot_%d.json" % selected) + suffix
