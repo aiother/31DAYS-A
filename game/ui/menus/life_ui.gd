@@ -241,6 +241,10 @@ func save_failed(message: String) -> void:
 	_error_label.text = message
 	_error_label.visible = not message.is_empty()
 
+## SYS-008: UI-004 replaces this with the formal main menu.
+func show_title() -> void:
+	show_slots()
+
 func show_slots() -> void:
 	var lab: CheckpointLab = get_parent() as CheckpointLab
 	if lab == null:

@@ -18,6 +18,10 @@ var _saved_checkpoint: String = ""
 
 func _ready() -> void:
 	super._ready()
+	# Carry isolated/custom save directories across a title reload as well.
+	if get_tree().has_meta("checkpoint_title"):
+		save_directory = str(get_tree().get_meta("checkpoint_title"))
+		get_tree().remove_meta("checkpoint_title")
 	store.directory = save_directory
 	player.life.health_changed.connect(_on_health_changed)
 	player.possibility.balance_changed.connect(_on_balance_changed)
@@ -33,10 +37,42 @@ func _ready() -> void:
 		slot = int(pending["slot"])
 		_restore(pending["data"], bool(pending["revive"]))
 		return
-	ui.call("show_slots")
+	ui.call("show_title")
 
 func has_session() -> bool:
 	return slot > 0 and not data.is_empty()
+
+func slot_summaries() -> Array[Dictionary]:
+	return SlotSummaries.read(store,player.life.config.max_health)
+
+func has_any_save() -> bool:
+	for summary: Dictionary in slot_summaries():
+		if summary["state"] != "empty": return true
+	return false
+
+## Accepted returns are deferred like existing slot/death reloads. Saving uses
+## the virtual save_current, preserving settlement, ending and timeout rules.
+func return_to_title() -> bool:
+	if _reloading: return false
+	if not has_session():
+		ui.call("show_title")
+		return true
+	if not save_current("正在返回标题"):
+		return false
+	_reloading = true
+	_return_title.call_deferred()
+	return true
+
+func _return_title() -> void:
+	var tree: SceneTree = get_tree()
+	var was_paused: bool = tree.paused
+	tree.set_meta("checkpoint_title",save_directory)
+	tree.paused = false
+	if tree.reload_current_scene() != OK:
+		tree.remove_meta("checkpoint_title")
+		_reloading = false
+		tree.paused = was_paused
+		ui.call("save_failed","场景重载失败，尚未离开当前进度")
 
 func _process(delta: float) -> void:
 	super._process(delta)
