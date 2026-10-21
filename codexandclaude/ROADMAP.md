@@ -1,6 +1,6 @@
 # V0.1 开发路线
 
-更新：2026-10-20（第二批完成后的规划刷新，汇总基线 master@20c73b7）｜维护：Claude（规划维护者）｜核对：Codex
+更新：2026-10-21（第三批完成后的规划刷新，汇总基线 master@d3946e6）｜维护：Claude（规划维护者）｜核对：Codex
 
 ## 1. 说明
 
@@ -12,7 +12,7 @@
 
 ## 2. 现状快照
 
-以下判断首版基于 master@2013c34 的只读核对，第1轮修订时按 master@b572c7e 刷新，第一批完成后按 master@07cb0cc 刷新，第二批完成后按 master@20c73b7（多了 EXP-002、ENV-005）刷新；括号内为依据位置。快照只说明“现在有什么”，灰盒能力已存在不代表正式表现已完成。
+以下判断首版基于 master@2013c34 的只读核对，第1轮修订时按 master@b572c7e 刷新，第一批完成后按 master@07cb0cc 刷新，第二批完成后按 master@20c73b7（多了 EXP-002、ENV-005）刷新，第三批完成后按 master@d3946e6（多了正式 HUD、通用验收启动器）刷新；括号内为依据位置。快照只说明“现在有什么”，灰盒能力已存在不代表正式表现已完成。
 
 | 领域 | 现状 | 依据 |
 | --- | --- | --- |
@@ -20,11 +20,11 @@
 | 战斗与敌人 | 玩家操作、三类敌人、两场 Boss、10 与幸存者友军、平台追击均已实现 | `game/player/`、`game/enemies/`、`game/allies/` |
 | 系统 | 分槽存档、三日自然计时与最终战计时、NPC 救助与日期过期、永久成长（上限、攻击范围、闪避速度）、应急药包、残存可能性实体、最终战同帧胜利优先（SYS-003）、已通关存档不能再进入（SYS-004）均已实现 | `game/systems/`；`game/world/final_battle_session.gd`；`game/debug/checkpoint_lab.gd`；`codexandclaude/tasks/SYS-003/`、`SYS-004/` |
 | 输入 | V0.1 键位已冻结并与配置一致 | T1 §7；`game/project.godot`；`game/tests/test_input_bindings.gd` |
-| UI | 仍为灰盒文字界面：HUD 以文字显示生命、可能性、珍珠与攻击范围等；暂停菜单为继续、设置、存档槽、退出；设置有音量、全屏和窗口尺寸（1280×720、1920×1080 两档）；死亡菜单为从检查点继续与退出游戏；另有普通敌人介绍卡、探索超时与最终战超时、结束画面与对话框。**没有主界面**，启动后直接显示存档槽；已有的返回按钮与退出确认不等于“返回标题”已实现。HUD、时间显示与暂停菜单的交互已由原型选定（EXP-001 方案四），视觉基调已选定（EXP-002 样张二：黄昏为主、随天数变化、手写字体霞鹜文楷），尚未接入正式界面 | `game/ui/menus/life_ui.gd`（窗口尺寸见第 215 行起）；`game/ui/menus/final_battle_ui.gd`；`game/ui/dialogue/field_dialogue.gd`；`game/debug/checkpoint_lab.gd`（启动时调用 `show_slots`）；原型 `game/prototypes/EXP-001/`、`EXP-002/` |
+| UI | 仍为灰盒文字界面：HUD 以文字显示生命、可能性、珍珠与攻击范围等；暂停菜单为继续、设置、存档槽、退出；设置有音量、全屏和窗口尺寸（1280×720、1920×1080 两档）；死亡菜单为从检查点继续与退出游戏；另有普通敌人介绍卡、探索超时与最终战超时、结束画面与对话框。**没有主界面**，启动后直接显示存档槽；已有的返回按钮与退出确认不等于“返回标题”已实现。**HUD 与时间显示已正式化**（UI-002：徽记、地平线时刻、透支失真、换日与最终战倒计时，样张二视觉与霞鹜文楷，样式模块见 UI-001）；其余界面仍为灰盒。暂停菜单交互已由原型选定（EXP-001 方案四），尚未接入 | `game/ui/hud/formal_hud.gd`；`game/ui/style/`；`game/ui/menus/life_ui.gd`；`game/ui/menus/final_battle_ui.gd`；`game/ui/dialogue/field_dialogue.gd`；`game/debug/checkpoint_lab.gd`（启动时调用 `show_slots`）；原型 `game/prototypes/EXP-001/`、`EXP-002/` |
 | 美术 | 只有两张占位 SVG；角色、敌人、友军由代码绘制几何占位，敌人攻击前摇有灰盒警示 | `game/assets/`；`game/player/placeholder_visual.gd`、`game/enemies/*_visual.gd`、`game/allies/ten_visual.gd` |
 | 音频 | 没有外部音频资源；只有程序生成的占位音效：警示音与玩家命中音 | `game/core/utilities/graybox_audio.gd`（警示音）；`game/player/placeholder_visual.gd`（命中音，由 `combat.hit_confirmed` 触发） |
 | 文本与演出 | 对话资源 3 份，其余对白为代码内临时文本（含已过期 NPC 处的错失机会文本）；救场、结局等演出为几何与文字占位 | `game/data/dialogue/`；`game/ui/cinematics/rescue_overlay.gd`；`game/ui/menus/final_battle_ui.gd` |
-| 测试 | 引擎专项 74 个套件，各自在文件第一行登记（ENV-004），加 Python 检查，全部纳入统一检查入口 | `game/tests/test_*.gd` 首行；`scripts/verify_game.py`；`codexandclaude/tools/run_checks.py` |
+| 测试 | 引擎专项 79 个套件（加导入与主场景启动共 81 项），各自在文件第一行登记（ENV-004），加 Python 检查，全部纳入统一检查入口；需要实机验收的任务用通用 G4 启动器（ENV-006，`game/tests/acceptance/`） | `game/tests/test_*.gd` 首行；`scripts/verify_game.py`；`codexandclaude/tools/run_checks.py` |
 | 规格 | T0、T1 为现行版；T2～T5.4 仍有补丁式修订待改写；待决事项总表 A 类 20 条已全部裁决；C 类未决参数保留在 BL-026 | `Words/`；`Words/待决事项总表.md` |
 
 结论：**玩法与系统已基本齐全，V0.1 剩余工作主要在界面、表现资源与文本演出**，另有少量存档逻辑收尾、文档现行化与工具改进。
@@ -79,7 +79,9 @@
 | EXP-002：UI 整体视觉基调探索（BL-110） | Claude 实现，Codex 审查 | M2 全部正式界面都依赖视觉基调；在方案四原型上直接套样张，用户最容易比较 |
 | ENV-005：证据自动汇总（BL-104） | Codex 实现，Claude 审查 | 每次交付和审查都要手抄 SHA、哈希与计数，自动汇总能减少两边的重复劳动 |
 
-**第三批（2026-10-21 用户批准）**：
+**第三批（已完成，2026-10-21）**：SYS-005、UI-001、ENV-006、UI-002（用户 G4 通过），另追加 SYS-006（用户决定被透支下限拒绝的闪避也闪红，BL-114）。M2-a 完成。
+
+**第三批任务表（存档）**：
 
 | 任务 | 负责 | 内容 | 先后 |
 | --- | --- | --- | --- |
@@ -88,7 +90,7 @@
 | ENV-006 通用 G4 验收启动器（BL-105、BL-113） | Codex 实现，Claude 审查 | 临时存档、清理、面板、截图；修 SVG.import 换行抖动 | SYS-005 之后 |
 | UI-002 正式 HUD 与时间显示（BL-042、BL-043） | Claude 实现，Codex 审查 | 方案四 + 样张二接真实数据 | SYS-005、UI-001 之后；G4 宜在 ENV-006 之后 |
 
-第四批预计：暂停菜单正式化（BL-046，需同步修订 T7）及 M2-b 其余界面。
+第四批建议：暂停菜单正式化（BL-046，需同步修订 T7）及 M2-b 其余界面，任务卡待起草、待用户批准。
 ## 6. 需要用户提供或决定的事项
 
 | 事项 | 影响 | 建议时间 |
@@ -110,3 +112,4 @@
 | 2026-10-20 | 第一批完成后刷新：M1 完成；快照更新（SYS-004、74 套件首行登记、EXP-001 选定）；M2-a 改为交互已选定、待视觉基调；新增 BL-110 视觉基调探索，P3 补 BL-108、BL-109；给出第二批建议 | 规划刷新 refresh-1 |
 | 2026-10-20 | 第二批完成后刷新：视觉基调选定（EXP-002 样张二）；BL-042/043/046 状态改为交互与视觉均已选定；新增 BL-111 UI 数据接口、BL-112 字体正式接入、BL-113 SVG.import 换行抖动 | 规划刷新 refresh-2 |
 | 2026-10-21 | 新增 BL-114（用户决定 SYS-005 审查 N2：被透支下限拒绝的闪避也闪红），归入 M2-a，起草 SYS-006 | 规划刷新 SYS-006 起草 |
+| 2026-10-21 | 第三批完成后刷新：M2-a 完成（UI-002、SYS-005、UI-001、ENV-006、SYS-006）；快照更新 UI 与测试两行；第三批改为存档表 | 规划刷新 refresh-3 |
