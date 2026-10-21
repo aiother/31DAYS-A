@@ -125,8 +125,8 @@ func _expire_day() -> void:
 func blocks_resume() -> bool:
 	return _timeout_active or bool(data.get("events",{}).get(FinalClock.END,false))
 
+# UI-002: the formal HUD shows the banner from day_changed.
 func _announce_day(day: int) -> void:
-	final_ui.show_day(day)
 	_announced_day = day
 	_publish_ui_day(day)
 
@@ -356,17 +356,11 @@ func _on_room_exit(id: String) -> void:
 func _process(delta: float) -> void:
 	super._process(delta)
 	$DayUI.visible = false
-	final_ui.clock_label.visible = has_session() and not intro_active and not dialogue_ui.active and not dialogue_ui.confirming and not _timeout_active and not bool(data.get("events",{}).get(FinalClock.END,false))
 	if has_session():
 		var day: int = int(data.get("day",1))
 		if _announced_day!=0 and _announced_day!=day:
 			_announce_day(day)
 		_announced_day = day
-		var day_seconds: int = ceili(DayClock.remaining(data))
-		var final_seconds: int = ceili(float(data.get("final_remaining",900)))
-		final_ui.clock_label.text = "第 %d 日 · 剩余 %02d:%02d" % [day,day_seconds/60,day_seconds%60]
-		if bool(data["events"].get(FinalClock.STARTED,false)):
-			final_ui.clock_label.text += "\n最终战 %02d:%02d" % [final_seconds/60,final_seconds%60]
 		if bool(data["events"].get(FinalClock.END,false)):
 			_show_finished()
 	if _final_arena()!=null:

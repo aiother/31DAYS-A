@@ -44,7 +44,7 @@ func run() -> void:
 	session.player.reset_kinematics()
 	await ticks(12)
 	check(amount()<1800 and amount()>1799,"actual first-day physics frames consume natural time")
-	check(session.final_ui.clock_label.visible and session.final_ui.clock_label.text.contains("第 1 日") and not session.get_node("DayUI").visible,"one readable HUD shows first day and remaining time")
+	check((session.ui.get("_hud") as FormalHud).drawn["horizon"]["date"]=="第1日 · 末日前3天" and not session.get_node("DayUI").visible,"one readable HUD shows first day and time of day")
 	var before: float = amount()
 	paused = true
 	await ticks(6)
@@ -70,7 +70,7 @@ func run() -> void:
 	session._process(0)
 	check(session.data["day"]==2 and amount()==1800,"natural first day advances exactly once")
 	check(session.store.load_slot(1)["day"]==2 and session.store.load_slot(1)["day_remaining"]==1800,"date crossing persists date and new-day clock atomically")
-	check(session.final_ui.day_notice.text=="第 2 日" and session.final_ui.day_notice.visible,"natural date change shows centered nonblocking announcement")
+	check((session.ui.get("_hud") as FormalHud).banner_day==2 and (session.ui.get("_hud") as FormalHud).banner_left>0,"natural date change shows centered nonblocking announcement")
 	check(not session.data["events"].has(FieldSession.RESCUE_FAILED) and not session.data["events"].has(FinalClock.WON),"date alone invents no NPC failure or victory")
 	session.data["day_remaining"] = 123.5
 	check(session.save_current() and session.start_slot(1,false),"second-day running clock can be saved and loaded")
@@ -93,12 +93,14 @@ func run() -> void:
 	session.data["checkpoint"] = StartRoomSession.CHECKPOINT
 	session.data["day"] = 1
 	session.data["day_remaining"] = 40.0
+	# UI-002: one session frame publishes the rewound first day, as a real day-one save would.
+	session._process(0)
 	var real_directory: String = session.store.directory
 	session.store.directory = real_directory.path_join("slot_1.json")
 	check(not session.activate_checkpoint(RavineSession.RAVINE_CHECKPOINT) and session.data["day"]==1 and amount()==40,"failed story cross-day write rolls back date and old remaining")
 	session.store.directory = real_directory
 	check(session.activate_checkpoint(RavineSession.RAVINE_CHECKPOINT) and session.data["day"]==2 and amount()==1800,"successful story cross-day initializes new day once")
-	check(session.final_ui.day_notice.text=="第 2 日" and not session.dialogue_ui.notice.text.contains("第 2 日"),"main entry uses one date announcement rather than overlapping legacy notices")
+	check((session.ui.get("_hud") as FormalHud).banner_day==2 and not session.dialogue_ui.notice.text.contains("第 2 日"),"main entry uses one date announcement rather than overlapping legacy notices")
 	session.data["day_remaining"] = 70.0
 	check(not session.activate_checkpoint(RavineSession.RAVINE_CHECKPOINT) and amount()==70,"repeated same checkpoint never restores spent time")
 	session.data["day_remaining"] = 0.25
