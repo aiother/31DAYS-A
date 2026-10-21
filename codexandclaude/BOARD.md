@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-20（规划汇总基线 master@07cb0cc；本次仅补记ENV-005完成状态，其余沿用第一批完成后的规划刷新）
+更新：2026-10-20（规划汇总基线 master@07cb0cc；本次仅补记ENV-005、EXP-002完成状态，其余沿用第一批完成后的规划刷新）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -23,7 +23,7 @@
 | EXP-001 | M | HUD 与时间显示探索原型 | Claude | Codex | 已完成（用户已选定方案四） | [tasks/EXP-001](tasks/EXP-001/task.md) |
 | ENV-004 | M | 引擎测试分散登记 | Codex | Claude | 已完成 | [tasks/ENV-004](tasks/ENV-004/task.md) |
 | SYS-004 | M | 已通关存档不能再进入 | Codex | Claude | 已完成 | [tasks/SYS-004](tasks/SYS-004/task.md) |
-| EXP-002 | M | UI 整体视觉基调探索 | Claude | Codex | 已批准 | [tasks/EXP-002](tasks/EXP-002/task.md) |
+| EXP-002 | M | UI 整体视觉基调探索 | Claude | Codex | 已完成 | [tasks/EXP-002](tasks/EXP-002/task.md) |
 | ENV-005 | M | 检查证据自动汇总 | Codex | Claude | 已完成 | [tasks/ENV-005](tasks/ENV-005/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
