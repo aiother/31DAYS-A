@@ -116,8 +116,9 @@ func run() -> void:
 	lab.ui.call("_confirm_new_slot", 1, true)
 	check(paused and lab.ui.get("_mode") == "confirm_new" and lab.store.load_slot(1) == slot_one, "new game asks confirmation before overwriting existing slot")
 	lab.ui.call("show_slots")
-	var menu: VBoxContainer = lab.ui.get("_menu") as VBoxContainer
-	check(menu.get_child(3).get_child_count() == 2, "empty slot displays label and new game without continue")
+	await ticks(2)
+	var slots: SlotSelect = lab.ui.get("_slots") as SlotSelect
+	check(slots.visible and slots.state(2) == "empty" and slots.drawn["cards"][2].get("label") == "没有存档", "empty slot displays as empty on the formal slot screen")
 	lab.ui.call("resume_game")
 	lab.ui.call("show_pause")
 	var position_before: Vector2 = lab.player.position

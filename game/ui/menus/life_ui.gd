@@ -22,6 +22,10 @@ var _enemy_intro: PanelContainer
 var _enemy_intro_remaining: float = 0.0
 var _intro_leaving: bool = false
 var _intro_tween: Tween
+## UI-004 formal title and slot screens; they draw over every other page.
+var _title: TitleScreen
+var _slots: SlotSelect
+var _settings_from_title: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -112,7 +116,15 @@ func _ready() -> void:
 		actions["slots"] = show_slots
 	_pause.setup(get_parent(), _hud, actions)
 	_root.add_child(_pause)
-	_pause.returned.connect(func() -> void: _mode = "pause")
+	_pause.returned.connect(_on_pause_returned)
+	_title = TitleScreen.new()
+	_root.add_child(_title)
+	_slots = SlotSelect.new()
+	_slots.on_back = _slots_back
+	_slots.on_pick = _pick_slot
+	_slots.dialog_closed.connect(func() -> void:
+		if _mode == "confirm_new": _mode = "slots")
+	_root.add_child(_slots)
 	player.life.death_menu_ready.connect(show_death)
 
 func _process(_delta: float) -> void:
@@ -145,6 +157,9 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		if get_parent().has_method("has_session") and not get_parent().call("has_session"):
+			# Settings opened from the title closes back to the title.
+			if _pause.visible and _mode == "settings":
+				_pause.back()
 			get_viewport().set_input_as_handled()
 			return
 		if player.life.state == PlayerLife.State.DEATH_MENU:
@@ -161,6 +176,7 @@ func _clear_menu(title: String, mode: String) -> void:
 	for child: Node in _menu.get_children():
 		_menu.remove_child(child)
 		child.queue_free()
+	_hide_screens()
 	_pause.close()
 	_mode = mode
 	_panel.show()
@@ -185,11 +201,18 @@ func _button(text: String, callback: Callable, focus: bool = false) -> Button:
 ## UI-003: formal pause menu (current task now sits under the clock).
 func show_pause() -> void:
 	_panel.hide()
+	_hide_screens()
 	_mode = "pause"
 	get_tree().paused = true
 	_pause.open()
 
 func resume_game() -> void:
+	# Without a session there is no game to return to (e.g. 继续游戏 on the
+	# pause sheet behind settings opened from the title).
+	if get_parent().has_method("has_session") and not get_parent().call("has_session"):
+		show_title()
+		return
+	_hide_screens()
 	if get_parent().has_method("blocks_resume") and get_parent().call("blocks_resume"):
 		_panel.hide()
 		_pause.close()
@@ -237,61 +260,122 @@ func _quit_game() -> void:
 	get_tree().paused = false
 	_quit_handler.call()
 
+## Errors land on the open title or slot screen's prompt line, clear of the
+## bookmarks; otherwise on the label under the control hint.
 func save_failed(message: String) -> void:
 	_error_label.text = message
-	_error_label.visible = not message.is_empty()
+	var screen: MenuScreen = _open_screen()
+	if screen != null:
+		screen.set_prompt(message)
+		_error_label.hide()
+	else:
+		_error_label.visible = not message.is_empty()
 
-## SYS-008: UI-004 replaces this with the formal main menu.
+func _open_screen() -> MenuScreen:
+	if _slots != null and _slots.visible:
+		return _slots
+	if _title != null and _title.visible:
+		return _title
+	return null
+
+func _hide_screens() -> void:
+	if _title == null:
+		return
+	var was_open: bool = _open_screen() != null
+	_title.close_dialog(false)
+	_slots.close_dialog(false)
+	_title.hide()
+	_slots.hide()
+	if was_open:
+		_error_label.visible = not _error_label.text.is_empty()
+
+## UI-004 main menu (EXP-003 A · 黄昏远景). With a session still open it goes
+## through SYS-008's return_to_title(), which saves and reloads first.
 func show_title() -> void:
-	show_slots()
+	var lab: CheckpointLab = get_parent() as CheckpointLab
+	if lab == null:
+		return
+	if lab.has_session():
+		lab.return_to_title()
+		return
+	_panel.hide()
+	_pause.close()
+	_hide_screens()
+	_settings_from_title = false
+	_mode = "title"
+	get_tree().paused = true
+	_title.open(lab.has_any_save(), {"new": show_slots.bind("new"), "continue": show_slots.bind("continue"),
+		"settings": _title_settings, "quit": _quit_now})
+	_error_label.hide()
+	if not _error_label.text.is_empty():
+		_title.set_prompt(_error_label.text)
 
-func show_slots() -> void:
+## UI-004 slot selection (EXP-003 1 · 书签 with sky strips). The name and
+## no-argument call are kept for the pause entry and the ending panels.
+func show_slots(selected_mode: String = "continue") -> void:
 	var lab: CheckpointLab = get_parent() as CheckpointLab
 	if lab == null:
 		return
 	if lab.has_session() and not lab.save_current():
 		return
-	_clear_menu("末日前31天 · 灰盒存档", "slots")
-	for selected: int in range(1, SlotStore.SLOT_COUNT + 1):
-		var snapshot: Dictionary = lab.store.load_slot(selected)
-		var error: String = lab.store.last_error
-		var row: HBoxContainer = HBoxContainer.new()
-		row.add_theme_constant_override("separation", 12)
-		_menu.add_child(row)
-		var label: Label = Label.new()
-		label.text = "槽 %d · %s" % [selected, "空" if snapshot.is_empty() and error.is_empty() else ("不可读取" if snapshot.is_empty() else "HP %d · 可能性 %d" % [snapshot["health"], snapshot["balance"]])]
-		if SlotStore.is_completed(snapshot):
-			label.text += " · 已通关"
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.add_theme_font_size_override("font_size", 20)
-		row.add_child(label)
-		if not snapshot.is_empty():
-			var resume: Button = Button.new()
-			resume.text = "继续"
-			resume.add_theme_font_size_override("font_size", 22)
-			resume.custom_minimum_size = Vector2(80, 54)
-			resume.pressed.connect(_select_slot.bind(selected, false))
-			row.add_child(resume)
-		var start: Button = Button.new()
-		start.text = "新游戏"
-		start.add_theme_font_size_override("font_size", 22)
-		start.custom_minimum_size = Vector2(100, 54)
-		start.pressed.connect(_confirm_new_slot.bind(selected, not snapshot.is_empty() or not error.is_empty()))
-		row.add_child(start)
-		if selected == 1:
-			start.grab_focus()
-	if lab.has_session():
-		_button("返回当前游戏", resume_game)
-	_button("退出游戏", confirm_quit)
+	_panel.hide()
+	_pause.close()
+	_hide_screens()
+	_mode = "slots"
+	get_tree().paused = true
+	_slots.open(selected_mode, lab.slot_summaries(), "返回当前游戏" if lab.has_session() else "返回主界面")
+	_error_label.hide()
+
+func _slots_back() -> void:
+	var lab: CheckpointLab = get_parent() as CheckpointLab
+	if lab != null and lab.has_session():
+		resume_game()
+	else:
+		show_title()
+
+## index is 0-based. Continue loads through start_slot (A-013 answers
+## 游戏已通关 there); new game confirms first, warning before an overwrite.
+func _pick_slot(index: int) -> void:
+	var state: String = _slots.state(index)
+	var name: String = _slots.slot_name(index)
+	if _slots.mode == "continue":
+		match state:
+			"progress", "completed":
+				_select_slot(index + 1, false)
+			"empty":
+				_slots.set_prompt("%s是空的，请从主界面选择新游戏" % name)
+			_:
+				_slots.set_prompt("%s无法读取，可在新游戏中覆盖" % name)
+		return
+	_confirm_new_slot(index + 1, state != "empty")
 
 func _select_slot(selected: int, new_game: bool) -> void:
 	save_failed("")
 	(get_parent() as CheckpointLab).start_slot(selected, new_game)
 
 func _confirm_new_slot(selected: int, occupied: bool) -> void:
-	_clear_menu("在槽 %d 开始新游戏？%s" % [selected, "\n将覆盖此槽现有进度" if occupied else ""], "confirm_new")
-	_button("确认开始", _select_slot.bind(selected, true), true)
-	_button("返回", show_slots)
+	if not _slots.visible or _slots.mode != "new":
+		show_slots("new")
+	_mode = "confirm_new"
+	var name: String = _slots.slot_name(selected - 1)
+	_slots.ask("在%s开始新游戏？%s" % [name, "\n将覆盖此槽现有进度" if occupied else ""], "覆盖并开始" if occupied else "开始",
+		_select_slot.bind(selected, true), _slots.cards[selected - 1])
+
+func _title_settings() -> void:
+	_settings_from_title = true
+	_hide_screens()
+	show_settings()
+
+func _on_pause_returned() -> void:
+	if _settings_from_title:
+		show_title()
+	else:
+		_mode = "pause"
+
+## The title already asked; nothing is open to save.
+func _quit_now() -> void:
+	get_tree().paused = false
+	_quit_handler.call()
 
 func confirm_quit() -> void:
 	if _pause.visible:
@@ -304,7 +388,7 @@ func confirm_quit() -> void:
 
 func _return_from_quit() -> void:
 	if get_parent().has_method("has_session") and not get_parent().call("has_session"):
-		show_slots()
+		show_title()
 	elif player.life.state == PlayerLife.State.DEATH_MENU:
 		show_death()
 	else:

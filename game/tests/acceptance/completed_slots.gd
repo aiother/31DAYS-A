@@ -11,18 +11,17 @@ func configuration() -> Dictionary:
 	backup["balance"] = 2
 	return {"id":"SYS-004","marker":"COMPLETED_SLOTS_TESTS","scene":preload("res://world/final_battle_session.tscn"),"snapshots":{1:[backup,snapshot]},"enter":false,"instructions":"SYS-004 独立临时槽1（已通关）\n继续：游戏已通关且停留选槽。\n新游戏并确认：正常开始；关闭窗口清理临时存档。"}
 
+## UI-004: slot 1's bookmark on the formal slot screen, in the continue or
+## new-game mode the old graybox row buttons stood for.
 func slot_button(title: String) -> Button:
-	for child: Node in (session.ui.get("_menu") as VBoxContainer).get_children():
-		if child is HBoxContainer:
-			for item: Node in child.get_children():
-				if item is Button and item.text == title: return item as Button
-			break
-	return null
+	var slots: SlotSelect = session.ui.get("_slots") as SlotSelect
+	var wanted: String = "continue" if title == "继续" else "new"
+	if not slots.visible or slots.mode != wanted: session.ui.call("show_slots", wanted)
+	return slots.cards[0]
 
-func menu_button(title: String) -> Button:
-	for child: Node in (session.ui.get("_menu") as VBoxContainer).get_children():
-		if child is Button and child.text == title: return child as Button
-	return null
+## The confirm sheet's accept button (确认开始 on the old graybox panel).
+func menu_button(_title: String) -> Button:
+	return (session.ui.get("_slots") as SlotSelect).dialog_button("accept")
 
 func disk_bytes() -> Dictionary:
 	var result: Dictionary = {}

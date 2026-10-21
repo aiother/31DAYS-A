@@ -196,7 +196,7 @@ func return_case(kind: String) -> void:
 	await frames(5)
 	check(old_scene.get_ref() == null and old_player.get_ref() == null and old_room.get_ref() == null,kind + " old scene player and room are really released")
 	check(session.get_instance_id() != old_id and not session.has_session() and session.slot == 0 and session.data.is_empty() and paused,kind + " reloads into the no-session title state")
-	check(session.save_directory == directory and session.store.directory == directory and str(session.ui.get("_mode")) == "slots",kind + " isolated directory survives reload and real title fallback shows slots")
+	check(session.save_directory == directory and session.store.directory == directory and str(session.ui.get("_mode")) == "title" and (session.ui.get("_title") as Control).visible,kind + " isolated directory survives reload and the formal title shows")
 	check(session.player.life.health == 3 and session.player.possibility.balance == 3 and session.player.possibility.maximum == 10 and session.player.combat.pearl_count == 0 and not session.player.life.scripted_control_locked,kind + " does not carry player resources or control locks into title")
 	check(session.room.config.room_id == TwoRoomSession.START_ID and session.get("_final_resolution_room") == 0 and not session.get("_timeout_active") and not session.get("_ending_active") and not session.get("_final_talk") and not session.intro_active,kind + " old arena timer and cinematic state do not remain")
 	check(not has_meta("checkpoint_reload") and not has_meta("checkpoint_title") and not session.ui_time_state()["has_session"],kind + " has no pending reload or active UI clock")

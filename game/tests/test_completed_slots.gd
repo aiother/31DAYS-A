@@ -76,22 +76,18 @@ func disk_bytes(selected: int = 1) -> Dictionary:
 		result[suffix] = FileAccess.get_file_as_bytes(path) if FileAccess.file_exists(path) else null
 	return result
 
+## UI-004: the formal slot screen has one bookmark per slot; 继续 and 新游戏
+## are the screen's two modes rather than buttons on a row.
 func slot_button(selected: int, title: String) -> Button:
-	var row_index: int = 0
-	for child: Node in (session.ui.get("_menu") as VBoxContainer).get_children():
-		if child is HBoxContainer:
-			row_index += 1
-			if row_index == selected:
-				for item: Node in child.get_children():
-					if item is Button and item.text == title:
-						return item as Button
-	return null
+	var slots: SlotSelect = session.ui.get("_slots") as SlotSelect
+	var wanted: String = "continue" if title == "继续" else "new"
+	if not slots.visible or slots.mode != wanted:
+		session.ui.show_slots(wanted)
+	return slots.cards[selected - 1]
 
-func menu_button(title: String) -> Button:
-	for child: Node in (session.ui.get("_menu") as VBoxContainer).get_children():
-		if child is Button and child.text == title:
-			return child as Button
-	return null
+## The confirm sheet's accept button (确认开始 on the old graybox panel).
+func menu_button(_title: String) -> Button:
+	return (session.ui.get("_slots") as SlotSelect).dialog_button("accept")
 
 func click(button: Button) -> void:
 	if not check(is_instance_valid(button), "real menu button exists"):
@@ -135,7 +131,8 @@ func blocked_case(primary_mode: String, active: bool = false) -> void:
 	check(session.slot == before_slot and session.data == before_data and not session._reloading and not has_meta("checkpoint_reload"), "END leaves the active or empty session unchanged")
 	check(paused and session.ui.get("_mode") == "slots", "END stays at slot selection")
 	var notice: Label = session.ui.get("_error_label") as Label
-	check(notice.visible and notice.text == "游戏已通关", "END displays the exact completed-game prompt")
+	var prompt: Dictionary = (session.ui.get("_slots") as SlotSelect).drawn.get("prompt", {})
+	check(notice.text == "游戏已通关" and prompt.get("text") == "游戏已通关", "END displays the exact completed-game prompt")
 	check(disk_bytes() == before, "END primary backup and temporary bytes stay unchanged: " + primary_mode)
 	await stop()
 

@@ -165,10 +165,10 @@ func direct_settings_cases() -> void:
 	check(not paused and not menu().visible and mode() == "", "and Esc again resumes play")
 	session.ui.call("show_slots")
 	await frames(2)
-	check((session.ui.get("_panel") as Control).visible and not menu().visible, "graybox slot panel is open")
+	check((session.ui.get("_slots") as Control).visible and not menu().visible, "formal slot screen is open")
 	session.ui.call("show_settings")
 	await frames(2)
-	check(menu().visible and menu().page == "settings" and not (session.ui.get("_panel") as Control).visible, "settings from a graybox panel replaces it instead of stacking")
+	check(menu().visible and menu().page == "settings" and not (session.ui.get("_slots") as Control).visible, "settings from the slot screen replaces it instead of stacking")
 	session.ui.call("resume_game")
 	await frames(2)
 
