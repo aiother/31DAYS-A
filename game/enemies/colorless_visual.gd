@@ -4,6 +4,7 @@ var _warning: AudioStreamPlayer
 
 func _ready() -> void:
 	_warning = AudioStreamPlayer.new()
+	_warning.bus = &"效果音"
 	_warning.stream = GrayboxAudio.make_warning()
 	_warning.volume_db = -20.0
 	add_child(_warning)
