@@ -120,3 +120,29 @@
 另在有渲染的真实会话里截了最终战加速 + 介绍卡同时显示的图，确认互不遮挡（截图不入库）。
 
 检查：在修正 SHA、起止 dirty=false 执行 `full --jobs 4`：G2 **79/79**，G3 `tests` **102/102**、`codexandclaude/tests` **66/66**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T053056.533962Z/`（不入库）。单项：`FORMAL_HUD_TESTS 49/0`、`FIELD_ROOM_TESTS 50/0`、`TWO_ROOM_TESTS 38/0`。审查记录中未完成的项目（四项变异复现、其余功能审查）请复审继续覆盖。
+
+## 第2轮审查后修正（Codex R2、N1）
+
+审查 SHA：`3c07dba9f08441859471dae59391a729e3c6536c`（`codex/UI-002-review-r2`），R1 已解决；R2（P2）：成长外圈实际绘制颜色没有被断言——`drawn["palette"]` 写的是常量表，`key_colours()` 只核对了生命与可能性；把成长弧改画成朱红仍 49/49。确认成立。
+
+修正实现 SHA：`7889615ca661eae4a8b216717ab7ef71a8469b20`
+
+| 文件 | 修改 |
+| --- | --- |
+| `game/ui/hud/formal_hud.gd` | 成长弧在绘制调用处记录实际颜色（点亮 `growth_fill`、未点亮 `growth_dim`）；删除常量表 `drawn["palette"]`，绘制记录只含真实传给绘制调用的颜色。最终战“余时不足”的判定由 `<= 15分钟` 改为 `< 15分钟`（审查 N1，与规格“不足15分钟”一致） |
+| `game/tests/test_formal_hud.gd` | `key_colours()` 改为真实绘制两个状态：有成长余量（成长外圈 2 段、1 段点亮）与透支 -3，读取实际画出的生命、可能性、成长点亮/未点亮、透支颜色；第1日、第2日、第三日末、最终战都与用户选定色值 `CHOSEN` 直接比较（不再只比较“与第1日相同”）。新增“恰好15分钟：墨色、不加速、不警示”。52 项 |
+| `game/docs/formal_hud_implementation.md` | 最终战一句改为“不足15分钟”，补恰好15分钟的说明 |
+
+变异（临时改 `formal_hud.gd`，跑 `test_formal_hud.gd`，脚本按原字节恢复后复跑 52/52）：
+
+| 变异 | 失败数 |
+| --- | --- |
+| 去掉不足闪烁 | 1 |
+| 去掉失真 | 2 |
+| 最终战加速改为停表 | 1 |
+| 成长弧改画朱红（R2 原探针） | 4 |
+| 透支改画成长金色 | 4 |
+| 恰好15分钟按“余时不足” | 1 |
+| 可能性填充随黄昏漂移 | 5 |
+
+检查：在修正 SHA、起止 dirty=false 执行 `full --jobs 4`：G2 **79/79**，G3 `tests` **102/102**、`codexandclaude/tests` **66/66**，passed=true，**content_stable=True**。摘要 `codexandclaude/runs/20261021T063704.108148Z/`（不入库）。
