@@ -30,5 +30,8 @@
 | UI-002 | L | 正式 HUD 与时间显示 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-002](tasks/UI-002/task.md) |
 | ENV-006 | M | 通用 G4 验收启动器 | Codex | Claude | 已完成 | [tasks/ENV-006](tasks/ENV-006/task.md) |
 | SYS-006 | S | 透支下限拒绝的闪避也发出不足信号 | Codex | Claude | 已完成 | [tasks/SYS-006](tasks/SYS-006/task.md) |
+| UI-003 | L | 正式暂停菜单与保存反馈 | Claude | Codex | 草稿（待用户批准） | [tasks/UI-003](tasks/UI-003/task.md) |
+| SYS-007 | M | 设置数据：分开音量、帧率、按键列表与设置保存 | Codex | Claude | 草稿（待用户批准） | [tasks/SYS-007](tasks/SYS-007/task.md) |
+| EXP-003 | M | 主界面与存档选择探索原型 | Claude | Codex | 草稿（待用户批准） | [tasks/EXP-003](tasks/EXP-003/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
