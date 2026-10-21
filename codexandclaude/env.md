@@ -147,6 +147,34 @@ Godot --path game --script res://tests/acceptance/run_acceptance.gd -- --self-te
 
 ### 导入行尾（BL-113）
 
-`.gitattributes` 固定 `*.import text eol=lf`，覆盖 SVG 和字体导入描述；不改 Godot 输出、测试或证据稳定性判定。新检出会直接得到与 Godot 相同的 LF 字节。老工作区采用该已提交规则后，如仍保留先前 CRLF：先确认仅行尾差异、没有用户编辑，再显式重新检出相关 `.import`；必要时对这些文件刷新索引。不要覆盖有实质内容变化的文件。
+`.gitattributes` 固定 `*.import text eol=lf`，覆盖 SVG 和字体导入描述；不改 Godot 输出、测试或证据稳定性判定。新检出会直接得到与 Godot 相同的 LF 字节。已有 CRLF 检出的工作区采用该已提交规则后，文件可能仍为 `i/lf w/crlf`，且 Git 状态干净。`git checkout-index --force` 加 `git add --renormalize` 不保证重写这些工作树字节，不能把“暂存为空”当成迁移完成。
+
+在仓库根目录先运行 `git ls-files --eol -- '*.import'`，只选出其中 `w/crlf` 的文件。逐个核对 `eol: lf` 属性已生效、该文件无暂存修改，并将工作树与 `git show HEAD:<文件>` 的原始字节仅归一 CRLF 后比较；含实质编辑就停止，保留原文件。确认后才删除这个明确文件并重新检出。以下是 PowerShell 单文件示例；将 `$importPath` 换成刚查到的一个路径，每个文件重复执行（Python 通过 subprocess 读取 Git 原始字节，避免 PowerShell 管道重编码）：
+
+```powershell
+$importPath = 'game/assets/characters/player_placeholder.svg.import'
+$importRule = git check-attr eol -- $importPath
+if ($LASTEXITCODE -ne 0 -or -not $importRule.EndsWith(': eol: lf')) { throw 'LF 属性未生效，停止' }
+git diff --cached --quiet -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '该文件有暂存修改，停止' }
+@'
+from pathlib import Path
+import subprocess
+import sys
+path = sys.argv[1]
+committed = subprocess.check_output(['git', 'show', 'HEAD:' + path])
+working = Path(path).read_bytes()
+same_content = working.replace(b'\r\n', b'\n') == committed.replace(b'\r\n', b'\n')
+sys.exit(0 if same_content else '存在实质编辑，停止；未删除文件')
+'@ | python - $importPath
+if ($LASTEXITCODE -ne 0) { throw '内容核对失败，停止；未删除文件' }
+Remove-Item -LiteralPath $importPath -ErrorAction Stop
+git checkout -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '重新检出失败，停止并报告' }
+git ls-files --eol -- $importPath
+git status --short
+```
+
+全部目标处理后，再运行 `git ls-files --eol -- '*.import'`，确认所有已跟踪导入描述均为 `w/lf`；原本干净的工作区应仍然 `git status --short` 无输出。不要删除整目录、刷新无关文件的索引或使用全局重置；其他既有用户改动照常保留。重新检出失败时先报告，不继续运行导入或检查。
 
 原先“检查后还原导入生成物”的做法仅适用于采用该规则之前的旧提交。新规则下，正常导入不应再改变这些文件的原始字节，full 的 `content_stable` 应为 true；若仍为 false，查看起止快照，不能忽略变化或手改摘要。
