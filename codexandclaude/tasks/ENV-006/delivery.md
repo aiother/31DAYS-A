@@ -48,15 +48,35 @@ Godot --headless --path game --script res://tests/test_completed_slots.gd -- --a
 
 `.gitattributes`固定`*.import text eol=lf`，覆盖SVG及字体导入描述。新Python回归在真实临时Git仓库强制core.autocrlf=true，检出三个.import，核对与Godot的LF原始字节一致；旧规则先失败4处，新规则通过。Codex真实导入字节对比及最终full均稳定。
 
-老工作区采用新规则后，需要按新属性一次性重新检出既有导入物；只改工作树属性而保留CRLF时，初次探针仍会漂移。必须先确认没有实质编辑，仅行尾差异，再对明确文件重新检出；必要时刷新索引，且暂存内容差异必须为空。不要手改summary.json。
+老工作区采用新规则后，需要按新属性一次性重新检出既有导入物；只改工作树属性而保留CRLF时，初次探针仍会漂移。必须先确认没有实质编辑且该文件没有暂存修改，仅行尾差异时才删除这个明确文件再重新检出；完成后核对 w/lf 和干净状态。不要手改summary.json。
 
-供审查者在现有Claude工作区采用已提交新规则后使用（新工作区通常不需要）：
+以下迁移步骤已按 Claude 审查 N1 修正（新工作区通常不需要）。首轮所写 checkout-index --force 加 add --renormalize 在已有 CRLF 检出的工作区不能保证重写；暂存为空不代表迁移成功。先用 `git ls-files --eol -- '*.import'` 找出 w/crlf，再逐文件处理；此处命令与 env.md“导入行尾（BL-113）”一致，不把修订后的命令冒充首轮验证。
 
 ```powershell
-git checkout-index --force -- game/assets/characters/player_placeholder.svg.import game/assets/environments/gray_tile.svg.import game/assets/fonts/LXGWWenKai-Regular.ttf.import game/prototypes/EXP-002/fonts/LXGWWenKai-Regular.ttf.import
-git add --renormalize -- game/assets/characters/player_placeholder.svg.import game/assets/environments/gray_tile.svg.import game/assets/fonts/LXGWWenKai-Regular.ttf.import game/prototypes/EXP-002/fonts/LXGWWenKai-Regular.ttf.import
-git diff --cached --stat
+$importPath = 'game/assets/characters/player_placeholder.svg.import'
+$importRule = git check-attr eol -- $importPath
+if ($LASTEXITCODE -ne 0 -or -not $importRule.EndsWith(': eol: lf')) { throw 'LF 属性未生效，停止' }
+git diff --cached --quiet -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '该文件有暂存修改，停止' }
+@'
+from pathlib import Path
+import subprocess
+import sys
+path = sys.argv[1]
+committed = subprocess.check_output(['git', 'show', 'HEAD:' + path])
+working = Path(path).read_bytes()
+same_content = working.replace(b'\r\n', b'\n') == committed.replace(b'\r\n', b'\n')
+sys.exit(0 if same_content else '存在实质编辑，停止；未删除文件')
+'@ | python - $importPath
+if ($LASTEXITCODE -ne 0) { throw '内容核对失败，停止；未删除文件' }
+Remove-Item -LiteralPath $importPath -ErrorAction Stop
+git checkout -- $importPath
+if ($LASTEXITCODE -ne 0) { throw '重新检出失败，停止并报告' }
+git ls-files --eol -- $importPath
+git status --short
 ```
+
+只对已确认的 w/crlf 路径逐个重复；全部完成后再运行 `git ls-files --eol -- '*.import'`，确认均 w/lf，原本干净的工作区应仍然 `git status --short` 无输出。不覆盖任何实质编辑，不使用全局重置。
 
 Claude工作区短暂对比：事先确认claude/UI-001@89687e8且干净；原检出运行editor import，原始字节不稳定；临时候选属性并按新检出应有的Git LF原文字节准备四份.import后，再运行同一导入，字节稳定。最后finally恢复原属性与所有原文件字节，验证分支、HEAD及Git状态与开始一致；未切换分支、未暂存改动，未占用其工作区跑full。记录runs/env006-claude-import-comparison.json与两份导入日志。
 
@@ -127,3 +147,18 @@ Claude工作区短暂对比：事先确认claude/UI-001@89687e8且干净；原�
 ## 交付记录G3
 
 本记录和状态写入后重跑G3：102/102 + 67/67，完整且通过。被测HEAD仍为d7a450b，工作区未提交差异仅本记录与任务卡状态。摘要runs/20261021T043629.207859Z/summary.json，SHA256 `5777ead2dce122d8f0c98afc65c9f9939ace179da9b20d141514fe833c037453`。
+
+
+## 审查后修正（N1 迁移说明）
+
+日期：2026-10-20（America/Los_Angeles；UTC 为2026-10-21）。用户要求“先让 Codex 修正 N1 的迁移说明再合入”，本轮不合并。
+
+- 先在 codex/ENV-006 从原交付 `8a199d0792ca99a3207c89ea9f97a3c88a567e0d` 快进到固定审查 `e884393a4d0f8ecef506e646b84909614327b12b`，保留 Claude 审查记录，再修订。
+- 修正实现 SHA：`f85644b21fc95bd067e972bee07155d884daa0a8`（只改 env.md）；本次交付提交只更新本记录中的迁移命令并追加本节。
+- N1：明确 checkout-index --force 加 add --renormalize 不保证转换既有 CRLF。先列出 w/crlf；逐个检查 LF 属性、无暂存修改，将工作树与 HEAD 原始字节仅归一 CRLF 后比较；仅当内容相同时删除明确文件，再 git checkout -- 该文件；最后确认全部 w/lf、状态干净。PowerShell 使用 Python subprocess 读取 Git 原始字节，避免文本管道重编码；实质编辑或暂存修改均在删除前停止。
+- 文档命令实测：直接提取 env.md 的 PowerShell 代码块，在3个独立临时 Git 仓库执行，均先复现“LF属性已提交但现有工作树仍w/crlf且状态干净”。①仅行尾不同：退出0，字节恢复为HEAD的LF，w/lf且Git状态干净；②工作树实质编辑：按预期退出1，文件字节和暂存内容保持；③已有暂存修改：按预期退出1，同样不删文件、不动暂存。三个回归用例全部通过；后两者为预期拒绝用例，不是门禁失败。
+- 相关自测脚本 `codexandclaude/runs/env006_n1_test_migration.py`；结果 env006-n1-migration-results.json，逐例日志 env006-n1-{crlf-only,substantive-worktree,substantive-index}.txt（均为本工作区忽略目录证据）。没有触碰 Claude 工作区或用户正式文件。
+- G3：修改 env.md 后运行 `python codexandclaude/tools/run_checks.py focused --python-all`，**102/102 + 67/67通过，退出0**，摘要 `codexandclaude/runs/20261021T063009.847226Z/summary.json`。被测HEAD为审查e884393，唯一未提交改动为随后完整提交的env.md，content_stable=True；非干净运行，不作复用来源。交付记录更新后另跑G3，同样 **102/102 + 67/67通过，退出0**，摘要 `codexandclaude/runs/20261021T063148.420546Z/summary.json`；该次HEAD为上述修正实现SHA，仅delivery.md未提交，content_stable=True，不作复用来源。填写此结果后提交前再次运行同一G3命令并通过。
+- 本轮仅说明文字，按用户要求不重新运行G1/G2；不把上轮full当成本轮新运行。Claude 在原交付独立full的79/79、102/102+67/67及content_stable=True结果保留在审查记录中。
+- N2 可选面板位置本轮不做，未新增 panel_position 或修改默认 (820,850)。面板文字较长时可能与 UI-002 地平线重叠；UI-002适配需自行安排面板位置或使用既有 --no-panel，G4 时核对遮挡。
+- N3 无需改动：UI-002验收适配仍由Claude在ENV-006合入后补充。任务状态维持待审查，待Claude复核本轮说明后再请用户授权合入。
