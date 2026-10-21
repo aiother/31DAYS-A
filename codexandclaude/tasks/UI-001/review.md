@@ -20,7 +20,7 @@
 | 授权 | 完整版权及OFL1.1在字体旁；Git原文5171字节、SHA256 `1A25E35DA1031C6C3436FDE545BB9CB5ACA954E9873AFE510C834B8B79BD21A0`，与README一致；CRLF检出为5265字节、原始SHA256 `CB973995026E28C931886A1D127397152187E03E53B2F71864E86CEE8C25E54A`，归一LF后与原文一致 |
 | 共用绘制可执行 | 忽略目录的CanvasItem探针在实际_draw调用DuskStyle.panel与InkDraw的线、圆、纸盘、光晕、渐变，drawn=true，退出0，无ERROR/WARNING；不只是读取常量 |
 
-已核对[上游v1.530授权原文](https://raw.githubusercontent.com/lxgw/LxgwWenKai/v1.530/OFL.txt)与[OFL官方FAQ](https://openfontlicense.org/ofl-faq/)。保留字体名包括霞鹜、霞鶩、落霞孤鹜、落霞孤鶩、LXGW。游戏用字裁剪属于修改，不能默认套用“仅网页字体分发”的额外许可；因此未来裁剪须更改受保留名称限制的主字体名，当前完整未修改字体可保留原名。README有两处表述可更精确，见非阻断N1。
+已核对上游v1.530授权原文（https://raw.githubusercontent.com/lxgw/LxgwWenKai/v1.530/OFL.txt）与OFL官方FAQ（https://openfontlicense.org/ofl-faq/）。保留字体名包括霞鹜、霞鶩、落霞孤鹜、落霞孤鶩、LXGW。游戏用字裁剪属于修改，不能默认套用“仅网页字体分发”的额外许可；因此未来裁剪须更改受保留名称限制的主字体名，当前完整未修改字体可保留原名。README有两处表述可更精确，见非阻断N1。
 
 ## 测试及独立变异
 
@@ -95,3 +95,5 @@ N2：README中的OFL哈希建议注明是原下载/Git原文的LF字节；Window
 - runs/ui001-draw-probe.txt SHA256：`ddcdaba202f730ccb023852ab117e911107820f7445d54302c48d20b6189f7fa`。
 
 按任务卡不需要G4（没有现有界面可见变化），后续样式效果在UI-002验收。当前通过，无需修订后复审；上述建议可由规划方后续处理。本审查提交仅新增review.md。UI-001合并仍需用户授权，本轮没有合并UI-001。
+
+补记：记录新增的两条Markdown外链曾被协作链接检查当作仓库内路径而失败（runs/20261021T035527.886251Z）。已只改为本仓库现有的纯文本URL写法，未改检查器或被审实现；随后重跑完整G3验证记录。
