@@ -1,0 +1,99 @@
+# UI-002 交付记录
+
+实现者：Claude｜审查者：Codex｜分支：`claude/UI-002`
+基线：`c11d88045b0833d01a80c2d67df0ab5ae476f636`（SYS-005、UI-001 均合入后的 master）
+实现 SHA：`3d53bcedc66716665d998550d77bbd1e4c371fa6`（代码与测试）；文档提交见分支历史（规格、说明文档，不改代码）
+
+## 用户在开工时的两项决定（2026-10-21）
+
+| 问题 | 选项 | 用户选择 |
+| --- | --- | --- |
+| 旧时间文字（`FinalBattleUI.clock_label`）与换日文字（`day_notice`）由会话驱动，相关文件不在允许修改范围 | 小幅扩范围 / 不扩、运行时由 HUD 藏起旧文字 / 新旧并存到第四批 | **小幅扩范围**（Claude 推荐：一处真相，不与会话逻辑抢显示状态） |
+| 旧 HUD 的操作提示是否保留 | 小字纸签保留 / 去掉 / 开局显示后淡出 | **小字纸签保留**（Claude 推荐：V0.1 灰盒没有别处教键位） |
+
+## 改动
+
+| 文件 | 内容 |
+| --- | --- |
+| `game/ui/hud/formal_hud.gd`（新增，`FormalHud`） | 正式 HUD：徽记（生命碎片、可能性环、成长外圈、透支逆时针暗红、恢复进度弧、珍珠、范围与药包纸签）、不足闪烁、获得光点、最后1点生命边缘脉动、地平线与时刻、日期、换日前3分钟提示、换日纸签、最终战倒计时（加速 / 余时不足）。每帧写入 `drawn`（实际绘制记录）供测试读取 |
+| `game/ui/hud/overdraft_distortion.gdshader`（新增） | 透支失真滤镜（取自 EXP-001），由 FormalHud 放在第10层 CanvasLayer |
+| `game/ui/menus/life_ui.gd` | 删除文字 HUD 行；`_health` 改为操作提示小纸签；创建并挂接 FormalHud，HUD 可见性跟随 `_health`（剧情隐藏的既有路径不变）；错误提示仍排在提示之下 |
+| `game/ui/menus/final_battle_ui.gd`（扩范围） | 删除 `clock_label`、`day_notice` 及其计时；超时、结局面板不变 |
+| `game/world/final_battle_session.gd`（扩范围） | 不再写旧时间文字；`_announce_day` 只发布 `day_changed` |
+| `game/world/start_room_session.tscn`（按要求8） | 灰盒说明文字（房间名、帮助、敌人状态、状态行）原在左上、左下，会被徽记与地平线盖住，移到右上、右对齐、自动换行；文字与节点路径不变 |
+| `game/tests/test_formal_hud.gd`（新增） | 49 项，首行登记 |
+| `game/tests/test_hud_layout.gd` | 按新布局改写，143 项 |
+| `game/tests/test_day_clock_session.gd`、`test_medkit_session.gd`、`test_pearl_growth.gd`、`test_town_rescue.gd` | 只因 HUD 文字被替换而改的旧断言，见下表 |
+| `game/docs/formal_hud_implementation.md`（新增）；`ui_data_interface.md`、`day_clock_implementation.md`、`medkit_implementation.md`、`pearl_growth_implementation.md` | 说明文档 |
+| `Words/T4_3天倒计时系统.md`、`Words/T3_可能性_基础属性_成长_死亡.md` | 各追加一节 2026-10-21 实施修订：只写用户已选定的方案（A-015 由方案四代替、最终战显示、黄昏随天数、透支失真与不足闪烁），注明来源 |
+| `Words/T7核对表.md`、`Words/待决事项总表.md` | A-015 写明最终方案与写入位置（BL-043 要求）；A-018 写入位置 |
+
+## 旧断言改动（只因文字 HUD 被替换）
+
+| 测试 | 原断言 | 现断言 |
+| --- | --- | --- |
+| `test_day_clock_session.gd` “one readable HUD…” | `clock_label` 可见且含“第 1 日” | 绘制记录的日期纸签为“第1日 · 末日前3天”，旧 DayUI 仍隐藏 |
+| 同上 “natural date change…” | `day_notice` 为“第 2 日”且可见 | HUD 换日纸签为第2日且在显示期内 |
+| 同上 “main entry uses one date announcement…” | `day_notice` 为“第 2 日”、对白通知不含日期 | HUD 换日纸签为第2日、对白通知不含日期；另在测试把日期手动改回第1日后加一次 `session._process(0)`，让会话按真实存档那样先发布第1日（原测试直接改字段、不经过发布，旧文字是上一次残留才碰巧通过） |
+| `test_medkit_session.gd` “HUD exposes actual inventory…” | 文字含“药包 1 / 3” | 药包纸签画出“× 1”，提示纸签含“Q / Back 药包” |
+| `test_pearl_growth.gd` “HUD reports combined real reach” | 文字含“珍珠 4 / 4 · 近战范围 140%” | 徽记画出 4 颗珍珠、范围纸签“范围 140%” |
+| `test_town_rescue.gd` “HUD and quest reflect grown cap” | 文字含“4 / 12” | 徽记余额 4、成长外圈 2 段；任务文字断言不变 |
+
+`test_field_room.gd`、`test_town_rescue.gd`、`test_final_battle.gd` 中检查 `_health.visible` 的断言未改，仍然成立（剧情隐藏 `_health` 即隐藏整个 HUD）。
+
+## 完成标准对照
+
+1. **自动测试**（`test_formal_hud.gd`，真实主会话与真实输入，断言读取 `FormalHud.drawn`）：
+   - 要求1：生命碎片只画现有数量；可能性格数；珍珠与“范围 xx%”按 `range_multiplier()`；药包；成长外圈段数与点亮数；`gain()` 的光点数等于实得点数、起点为来源世界坐标的屏幕位置、落入环后脉动。
+   - 要求2：真实“长按恢复”在余额2时环闪红（闪烁强度、外圈描线与填充色都偏向警示红），0.9 秒后回到关键色；真实连续两次闪避透支到 -2 时闪红、两格暗红、失真开启且滤镜层低于对白与 LifeUI、透支越深越强、回正后消退。
+   - 要求3：生命为1时边缘朱红脉动，高于1时消失。
+   - 要求4：地平线时刻与太阳位置随真实进度（1800 s 剩 900 s → 15:00、x=960）；日期纸签；剩180 s 时右下提示“即将进入第 2 日 · 3:00”；自然换日出现“第 2 日”纸签、提示消失、4 秒后纸签离开；载入存档与换槽到更晚日期都不出纸签（SYS-005 N1）；第三日没有换日提示。最终战：第三日余1500 s 开战，先显示“时间加速……”且显示值约1500 s、真实预算900 s；1 秒后显示值下降超过50 s 且仍高于真实值，真实预算同时减少；结束后墨色显示真实值；读档不重播；余552 s 开战显示“最终战倒计时 · 余时不足”、朱红、“09:12”。
+   - 要求5：黄昏第三日明显深于第一日；最终战黄昏为1、光晕为 0.7。
+   - 要求6：HUD 与提示纸签使用霞鹜文楷。
+   - 关键色：第1日、第2日、第三日末、最终战画出的生命、可能性、调色板完全相同。
+2. **防重叠**（`test_hud_layout.gd`）：1920×1080 与 1280×720 下，徽记、提示纸签、地平线、换日前提示、换日纸签、最终战倒计时两两不重叠，也不与短 / 长中文保存错误重叠，全部在窗口内；HUD、滤镜、错误提示不拦截鼠标。
+3. **现有测试**：见检查证据；旧断言改动见上表。
+4. **变异**（临时改 `formal_hud.gd`，跑 `test_formal_hud.gd`，脚本按原字节恢复后复跑 49/49）：
+
+| 变异 | 结果 |
+| --- | --- |
+| 去掉不足闪烁（`deny_flash()` 恒为0） | 1 项失败：real heal shortfall flashes the ring red |
+| 去掉失真（`distortion_target()` 恒为0） | 2 项失败：distorted under every UI layer / deepens with the overdraft |
+| 最终战加速改为停表（显示值固定为开战余额） | 1 项失败：spin-down moves the displayed time |
+| 关键色随日期漂移（可能性填充按黄昏混入紫色） | 3 项失败：flash ends… key colour / identical on day two / do not drift on the last day |
+
+## 实现中的取舍（请审查与用户留意）
+
+- **换日纸签的判定**：用 `day_changed`，但只在同一场景内日期变大时出纸签。选槽与死亡重来都会重建场景，所以读档不出；读回更早检查点（日期变小）也不出。
+- **读档后的最终战**：SYS-005 把开战余额标为未知，此时不重播加速、也不标朱红（无法区分长短预算）。
+- **最后1点生命的边缘脉动**比 EXP-002 样张强（每层 0.45 / 样张 0.16）：灰盒房间很暗，样张强度几乎看不见。强弱请在 G4 判断。
+- **灰盒说明文字移到右上**：这是开发说明而非正式 UI，移位只为不被徽记盖住（要求8）。若用户更希望去掉或缩小，第四批处理。
+- **旧文字 HUD 中未保留的内容**：复活保护剩余秒数、连续闪避次数（A-018 规定不显示）、恢复中秒数（改为徽记内的进度弧）。
+- **渲染截图核对**：用临时脚本在真实会话里截了日常、透支+最后1点生命+换日前提示、最终战加速三张图，确认徽记、提示纸签、地平线、右下提示与灰盒说明文字互不遮挡（截图不入库）。
+
+## 仍需用户决定（G4 时）
+
+- **SYS-005 审查 N2**：闪避因透支下限被拒绝（根本没执行）时，现在没有任何提示。是否也要闪红？两种都不改规则。
+  - 选项：不提示（现状） / 也闪红。Claude 推荐**也闪红**：玩家按了键却没反应，闪红能说明原因；需要 SYS-005 增加一个“下限拒绝”信号，属 Codex 职责，可作为小任务另立。
+
+## 检查证据
+
+在实现 SHA、开始时 dirty=false 执行 `python codexandclaude/tools/run_checks.py full --jobs 4`，ENV-005 自动摘要要点：
+
+- 总结果：**通过**；模式 `full`；被测 SHA `3d53bcedc66716665d998550d77bbd1e4c371fa6`。
+- G2：实际 79 / 预期 79（含新 `test_formal_hud.gd`）；完整、通过。
+- G3：`tests` 102、`codexandclaude/tests` 66，完整、通过。
+- 摘要目录：`codexandclaude/runs/20261021T045638.140693Z/`（不入库）。`content_stable=False`：运行期间我在同一工作区写了文档（不影响 G2），另有已知的 `.svg.import` / 字体 `.import` 换行改写（BL-113），运行后已恢复。**本运行不能作复用来源，审查时请独立运行。**
+- 文档提交后另跑 G3（`focused --python-all`）：`tests` 102、`codexandclaude/tests` 66 通过。中间一次失败：我起初在待决事项总表为 A-015 另加了一行，`test_pending_decisions` 要求每项一行且日期不变，已改为把最终方案并入原行。
+- 单项（`--fixed-fps 60`）：`FORMAL_HUD_TESTS checks=49 failures=0`；`HUD_LAYOUT_TESTS checks=143 failures=0`；`DAY_CLOCK_SESSION_TESTS 43/0`、`MEDKIT_SESSION_TESTS 68/0`、`PEARL_GROWTH_TESTS 212/0`、`TOWN_RESCUE_TESTS 47/0`、`FIELD_ROOM_TESTS 50/0`、`FINAL_BATTLE_TESTS 29/0`、`UI_DATA_TESTS 42/0`、`UI_STYLE_TESTS 19/0`。
+- 工具：Godot 4.7.2 stable（控制台版）、Codex 自带 Python、Git。
+
+## G4（用户）
+
+建议在 ENV-006 合入后用通用验收启动器进行；进入第3日与最终战两种预算需要验收入口（ENV-006 提供）。
+
+1. 正常启动游戏，新游戏，从开场玩到第2日：看徽记（生命碎片、可能性环、珍珠、范围、药包）、操作提示纸签、底部地平线与时刻、右下日期；尝试余额不足时长按恢复看环闪红；连续闪避透支看画面失真（HUD 不失真）；剩1点生命看边缘朱红；换日前3分钟右下提示与换日纸签。
+2. 用验收入口进入第3日，看黄昏明显加深、关键色不变。
+3. 用验收入口进入最终战：第三日余额大于15分钟（如25分钟）看“时间加速”走到15:00；余额不足15分钟（如9:12）看朱红“余时不足”。
+4. 切换 1280×720 与 1920×1080，确认没有遮挡。
+5. 回答上面的 N2。
