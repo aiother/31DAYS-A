@@ -110,3 +110,4 @@
 | BL-108 | P3 | 测试套件改名漏检：取消固定总数后，把 `game/tests/test_*.gd` 改名为不以 `test_` 开头会让它静默退出门禁（套件数 73→72 不报错）。可对 `game/tests/` 下含登记头或 `extends SceneTree` 的非 `test_*.gd` 报错，或在 G2 报告输出与上次 master 的套件数差值 | ENV-004 审查记录 N1 | Codex | 待立项 |
 | BL-109 | P3 | G2 调度顺序：路径排序把 5 个 600 秒上限的 survey 套件排到队尾，`--jobs 4` 全量约由 11 分钟变为 12.5～14 分钟。提交调度可按 timeout 从大到小、报告仍按路径 | ENV-004 审查记录 N2 | Codex | 待立项 |
 | BL-113 | P3 | Claude 工作区 G2 编辑器导入每次改写两个 `game/assets/*.svg.import` 的换行，使 ENV-005 内容快照 `content_stable=False`，本机 full 永远不能作复用来源；可用 `.gitattributes` 固定 `*.import` 换行或导入后规范化 | ENV-005 审查记录 N1 | Codex | 已立项 ENV-006 |
+| BL-114 | P2 | 闪避因透支下限被拒绝时也让可能性环发红闪烁：系统在下限拒绝时发出现有 `shortfall(DODGE)`；一串已满三次等其他拒绝仍不发 | 用户 2026-10-21 决定（SYS-005 审查 N2）；A-018 | Codex | 待立项（任务卡 SYS-006 草稿待批准） |
