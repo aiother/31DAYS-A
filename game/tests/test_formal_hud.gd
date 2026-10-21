@@ -54,10 +54,27 @@ func fixture(day: int, remaining: float) -> Dictionary:
 			result["events"][flag] = true
 	return result
 
-## Key colours exactly as drawn this frame, with no flash or gain pulse active.
+## The colours the user chose (EXP-002 sample two); identical on every day.
+const CHOSEN: Dictionary = {"life": DuskStyle.LIFE, "possibility": DuskStyle.POSSIBILITY, "growth": DuskStyle.GROWTH, "growth_dim": Color(DuskStyle.GROWTH, 0.35), "overdraft": DuskStyle.OVERDRAFT}
+
+## Key colours as actually passed to the draw calls: one frame with growth
+## capacity (lit and dim outer segments), one in overdraft. No flash or pulse.
 func key_colours() -> Dictionary:
+	var actions: PlayerPossibility = session.player.possibility
+	var base: int = actions.config.maximum
+	var keep: Array[int] = [actions.balance, actions.maximum]
+	actions.maximum = base + 2
+	actions.balance = base + 1
+	await frames(2)
 	var record: Dictionary = drawn()
-	return {"palette": record["palette"], "life": record["life_fill"], "possibility": record["possibility_fill"]}
+	var result: Dictionary = {"life": record.get("life_fill"), "possibility": record.get("possibility_fill"), "growth": record.get("growth_fill"), "growth_dim": record.get("growth_dim")}
+	actions.balance = -3
+	await frames(2)
+	result["overdraft"] = drawn().get("overdraft_fill")
+	actions.balance = keep[0]
+	actions.maximum = keep[1]
+	await frames(2)
+	return result
 
 func run() -> void:
 	directory = "user://tests/formal_hud_%d" % Time.get_ticks_usec()
@@ -171,7 +188,8 @@ func time_cases() -> void:
 	actions.reset_actions()
 	actions.balance = 3
 	await frames(70)
-	var day_one: Dictionary = key_colours()
+	var day_one: Dictionary = await key_colours()
+	check(day_one == CHOSEN, "day one draws life, possibility, growth and overdraft in the chosen colours")
 	var horizon: Dictionary = drawn()["horizon"]
 	check(horizon["date"] == "第1日 · 末日前3天" and str(horizon["clock"]).begins_with("06:"), "horizon shows time of day and date tag")
 	session.data["day_remaining"] = 900.0
@@ -188,13 +206,13 @@ func time_cases() -> void:
 	check(not drawn().has("warning"), "warning ends with the new day")
 	await frames(250)
 	check(not drawn().has("banner"), "banner leaves after the announcement time")
-	check(key_colours() == day_one, "key colours are identical on day two")
+	check(await key_colours() == CHOSEN, "key colours are identical on day two")
 	check(session.store.save_slot(2, fixture(3, 300)) and session.start_slot(2, false), "late third-day slot loads")
 	await frames(70)
 	quiet()
 	check(not drawn().has("banner"), "slot switch to a later day is initialisation, not a new-day banner")
 	check(float(drawn()["dusk"]) > early_dusk + 0.5 and not DuskStyle.paper_color(hud().time_state()).is_equal_approx(DuskStyle.paper_color({"day": 1})), "dusk deepens with the days")
-	check(key_colours() == day_one, "key colours do not drift on the last day")
+	check(await key_colours() == CHOSEN, "key colours do not drift on the last day")
 	check(not drawn().has("warning"), "third day has no next-day warning")
 
 func start_final(slot: int, day3: float) -> void:
@@ -225,8 +243,7 @@ func final_cases() -> void:
 	var settled: Dictionary = drawn()["final"]
 	check(settled["label"] == "最终战倒计时" and settled["color"] == DuskStyle.INK and is_equal_approx(float(settled["shown"]), float(settled["real"])), "after the spin-down the real budget shows in ink")
 	check(is_equal_approx(DuskStyle.glow_strength(hud().time_state()), DuskStyle.FINAL_GLOW_SCALE) and float(drawn()["dusk"]) == 1.0, "final battle uses full dusk with 30% softer glow")
-	var final_colours: Dictionary = {"palette": drawn()["palette"], "life": drawn()["life_fill"]}
-	check(final_colours["palette"] == {"life": DuskStyle.LIFE, "possibility": DuskStyle.POSSIBILITY, "overdraft": DuskStyle.OVERDRAFT, "growth": DuskStyle.GROWTH, "deny": DuskStyle.DENY} and final_colours["life"] == DuskStyle.LIFE, "key colours are unchanged in the final battle")
+	check(await key_colours() == CHOSEN, "key colours are unchanged in the final battle")
 	session.set_physics_process(false)
 	check(session.start_slot(3, false), "started final battle reloads")
 	await frames(4)
@@ -239,4 +256,8 @@ func final_cases() -> void:
 	check(short["digits"] == "09:12" or short["digits"] == "09:11", "short budget shows the real remainder")
 	var box: Rect2 = short["rect"]
 	check(not box.intersects(drawn()["emblem"]["rect"]) and not box.intersects(drawn()["horizon"]["rect"]), "final countdown keeps clear of the emblem and horizon")
+	# Exactly 15:00 left is neither "more than" (no spin-down) nor "less than" (no warning).
+	await start_final(2, 900.0)
+	var even: Dictionary = drawn()["final"]
+	check(even["label"] == "最终战倒计时" and even["color"] == DuskStyle.INK and str(even["digits"]).begins_with("1"), "exactly fifteen minutes shows the real budget in ink without spin-down or warning")
 	session.set_physics_process(false)

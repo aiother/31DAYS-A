@@ -201,7 +201,6 @@ func _draw_emblem(time: Dictionary) -> void:
 	var flash: float = deny_flash()
 	var glow: float = DuskStyle.glow_strength(time) * DuskStyle.breath(time, clock)
 	var seed: int = 7
-	drawn["palette"] = {"life": DuskStyle.LIFE, "possibility": DuskStyle.POSSIBILITY, "overdraft": DuskStyle.OVERDRAFT, "growth": DuskStyle.GROWTH, "deny": DuskStyle.DENY}
 	drawn["deny_flash"] = flash
 	InkDraw.paper_disc(self, CENTER + Vector2(3, 4), OUTER + 18, Color(0, 0, 0, 0.25), seed)
 	InkDraw.paper_disc(self, CENTER, OUTER + 16, Color(DuskStyle.paper_color(time), DuskStyle.PANEL_ALPHA), seed, DuskStyle.WOBBLE)
@@ -233,7 +232,10 @@ func _draw_emblem(time: Dictionary) -> void:
 	var growth_lit: int = 0
 	for i: int in range(growth):
 		var lit: bool = actions.balance > base + i
-		_arc(OUTER, i % base, DuskStyle.GROWTH if lit else Color(DuskStyle.GROWTH, 0.35), 7.0)
+		var arc: Color = DuskStyle.GROWTH if lit else Color(DuskStyle.GROWTH, 0.35)
+		_arc(OUTER, i % base, arc, 7.0)
+		# Record the colour the growth segment was really drawn with.
+		drawn["growth_fill" if lit else "growth_dim"] = arc
 		growth_lit += 1 if lit else 0
 	# Life: inked vermilion shards, current count only.
 	var count: int = maxi(0, player.life.health)
@@ -332,7 +334,7 @@ func _draw_final(time: Dictionary) -> void:
 		var progress: float = 1.0 - accelerate_left / ACCELERATE_SECONDS
 		value = lerpf(accelerate_from, real, ease(progress, 2.2))
 		label = "时间加速……"
-	elif bool(time.get("final_start_known", false)) and float(time.get("final_start_day3_remaining", FINAL_BUDGET)) <= FINAL_BUDGET:
+	elif bool(time.get("final_start_known", false)) and float(time.get("final_start_day3_remaining", FINAL_BUDGET)) < FINAL_BUDGET:
 		# A-016: less than 15 minutes left at the start shows the real remainder in vermilion.
 		label = "最终战倒计时 · 余时不足"
 		color = DuskStyle.LIFE
