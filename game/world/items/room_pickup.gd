@@ -21,7 +21,29 @@ func refresh(player: PlayerController, collected: bool) -> void:
 	visible = not collected
 	prompt.visible = not collected and can_collect(player)
 
+## UI-007 (BL-049): key items pulse so they read on the map; same rule as
+## SYS-009's key_item. Collected items are hidden by refresh().
+func key_item() -> bool:
+	return config.persistence_key.begins_with("keyitem:")
+
+var _pulse_time: float = 0.0
+
+func _process(delta: float) -> void:
+	if visible and key_item():
+		_pulse_time += delta
+		queue_redraw()
+
+## 0..1 strength of the pulse this frame; 0 for ordinary pickups.
+func highlight() -> float:
+	if not key_item():
+		return 0.0
+	return 0.55 + 0.45 * sin(_pulse_time * 4.0)
+
 func _draw() -> void:
+	var pulse: float = highlight()
+	if pulse > 0.0:
+		InkDraw.glow(self, Vector2.ZERO, 70, DuskStyle.GROWTH, 0.9 * pulse)
+		draw_arc(Vector2.ZERO, 32 + 6 * pulse, 0, TAU, 40, Color(DuskStyle.GROWTH, 0.5 + 0.4 * pulse), 3)
 	draw_circle(Vector2.ZERO, 18, Color(0.8, 0.9, 0.95))
 	draw_circle(Vector2(-5, -6), 5, Color.WHITE)
 	draw_arc(Vector2.ZERO, 25, 0, TAU, 32, Color(0.45, 0.75, 0.8), 2)

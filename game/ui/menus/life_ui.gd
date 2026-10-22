@@ -10,6 +10,8 @@ var _health: Label
 var _hud: FormalHud
 var _pause: PauseMenu
 var _save_toast: SaveToast
+var _area_banner: AreaBanner
+var _interact_prompt: InteractPrompt
 ## Quitting is replaceable so tests can confirm save-and-quit without ending the run.
 var _quit_handler: Callable
 var _black: ColorRect
@@ -65,6 +67,13 @@ func _ready() -> void:
 	_root.add_child(_save_toast)
 	if get_parent().has_signal("checkpoint_saved"):
 		get_parent().connect("checkpoint_saved", func(_id: String) -> void: _save_toast.show_saved())
+	# UI-007: area name and interaction prompt, under every menu page.
+	_area_banner = AreaBanner.new()
+	_area_banner.setup(get_parent(), _hud)
+	_root.add_child(_area_banner)
+	_interact_prompt = InteractPrompt.new()
+	_interact_prompt.setup(get_parent(), _hud, _area_banner)
+	_root.add_child(_interact_prompt)
 	_error_label = Label.new()
 	_error_label.add_theme_font_size_override("font_size", 22)
 	_error_label.modulate = Color(1, 0.5, 0.35)
