@@ -1,6 +1,6 @@
 # UI-005：死亡、结束与超时界面正式化，暂停菜单返回标题
 
-状态：待审查（2026-10-22 实现与G1/G2/G3完成，交Codex审查；G4待用户）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（用户G4通过，R1复审通过，master集成G2/G3通过）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：UI-004 合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：SYS-008（`return_to_title()`）、UI-004（主界面）
 
 ## 目标
