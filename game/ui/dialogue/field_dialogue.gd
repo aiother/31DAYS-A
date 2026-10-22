@@ -119,7 +119,9 @@ func _ready() -> void:
 func show_notice(message: String) -> void:
 	notice.text = message
 	notice.modulate.a = 1
-	create_tween().tween_property(notice, "modulate:a", 0.0, 3.0)
+	# This node runs while paused (button guard); the notice still stops
+	# while paused, as before UI-008.
+	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP).tween_property(notice, "modulate:a", 0.0, 3.0)
 
 func start(config: DialogueConfig, lines: PackedStringArray) -> void:
 	_config = config
@@ -192,7 +194,9 @@ func show_departure() -> void:
 	text.visible_characters = -1
 	choices.show()
 	# Staying is the safe default; leaving gives the rescue up for good.
-	(choices.get_child(0) as Button).grab_focus()
+	_refocus = choices.get_child(0) as Button
+	# Focuses it now, or on resuming when paused.
+	_guard_pause(get_tree().paused)
 
 func dismiss() -> void:
 	active = false
@@ -210,8 +214,8 @@ func _ink(ci: CanvasItem, at: Vector2, value: String, size_px: int, color: Color
 	ci.draw_multiline_string(font, at, value, align, width, size_px, -1, color)
 	return {"text": value, "color": color}
 
-## B's dusk paper with C's torn top and bottom edges.
-func _torn_sheet(ci: CanvasItem, rect: Rect2, fill: Color, edge: Color, seed: int) -> void:
+## B's dusk paper with C's torn top and bottom edges; returns what it drew.
+func _torn_sheet(ci: CanvasItem, rect: Rect2, fill: Color, edge: Color, seed: int) -> Dictionary:
 	var top: PackedVector2Array = []
 	var bottom: PackedVector2Array = []
 	for i: int in range(41):
@@ -225,14 +229,20 @@ func _torn_sheet(ci: CanvasItem, rect: Rect2, fill: Color, edge: Color, seed: in
 	ci.draw_colored_polygon(outline, fill)
 	ci.draw_polyline(top, edge, 2.4, true)
 	ci.draw_polyline(bottom, edge, 2.4, true)
+	return {"fill": fill, "edge": edge, "outline": outline, "top": top, "bottom": bottom}
+
+## The go-on triangle; returns what it drew.
+func _go_on(ci: CanvasItem, at: Vector2, color: Color) -> Dictionary:
+	var points: PackedVector2Array = [at, at + Vector2(16, 0), at + Vector2(8, 12)]
+	ci.draw_colored_polygon(points, color)
+	return {"shape": "continue", "points": points, "color": color}
 
 func _draw_slip() -> void:
 	drawn = {}
 	if not active:
 		return
 	var record: Dictionary = {"box": BOX, "line": line_index, "confirming": confirming}
-	_torn_sheet(panel, BOX, Color(DuskStyle.PAPER_DUSK, 0.95), Color(DuskStyle.INK, 0.75), 120)
-	record["paper"] = Color(DuskStyle.PAPER_DUSK, 0.95)
+	record["paper"] = _torn_sheet(panel, BOX, Color(DuskStyle.PAPER_DUSK, 0.95), Color(DuskStyle.INK, 0.75), 120)
 	var full: String = text.text
 	var shown: String = full if text.visible_characters < 0 else full.substr(0, text.visible_characters)
 	record["text"] = _ink(panel, BOX.position + Vector2(48, 66), shown, UiTheme.SIZE_BODY + 4, DuskStyle.INK, BOX.size.x - 96)
@@ -249,8 +259,9 @@ func _draw_slip() -> void:
 	else:
 		var marker: Vector2 = BOX.end - Vector2(46, 34 + 4.0 * sin(clock * 5.0))
 		if line_done():
-			panel.draw_colored_polygon(PackedVector2Array([marker, marker + Vector2(16, 0), marker + Vector2(8, 12)]), DuskStyle.LIFE)
-			record["marker"] = "continue"
+			var mark: Dictionary = _go_on(panel, marker, DuskStyle.LIFE)
+			record["marker"] = mark["shape"]
+			record["marker_shape"] = mark
 		elif holding:
 			record["marker"] = _ink(panel, BOX.end - Vector2(70, 22), "»»", UiTheme.SIZE_BODY, DuskStyle.LIFE)["text"]
 		var line: Dictionary = _ink(panel, Vector2(BOX.position.x, BOX.end.y + 30), hint.text, UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.6), BOX.size.x, HORIZONTAL_ALIGNMENT_CENTER)
@@ -295,10 +306,12 @@ func _update_missed(delta: float) -> void:
 		_missed_shown = false
 		missed_age = -1.0
 	if missed_age >= 0.0:
-		missed_age += delta
+		# Hidden while a dialogue is open; the rest of its time waits.
+		if not active:
+			missed_age += delta
 		if missed_age >= MISSED_SECONDS:
 			missed_age = -1.0
-	elif not _missed_shown and missed_survivor() != null and not missed_place().is_empty():
+	elif not _missed_shown and not active and missed_survivor() != null and not missed_place().is_empty():
 		# Once per visit to the Room; it never stops the player. It waits
 		# while there is no clear spot (e.g. the area name on arrival).
 		missed_age = 0.0

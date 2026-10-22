@@ -127,6 +127,9 @@ func run() -> void:
 	await slip_cases()
 	await departure_cases()
 	await missed_cases()
+	await talk_first_cases()
+	await depth_cases()
+	await notice_cases()
 	await layout_cases()
 	await close()
 	await open(false)
@@ -148,7 +151,16 @@ func slip_cases() -> void:
 	await enter(FieldSession.FIELD_ID)
 	await talk_to_seven()
 	var config: DialogueConfig = (session.room as FieldRoom).dialogue
-	check(dialogue().active and said().get("paper") == Color(DuskStyle.PAPER_DUSK, 0.95), "E next to 7 opens the paper slip (variant D)")
+	var paper: Dictionary = said().get("paper", {})
+	check(dialogue().active and paper.get("fill") == Color(DuskStyle.PAPER_DUSK, 0.95) and paper.get("edge") == Color(DuskStyle.INK, 0.75), "E next to 7 opens the paper slip (variant D)")
+	var outline: PackedVector2Array = paper.get("outline", PackedVector2Array())
+	var box: Rect2 = said()["box"]
+	var torn: bool = (paper.get("top", []) as PackedVector2Array).size() == 41 and (paper.get("bottom", []) as PackedVector2Array).size() == 41 and outline.size() == 82
+	var heights: Dictionary = {}
+	for point: Vector2 in paper.get("top", PackedVector2Array()):
+		torn = torn and absf(point.y - box.position.y) <= 4.0
+		heights[snappedf(point.y, 0.5)] = true
+	check(torn and heights.size() > 5 and is_equal_approx(outline[0].x, box.position.x) and is_equal_approx(outline[40].x, box.end.x), "the drawn paper spans the slip with torn top and bottom edges")
 	check(said().get("speaker", {}).get("text") == config.speaker and said().get("speaker", {}).get("color") == DuskStyle.PAPER_DAY, "the speaker sits on the ink tag in paper colour")
 	var early: int = shown_text().length()
 	await frames(10)
@@ -162,7 +174,8 @@ func slip_cases() -> void:
 	await frames(2)
 	check(not paused and dialogue().active, "and the dialogue goes on after resuming")
 	await key(KEY_E)
-	check(shown_text() == dialogue().text.text and said().get("marker") == "continue", "one E finishes the line and shows the go-on mark")
+	var mark: Dictionary = said().get("marker_shape", {})
+	check(shown_text() == dialogue().text.text and said().get("marker") == "continue" and mark.get("color") == DuskStyle.LIFE and (mark.get("points", []) as PackedVector2Array).size() == 3 and said()["box"].grow(1).has_point((mark["points"] as PackedVector2Array)[0]), "one E finishes the line and draws the go-on triangle in the slip")
 	for i: int in range(12):
 		if not dialogue().active:
 			break
@@ -232,6 +245,25 @@ func departure_cases() -> void:
 	dialogue().dismiss()
 	session._end_dialogue()
 	await frames(2)
+	# Shown in the very frame the pause ends, before the guard has run.
+	paused = true
+	await frames(2)
+	paused = false
+	dialogue().show_departure()
+	check(focus_text() == "留下" and not (buttons[0] as Button).disabled, "asked right after resuming, 留下 takes the focus at once")
+	dialogue().dismiss()
+	await frames(2)
+	paused = true
+	await frames(2)
+	dialogue().show_departure()
+	await frames(2)
+	check((buttons[0] as Button).disabled and (buttons[1] as Button).disabled, "asked while paused, both buttons wait")
+	paused = false
+	await frames(2)
+	check(focus_text() == "留下" and not (buttons[0] as Button).disabled, "and 留下 gets the focus on resuming")
+	dialogue().dismiss()
+	session._end_dialogue()
+	await frames(2)
 
 func missed_cases() -> void:
 	await enter(RavineRescueSession.RESCUE_ID)
@@ -271,8 +303,80 @@ func missed_cases() -> void:
 	check(session.interact_ravine_survivor() and dialogue().text.text.contains("太晚"), "talking still gives the expired line")
 	await frames(2)
 	check(dialogue().missed_drawn.is_empty(), "the tag steps aside while the dialogue is open")
+	var held: float = dialogue().missed_age
+	await frames(120)
+	check(held >= 0.0 and dialogue().missed_age == held, "its time waits while the dialogue is open")
 	session._end_dialogue()
-	await frames(2)
+	await frames(3)
+	check(dialogue().missed_drawn.get("text") == FieldDialogue.MISSED_TEXT, "and it comes back for the rest of its time afterwards")
+	await frames(int(FieldDialogue.MISSED_SECONDS * 60) + 10)
+	check(dialogue().missed_drawn.is_empty(), "then it is gone")
+
+## Talking before the tag ever showed must not use it up (review R1).
+func talk_first_cases() -> void:
+	await enter(FieldSession.FIELD_ID)
+	session._mount_room(RavineRescueSession.RESCUE_ID)
+	session._bind_room()
+	session.player.life.scripted_control_locked = false
+	quiet()
+	session.player.position = (session.room.get_node("Survivor") as Node2D).position
+	await key(KEY_E)
+	check(dialogue().active and dialogue().text.text.contains("太晚") and not dialogue().missed_drawn.has("text"), "E at the expired survivor right on arrival opens the expired line before any tag")
+	var age: float = dialogue().missed_age
+	var ever: bool = false
+	for i: int in range(300):
+		await frames(1)
+		ever = ever or not dialogue().missed_drawn.is_empty()
+	check(not ever and dialogue().missed_age == age and age < 0.1, "no tag and no time spent during that dialogue")
+	for i: int in range(12):
+		if not dialogue().active:
+			break
+		await key(KEY_E)
+	check(not dialogue().active, "the dialogue ends")
+	var seen: bool = false
+	for i: int in range(300):
+		await frames(1)
+		if dialogue().missed_drawn.get("text") == FieldDialogue.MISSED_TEXT:
+			seen = true
+			break
+	check(seen, "still nearby afterwards, the tag shows once")
+	await frames(int(FieldDialogue.MISSED_SECONDS * 60) + 70)
+	check(dialogue().missed_drawn.is_empty() and dialogue().missed_age < 0.0, "and only once")
+
+## The ravine depth rescue clears enemies and has no talk target: the tag
+## uses MISSED_REACH as a display distance only (review N1).
+func depth_cases() -> void:
+	session.data["events"][WorldDayRules.expired_key(RavineDepthSession.DEPTH_ID)] = true
+	await enter(RavineDepthSession.DEPTH_ID)
+	var survivor: Node2D = session.room.get_node("Survivor") as Node2D
+	var targets: Array = session.interaction_targets().filter(func(target: Dictionary) -> bool: return target.get("id") == RavineDepthSession.DEPTH_ID + ":Survivor")
+	check(session.quest_state().get("state") == "已过期" and session.quest_state().get("id") == RavineDepthSession.DEPTH_ID and targets.is_empty(), "the expired depth rescue has no talk target")
+	session.player.position = survivor.position + Vector2(FieldDialogue.MISSED_REACH + 200, 0)
+	await frames(200)
+	check(dialogue().missed_drawn.is_empty() and dialogue().missed_age < 0.0, "beyond the display distance there is no tag")
+	session.player.position = survivor.position + Vector2(FieldDialogue.MISSED_REACH - 40, 0)
+	var seen: bool = false
+	for i: int in range(300):
+		await frames(1)
+		if dialogue().missed_drawn.get("text") == FieldDialogue.MISSED_TEXT:
+			seen = true
+			break
+	check(seen and session.player.life.can_control(), "within it the depth survivor shows the tag without stopping the player")
+	session.data["events"].erase(WorldDayRules.expired_key(RavineDepthSession.DEPTH_ID))
+	await frames(int(FieldDialogue.MISSED_SECONDS * 60) + 10)
+
+## show_notice() keeps its pre-UI-008 pause behaviour (review R3).
+func notice_cases() -> void:
+	dialogue().show_notice("测试提示")
+	await frames(10)
+	var before: float = dialogue().notice.modulate.a
+	paused = true
+	await frames(60)
+	check(before < 1.0 and is_equal_approx(dialogue().notice.modulate.a, before), "pausing freezes the notice where it was")
+	paused = false
+	await frames(60)
+	check(dialogue().notice.modulate.a < before - 0.2, "and it fades on after resuming")
+	await frames(150)
 
 ## Both window sizes: the slip with its key line, the G-08 tag, the HUD as
 ## drawn, the area name and the interaction prompt stay apart and on screen.
