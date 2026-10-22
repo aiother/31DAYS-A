@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-22（第六批起草，汇总基线 master@2183e77；UI-005 的状态以其任务卡为准）
+更新：2026-10-22（第七批起草，汇总基线 master@6591165；UI-007 复审已通过、集成以其任务卡为准）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -40,6 +40,10 @@
 | EXP-004 | M | 对话界面与敌人介绍卡探索原型 | Claude | Codex | 已完成（用户已选定） | [tasks/EXP-004](tasks/EXP-004/task.md) |
 | SYS-009 | M | 任务信息与交互对象数据 | Codex | Claude | 已完成 | [tasks/SYS-009](tasks/SYS-009/task.md) |
 | UI-007 | M | 区域名称与场景交互提示 | Claude | Codex | 已批准 | [tasks/UI-007](tasks/UI-007/task.md) |
+| UI-008 | L | 正式对话界面与 G-08 错失救助提示 | Claude | Codex | 草稿（待用户批准） | [tasks/UI-008](tasks/UI-008/task.md) |
+| UI-009 | M | 正式敌人介绍卡与战场波次横幅 | Claude | Codex | 草稿（待用户批准） | [tasks/UI-009](tasks/UI-009/task.md) |
+| UI-010 | M | 任务信息与中央提示 | Claude | Codex | 草稿（待用户批准） | [tasks/UI-010](tasks/UI-010/task.md) |
+| CLN-001 | S | 清理已被正式交互提示取代的灰盒世界提示 | Codex | Claude | 草稿（待用户批准） | [tasks/CLN-001](tasks/CLN-001/task.md) |
 | ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
