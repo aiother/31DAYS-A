@@ -177,6 +177,7 @@ func death_cases() -> void:
 	check(drawn.get("buttons") == ["从检查点继续", "返回标题", "设置", "退出游戏"], "the A-014 options in order")
 	check(drawn.get("body", {}).get("text") == "满生命复活 · 可能性减半向下取整 · 负数清零", "the existing rule line stays")
 	check(focus_text() == "从检查点继续", "focus starts on 从检查点继续")
+	await sheet_fits(death(), "death")
 	await key(KEY_UP)
 	check(focus_text() == "从检查点继续", "up at the top stays on the sheet")
 	await pad(JOY_BUTTON_DPAD_DOWN)
@@ -190,6 +191,7 @@ func death_cases() -> void:
 	await key(KEY_DOWN)
 	await key(KEY_ENTER)
 	check(death().asking() and death().drawn.get("question", {}).get("text") == "保存并退出游戏？\n下次从最近的检查点继续" and focus_text() == "返回", "退出游戏 asks first, starting on 返回")
+	await sheet_fits(death(), "death question")
 	await key(KEY_UP)
 	check(focus_text() == "返回" or focus_text() == "保存并退出", "the question keeps the focus")
 	await key(KEY_ESCAPE)
@@ -232,7 +234,7 @@ func pause_cases() -> void:
 	check(focus_text() == "返回标题", "up reaches the confirm button")
 	await with_failing_save(func() -> void: await key(KEY_ENTER))
 	await frames(2)
-	check(session.has_session() and menu.visible and menu.page == "confirm" and not str(menu.drawn.get("error", "")).is_empty(), "a failed save stays on the question with the error")
+	check(session.has_session() and menu.visible and menu.page == "confirm" and not error_label().text.is_empty() and menu.drawn.get("error") == error_label().text, "a failed save stays on the question with the error drawn")
 	await key(KEY_ENTER)
 	await frames(6)
 	check(at_title(), "confirming returns to the title")
@@ -244,6 +246,7 @@ func timeout_cases() -> void:
 	check(drawn.get("title", {}).get("text") == "未来已失" and drawn.get("buttons") == ["确认重试最终战（重新计时）", "返回标题"], "未来已失 with retry and 返回标题")
 	check(str(drawn.get("body", {}).get("text", "")).begins_with("游玩时长 1:02:05\n最终战超时 · 本次可恢复 15:00"), "with the play time and the recoverable budget")
 	check(focus_text() == "确认重试最终战（重新计时）", "focus starts on retry")
+	await sheet_fits(final_sheet(), "final timeout")
 	await key(KEY_ESCAPE)
 	check(session.final_ui.mode == "timeout" and final_sheet().visible, "Esc cannot slip past the timeout")
 	await key(KEY_ENTER)
@@ -270,6 +273,7 @@ func exploration_cases() -> void:
 	var drawn: Dictionary = final_sheet().drawn
 	check(session._exploration_timeout and session.final_ui.mode == "day_timeout" and drawn.get("title", {}).get("text") == "第三日时间已耗尽", "the third-day exploration timeout keeps its own sheet")
 	check(drawn.get("buttons") == ["确认重试第三日（返回检查点）", "返回标题"], "with retry and 返回标题")
+	await sheet_fits(final_sheet(), "exploration timeout")
 	await click(final_sheet().button("确认重试第三日（返回检查点）"))
 	await frames(8)
 	check(session.has_session() and not session._timeout_active and DayClock.remaining(session.data) >= DayClock.CONFIG.day_seconds - 1.0, "retry restores the day at the checkpoint")
@@ -288,12 +292,31 @@ func ending_cases() -> void:
 	var drawn: Dictionary = final_sheet().drawn
 	check(session.final_ui.mode == "finished" and drawn.get("title", {}).get("text") == "夕阳将至", "the V0.1 ending sheet is titled 夕阳将至")
 	check(str(drawn.get("body", {}).get("text", "")).ends_with("游玩时长 " + SlotSelect.play_time(float(session.data["play_seconds"]))) and drawn.get("buttons") == ["返回标题"], "with the play time and only 返回标题")
+	await sheet_fits(final_sheet(), "V0.1 ending")
 	await key(KEY_ENTER)
 	await frames(6)
 	check(at_title(), "返回标题 from the ending reaches the title")
 	check(SlotStore.is_completed(session.store.load_slot(1)), "the slot is completed for the title to show")
 
-## Both window sizes: the sheet, its buttons and its error line on screen.
+## Both window sizes, with an error shown: the sheet on screen, its buttons
+## inside it and clear of the error line (review N1: every sheet).
+func sheet_fits(target: OutcomeSheet, where: String) -> void:
+	var before: String = target.error
+	target.set_error("无法写入存档，请检查磁盘空间和权限")
+	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
+		root.size = window
+		await frames(2)
+		var drawn: Dictionary = target.drawn
+		var sheet: Rect2 = drawn["rect"]
+		var ok: bool = Rect2(Vector2.ZERO, target.size).encloses(sheet) and target.size == Vector2(root.get_visible_rect().size)
+		var error_box: Rect2 = Rect2(sheet.position.x + 30, sheet.end.y - 56, sheet.size.x - 60, 30)
+		for rect: Rect2 in drawn["button_rects"]:
+			ok = ok and sheet.encloses(rect) and not rect.intersects(error_box)
+		check(ok and drawn.get("error", {}).get("text") == "无法写入存档，请检查磁盘空间和权限", "%s %dx%d: sheet, buttons and error line on screen and apart" % [where, window.x, window.y])
+	root.size = Vector2i(1920, 1080)
+	target.set_error(before)
+	await frames(2)
+
 func layout_cases() -> void:
 	final_sheet().set_error("无法写入存档，请检查磁盘空间和权限")
 	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:

@@ -168,8 +168,10 @@ func _page_button(value: String, action: Callable, offset: Vector2) -> InkButton
 	_place(item, offset, Vector2(360, 56))
 	return item
 
-func ink_text(at: Vector2, value: String, size_px: int, color: Color = DuskStyle.INK, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> void:
+## Draws text and returns what it drew, so records come from real draws.
+func ink_text(at: Vector2, value: String, size_px: int, color: Color = DuskStyle.INK, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> String:
 	draw_string(font, at, value, align, width, size_px, color)
+	return value
 
 func _draw() -> void:
 	var time: Dictionary = time_state()
@@ -268,12 +270,14 @@ func _solid_panel(rect: Rect2, time: Dictionary, seed: int) -> void:
 	InkDraw.paper(self, rect, Color(DuskStyle.paper_color(time), 0.92), seed + 1000, DuskStyle.WOBBLE, 0)
 	DuskStyle.panel(self, rect, time, seed)
 
-func _page_sheet(time: Dictionary, title: String) -> void:
+## Returns the page title as drawn.
+func _page_sheet(time: Dictionary, title: String) -> String:
 	var rect: Rect2 = page_rect()
 	_solid_panel(rect, time, 600)
-	ink_text(rect.position + Vector2(50, 78), title, 38)
+	var shown: String = ink_text(rect.position + Vector2(50, 78), title, 38)
 	InkDraw.rough_line(self, rect.position + Vector2(50, 94), rect.position + Vector2(220, 94), Color(DuskStyle.LIFE, 0.8), 2.4, 601, DuskStyle.WOBBLE)
 	drawn["page_rect"] = rect
+	return shown
 
 func _draw_settings(time: Dictionary) -> void:
 	_page_sheet(time, "设置")
@@ -281,9 +285,11 @@ func _draw_settings(time: Dictionary) -> void:
 func _draw_confirm(time: Dictionary) -> void:
 	var heading: String = "保存并返回标题？" if _confirm_kind == "title" else "%s？" % str(_actions.get("quit_label", "保存并退出"))
 	var line: String = "下次从最近的检查点继续。" if _confirm_kind == "title" else "保存当前进度并退出游戏；下次从最近的检查点继续。"
-	_page_sheet(time, heading)
-	ink_text(PAGE.position + Vector2(60, 190), line, 26)
-	drawn["confirm"] = {"heading": heading, "text": line}
+	# Review R1 (UI-005): every record is what the draw call returned; an
+	# error that was not drawn records as empty.
+	var shown_heading: String = _page_sheet(time, heading)
+	drawn["confirm"] = {"heading": shown_heading, "text": ink_text(PAGE.position + Vector2(60, 190), line, 26)}
+	var shown_error: String = ""
 	if not _error_text.is_empty():
-		ink_text(PAGE.position + Vector2(60, 250), _error_text, UiTheme.SIZE_SMALL, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_LEFT, PAGE.size.x - 120)
-	drawn["error"] = _error_text
+		shown_error = ink_text(PAGE.position + Vector2(60, 250), _error_text, UiTheme.SIZE_SMALL, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_LEFT, PAGE.size.x - 120)
+	drawn["error"] = shown_error
