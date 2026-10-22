@@ -1,6 +1,6 @@
 # ENV-007：检查工具小修（内容稳定、改名漏检、调度顺序）
 
-状态：待审查（两次干净 full 通过，待 Claude 独立审查）｜级别：S｜实现：Codex｜审查：Claude
+状态：已完成（2026-10-22，审查通过，master full 通过）｜级别：S｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无
 
 ## 目标

@@ -38,8 +38,8 @@
 | UI-005 | M | 死亡、结束与超时界面正式化，暂停菜单返回标题 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-005](tasks/UI-005/task.md) |
 | UI-006 | M | 正式设置界面 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-006](tasks/UI-006/task.md) |
 | EXP-004 | M | 对话界面与敌人介绍卡探索原型 | Claude | Codex | 已完成（用户已选定） | [tasks/EXP-004](tasks/EXP-004/task.md) |
-| SYS-009 | M | 任务信息与交互对象数据 | Codex | Claude | 已批准 | [tasks/SYS-009](tasks/SYS-009/task.md) |
+| SYS-009 | M | 任务信息与交互对象数据 | Codex | Claude | 已完成 | [tasks/SYS-009](tasks/SYS-009/task.md) |
 | UI-007 | M | 区域名称与场景交互提示 | Claude | Codex | 已批准 | [tasks/UI-007](tasks/UI-007/task.md) |
-| ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已批准 | [tasks/ENV-007](tasks/ENV-007/task.md) |
+| ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
