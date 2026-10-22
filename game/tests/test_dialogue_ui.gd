@@ -189,11 +189,13 @@ func slip_cases() -> void:
 	var line: int = dialogue().line_index
 	await frames(12)
 	var held: int = shown_text().length() - before
+	var rushing: Variant = said().get("marker")
 	var up: InputEventJoypadButton = down.duplicate() as InputEventJoypadButton
 	up.pressed = false
 	Input.parse_input_event(up)
 	await frames(2)
 	check(line == 1 and tapped > 0 and shown_text().length() < long_line.length() and held >= tapped * 3, "holding RB types faster than leaving it (%d vs %d chars in 12 frames)" % [held, tapped])
+	check(rushing == "»»" and said().get("marker") == null, "while held the slip shows the speed-up mark, and not after release")
 	dialogue().dismiss()
 	session._end_dialogue()
 	await frames(2)
