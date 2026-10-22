@@ -145,18 +145,13 @@ func direct_settings_cases() -> void:
 	session.ui.call("show_settings")
 	await frames(2)
 	check(paused and menu().visible and mode() == "settings" and menu().page == "settings" and focus_text() == "返回", "direct show_settings from play opens a visible, paused settings page")
-	var slider: HSlider = null
-	var resolution: OptionButton = null
-	var fullscreen: CheckButton = null
-	for node: Node in menu().get_children():
-		if node is HSlider: slider = node as HSlider
-		elif node is OptionButton: resolution = node as OptionButton
-		elif node is CheckButton: fullscreen = node as CheckButton
-	check(slider != null and resolution != null and fullscreen != null and slider.is_visible_in_tree(), "all three settings controls are on screen")
+	# UI-006: the formal settings page replaced the three graybox controls.
+	var page: SettingsPage = menu().settings_page
+	check(page != null and page.is_visible_in_tree() and page.rows.size() == 6 and page.rows["master_volume"].is_visible_in_tree(), "the formal settings page is on screen")
 	var volume: float = AudioServer.get_bus_volume_linear(0)
-	slider.value = 40.0
+	(page.rows["master_volume"] as SettingRow).commit(40.0)
 	check(is_equal_approx(AudioServer.get_bus_volume_linear(0), 0.4), "the volume control still changes the master bus")
-	slider.value = volume * 100.0
+	(page.rows["master_volume"] as SettingRow).commit(volume * 100.0)
 	await key(KEY_ESCAPE)
 	await frames(2)
 	check(paused and mode() == "pause" and menu().drawn.has("clock"), "Esc from a directly opened settings page returns to the pause clock")

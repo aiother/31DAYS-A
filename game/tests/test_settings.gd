@@ -206,20 +206,17 @@ func gray_settings() -> void:
 	var ui: Node = world.get_node("LifeUI")
 	ui.call("show_settings")
 	var menu: Control = ui.get("_pause") as Control
-	var volume: HSlider
-	var resolution: OptionButton
-	var fullscreen: CheckButton
-	for control: Node in menu.get_children():
-		if control is HSlider: volume = control
-		elif control is OptionButton: resolution = control
-		elif control is CheckButton: fullscreen = control
+	# UI-006: the formal settings page rows replaced the graybox controls.
+	var page: SettingsPage = menu.get("settings_page") as SettingsPage
+	var volume: SettingRow = page.rows.get("master_volume") if page != null else null
+	var resolution: SettingRow = page.rows.get("window_size") if page != null else null
+	var fullscreen: SettingRow = page.rows.get("fullscreen") if page != null else null
 	check(paused and menu.visible and volume != null and resolution != null and fullscreen != null,"current pause settings keep their three controls and pause behavior")
-	volume.value = 23
+	volume.commit(23.0)
 	check(values()["master_volume"] == 23 and saved().get("master_volume") == 23,"gray volume control uses the persisted interface")
-	resolution.select(1)
-	resolution.item_selected.emit(1)
+	resolution.commit(Vector2i(1920,1080))
 	check(values()["window_size"] == Vector2i(1920,1080) and root.size == Vector2i(1920,1080),"gray resolution control applies and stores the large preset")
-	fullscreen.button_pressed = true
+	fullscreen.commit(true)
 	check(values()["fullscreen"] and saved().get("fullscreen") == true,"gray fullscreen control applies and stores its preference")
 	ui.call("show_settings")
 	check(paused,"reopening gray settings remains paused")

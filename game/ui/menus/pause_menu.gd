@@ -22,6 +22,11 @@ var _actions: Dictionary = {}
 var _page_nodes: Array[Control] = []
 var _return_focus: int = 0
 var _error_text: String = ""
+## UI-006: the settings page, made on first use and kept.
+var settings_page: SettingsPage
+## Settings opened from the title: no pause options, page centred.
+var standalone: bool = false
+var _menu: VBoxContainer
 ## What the last _draw put on screen; read by tests.
 var drawn: Dictionary = {}
 
@@ -31,10 +36,10 @@ func setup(owner_session: Node, formal_hud: FormalHud, actions: Dictionary) -> v
 	session = owner_session
 	hud = formal_hud
 	_actions = actions
-	var menu: VBoxContainer = VBoxContainer.new()
-	menu.position = Vector2(84, 380)
-	menu.add_theme_constant_override("separation", 14)
-	add_child(menu)
+	_menu = VBoxContainer.new()
+	_menu.position = Vector2(84, 380)
+	_menu.add_theme_constant_override("separation", 14)
+	add_child(_menu)
 	var entries: Array = [["继续游戏", "continue"], ["设置", "settings"]]
 	if actions.has("slots"):
 		entries.append(["存档槽", "slots"])
@@ -43,7 +48,7 @@ func setup(owner_session: Node, formal_hud: FormalHud, actions: Dictionary) -> v
 		var button: InkButton = InkButton.new().setup(entries[i][0], 30, 300 + i)
 		button.pressed.connect(_actions[entries[i][1]])
 		buttons.append(button)
-		menu.add_child(button)
+		_menu.add_child(button)
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -74,39 +79,40 @@ func close() -> void:
 	visible = false
 	_clear_page()
 	page = ""
+	standalone = false
+	_menu.visible = true
 
 ## Back from a secondary page to the clock, focusing the option that opened it.
 func back() -> void:
 	if page.is_empty():
 		return
 	_show_clock()
-	buttons[_return_focus].grab_focus()
+	# From the title there is no pause sheet to return to; LifeUI closes it.
+	if not standalone:
+		buttons[_return_focus].grab_focus()
 	returned.emit()
 
-func show_settings() -> void:
-	# Resolve at runtime: custom SceneTree preloads compile before autoload
-	# global names are available. Keep the UI independent of that order.
-	var settings: Node = get_node("/root/GameSettings")
-	var values: Dictionary = settings.call("get_values")
+## UI-006: the formal settings page. standalone: opened from the title, with
+## no pause options behind it; the page sits in the middle over the dimmed
+## title and 返回 goes back there.
+func show_settings(from_title: bool = false) -> void:
 	_open_page("settings", buttons.find(button("设置")))
-	var volume: HSlider = HSlider.new()
-	volume.min_value = 0
-	volume.max_value = 100
-	volume.value = float(values["master_volume"])
-	volume.value_changed.connect(func(value: float) -> void: settings.call("set_value", "master_volume", value))
-	_place(volume, Vector2(260, 150), Vector2(420, 36))
-	var resolution: OptionButton = OptionButton.new()
-	resolution.add_item("1280 × 720")
-	resolution.add_item("1920 × 1080")
-	resolution.select(1 if values["window_size"].x >= 1920 else 0)
-	resolution.item_selected.connect(func(index: int) -> void: settings.call("set_value", "window_size", Vector2i(1280, 720) if index == 0 else Vector2i(1920, 1080)))
-	_place(resolution, Vector2(260, 220), Vector2(300, 50))
-	var fullscreen: CheckButton = CheckButton.new()
-	fullscreen.text = "全屏"
-	fullscreen.button_pressed = bool(values["fullscreen"])
-	fullscreen.toggled.connect(func(enabled: bool) -> void: settings.call("set_value", "fullscreen", enabled))
-	_place(fullscreen, Vector2(260, 296), Vector2(300, 50))
-	_page_button("返回", back, Vector2(60, 690)).grab_focus()
+	standalone = from_title
+	_menu.visible = not from_title
+	if settings_page == null:
+		# Resolve at runtime: custom SceneTree preloads compile before autoload
+		# global names are available. Keep the UI independent of that order.
+		settings_page = SettingsPage.new()
+		# In the tree first: focus neighbours are node paths.
+		add_child(settings_page)
+		settings_page.setup(get_node("/root/GameSettings"))
+		settings_page.back_requested.connect(back)
+	settings_page.position = page_rect().position
+	settings_page.size = PAGE.size
+	settings_page.open()
+
+func page_rect() -> Rect2:
+	return Rect2((size - PAGE.size) * 0.5, PAGE.size) if standalone else PAGE
 
 ## error_text: the last save failure, shown on the page because the pause
 ## sheet covers LifeUI's own error prompt.
@@ -130,6 +136,8 @@ func _show_clock() -> void:
 	_error_text = ""
 
 func _clear_page() -> void:
+	if settings_page != null:
+		settings_page.close()
 	for node: Control in _page_nodes:
 		node.queue_free()
 	_page_nodes.clear()
@@ -157,6 +165,11 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.03, 0.04, 0.62))
 	var dusk: float = DuskStyle.dusk(time)
 	InkDraw.wash(self, Rect2(Vector2.ZERO, size), Color(DuskStyle.DUSK_TOP, 0.25 * dusk), Color(DuskStyle.DUSK_BOTTOM, 0.2 * dusk))
+	drawn["standalone"] = standalone
+	if standalone:
+		# Over the title: only the settings page, nothing of the pause sheet.
+		_draw_settings(time)
+		return
 	var sheet: Rect2 = Rect2(36, 40, LEFT_WIDTH - 70, size.y - 80)
 	_solid_panel(sheet, time, 201)
 	ink_text(Vector2(84, 340), "暂停", UiTheme.SIZE_TITLE)
@@ -244,16 +257,14 @@ func _solid_panel(rect: Rect2, time: Dictionary, seed: int) -> void:
 	DuskStyle.panel(self, rect, time, seed)
 
 func _page_sheet(time: Dictionary, title: String) -> void:
-	_solid_panel(PAGE, time, 600)
-	ink_text(PAGE.position + Vector2(50, 78), title, 38)
-	InkDraw.rough_line(self, PAGE.position + Vector2(50, 94), PAGE.position + Vector2(220, 94), Color(DuskStyle.LIFE, 0.8), 2.4, 601, DuskStyle.WOBBLE)
-	drawn["page_rect"] = PAGE
+	var rect: Rect2 = page_rect()
+	_solid_panel(rect, time, 600)
+	ink_text(rect.position + Vector2(50, 78), title, 38)
+	InkDraw.rough_line(self, rect.position + Vector2(50, 94), rect.position + Vector2(220, 94), Color(DuskStyle.LIFE, 0.8), 2.4, 601, DuskStyle.WOBBLE)
+	drawn["page_rect"] = rect
 
 func _draw_settings(time: Dictionary) -> void:
 	_page_sheet(time, "设置")
-	for row: Array in [["音量", 176], ["窗口尺寸", 254], ["显示", 330]]:
-		ink_text(PAGE.position + Vector2(60, row[1]), row[0], UiTheme.SIZE_BODY)
-	ink_text(PAGE.position + Vector2(60, 440), "分开音量、帧率与按键列表将在后续版本加入。", UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.6))
 
 func _draw_confirm(time: Dictionary) -> void:
 	_page_sheet(time, "%s？" % str(_actions.get("quit_label", "保存并退出")))

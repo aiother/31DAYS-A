@@ -189,13 +189,11 @@ func title_cases() -> void:
 func settings_cases() -> void:
 	await click(title().button("设置"))
 	var menu: PauseMenu = session.ui.get("_pause") as PauseMenu
-	check(menu.visible and menu.page == "settings" and not title().visible and mode() == "settings", "设置 opens the existing settings page")
+	check(menu.visible and menu.page == "settings" and menu.standalone and title().visible and mode() == "settings", "设置 opens the settings page over the title")
+	check(not menu.button("继续游戏").is_visible_in_tree(), "UI-006: no pause options show behind settings opened from the title")
 	await key(KEY_ESCAPE)
 	await frames(2)
-	check(title().visible and not menu.visible and mode() == "title" and paused, "Esc from settings returns to the title")
-	await click(title().button("设置"))
-	await click(menu.button("继续游戏"))
-	check(title().visible and not menu.visible and not session.has_session() and paused, "the pause sheet's 继续游戏 without a session goes back to the title")
+	check(title().visible and not menu.visible and mode() == "title" and paused and focus_text() == "设置", "Esc from settings returns to the title on 设置")
 
 func quit_cases() -> void:
 	await click(title().button("退出游戏"))
