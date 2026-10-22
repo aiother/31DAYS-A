@@ -341,6 +341,18 @@ func final_and_deferred_cases() -> void:
 	check(not session._start_pending and bool(session.data["events"].get(FinalClock.STARTED,false)), "approved save-retry exemption still works while locked")
 	await close()
 
+func inherited_dispatch_case() -> void:
+	await open()
+	session.data["events"][BossSession.BOSS_DEFEATED] = true
+	session.data["events"][FieldSession.FIELD_STORY] = true
+	await enter(FieldSession.FIELD_ID)
+	session.player.position = session.room.get_node("Seven").position
+	session._interaction_cooldown = 0
+	check(target(BossSession.COMBAT_GROWTH)["available"] and target(FieldSession.FIELD_ID + ":Seven")["available"], "lower-layer supplement does not suppress higher-layer NPC continuation")
+	await press()
+	check(bool(session.data["events"].get(BossSession.COMBAT_GROWTH,false)) and session.dialogue_ui.active, "same real E both saves lower-layer supplement and reaches higher-layer NPC")
+	await close()
+
 func run() -> void:
 	directory = "user://tests/quest_interactions_%d" % Time.get_ticks_usec()
 	await quest_cases()
@@ -348,6 +360,7 @@ func run() -> void:
 	await interaction_cases()
 	await special_interactions()
 	await final_and_deferred_cases()
+	await inherited_dispatch_case()
 	for selected: int in [1,2,3]:
 		for suffix: String in ["", ".bak", ".tmp"]:
 			var path: String = directory.path_join("slot_%d.json" % selected)+suffix

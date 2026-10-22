@@ -377,10 +377,6 @@ func interaction_targets() -> Array[Dictionary]:
 	if area != null and has_session() and bool(data["events"].get(FinalClock.WON,false)):
 		result.append(_target("ten:victory", "交谈", "交谈", area.ten.global_position, 110.0,
 			player.position.distance_to(area.ten.position) <= 110, not get_tree().paused and _can_final_conversation()))
-	var supplement: String = DODGE_GROWTH if _needs_dodge_growth() else (COMBAT_GROWTH if _needs_combat_growth() else "")
-	if not supplement.is_empty():
-		for target: Dictionary in result:
-			if target["id"] != supplement: target["available"] = false
 	if _final_talk or _timeout_active or _ending_active or _start_pending or cinematic != Cinematic.NONE:
 		for target: Dictionary in result: target["available"] = false
 	# Save retries during deliberate settlement locks remain usable by their existing
