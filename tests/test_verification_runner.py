@@ -189,6 +189,82 @@ class VerificationRunnerTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs['timeout'], 321)
         self.assertEqual(run.call_args.args[0][-4:], ['--fixed-fps', '37', '--script', suite.path])
 
+    def test_renamed_registered_suite_is_rejected(self):
+        for filename in ('renamed.gd', 'nested/renamed.gd'):
+            with self.subTest(filename=filename):
+                project = self.fixture()
+                self.suite_file(project)
+                target = project / 'tests' / filename
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('# verify-suite: {}\nextends Node\n', encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, filename):
+                    verifier.discover_suites(project)
+
+    def test_renamed_scene_tree_runners_all_reported(self):
+        project = self.fixture()
+        self.suite_file(project)
+        names = ('renamed.gd', 'nested/second.gd')
+        for name in names:
+            target = project / 'tests' / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text('# a runnable suite whose registration was removed\nextends SceneTree\n', encoding='utf-8-sig')
+        with self.assertRaises(ValueError) as error:
+            verifier.discover_suites(project)
+        for name in names:
+            self.assertIn('res://tests/' + name, str(error.exception))
+
+    def test_renamed_only_suite_reports_its_path(self):
+        project = self.fixture()
+        self.suite_file(project).rename(project / 'tests/only_runner.gd')
+        with self.assertRaisesRegex(ValueError, 'only_runner.gd'):
+            verifier.discover_suites(project)
+
+    def test_acceptance_runners_and_non_runner_helpers_are_not_suites(self):
+        project = self.fixture()
+        self.suite_file(project)
+        for name, source in {
+            'acceptance/run_acceptance.gd': 'extends SceneTree\n',
+            'acceptance/nested/adapter.gd': '# verify-suite: {}\nextends SceneTree\n',
+            'helpers/fixture.gd': 'extends RefCounted\n',
+            'pursuit_survey.gd': 'extends "res://tests/test_demo.gd"\n',
+        }.items():
+            target = project / 'tests' / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(source, encoding='utf-8')
+        self.assertEqual(['res://tests/test_demo.gd'], [s.path for s in verifier.discover_suites(project)])
+
+    def test_timeout_priority_submission_keeps_path_sorted_report(self):
+        cases = [verifier.Suite('slow c', 'res://tests/test_c.gd', 'C checks=', 60, 600),
+                 verifier.Suite('fast a', 'res://tests/test_a.gd', 'A checks=', None, 60),
+                 verifier.Suite('slow d', 'res://tests/test_d.gd', 'D checks=', 60, 600),
+                 verifier.Suite('medium b', 'res://tests/test_b.gd', 'B checks=', None, 180)]
+        submitted = []
+        executor_type = verifier.ThreadPoolExecutor
+        class RecordingExecutor(executor_type):
+            def submit(self, function, *args, **kwargs):
+                submitted.append(args[-1].path)
+                return super().submit(function, *args, **kwargs)
+        def fake_run(command, **kwargs):
+            if '--version' in command:
+                return SimpleNamespace(stdout='4.7.2.stable.test')
+            marker = next((suite.marker for suite in cases if suite.path in command), '')
+            return SimpleNamespace(returncode=0, stdout=marker + '1 failures=0\n' if marker else '', stderr='')
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / 'report.txt'
+            argv = ['verify_game.py', '--godot', 'fake', '--jobs', '2', '--report', str(report)]
+            with patch.object(verifier, 'discover_suites', return_value=cases), patch.object(verifier, 'ThreadPoolExecutor', RecordingExecutor), patch.object(verifier.subprocess, 'run', side_effect=fake_run), patch('sys.argv', argv), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, verifier.main())
+            self.assertEqual([cases[i].path for i in (0, 2, 3, 1)], submitted)
+            sections = [line for line in report.read_text(encoding='utf-8').splitlines() if line.startswith('=== ')]
+            self.assertEqual(['=== editor import: exit 0 ===', '=== main scene180 frames: exit 0 ===',
+                              '=== fast a: exit 0 ===', '=== medium b: exit 0 ===',
+                              '=== slow c: exit 0 ===', '=== slow d: exit 0 ==='], sections)
+
+    def test_every_tracked_gd_has_a_tracked_uid(self):
+        files = set(subprocess.check_output(['git', '-C', str(verifier.ROOT), 'ls-files', '-z', '--', 'game']).decode('utf-8').split('\0'))
+        missing = sorted(path + '.uid' for path in files if path.endswith('.gd') and path + '.uid' not in files)
+        self.assertEqual([], missing, 'GDScript UID must be committed, not merely generated during import')
+
     def test_main_fails_if_a_completed_suite_is_missing(self):
         cases = [verifier.Suite('one', 'res://tests/test_one.gd', 'ONE checks=', None, 60),
                  verifier.Suite('two', 'res://tests/test_two.gd', 'TWO checks=', None, 60)]

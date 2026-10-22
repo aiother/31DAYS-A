@@ -28,6 +28,18 @@ class Suite(NamedTuple):
 def discover_suites(project, excluded=None):
     project = Path(project)
     excluded = EXCLUDED_TESTS if excluded is None else excluded
+    # A renamed runnable must not silently disappear from discovery. Acceptance
+    # adapters and helpers inheriting a test base are not standalone suites.
+    renamed = []
+    for file in sorted((project / 'tests').rglob('*.gd')):
+        relative = file.relative_to(project / 'tests')
+        if file.match('test_*.gd') or relative.parts[0] == 'acceptance':
+            continue
+        source = file.read_text(encoding='utf-8-sig')
+        if source.startswith(HEADER) or re.search(r'(?m)^[ \t]*extends[ \t]+SceneTree\b', source):
+            renamed.append('res://' + file.relative_to(project).as_posix())
+    if renamed:
+        raise ValueError('Runnable suites must be named test_*.gd: ' + ', '.join(renamed))
     files = {'res://' + file.relative_to(project).as_posix(): file
              for file in sorted((project / 'tests').rglob('test_*.gd'))}
     if not files:
@@ -125,7 +137,7 @@ def main():
     if not version.startswith('4.7.2.stable.'):
         sys.exit(f'Expected4.7.2 stable, got {version}')
     try:
-        suites = discover_suites(args.project)
+        suites = sorted(discover_suites(args.project), key=lambda suite: suite.path)
     except ValueError as error:
         print('Invalid suite registry: ' + str(error), file=sys.stderr)
         return 1
@@ -152,8 +164,11 @@ def main():
         record(index,result)
         if not result[3]: return 1
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {pool.submit(execute_suite, engine, args.project, suite): (index+2, suite.path)
-                   for index, suite in enumerate(suites)}
+        # Submit the longest budgets first, retaining path indices for reporting.
+        scheduled = sorted(enumerate(suites, start=2),
+                           key=lambda row: (-row[1].timeout, row[1].path))
+        futures = {pool.submit(execute_suite, engine, args.project, suite): (index, suite.path)
+                   for index, suite in scheduled}
         for future in as_completed(futures):
             index, uri = futures[future]
             result = future.result()
