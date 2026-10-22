@@ -94,7 +94,7 @@ func run() -> void:
 	await place(Vector2(1488, 896))
 	check(not paused, "clear alone does not unlock forward passage")
 	await place(Vector2(1184, 896))
-	check(area.get_node("Switch/Prompt").visible, "nearby cleared switch displays prompt")
+	check(not area.get_node("Switch/Prompt").visible and session.interaction_targets().any(func(value: Dictionary) -> bool: return value["id"] == area.forward_key and value["available"]), "nearby cleared switch remains usable without duplicate gray text")
 	session.ui.call("show_pause")
 	check(not session.activate_switch(), "paused interaction rejected")
 	session.ui.call("resume_game")

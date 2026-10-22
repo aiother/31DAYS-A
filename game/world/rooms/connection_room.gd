@@ -12,8 +12,8 @@ func refresh(player: PlayerController, events: Dictionary, cleared: bool) -> voi
 	$ReturnLabel.text = "返回通路已开启" if return_open else "清敌后可返回"
 	$ExitLabel.text = "前路已开启" if forward_open else "机关尚未开启"
 	var nearby: bool = (player.global_position + Vector2(0, -44)).distance_to($Switch.global_position) <= interaction_radius
-	$Switch/Prompt.text = "已开启" if forward_open else ("E / RB · 开启前路" if cleared else "需要先清敌")
-	$Switch/Prompt.visible = nearby
+	$Switch/Prompt.text = "已开启" if forward_open else ("" if cleared else "需要先清敌")
+	$Switch/Prompt.visible = nearby and not $Switch/Prompt.text.is_empty()
 	queue_redraw()
 
 func _draw() -> void:

@@ -79,7 +79,7 @@ func run() -> void:
 	session.player.position = source.position + Vector2(0, 44)
 	session.player.reset_kinematics()
 	await ticks(2)
-	check(source.visible and source.prompt.text.contains("已满") and not session.data["events"].has(source.persistence_key), "full inventory leaves supply visible and unclaimed")
+	check(source.visible and source.prompt.is_visible_in_tree() and source.prompt.text == "药包已满 · 3 / 3" and not session.data["events"].has(source.persistence_key), "full inventory leaves supply visible and unclaimed")
 	session.set_physics_process(false)
 	session.player.set_physics_process(false)
 	session.data["medkits"] = 2

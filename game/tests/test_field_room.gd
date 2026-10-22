@@ -113,7 +113,7 @@ func run() -> void:
 	session.player.possibility.balance = 2
 	session.player.possibility.balance_changed.emit(2, 10)
 	await place(Vector2(1680, 896))
-	check(session.room.get_node("Seven/Prompt").visible, "nearby NPC shows interaction prompt")
+	check(session.interaction_targets().any(func(value: Dictionary) -> bool: return value["id"] == FieldSession.FIELD_ID + ":Seven" and value["in_range"]) and session.room.get_node("Seven/Prompt").text.is_empty(), "nearby Seven keeps formal interaction range without duplicate gray text")
 	await ticks(12) # The fixture teleports immediately after closing the story dialogue.
 	Input.action_press("interact")
 	await ticks(1)

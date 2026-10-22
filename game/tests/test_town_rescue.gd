@@ -64,7 +64,7 @@ func run() -> void:
 	session.ui.call("resume_game")
 	await place(Vector2(928, 896))
 	await ticks(12)
-	check(session.room.get_node("Survivor/Prompt").visible, "nearby survivor displays rescue interaction")
+	check(not session.room.get_node("Survivor/Prompt").visible and session.interaction_targets().any(func(value: Dictionary) -> bool: return value["id"] == TownSession.TOWN_ID + ":Survivor" and value["available"]), "nearby survivor keeps formal rescue interaction without duplicate gray text")
 	session.player.combat.phase = PlayerCombat.Phase.WINDUP
 	check(not session.interact_survivor(), "rescue cannot cancel current attack")
 	session.player.combat.interrupt()

@@ -35,7 +35,7 @@ text = "7"
 [node name="Prompt" type="Label" parent="Seven"]
 offset_left = -160.0
 offset_top = -116.0
-text = "E / RB · 交谈"
+text = ""
 theme_override_font_sizes/font_size = 22
 visible = false
 [node name="Enemies" type="Node2D" parent="."]

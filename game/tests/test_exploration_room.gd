@@ -125,7 +125,7 @@ func run() -> void:
 	session.player.reset_kinematics()
 	await ticks(4)
 	var item: RoomPickup = pearl()
-	check(item.visible and item.prompt.visible, "nearby uncollected pearl shows manual interaction prompt")
+	check(item.visible and not item.prompt.visible and session.interaction_targets().any(func(value: Dictionary) -> bool: return value["id"] == item.config.persistence_key and value["available"]), "nearby pearl stays interactable via formal query without duplicate gray text")
 	session.ui.call("show_pause")
 	check(not session.collect_pickup(item), "paused game refuses pickup even when nearby")
 	session.ui.call("resume_game")

@@ -31,8 +31,8 @@ func refresh(player: PlayerController, events: Dictionary) -> void:
 	if stopped!=disabled:
 		disabled = stopped
 		clear_rocks()
-	prompt.visible = is_instance_valid(player) and (player.global_position+Vector2(0,-44)).distance_to(to_global(config.switch_position))<=config.interaction_radius
-	prompt.text = "落石已永久关闭" if disabled else "E / RB · 关闭本间落石"
+	prompt.visible = disabled and is_instance_valid(player) and (player.global_position+Vector2(0,-44)).distance_to(to_global(config.switch_position))<=config.interaction_radius
+	prompt.text = "落石已永久关闭" if disabled else ""
 	queue_redraw()
 
 func clear_rocks() -> void:

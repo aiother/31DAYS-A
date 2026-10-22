@@ -107,5 +107,5 @@ text = "外围幸存者"
 offset_left = -120.0
 offset_top = -108.0
 theme_override_font_sizes/font_size = 20
-text = "E / RB · 免费救助"
+text = ""
 visible = false
