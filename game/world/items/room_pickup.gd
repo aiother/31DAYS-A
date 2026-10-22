@@ -39,11 +39,23 @@ func highlight() -> float:
 		return 0.0
 	return 0.55 + 0.45 * sin(_pulse_time * 4.0)
 
+## What the last _draw() put on screen for the highlight; read by tests.
+var drawn: Dictionary = {}
+
+func _glow(radius: float, color: Color, strength: float) -> Dictionary:
+	InkDraw.glow(self, Vector2.ZERO, radius, color, strength)
+	return {"radius": radius, "color": color, "strength": strength}
+
+func _ring(radius: float, color: Color) -> Dictionary:
+	draw_arc(Vector2.ZERO, radius, 0, TAU, 40, color, 3)
+	return {"radius": radius, "color": color}
+
 func _draw() -> void:
+	drawn = {}
 	var pulse: float = highlight()
 	if pulse > 0.0:
-		InkDraw.glow(self, Vector2.ZERO, 70, DuskStyle.GROWTH, 0.9 * pulse)
-		draw_arc(Vector2.ZERO, 32 + 6 * pulse, 0, TAU, 40, Color(DuskStyle.GROWTH, 0.5 + 0.4 * pulse), 3)
+		drawn["glow"] = _glow(70, DuskStyle.GROWTH, 0.9 * pulse)
+		drawn["ring"] = _ring(32 + 6 * pulse, Color(DuskStyle.GROWTH, 0.5 + 0.4 * pulse))
 	draw_circle(Vector2.ZERO, 18, Color(0.8, 0.9, 0.95))
 	draw_circle(Vector2(-5, -6), 5, Color.WHITE)
 	draw_arc(Vector2.ZERO, 25, 0, TAU, 32, Color(0.45, 0.75, 0.8), 2)

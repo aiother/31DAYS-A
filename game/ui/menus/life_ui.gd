@@ -73,6 +73,8 @@ func _ready() -> void:
 	_root.add_child(_area_banner)
 	_interact_prompt = InteractPrompt.new()
 	_interact_prompt.setup(get_parent(), _hud, _area_banner)
+	_area_banner.protected = _protected_rects
+	_interact_prompt.protected = _protected_rects
 	_root.add_child(_interact_prompt)
 	_error_label = Label.new()
 	_error_label.add_theme_font_size_override("font_size", 22)
@@ -301,6 +303,13 @@ func _quit_game() -> void:
 		return
 	get_tree().paused = false
 	_quit_handler.call()
+
+## UI-007: messages the world prompt and the area name must leave readable.
+func _protected_rects() -> Array[Rect2]:
+	var result: Array[Rect2] = []
+	if _error_label.is_visible_in_tree() and not _error_label.text.is_empty():
+		result.append(_error_label.get_global_rect())
+	return result
 
 ## Errors land on the open title or slot screen's prompt line, clear of the
 ## bookmarks; otherwise on the label under the control hint.
