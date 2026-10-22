@@ -143,7 +143,7 @@ Godot 4.7.2 stable（控制台版）：
 - `test_settings.gd`（SYS-007 套件 `gray_settings`）：直接查找被替换的灰盒三控件；
 - `test_title_slots.gd`（UI-004 套件）：主界面进设置时的旧断言。
 
-用户批准依据：（待用户确认后补记）
+用户批准依据：用户 2026-10-21 在会话中原话“批准 UI-006 顺带适配 test_settings.gd 和 test_title_slots.gd 两份旧测试。”
 
 ### 修正后检查
 
