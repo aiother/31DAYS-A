@@ -17,6 +17,9 @@ const HEIGHT: float = 44.0
 var session: Node
 var hud: FormalHud
 var banner: AreaBanner
+## Returns screen rects of messages that must stay readable (LifeUI's save
+## error); see avoided().
+var protected: Callable
 var font: Font
 ## What the last frame put on screen; read by tests.
 var drawn: Dictionary = {}
@@ -63,35 +66,48 @@ func tone() -> String:
 func to_screen(world: Vector2) -> Vector2:
 	return (session.get("player") as Node2D).get_viewport().get_canvas_transform() * world
 
-## Places the tag beside the target on the player's side, then keeps it on
-## screen and clear of the HUD.
+## Places the tag beside the target on the player's side (A-019). Each
+## candidate is kept on screen and must clear everything in avoided(); the
+## first that does wins. When none fits the prompt gives way (review R1):
+## an empty result, never a tag over the HUD or a save error.
 func place(target_screen: Vector2, player_screen: Vector2, width: float, unlimited: bool) -> Dictionary:
-	var side: String = "right" if player_screen.x >= target_screen.x else "left"
-	var rect: Rect2
+	var near: String = "right" if player_screen.x >= target_screen.x else "left"
+	var far: String = "left" if near == "right" else "right"
+	var candidates: Array = []
 	if unlimited:
-		rect = Rect2(Vector2(player_screen.x - width * 0.5, player_screen.y - LIFT - 60.0 - HEIGHT), Vector2(width, HEIGHT))
-		side = "above"
-	elif side == "right":
-		rect = Rect2(Vector2(target_screen.x + GAP, target_screen.y - LIFT - HEIGHT), Vector2(width, HEIGHT))
+		candidates.append(["above", Vector2(player_screen.x - width * 0.5, player_screen.y - LIFT - 60.0 - HEIGHT)])
+		candidates.append(["above", Vector2(player_screen.x - width * 0.5, player_screen.y + 40.0)])
 	else:
-		rect = Rect2(Vector2(target_screen.x - GAP - width, target_screen.y - LIFT - HEIGHT), Vector2(width, HEIGHT))
-	rect = _clamp(rect)
-	for avoid: Rect2 in avoided():
-		if rect.intersects(avoid):
-			rect.position.y = avoid.end.y + 8.0
-			rect = _clamp(rect)
-	return {"rect": rect, "side": side}
+		for side: String in [near, far]:
+			var x: float = target_screen.x + GAP if side == "right" else target_screen.x - GAP - width
+			candidates.append([side, Vector2(x, target_screen.y - LIFT - HEIGHT)])
+		for side: String in [near, far]:
+			var x: float = target_screen.x + GAP if side == "right" else target_screen.x - GAP - width
+			candidates.append([side, Vector2(x, target_screen.y + 30.0)])
+	var avoid: Array[Rect2] = avoided()
+	for candidate: Array in candidates:
+		var rect: Rect2 = _clamp(Rect2(candidate[1], Vector2(width, HEIGHT)))
+		var clear: bool = true
+		for other: Rect2 in avoid:
+			clear = clear and not rect.intersects(other)
+		if clear:
+			return {"rect": rect, "side": candidate[0]}
+	return {}
 
 func _clamp(rect: Rect2) -> Rect2:
 	rect.position.x = clampf(rect.position.x, MARGIN, size.x - MARGIN - rect.size.x)
 	rect.position.y = clampf(rect.position.y, MARGIN, size.y - MARGIN - rect.size.y)
 	return rect
 
-## HUD areas a prompt must not cover (real rects the HUD drew this frame).
+## Everything a prompt must not cover: the rects the HUD really drew this
+## frame (horizon included), the area name, and protected messages such as a
+## visible save error.
 func avoided() -> Array[Rect2]:
 	var result: Array[Rect2] = []
+	if protected.is_valid():
+		result.append_array(protected.call())
 	if hud != null:
-		for key: String in ["emblem", "hint", "warning", "final", "banner"]:
+		for key: String in ["emblem", "hint", "horizon", "warning", "final", "banner"]:
 			if hud.drawn.has(key) and hud.drawn[key].has("rect"):
 				result.append(hud.drawn[key]["rect"])
 	if banner != null and banner.drawn.has("rect"):
@@ -114,6 +130,9 @@ func _draw() -> void:
 	var target_screen: Vector2 = to_screen(target["position"])
 	var player_screen: Vector2 = to_screen(player.global_position)
 	var placed: Dictionary = place(target_screen, player_screen, width, target.get("range_kind") == "unlimited")
+	if placed.is_empty():
+		drawn = {"id": target["id"], "gave_way": true}
+		return
 	var rect: Rect2 = placed["rect"]
 	var light: bool = tone() == "light"
 	var paper: Color = Color(DuskStyle.PAPER_DAY, 0.94) if light else Color(0.05, 0.04, 0.04, 0.88)

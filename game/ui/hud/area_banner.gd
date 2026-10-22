@@ -11,6 +11,9 @@ const FADE_OUT: float = 0.6
 
 var session: Node
 var hud: FormalHud
+## Returns the screen rects of messages that must stay readable (LifeUI's
+## save error); the name waits while it would cover one (review R1).
+var protected: Callable
 var font: Font
 var pending: String = ""
 var shown_name: String = ""
@@ -32,19 +35,43 @@ func setup(owner_session: Node, formal_hud: FormalHud) -> void:
 func _active_session() -> bool:
 	return session != null and (not session.has_method("has_session") or bool(session.call("has_session")))
 
-## Reasons the name waits rather than shows.
-func blocked() -> bool:
-	if get_tree().paused:
-		return true
+## A dialogue or story scene: a name on screen gives way and is dropped.
+func interrupted() -> bool:
 	if bool(session.get("intro_active")):
 		return true
 	var dialogue: Variant = session.get("dialogue_ui")
 	if dialogue is Node and (bool(dialogue.get("active")) or bool(dialogue.get("confirming"))):
 		return true
 	var player: Variant = session.get("player")
+	return player is PlayerController and (player as PlayerController).life.scripted_control_locked
+
+## Reasons a name not yet shown waits (review N1): the above, plus pause,
+## a hit or death taking control, the day banner, or a save error where the
+## name would sit. None of the last four removes a name already showing.
+func blocked() -> bool:
+	if get_tree().paused or interrupted():
+		return true
+	var player: Variant = session.get("player")
 	if player is PlayerController and not (player as PlayerController).life.can_control():
 		return true
-	return hud != null and hud.drawn.has("banner")
+	if hud != null and hud.drawn.has("banner"):
+		return true
+	return covers_protected(pending if not pending.is_empty() else shown_name)
+
+func covers_protected(name: String) -> bool:
+	if not protected.is_valid() or name.is_empty():
+		return false
+	var box: Rect2 = rect_for(name)
+	for rect: Rect2 in protected.call():
+		if rect.intersects(box):
+			return true
+	return false
+
+## The band the name occupies, the same one _draw() paints.
+func rect_for(name: String) -> Rect2:
+	var parts: PackedStringArray = name.split(" · ", true, 1)
+	var width: float = maxf(font.get_string_size(parts[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 64).x, 360.0)
+	return Rect2(Vector2((size.x - width) * 0.5 - 40, size.y * 0.5 - 92), Vector2(width + 80, 150 if parts.size() < 2 else 186))
 
 func showing() -> bool:
 	return age >= 0.0 and age < DURATION
@@ -64,8 +91,9 @@ func _process(delta: float) -> void:
 		if config.scene_id != _last_scene:
 			_last_scene = config.scene_id
 			pending = config.display_name
-	if showing() and blocked() and not get_tree().paused:
-		# A dialogue or story scene took over: the name gives way at once.
+	if showing() and (interrupted() or covers_protected(shown_name)) and not get_tree().paused:
+		# A dialogue, story scene or a new save error took over: the name
+		# gives way at once and is not shown again.
 		age = -1.0
 	# A newer area replaces a name still on screen.
 	if not pending.is_empty() and not blocked():
@@ -95,7 +123,7 @@ func _draw() -> void:
 	var place: String = parts[1] if parts.size() > 1 else ""
 	var middle: float = size.y * 0.5
 	var width: float = font.get_string_size(area, HORIZONTAL_ALIGNMENT_LEFT, -1, 64).x
-	var box: Rect2 = Rect2(Vector2((size.x - maxf(width, 360.0)) * 0.5 - 40, middle - 92), Vector2(maxf(width, 360.0) + 80, 150 if place.is_empty() else 186))
+	var box: Rect2 = rect_for(shown_name)
 	# A soft dark band so the name reads over any scene.
 	draw_rect(box, Color(0.04, 0.03, 0.03, 0.45 * a))
 	_ink(Vector2(3, middle + 3), area, 64, Color(0, 0, 0, 0.5 * a))

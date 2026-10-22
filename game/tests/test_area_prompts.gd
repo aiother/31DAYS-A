@@ -33,6 +33,12 @@ func check(ok: bool, message: String) -> bool:
 
 func frames(count: int = 2) -> void:
 	for i: int in range(count):
+		# Tests teleport the player; skip the camera's smoothing so screen
+		# geometry is read where the camera settles.
+		if is_instance_valid(session) and session.player != null:
+			var camera: Camera2D = session.player.get_node_or_null("Camera2D") as Camera2D
+			if camera != null:
+				camera.reset_smoothing()
 		await physics_frame
 		await process_frame
 
@@ -160,6 +166,23 @@ func area_cases() -> void:
 	await frames(6)
 	check(not first.is_empty() and banner().drawn.get("area", {}).get("text") == session.room.config.display_name.split(" · ", true, 1)[0] and first != banner().drawn["area"]["text"], "entering another area while a name shows replaces it")
 	await frames(200)
+	# Review N1: a hit mid-show keeps the name; a story lock drops it.
+	banner().pending = "测试区域 · 受伤"
+	await frames(10)
+	session.player.life.hurt_remaining = 0.5
+	await frames(10)
+	var after_hit: bool = banner().drawn.has("area")
+	session.player.life.hurt_remaining = 0.0
+	await frames(200)
+	banner().pending = "测试区域 · 剧情"
+	await frames(10)
+	session.player.life.scripted_control_locked = true
+	await frames(4)
+	var dropped: bool = not banner().drawn.has("area")
+	session.player.life.scripted_control_locked = false
+	await frames(30)
+	check(after_hit, "a hit while the name shows does not remove it")
+	check(dropped and not banner().drawn.has("area") and banner().pending.is_empty(), "a story lock removes it and it does not come back")
 	# Pausing holds it as well.
 	session._mount_room("HD_20001_1")
 	session._bind_room()
@@ -265,6 +288,7 @@ func placement_cases() -> void:
 		var over: Rect2 = prompt().drawn.get("rect", Rect2())
 		check(banner().drawn.has("rect") and prompt().drawn.get("id") == "middle" and not over.intersects(banner().drawn["rect"]), "%dx%d: the prompt keeps clear of the area name" % [window.x, window.y])
 		await frames(200)
+		await protected_cases(window, to_world)
 		extra = [{"id": "claim", "kind": "补领", "action": "补领", "position": session.player.global_position, "radius": null, "range_kind": "unlimited", "in_range": true, "available": true, "key_item": true}]
 		session.player.global_position = to_world * Vector2(960, 700)
 		extra[0]["position"] = session.player.global_position
@@ -275,6 +299,47 @@ func placement_cases() -> void:
 	root.size = Vector2i(1920, 1080)
 	await frames(2)
 
+## Review R1: the real save error line and the real HUD (horizon included),
+## read straight from the Label and the HUD record, never from avoided().
+func clear_of_real(rect: Rect2) -> bool:
+	var label: Label = session.ui.get("_error_label") as Label
+	var ok: bool = not (label.is_visible_in_tree() and rect.intersects(label.get_global_rect()))
+	for key: String in ["emblem", "hint", "horizon", "warning", "final", "banner"]:
+		if hud().drawn.has(key) and hud().drawn[key].has("rect"):
+			ok = ok and not rect.intersects(hud().drawn[key]["rect"])
+	return ok
+
+func protected_cases(window: Vector2i, to_world: Transform2D) -> void:
+	session.ui.call("save_failed", "无法写入存档，请检查磁盘空间和权限")
+	await frames(2)
+	var label: Label = session.ui.get("_error_label") as Label
+	check(label.is_visible_in_tree(), "%dx%d: the real save error is on screen" % [window.x, window.y])
+	for at: Vector2 in [Vector2(600, 520), Vector2(300, 470), Vector2(940, 380)]:
+		extra = [{"id": "near error", "kind": "交谈", "action": "交谈", "position": to_world * at, "radius": 80.0, "range_kind": "circle", "in_range": true, "available": true, "key_item": false}]
+		session.player.global_position = to_world * at + Vector2(1, 0)
+		await frames(2)
+		var drawn: Dictionary = prompt().drawn
+		var ok: bool = drawn.get("id") == "near error" and (bool(drawn.get("gave_way", false)) or clear_of_real(drawn.get("rect", Rect2())))
+		check(ok, "%dx%d: a prompt near %s never covers the save error or the HUD" % [window.x, window.y, at])
+	# Off the bottom of the screen: never over the horizon.
+	extra = [{"id": "below", "kind": "交谈", "action": "交谈", "position": to_world * Vector2(1800, 1300), "radius": 80.0, "range_kind": "circle", "in_range": true, "available": true, "key_item": false}]
+	await frames(2)
+	var low: Dictionary = prompt().drawn
+	check(low.get("id") == "below" and (bool(low.get("gave_way", false)) or clear_of_real(low.get("rect", Rect2()))), "%dx%d: a target below the screen never puts its tag over the horizon" % [window.x, window.y])
+	# A long error makes the area name wait instead of covering it.
+	var long_error: PackedStringArray = []
+	for i: int in range(8):
+		long_error.append(label.text if not label.text.is_empty() else "save error")
+	session.ui.call("save_failed", "\n".join(long_error))
+	banner().pending = "测试区域 · 测试房间"
+	await frames(6)
+	var waited: bool = not banner().drawn.has("area") and not banner().pending.is_empty()
+	session.ui.call("save_failed", "")
+	await frames(6)
+	check(waited and banner().drawn.has("area"), "%dx%d: the area name waits while a save error would sit under it" % [window.x, window.y])
+	await frames(200)
+	extra.clear()
+
 func highlight_cases() -> void:
 	await enter("HD_20002_1")
 	var key_pickup: RoomPickup = null
@@ -283,14 +348,19 @@ func highlight_cases() -> void:
 			key_pickup = pickup
 	check(key_pickup != null and key_pickup.visible and key_pickup.highlight() > 0.0 and key_pickup.key_item(), "a key item pulses on the map")
 	check(target_of(key_pickup.config.persistence_key).get("key_item") == key_pickup.key_item(), "the same key-item rule as the SYS-009 query")
-	var strengths: Array[float] = []
+	# Review R2: read the glow and ring the pickup really drew.
+	var rings: Array[float] = []
+	var glows: bool = true
 	for i: int in range(20):
 		await frames(1)
-		strengths.append(key_pickup.highlight())
-	check(strengths.max() - strengths.min() > 0.1, "and the pulse moves")
+		glows = glows and key_pickup.drawn.has("glow") and key_pickup.drawn["glow"]["color"] == DuskStyle.GROWTH and float(key_pickup.drawn["glow"]["strength"]) > 0.0
+		rings.append(float(key_pickup.drawn.get("ring", {}).get("radius", 0.0)))
+	check(glows and rings.min() >= 32.0, "the key item draws its gold glow and ring every frame")
+	check(rings.max() - rings.min() > 0.5, "and the ring breathes")
 	await enter(ExplorationSession.EXPLORATION_ID)
 	var ordinary: RoomPickup = session._pickups()[0]
-	check(not ordinary.key_item() and ordinary.highlight() == 0.0, "an ordinary pickup does not pulse")
+	await frames(2)
+	check(not ordinary.key_item() and ordinary.highlight() == 0.0 and not ordinary.drawn.has("glow") and not ordinary.drawn.has("ring"), "an ordinary pickup draws no glow or ring")
 	await enter("HD_20002_1")
 	for pickup: RoomPickup in session._pickups():
 		if pickup.config.persistence_key.begins_with("keyitem:"):
