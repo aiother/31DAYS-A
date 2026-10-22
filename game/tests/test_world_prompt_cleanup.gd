@@ -116,8 +116,14 @@ func medkit_cases() -> void:
 				check(source.prompt.is_visible_in_tree() and source.prompt.text == ("药包已满 · %d / %d" % [count,MedkitRules.CONFIG.maximum] if count == MedkitRules.CONFIG.maximum else "靠近自动拾取 · 应急药包"), "medkit retains automatic pickup/full inventory information")
 
 func initial_scene_cases() -> void:
-	for id: String in ["ty_10001_1","ty_10002_1","hd_20001_2","nszc_10001_1"]:
-		var room: Node = (load("res://world/rooms/" + id + ".tscn") as PackedScene).instantiate()
+	for row: Array in [
+		["ty_10001_1",preload("res://world/rooms/ty_10001_1.tscn")],
+		["ty_10002_1",preload("res://world/rooms/ty_10002_1.tscn")],
+		["hd_20001_2",preload("res://world/rooms/hd_20001_2.tscn")],
+		["nszc_10001_1",preload("res://world/rooms/nszc_10001_1.tscn")]
+	]:
+		var id: String = row[0]
+		var room: Node = (row[1] as PackedScene).instantiate()
 		no_key(room.get_node("Seven/Prompt" if id == "ty_10001_1" else "Survivor/Prompt") as Label,id + " initial scene")
 		room.free()
 
