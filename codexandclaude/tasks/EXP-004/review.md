@@ -177,3 +177,44 @@ tests/smoke_test.gd第87行以held > normal作为加速证据，普通逐字随�
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+
+# 集成收尾 S 级小修审查：通过
+
+日期：2026-10-21（America/Los_Angeles）｜审查者：Codex｜结论：**通过，无阻断项**。
+
+## 简版任务与批准依据
+
+用户本轮明确要求：“按S级小修审查后合入并重跑master full”，固定修正SHA为 `ce58de9a6de0e4d6e015b393075bb3ec3dab0dbf`，基线为失败master `0fabb7a32c7f75949f8c5e3a37cbb5092c7c9334`；通过后完成EXP-004集成记录和BOARD收尾，并保留失败记录be2bbcb历史。本节作为本次小修的简版目标/范围/检查/审查记录，不新建正式功能任务。
+
+目标：补齐三个UI测试的已有收尾惯例，给后台线程退出前留出时间；不修改游戏规则或断言。允许文件：game/tests/test_title_slots.gd、test_settings_page.gd、test_outcome_sheets.gd。检查：三个专项带verbose、G3、合入master后的full；若泄漏再次出现须用verbose留对象明细，不把重跑通过当作原失败不存在。
+
+## 差异与限制
+
+使用git switch --detach固定ce58de9审查。相对0fabb7a只有上述三文件各+4行：3行注释和OS.delay_msec(500)。新增延迟位于释放场景、清空current_scene、等待两个process_frame之后，临时目录清理、汇总及quit之前。原有全部断言、套件登记、计数、失败退出、临时目录隔离与清理均未改变；不改任何正式游戏脚本或验证器。
+
+与test_formal_hud、test_pause_menu、test_title_flow等既有收尾一致；test_settings也有退出前500ms延迟。新增等待只在测试进程末尾执行，总额约1.5秒，套件超时设置不变。
+
+这是与已有做法对齐的稳定性补充，**不是已证实的ObjectDB泄漏根因修复，也不能保证500ms消除所有泄漏**。实现者报告42次旧版本试验未复现，本次审查没有把该报告当成自己的复现证据，没有声称删掉延迟的变异必然重现泄漏。具体对象仍未知；若后续失败需保留verbose的Leaked instance明细。
+
+## 独立专项与严格判定检查
+
+在自己的工作区固定ce58de9先执行 `Godot --headless --path game --editor --import --quit`，再三个进程并行执行：`Godot --headless --path game --fixed-fps 60 --verbose --script res://tests/<套件>.gd`。使用verify_game.execute现有严格判定检查返回值与完整stdout/stderr：
+
+| 套件 | 结果 |
+| --- | --- |
+| test_title_slots.gd | TITLE_SLOTS_TESTS 80/0，退出0 |
+| test_settings_page.gd | SETTINGS_PAGE_TESTS 58/0，退出0 |
+| test_outcome_sheets.gd | OUTCOME_SHEETS_TESTS 67/0，退出0 |
+
+三个日志均无ObjectDB instances were leaked或Leaked instance明细；未出现其他严格错误标记。日志在Codex工作区runs/teardown-review-test_*.txt；导入日志teardown-review-import.txt。已跟踪内容均为固定修正，导入仅产生EXP-003既有两个未跟踪UID（BL-115），不作为可复用干净证据。
+
+另对验证器执行内存中的输出注入探针：退出0且67/0的干净输出应接受；同样输出追加“WARNING: 2 ObjectDB instances were leaked at exit”必须拒绝。**LEAK_GUARD_PROBE checks=2 failures=0**，日志runs/teardown-leak-guard.txt。没有改验证器源代码或弱化泄漏检查，也没有用这个探针假称证明500ms的因果效果。
+
+工具同上轮：Godot 4.7.2.stable.official.ed1daf0bf（既定console.exe）、Python 3.12.14（Codex bundled runtime）。本记录写入后另跑 `python codexandclaude/tools/run_checks.py focused --python-all`，通过后提交。
+
+## 历史与下一步
+
+本审查分支合入固定失败记录 `be2bbcb01ffacda8351b2050e0d97546db29f243`，完整保留原integration.md及其Git历史；不删除或改写原失败结果。相对ce58de9只加入该历史记录并追加本review.md，不改其他实现内容。
+
+按用户授权，合入固定审查SHA后，在master独立重跑 `python codexandclaude/tools/run_checks.py full --jobs 4`。通过才追加成功集成记录、更新任务卡与BOARD；失败则停止收尾并保留证据。原EXP-004复审结论和用户选定不变。
