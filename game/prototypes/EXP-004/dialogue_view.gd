@@ -13,6 +13,7 @@ const VARIANTS: Array[String] = ["A · 墨夜黑框", "B · 黄昏纸笺", "C ·
 const BOX: Rect2 = Rect2(540, 120, 840, 250)
 const CHARS_PER_SECOND: float = 28.0
 const HOLD_MULTIPLIER: float = 4.0
+const CHOICE_GAP: float = 40.0
 
 var variant: int = 0
 var font: Font
@@ -20,7 +21,7 @@ var lines: Array[Dictionary] = []
 var index: int = 0
 var typed: float = 0.0
 var active: bool = false
-var paused: bool = false
+var paused: bool = false: set = set_paused
 ## A forced story scene hides the HUD while it plays.
 var forced: bool = false
 var holding: bool = false
@@ -44,6 +45,22 @@ func start(entries: Array[Dictionary], is_forced: bool = false, departure: bool 
 	active = true
 	set_meta("departure", departure)
 	_clear_choices()
+
+## Review R2: while paused the departure buttons take no click, key or pad
+## input; resuming restores them and the focus they had.
+func set_paused(value: bool) -> void:
+	if value == paused:
+		return
+	paused = value
+	if paused:
+		var owner: Control = get_viewport().gui_get_focus_owner() if is_inside_tree() else null
+		set_meta("refocus", owner if choices.has(owner) else null)
+	for item: Button in choices:
+		item.disabled = paused
+		item.focus_mode = Control.FOCUS_NONE if paused else Control.FOCUS_ALL
+	if not paused and not choices.is_empty():
+		var back: Variant = get_meta("refocus", null)
+		(back if back is Button and is_instance_valid(back) else choices[0]).grab_focus()
 
 func line() -> Dictionary:
 	return lines[index] if active and index < lines.size() else {}
@@ -95,8 +112,11 @@ func _ask_departure() -> void:
 		button.size = button.custom_minimum_size
 		add_child(button)
 		choices.append(button)
-	choices[0].position = BOX.position + Vector2(160, BOX.size.y - 78)
-	choices[1].position = BOX.position + Vector2(BOX.size.x - 460, BOX.size.y - 78)
+	# Review R1: the two click areas sit apart (40 px), centred, and above
+	# the name tag at the lower left.
+	var row: float = 2.0 * 300.0 + CHOICE_GAP
+	choices[0].position = BOX.position + Vector2((BOX.size.x - row) * 0.5, 124)
+	choices[1].position = choices[0].position + Vector2(300.0 + CHOICE_GAP, 0)
 	choices[0].pressed.connect(func() -> void:
 		departure_chosen.emit(false)
 		close())
@@ -202,6 +222,7 @@ func _draw() -> void:
 		record["hint"] = _ink(Vector2(BOX.position.x, BOX.end.y + 30), "E / RB 继续 · 长按加速", UiTheme.SIZE_SMALL, Color(DuskStyle.PAPER_DAY, 0.6), BOX.size.x, HORIZONTAL_ALIGNMENT_CENTER)["text"]
 	else:
 		record["choices"] = choices.map(func(item: Button) -> String: return item.text)
+		record["choice_rects"] = choices.map(func(item: Button) -> Rect2: return item.get_global_rect())
 	record["aside"] = aside
 	record["text_color"] = text_color
 	drawn = record

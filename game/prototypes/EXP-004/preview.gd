@@ -97,6 +97,7 @@ func wave() -> void:
 
 func toggle_pause() -> void:
 	paused = not paused
+	pause_layer.mouse_filter = Control.MOUSE_FILTER_STOP if paused else Control.MOUSE_FILTER_IGNORE
 	dialogue.set("paused", paused)
 	card.set("paused", paused)
 

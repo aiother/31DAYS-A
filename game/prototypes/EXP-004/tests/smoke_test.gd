@@ -67,6 +67,38 @@ func run() -> void:
 	print("EXP004_SMOKE checks=%d failures=%d" % [checks, failures])
 	quit(1 if failures else 0)
 
+## Review R2: with the question open and the game paused, a mouse click on
+## either button, Enter, A and Right + Enter all do nothing; after resuming the
+## focus is back on 留下 and choosing works.
+func click(target: Control) -> void:
+	var point: Vector2 = target.get_global_rect().get_center()
+	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
+	motion.position = point
+	root.push_input(motion, true)
+	for down: bool in [true, false]:
+		var event: InputEventMouseButton = InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.position = point
+		event.global_position = point
+		event.pressed = down
+		event.button_mask = MOUSE_BUTTON_MASK_LEFT if down else 0
+		root.push_input(event, true)
+		await frames(1)
+	await frames(1)
+
+func paused_question_cases(name: String) -> void:
+	var buttons: Array = dialogue().get("choices")
+	await key(KEY_ESCAPE)
+	await click(buttons[1])
+	await click(buttons[0])
+	await key(KEY_ENTER)
+	await pad(JOY_BUTTON_A)
+	await key(KEY_RIGHT)
+	await key(KEY_ENTER)
+	check(bool(preview.get("paused")) and bool(dialogue().get("active")) and preview.get("last_choice") == "" and dialogue().get("choices").size() == 2, name + ": while paused the question takes no click, key or pad choice")
+	await key(KEY_ESCAPE)
+	check(not bool(preview.get("paused")) and focus_text() == "留下", name + ": after resuming the focus is back on 留下")
+
 func dialogue_cases(variant: int) -> void:
 	var name: String = ["A", "B", "C", "D"][variant]
 	await key(KEY_8 if variant == 3 else KEY_1 + variant)
@@ -83,8 +115,8 @@ func dialogue_cases(variant: int) -> void:
 	await frames(6)
 	var normal: int = str(said().get("text", {}).get("text", "")).length()
 	await pad(JOY_BUTTON_RIGHT_SHOULDER, 8)
-	var held: int = str(said().get("text", {}).get("text", "")).length()
-	check(said().get("speaker", {}).get("text") == "主角" and held > normal, name + ": the next line, and holding RB speeds it up")
+	check(said().get("speaker", {}).get("text") == "主角" and int(dialogue().get("index")) == 1, name + ": RB goes on to the next line")
+	await hold_cases(name)
 	await key(KEY_ESCAPE)
 	var frozen: String = str(said().get("text", {}).get("text", ""))
 	await frames(20)
@@ -103,6 +135,7 @@ func dialogue_cases(variant: int) -> void:
 	for i: int in range(2):
 		await key(KEY_E)
 	check(said().get("choices") == ["留下", "确认离开并放弃救助"] and focus_text() == "留下", name + ": leaving asks, starting on 留下")
+	await paused_question_cases(name)
 	await pad(JOY_BUTTON_A)
 	check(preview.get("last_choice") == "stay" and not bool(dialogue().get("active")), name + ": A on 留下 keeps the rescue")
 	await key(KEY_L)
@@ -112,6 +145,40 @@ func dialogue_cases(variant: int) -> void:
 	await key(KEY_ENTER)
 	check(preview.get("last_choice") == "leave", name + ": choosing to leave is explicit")
 	check(slow < 37, name + ": typing started from nothing")
+
+## Review N1: from the same finished line, tapping and holding E / RB for the
+## same frames; holding must type the next line clearly faster.
+func typed_after(hold: bool) -> int:
+	preview.call("talk")
+	await frames(2)
+	dialogue().call("press")
+	await frames(1)
+	dialogue().call("press")
+	await frames(1)
+	dialogue().call("press")
+	await frames(1)
+	check(int(dialogue().get("index")) == 1 and bool(dialogue().call("line_done")), "measuring starts from a finished line")
+	if hold:
+		await key(KEY_E, 12)
+	else:
+		await key(KEY_E)
+		await frames(12)
+	var count: int = str(said().get("text", {}).get("text", "")).length()
+	dialogue().call("close")
+	return count
+
+func hold_cases(name: String) -> void:
+	var resume_index: int = int(dialogue().get("index"))
+	dialogue().call("close")
+	var tapped: int = await typed_after(false)
+	var held: int = await typed_after(true)
+	check(tapped > 0 and held >= tapped * 2, name + ": holding E types about four times faster (%d vs %d chars)" % [held, tapped])
+	preview.call("talk")
+	await frames(2)
+	for i: int in range(resume_index):
+		dialogue().call("press")
+		dialogue().call("press")
+	await frames(2)
 
 func missed_cases(mode: int) -> void:
 	await key(KEY_4 + mode)
@@ -149,6 +216,24 @@ func card_cases(variant: int) -> void:
 	check(bool(drawn.get("boss")) and drawn.get("title", {}).get("text") == "渴望俯视" and (drawn["rect"] as Rect2).size.x > 440.0, "card %d Boss version is the larger card" % variant)
 	await frames(300)
 
+## Review R1: the open departure question, read from the real buttons: both
+## click areas inside the box, apart from each other and from the name tag.
+func question_layout(window: Vector2i, variant: int) -> void:
+	dialogue().call("close")
+	await key(KEY_L)
+	for i: int in range(2):
+		await key(KEY_E)
+	var box: Rect2 = said()["box"]
+	var areas: Array = dialogue().get("choices").map(func(item: Button) -> Rect2: return item.get_global_rect())
+	var tag: Rect2 = said().get("speaker_rect", Rect2())
+	var ok: bool = areas.size() == 2 and not (areas[0] as Rect2).intersects(areas[1]) and (areas[1] as Rect2).position.x - (areas[0] as Rect2).end.x >= 20.0
+	for area: Rect2 in areas:
+		ok = ok and box.encloses(area) and not area.intersects(tag)
+	check(ok and said().get("choice_rects") == areas, "%dx%d variant %d: the two departure buttons sit apart inside the box, clear of the name" % [window.x, window.y, variant])
+	await key(KEY_ENTER)
+	preview.call("talk")
+	await frames(2)
+
 ## Both window sizes: the box, the card, the G-08 tag, the wave line and the
 ## HUD stand-in apart and on screen.
 func layout_cases() -> void:
@@ -164,6 +249,7 @@ func layout_cases() -> void:
 			await frames(30)
 			var box: Rect2 = said()["box"]
 			var rects: Array[Rect2] = [box.grow_individual(0, 0, 0, 44), card().get("drawn")["settled"], preview.get("drawn")["missed_tag"]["rect"], preview.get("drawn")["wave"]["rect"], Rect2(40, 40, 280, 290)]
+			await question_layout(window, variant)
 			var ok: bool = true
 			for a: int in range(rects.size()):
 				ok = ok and Rect2(0, 0, 1920, 1080).encloses(rects[a])
