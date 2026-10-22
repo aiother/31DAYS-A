@@ -159,6 +159,10 @@ func run() -> void:
 	current_scene = null
 	await process_frame
 	await process_frame
+	# Same teardown as the other session suites: let background work
+	# (audio, file IO) finish before quitting, so nothing is reported as
+	# leaked at exit.
+	OS.delay_msec(500)
 	clear_slots()
 	DirAccess.remove_absolute(directory)
 	print("TITLE_SLOTS_TESTS checks=%d failures=%d" % [checks, failures])

@@ -153,6 +153,10 @@ func run() -> void:
 	current_scene = null
 	await process_frame
 	await process_frame
+	# Same teardown as the other session suites: let background work
+	# (audio, file IO) finish before quitting, so nothing is reported as
+	# leaked at exit.
+	OS.delay_msec(500)
 	for file: String in (DirAccess.get_files_at(directory) if DirAccess.dir_exists_absolute(directory) else PackedStringArray()):
 		DirAccess.remove_absolute(directory.path_join(file))
 	DirAccess.remove_absolute(directory)
