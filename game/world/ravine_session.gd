@@ -84,7 +84,7 @@ func _on_room_exit(target: String) -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if room is RavineRoom and has_session() and Input.is_action_just_pressed("interact") and player.life.can_control() and player.position.distance_to(_checkpoint(RAVINE_CHECKPOINT).config.spawn_position) <= 96:
+	if _interaction_input() and _checkpoint_retry_in_range(RAVINE_CHECKPOINT, room is RavineRoom):
 		activate_checkpoint(RAVINE_CHECKPOINT)
 
 func _process(delta: float) -> void:
@@ -96,3 +96,9 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "普通跳跃跨过高台 · 空中 S + J 下攻击\n向左返回麦秆镇 · 沿右侧平台继续探索"
 		if has_session() and data["checkpoint"] != RAVINE_CHECKPOINT:
 			$Instructions/Help.text = "入口检查点尚未保存 · 靠近旗帜按 E / RB 重试"
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is RavineRoom:
+		result.append(_checkpoint_target(RAVINE_CHECKPOINT))
+	return result

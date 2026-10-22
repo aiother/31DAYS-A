@@ -4,6 +4,13 @@ extends EnemyLab
 ## (save feedback). Periodic, resource and event autosaves, loads and failed
 ## writes never emit it.
 signal checkpoint_saved(id: String)
+signal quest_changed(kind: String, state: Dictionary)
+signal item_obtained(kind: String, display_name: String)
+var _quest_previous: Dictionary = {}
+var _quest_restoring: bool = false
+var _item_saved_snapshot: Dictionary = {}
+var _item_epoch: int = 0
+
 @export var save_directory: String = "user://saves"
 var store: SlotStore = SlotStore.new()
 var slot: int = 0
@@ -78,6 +85,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if has_session() and player.life.is_alive():
 		data["play_seconds"] = float(data["play_seconds"]) + delta
+	_publish_quest_changes()
 	_notice_remaining = maxf(0.0, _notice_remaining - delta)
 	$Instructions/EnemyStatus.text = $Instructions/EnemyStatus.text.replace(" · R 开发重置", "")
 	$Instructions/EnemyStatus.text += " · %s" % (_notice if _notice_remaining > 0.0 else ("存档槽 %d" % slot if has_session() else "请选择存档槽"))
@@ -129,6 +137,10 @@ func start_slot(selected: int, new_game: bool) -> bool:
 func _restore(snapshot: Dictionary, revive: bool) -> void:
 	_loading = true
 	data = snapshot.duplicate(true)
+	_quest_restoring = true
+	_item_saved_snapshot = data.duplicate(true)
+	_item_epoch += 1
+	_seed_quest_changes.call_deferred()
 	_death_settled = false
 	player.reset_kinematics()
 	if revive:
@@ -184,6 +196,15 @@ func save_current(message: String = "已自动保存") -> bool:
 	if not store.save_slot(slot, data):
 		ui.call("save_failed", store.last_error)
 		return false
+	var before_items: Dictionary = _obtained_items(_item_saved_snapshot)
+	var after_items: Dictionary = _obtained_items(data)
+	_item_saved_snapshot = data.duplicate(true)
+	var obtained: Array[Dictionary] = []
+	for id: String in after_items:
+		if not before_items.has(id): obtained.append(after_items[id].duplicate(true))
+	# Outer session overrides finish growth synchronization after this durable write.
+	if not obtained.is_empty(): _emit_obtained.call_deferred(obtained, _item_epoch)
+	_publish_quest_changes()
 	_notify(message)
 	if str(data["checkpoint"]) != _saved_checkpoint:
 		_saved_checkpoint = str(data["checkpoint"])
@@ -228,3 +249,51 @@ func _notify(message: String) -> void:
 
 func _on_close_requested() -> void:
 	ui.call("confirm_quit")
+
+## Read-only UI data hooks; subclasses add existing rules, never persist UI caches.
+func quest_state() -> Dictionary:
+	return {"id":"", "title":"", "objective":"", "state":"无"}
+
+func _quest_records() -> Dictionary:
+	return {}
+
+func _seed_quest_changes() -> void:
+	_quest_previous = _quest_records().duplicate(true)
+	_quest_restoring = false
+
+func _publish_quest_changes() -> void:
+	if not has_session() or _loading or _quest_restoring: return
+	var records: Dictionary = _quest_records()
+	for id: String in records:
+		var current: Dictionary = records[id]
+		var previous: Dictionary = _quest_previous.get(id, {"state":"无"})
+		if current == previous: continue
+		_quest_previous[id] = current.duplicate(true)
+		if current["state"] == "无": continue
+		var kind: String = {"已完成":"完成", "已放弃":"放弃", "已过期":"过期"}.get(current["state"], "开始" if previous["state"] == "无" else "进展")
+		# A completed rescue gaining its deferred settlement is progress, not a second completion.
+		if current["state"] == previous["state"]: kind = "进展"
+		quest_changed.emit(kind, current.duplicate(true))
+
+func _obtained_items(_snapshot: Dictionary) -> Dictionary:
+	return {}
+
+func _emit_obtained(items: Array[Dictionary], epoch: int) -> void:
+	if epoch != _item_epoch: return
+	for item: Dictionary in items:
+		item_obtained.emit(item["kind"], item["display_name"])
+
+func interaction_targets() -> Array[Dictionary]:
+	return []
+
+## The user approved this ordinary-dialogue gate for world E/RB interactions.
+## Dialogue advancement and cinematic/transaction save retries use their own paths.
+func _world_dialogue_blocked() -> bool:
+	return false
+
+func _interaction_input() -> bool:
+	return not _world_dialogue_blocked() and Input.is_action_just_pressed("interact")
+
+func _target(id: String, kind: String, action: String, position: Vector2, radius: Variant, in_range: bool, available: bool, key_item: bool = false, range_kind: String = "circle") -> Dictionary:
+	return {"id":id, "kind":kind, "action":action, "position":position, "radius":radius,
+		"range_kind":range_kind, "in_range":in_range, "available":available and not get_tree().paused and not _world_dialogue_blocked() and player.life.can_control(), "key_item":key_item}

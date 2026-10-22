@@ -28,7 +28,7 @@ func _can_rescue() -> bool:
 	return not rescue_expired(TOWN_ID) and bool(data["events"].get(HEAL_GUIDE, false)) and not bool(data["events"].get(RESCUE_FAILED, false)) and not bool(data["events"].get(RESCUE_DONE, false))
 
 func interact_survivor() -> bool:
-	if not has_session() or get_tree().paused or not _near_survivor() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
+	if not _can_survivor():
 		return false
 	var config: DialogueConfig = (room as TownRoom).dialogue
 	_dialogue_kind = "rescue" if _can_rescue() else "survivor"
@@ -45,7 +45,7 @@ func interact_seven() -> bool:
 		return true
 	if not has_session() or not bool(data["events"].get(RESCUE_DONE, false)) or bool(data["events"].get(GAZE, false)):
 		return super.interact_seven()
-	if get_tree().paused or not _near_seven() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
+	if not _can_seven():
 		return false
 	_dialogue_kind = "gaze"
 	_gaze_active = true
@@ -78,7 +78,7 @@ func _physics_process(delta: float) -> void:
 		if not _near_survivor():
 			_end_dialogue()
 		return
-	if _interaction_cooldown == 0 and Input.is_action_just_pressed("interact"):
+	if _interaction_cooldown == 0 and _interaction_input():
 		interact_survivor()
 
 func _on_dialogue_finished() -> void:
@@ -165,11 +165,14 @@ func _on_room_exit(target: String) -> void:
 	super._on_room_exit(target)
 
 func quest_status_text() -> String:
+	return _town_quest_objective()
+
+func _town_quest_objective() -> String:
 	if has_session() and bool(data["events"].get(GAZE, false)):
 		return "已获得7的注视 · 可能性上限%d" % player.possibility.maximum
 	if has_session() and bool(data["events"].get(RESCUE_DONE, false)):
 		return "救助完成：返回黄金麦湖与7交谈"
-	return super.quest_status_text()
+	return _field_quest_objective()
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -184,3 +187,24 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "E / RB 与幸存者互动 · 救助后返回黄金麦湖寻找7\n向左返回麦田 · 向右探索前路"
 		if rescue_expired(TOWN_ID):
 			$Instructions/Help.text = "救助已过期 · E / RB 了解错失的机会\n向左返回麦田 · 向右探索前路"
+
+func _obtained_items(snapshot: Dictionary) -> Dictionary:
+	var result: Dictionary = super._obtained_items(snapshot)
+	var events: Dictionary = snapshot.get("events", {})
+	if bool(events.get(GAZE, false)):
+		result[GAZE] = {"kind":"成长", "display_name":"泥粪中的理想家的注视"}
+		for id: String in ["HD_20001_2", "HD_20001_3", "NSZC_10001_1"]:
+			if bool(events.get(WorldDayRules.completed(id), false)):
+				result["growth:" + id] = {"kind":"成长", "display_name":{"HD_20001_2":"沟壑救助成长", "HD_20001_3":"沟壑深处救助成长", "NSZC_10001_1":"外围救助成长"}[id]}
+	return result
+
+func _can_survivor() -> bool:
+	return not _world_dialogue_blocked() and not (not has_session() or get_tree().paused or not _near_survivor() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy())
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is TownRoom:
+		var actor: Node2D = room.get_node("Survivor") as Node2D
+		result.append(_target(room.config.room_id + ":Survivor", "交谈", "交谈", actor.global_position,
+			(room as TownRoom).dialogue.interaction_radius, _near_survivor(), _interaction_cooldown == 0 and _can_survivor()))
+	return result

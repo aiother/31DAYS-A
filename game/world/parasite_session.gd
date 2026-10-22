@@ -89,7 +89,7 @@ func _enter_parasite() -> void:
 	ui.call("show_enemy_intro", actor.config.intro_duration, "寄生同伴者\n\n弹反连续投射物。\n被命中会让Boss恢复生命。")
 
 func _physics_process(delta: float) -> void:
-	if _needs_dodge_growth() and Input.is_action_just_pressed("interact"):
+	if _needs_dodge_growth() and _interaction_input():
 		save_current("闪避强化已补领")
 		return
 	if _parasite_intro_remaining > 0.0:
@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
 			_end_parasite_intro(true)
 		return
 	super._physics_process(delta)
-	if room is ParasiteRoom and has_session() and Input.is_action_just_pressed("interact"):
+	if room is ParasiteRoom and has_session() and _interaction_input():
 		if _parasite_victory_pending:
 			save_current("胜利状态已保存")
 		else:
@@ -187,3 +187,20 @@ func _process(delta: float) -> void:
 			$Instructions/Help.text = "进度保存尚未完成 · 按 E / RB 重试"
 	if _needs_dodge_growth():
 		$Instructions/EnemyStatus.text += " · 闪避强化尚未补领（E / RB 重试保存）"
+
+func _obtained_items(snapshot: Dictionary) -> Dictionary:
+	var result: Dictionary = super._obtained_items(snapshot)
+	if bool(snapshot.get("events", {}).get(DODGE_GROWTH, false)):
+		result[DODGE_GROWTH] = {"kind":"成长", "display_name":"闪避强化"}
+	return result
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if _needs_dodge_growth():
+		for target: Dictionary in result: target["available"] = false
+		result.append(_target(DODGE_GROWTH, "补领", "重试保存", player.global_position, null, true,
+			not get_tree().paused and not _world_dialogue_blocked() and player.life.can_control(), true, "unlimited"))
+	if has_session() and room is ParasiteRoom and (_parasite_victory_pending or room.get_node("Boss").state == ParasiteBoss.State.WAITING):
+		result.append(_target(room.config.room_id + ":retry", "重试", "重试保存", player.global_position, null, true,
+			not intro_active, true, "unlimited"))
+	return result

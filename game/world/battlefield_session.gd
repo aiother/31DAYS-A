@@ -34,7 +34,7 @@ func _on_stage_completed() -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if room is BattlefieldRoom and (room as BattlefieldRoom).completed and Input.is_action_just_pressed("interact"):
+	if room is BattlefieldRoom and (room as BattlefieldRoom).completed and _interaction_input():
 		_on_stage_completed()
 
 func _on_room_exit(id: String) -> void:
@@ -53,3 +53,13 @@ func _process(delta: float) -> void:
 	if room is BattlefieldRoom:
 		$Instructions/Title.text = "逆时战场 / 中心战场 · 首段混战"
 		$Instructions/Help.text = "向右越过安全区开战 · 首名天人阵亡后两批幸存者加入 · 绿色为友军\n首段清空仅为阶段完成；资源保存失败可 E / RB 重试 · 沿用堑壕第二间检查点"
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if _stage_retry_pending():
+		result.append(_target("battlefield:retry", "重试", "保存阶段结算", player.global_position, null, true,
+			not get_tree().paused and not _world_dialogue_blocked() and player.life.is_alive(), false, "unlimited"))
+	return result
+
+func _stage_retry_pending() -> bool:
+	return has_session() and room is BattlefieldRoom and (room as BattlefieldRoom).completed and not stage_notified and player.life.is_alive()

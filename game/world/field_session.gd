@@ -101,11 +101,11 @@ func _physics_process(delta: float) -> void:
 		if not dialogue_ui.confirming and not _near_seven():
 			_end_dialogue()
 		return
-	if _interaction_cooldown == 0 and Input.is_action_just_pressed("interact"):
+	if _interaction_cooldown == 0 and _interaction_input():
 		interact_seven()
 
 func interact_seven() -> bool:
-	if get_tree().paused or not has_session() or not _near_seven() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
+	if not _can_seven():
 		return false
 	var config: DialogueConfig = (room as FieldRoom).dialogue
 	dialogue_ui.start(config, PackedStringArray([rescue_expired_text()]) if rescue_expired("TY_10002_1") else (config.failed_lines if bool(data["events"].get(RESCUE_FAILED, false)) else config.repeat_lines))
@@ -198,6 +198,12 @@ func _valid_departure_target(target: String) -> bool:
 	return room is FieldRoom and target == BOSS_ID
 
 func quest_status_text() -> String:
+	return _field_quest_objective()
+
+func _town_quest_objective() -> String:
+	return _field_quest_objective()
+
+func _field_quest_objective() -> String:
 	if rescue_expired("TY_10002_1"):
 		return "麦秆镇救助已过期 · 更早抵达可帮助这里的人"
 	if not has_session() or not bool(data["events"].get(HEAL_GUIDE, false)):
@@ -225,3 +231,45 @@ func _process(delta: float) -> void:
 			$Instructions/Help.text = "麦秆镇救助已过期 · 更早抵达可帮助这里的人\nE / RB 与7交谈 · 道路仍可往返"
 		if _guide_time > 0:
 			$Instructions/Help.text = "长按 L / Y 恢复生命 · 消耗3可能性，持续2.8秒恢复2生命\n松键或被打断会取消恢复，已消耗的可能性不退还"
+
+func _world_dialogue_blocked() -> bool:
+	return is_instance_valid(dialogue_ui) and (dialogue_ui.active or dialogue_ui.confirming)
+
+func _rescue_objective(id: String) -> String:
+	if id == "TY_10002_1": return _town_quest_objective()
+	return ""
+
+func _quest_records() -> Dictionary:
+	var result: Dictionary = {}
+	if not has_session(): return result
+	var events: Dictionary = data["events"]
+	for id: String in WorldDayRules.IDS:
+		var seen_key: String = HEAL_GUIDE if id == "TY_10002_1" else "rescue:%s:seen" % id
+		var state: String = "无"
+		if rescue_expired(id): state = "已过期"
+		elif bool(events.get(WorldDayRules.failed(id), false)): state = "已放弃"
+		elif bool(events.get(WorldDayRules.completed(id), false)): state = "已完成"
+		elif bool(events.get(seen_key, false)): state = "进行中"
+		# Query existing per-quest wording independently of the mounted Room.
+		var objective: String = _rescue_objective(id)
+		result[id] = {"id":id, "title":"救助", "objective":objective, "state":state}
+	return result
+
+func quest_state() -> Dictionary:
+	if not has_session(): return super.quest_state()
+	var id: String = room.config.room_id
+	if id not in ["HD_20001_2", "HD_20001_3", "NSZC_10001_1"]: id = "TY_10002_1"
+	var result: Dictionary = _quest_records()[id].duplicate(true)
+	result["objective"] = quest_status_text()
+	return result
+
+func _can_seven() -> bool:
+	return not _world_dialogue_blocked() and not (get_tree().paused or not has_session() or not _near_seven() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy())
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is FieldRoom:
+		var actor: Node2D = room.get_node("Seven") as Node2D
+		result.append(_target(room.config.room_id + ":Seven", "交谈", "交谈", actor.global_position,
+			(room as FieldRoom).dialogue.interaction_radius, _near_seven(), _interaction_cooldown == 0 and _can_seven()))
+	return result
