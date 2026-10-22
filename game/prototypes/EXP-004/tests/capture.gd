@@ -27,8 +27,8 @@ func run() -> void:
 	root.add_child(preview)
 	await frames(3)
 	(preview.get("help") as Label).visible = false
-	for variant: int in range(3):
-		var letter: String = ["a", "b", "c"][variant]
+	for variant: int in range(4):
+		var letter: String = ["a", "b", "c", "d"][variant]
 		preview.call("set_variant", variant)
 		preview.call("talk")
 		await frames(40)
@@ -60,10 +60,14 @@ func run() -> void:
 		await frames(40)
 		await shot("card_%d_boss" % (variant + 1))
 		await frames(300)
-	preview.call("set_variant", 1)
+	# The user's round-one choice together: D, card 2, G-08 tag.
+	preview.call("set_variant", 3)
+	preview.call("set_card_variant", 1)
 	preview.call("talk")
 	preview.call("boss_card")
+	preview.set("g08_mode", 1)
+	preview.call("reach_missed")
 	preview.call("wave")
 	await frames(40)
-	await shot("together_b")
+	await shot("together_d_card2")
 	quit()

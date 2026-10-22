@@ -5,7 +5,7 @@ extends Control
 ## settings. Keys are listed on screen (H hides them).
 const DIALOGUE: Script = preload("res://prototypes/EXP-004/dialogue_view.gd")
 const CARD: Script = preload("res://prototypes/EXP-004/intro_card.gd")
-const HELP: String = "EXP-004 原型（H 隐藏）\n1 / 2 / 3  对话方案 A / B / C\n4 / 5  G-08 呈现：对话一句 / 短提示\n6 / 7  介绍卡方案 1 / 2\nT 与7交谈 · L 离开麦秆镇（救助确认）\nK 强制剧情（隐藏 HUD）· M 走到已错失救助处\nC 普通敌人卡 · B Boss 名片 · W 战场波次提示\nE / RB 继续（长按加速）· Esc 暂停"
+const HELP: String = "EXP-004 原型（H 隐藏）\n1 / 2 / 3 / 8  对话方案 A / B / C / D\n4 / 5  G-08 呈现：对话一句 / 短提示\n6 / 7  介绍卡方案 1 / 2\nT 与7交谈 · L 离开麦秆镇（救助确认）\nK 强制剧情（隐藏 HUD）· M 走到已错失救助处\nC 普通敌人卡 · B Boss 名片 · W 战场波次提示\nE / RB 继续（长按加速）· Esc 暂停"
 const TALK: Array[Dictionary] = [
 	{"speaker": "7", "text": "你也是从荒地那边过来的吗？镇子里的人都病倒了，我一个人照顾不过来。"},
 	{"speaker": "主角", "text": "需要我做什么？"},
@@ -126,6 +126,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	match (event as InputEventKey).keycode:
 		KEY_1, KEY_2, KEY_3: set_variant((event as InputEventKey).keycode - KEY_1)
+		KEY_8: set_variant(3)
 		KEY_4, KEY_5: g08_mode = (event as InputEventKey).keycode - KEY_4
 		KEY_6, KEY_7: set_card_variant((event as InputEventKey).keycode - KEY_6)
 		KEY_T: talk()

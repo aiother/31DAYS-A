@@ -7,7 +7,9 @@ extends Control
 signal finished
 signal departure_chosen(leave: bool)
 
-const VARIANTS: Array[String] = ["A · 墨夜黑框", "B · 黄昏纸笺", "C · 黑纱纸边"]
+## D (user, EXP-004 G4 round 1): B's dusk paper and ink with C's torn
+## edges and small name tag.
+const VARIANTS: Array[String] = ["A · 墨夜黑框", "B · 黄昏纸笺", "C · 黑纱纸边", "D · 纸笺纸边"]
 const BOX: Rect2 = Rect2(540, 120, 840, 250)
 const CHARS_PER_SECOND: float = 28.0
 const HOLD_MULTIPLIER: float = 4.0
@@ -88,7 +90,7 @@ func close() -> void:
 func _ask_departure() -> void:
 	for caption: String in ["留下", "确认离开并放弃救助"]:
 		# Paper-coloured ink on the dark boxes, dark ink on the paper slip.
-		var button: InkButton = (InkButton.new() if variant == 1 else MenuScreen.LightInkButton.new()).setup(caption, 26, 950 + choices.size())
+		var button: InkButton = (InkButton.new() if variant in [1, 3] else MenuScreen.LightInkButton.new()).setup(caption, 26, 950 + choices.size())
 		button.custom_minimum_size = Vector2(300, 56)
 		button.size = button.custom_minimum_size
 		add_child(button)
@@ -116,6 +118,23 @@ func _clear_choices() -> void:
 		item.queue_free()
 	choices.clear()
 
+## A sheet whose top and bottom edges are torn: the fill follows the tears
+## and an edge line traces them.
+func _torn_sheet(fill: Color, edge_color: Color) -> void:
+	var top: PackedVector2Array = []
+	var bottom: PackedVector2Array = []
+	for i: int in range(41):
+		var x: float = BOX.position.x + BOX.size.x * i / 40.0
+		top.append(Vector2(x, BOX.position.y + (InkDraw.noise(i, int(BOX.position.y)) - 0.5) * 8.0))
+		bottom.append(Vector2(x, BOX.end.y + (InkDraw.noise(i, int(BOX.end.y)) - 0.5) * 8.0))
+	var outline: PackedVector2Array = top.duplicate()
+	var back: PackedVector2Array = bottom.duplicate()
+	back.reverse()
+	outline.append_array(back)
+	draw_colored_polygon(outline, fill)
+	draw_polyline(top, edge_color, 2.4, true)
+	draw_polyline(bottom, edge_color, 2.4, true)
+
 func _ink(at: Vector2, text: String, size_px: int, color: Color, width: float = -1.0, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Dictionary:
 	draw_multiline_string(font, at, text, align, width, size_px, -1, color)
 	return {"text": text, "color": color}
@@ -142,6 +161,11 @@ func _draw() -> void:
 			InkDraw.rough_rect(self, BOX, Color(DuskStyle.INK, 0.85), DuskStyle.INK_WIDTH, 962, DuskStyle.WOBBLE)
 			text_color = Color(DuskStyle.INK, 0.6) if aside else DuskStyle.INK
 			name_color = DuskStyle.PAPER_DAY
+		3:
+			# B's dusk paper and ink, C's torn edges instead of a drawn frame.
+			_torn_sheet(Color(DuskStyle.PAPER_DUSK, 0.95), Color(DuskStyle.INK, 0.75))
+			text_color = Color(DuskStyle.INK, 0.6) if aside else DuskStyle.INK
+			name_color = DuskStyle.PAPER_DAY
 		_:
 			# Black gauze with torn paper edges top and bottom.
 			draw_rect(BOX, Color(0.03, 0.02, 0.03, 0.72))
@@ -160,7 +184,7 @@ func _draw() -> void:
 		match variant:
 			1:
 				draw_rect(tag, Color(DuskStyle.LIFE, 0.92))
-			2:
+			2, 3:
 				InkDraw.paper(self, tag, Color(DuskStyle.INK, 0.9), 963, DuskStyle.WOBBLE, 0)
 		# Bold by a second, slightly offset pass of the same text.
 		_ink(tag.position + Vector2(21, 33), speaker, UiTheme.SIZE_HEADING, name_color)

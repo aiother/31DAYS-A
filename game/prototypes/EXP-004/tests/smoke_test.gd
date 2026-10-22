@@ -57,7 +57,7 @@ func run() -> void:
 	preview = (load("res://prototypes/EXP-004/preview.tscn") as PackedScene).instantiate() as Control
 	root.add_child(preview)
 	await frames(3)
-	for variant: int in range(3):
+	for variant: int in range(4):
 		await dialogue_cases(variant)
 	for mode: int in range(2):
 		await missed_cases(mode)
@@ -68,13 +68,13 @@ func run() -> void:
 	quit(1 if failures else 0)
 
 func dialogue_cases(variant: int) -> void:
-	var name: String = ["A", "B", "C"][variant]
-	await key(KEY_1 + variant)
+	var name: String = ["A", "B", "C", "D"][variant]
+	await key(KEY_8 if variant == 3 else KEY_1 + variant)
 	await key(KEY_T)
 	await frames(10)
 	var first: String = str(said().get("text", {}).get("text", ""))
 	check(bool(dialogue().get("active")) and first.length() > 0 and first.length() < 37, name + ": the first line types out")
-	check(said().get("speaker", {}).get("text") == "7" and said().get("variant") == ["A · 墨夜黑框", "B · 黄昏纸笺", "C · 黑纱纸边"][variant], name + ": the speaker name is drawn")
+	check(said().get("speaker", {}).get("text") == "7" and said().get("variant") == ["A · 墨夜黑框", "B · 黄昏纸笺", "C · 黑纱纸边", "D · 纸笺纸边"][variant], name + ": the speaker name is drawn")
 	var slow: int = first.length()
 	await key(KEY_E, 10)
 	check(str(said().get("text", {}).get("text", "")) == "你也是从荒地那边过来的吗？镇子里的人都病倒了，我一个人照顾不过来。", name + ": one press finishes the line")
@@ -155,8 +155,8 @@ func layout_cases() -> void:
 	await key(KEY_5)
 	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
 		root.size = window
-		for variant: int in range(3):
-			await key(KEY_1 + variant)
+		for variant: int in range(4):
+			await key(KEY_8 if variant == 3 else KEY_1 + variant)
 			await key(KEY_T)
 			await key(KEY_B)
 			await key(KEY_M)
