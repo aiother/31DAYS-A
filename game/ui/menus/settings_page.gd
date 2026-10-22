@@ -81,10 +81,11 @@ class KeyList extends Control:
 			var top: float = (i - offset) * ROW
 			if (i - offset) % 2 == 0:
 				draw_rect(Rect2(0, top, size.x - 14, ROW), Color(DuskStyle.INK, 0.05))
-			draw_string(font, Vector2(10, top + 25), str(row["name"]), HORIZONTAL_ALIGNMENT_LEFT, 130, UiTheme.SIZE_SMALL, DuskStyle.INK)
-			draw_string(font, Vector2(150, top + 24), "键盘  " + str(row["keyboard"]), HORIZONTAL_ALIGNMENT_LEFT, size.x - 170, 16, DuskStyle.INK)
-			draw_string(font, Vector2(150, top + 48), "手柄  " + str(row["controller"]), HORIZONTAL_ALIGNMENT_LEFT, size.x - 170, 16, Color(DuskStyle.INK, 0.7))
-			shown.append({"action": row["action"], "name": row["name"], "keyboard": row["keyboard"], "controller": row["controller"], "rect": Rect2(0, top, size.x, ROW)})
+			var name: String = SettingRow.ink(self, font, Vector2(10, top + 25), str(row["name"]), UiTheme.SIZE_SMALL, DuskStyle.INK, HORIZONTAL_ALIGNMENT_LEFT, 130)
+			var keyboard: String = SettingRow.ink(self, font, Vector2(150, top + 24), "键盘  " + str(row["keyboard"]), 16, DuskStyle.INK, HORIZONTAL_ALIGNMENT_LEFT, size.x - 170)
+			var controller: String = SettingRow.ink(self, font, Vector2(150, top + 48), "手柄  " + str(row["controller"]), 16, Color(DuskStyle.INK, 0.7), HORIZONTAL_ALIGNMENT_LEFT, size.x - 170)
+			# Recorded as drawn, prefixes included (review R2).
+			shown.append({"action": row["action"], "name": name, "keyboard": keyboard, "controller": controller, "rect": Rect2(0, top, size.x, ROW)})
 		# Scroll bar: where the visible rows sit in the whole list.
 		var track: Rect2 = Rect2(size.x - 6, 0, 4, size.y)
 		draw_rect(track, Color(DuskStyle.INK, 0.12))
@@ -198,8 +199,18 @@ func ask_restore() -> void:
 		confirm.add_child(item)
 	accept.position = sheet.position + Vector2(50, sheet.size.y - 90)
 	cancel.position = sheet.position + Vector2(sheet.size.x - 290, sheet.size.y - 90)
+	# The question keeps the focus: up / down / Tab cannot reach the page or
+	# the pause options behind it (review R1).
+	for item: InkButton in [accept, cancel]:
+		var other: InkButton = cancel if item == accept else accept
+		item.focus_neighbor_top = item.get_path()
+		item.focus_neighbor_bottom = item.get_path()
+		item.focus_next = item.get_path_to(other)
+		item.focus_previous = item.get_path_to(other)
+	accept.focus_neighbor_left = accept.get_path()
 	accept.focus_neighbor_right = accept.get_path_to(cancel)
 	cancel.focus_neighbor_left = cancel.get_path_to(accept)
+	cancel.focus_neighbor_right = cancel.get_path()
 	accept.pressed.connect(func() -> void:
 		close_confirm()
 		settings.call("restore_defaults")
@@ -234,8 +245,7 @@ func _draw_confirm(sheet_node: Control) -> void:
 	InkDraw.paper(confirm, sheet, Color(DuskStyle.PAPER_DAY, 0.97), 655, DuskStyle.WOBBLE, 4)
 	InkDraw.rough_rect(confirm, sheet, Color(DuskStyle.INK, 0.85), DuskStyle.INK_WIDTH, 656, DuskStyle.WOBBLE)
 	var text: String = "恢复全部默认设置？"
-	confirm.draw_string(font, sheet.position + Vector2(0, 80), text, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x, UiTheme.SIZE_HEADING, DuskStyle.INK)
-	drawn["confirm"] = {"text": text, "rect": sheet}
+	drawn["confirm"] = {"text": SettingRow.ink(confirm, font, sheet.position + Vector2(0, 80), text, UiTheme.SIZE_HEADING, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, sheet.size.x), "rect": sheet}
 
 func _process(_delta: float) -> void:
 	if visible:
@@ -247,8 +257,8 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	draw_string(font, Vector2(KEYS_RECT.position.x + 10, KEYS_RECT.position.y - 22), "按键列表", HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, DuskStyle.INK)
-	draw_string(font, Vector2(KEYS_RECT.position.x + 10, KEYS_RECT.end.y + 34), KEYS_NOTE, HORIZONTAL_ALIGNMENT_LEFT, KEYS_RECT.size.x, UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.6))
-	var record: Dictionary = {"rows": {}, "keys_rect": Rect2(keys.position, keys.size), "note": KEYS_NOTE}
+	var note: String = SettingRow.ink(self, font, Vector2(KEYS_RECT.position.x + 10, KEYS_RECT.end.y + 34), KEYS_NOTE, UiTheme.SIZE_SMALL, Color(DuskStyle.INK, 0.6), HORIZONTAL_ALIGNMENT_LEFT, KEYS_RECT.size.x)
+	var record: Dictionary = {"rows": {}, "keys_rect": Rect2(keys.position, keys.size), "note": note}
 	for key: String in rows:
 		record["rows"][key] = (rows[key] as SettingRow).drawn
 	record["restore"] = restore.drawn

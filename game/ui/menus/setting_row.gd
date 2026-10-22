@@ -102,14 +102,21 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	accept_event()
 
+## Draws text and returns what it drew, so a record can only come from a
+## real draw (review R2; same pattern as MenuScreen.ink()).
+static func ink(ci: CanvasItem, ink_font: Font, at: Vector2, text: String, size_px: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> String:
+	ci.draw_string(ink_font, at, text, align, width, size_px, color)
+	return text
+
 func _draw() -> void:
 	var focused: bool = has_focus()
 	var mid: float = size.y * 0.5
 	if focused:
 		InkDraw.rough_line(self, Vector2(18, size.y - 6), Vector2(VALUE_X - 20, size.y - 6), Color(DuskStyle.INK, 0.85), 2.4, seed, 1.4)
 		draw_colored_polygon(PackedVector2Array([Vector2(4, mid - 7), Vector2(13, mid), Vector2(4, mid + 7)]), DuskStyle.LIFE)
-	draw_string(font, Vector2(24, mid + 9), label, HORIZONTAL_ALIGNMENT_LEFT, VALUE_X - 30, UiTheme.SIZE_BODY, DuskStyle.INK)
+	var shown_label: String = ink(self, font, Vector2(24, mid + 9), label, UiTheme.SIZE_BODY, DuskStyle.INK, HORIZONTAL_ALIGNMENT_LEFT, VALUE_X - 30)
 	var shown: String = value_text()
+	var shown_value: String = ""
 	match kind:
 		"slider":
 			var bar: Rect2 = bar_rect()
@@ -118,16 +125,16 @@ func _draw() -> void:
 			if fill > 0.0:
 				InkDraw.rough_line(self, Vector2(bar.position.x, mid), Vector2(bar.position.x + bar.size.x * fill, mid), DuskStyle.POSSIBILITY, 6.0, seed + 2, 0.6)
 			draw_circle(Vector2(bar.position.x + bar.size.x * fill, mid), 10.0 if focused else 8.0, DuskStyle.INK)
-			draw_string(font, Vector2(bar.end.x + 16, mid + 8), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, DuskStyle.INK)
+			shown_value = ink(self, font, Vector2(bar.end.x + 16, mid + 8), shown, UiTheme.SIZE_BODY, DuskStyle.INK)
 		"choice":
 			var arrows: Color = Color(DuskStyle.INK, 0.9 if focused else 0.4)
 			draw_string(font, Vector2(VALUE_X, mid + 9), "‹", HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, arrows)
-			draw_string(font, Vector2(VALUE_X + 30, mid + 9), shown, HORIZONTAL_ALIGNMENT_CENTER, 180, UiTheme.SIZE_BODY, DuskStyle.INK)
+			shown_value = ink(self, font, Vector2(VALUE_X + 30, mid + 9), shown, UiTheme.SIZE_BODY, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, 180)
 			draw_string(font, Vector2(VALUE_X + 222, mid + 9), "›", HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, arrows)
 		"toggle":
 			var box: Rect2 = Rect2(VALUE_X, mid - 14, 60, 28)
 			InkDraw.rough_rect(self, box, Color(DuskStyle.INK, 0.8), 1.6, seed + 3, 0.6)
 			var knob: Vector2 = Vector2(box.end.x - 14 if bool(value) else box.position.x + 14, mid)
 			draw_circle(knob, 9, DuskStyle.LIFE if bool(value) else Color(DuskStyle.INK, 0.45))
-			draw_string(font, Vector2(box.end.x + 16, mid + 8), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, UiTheme.SIZE_BODY, DuskStyle.INK)
-	drawn = {"label": label, "text": shown, "focused": focused, "rect": get_rect()}
+			shown_value = ink(self, font, Vector2(box.end.x + 16, mid + 8), shown, UiTheme.SIZE_BODY, DuskStyle.INK)
+	drawn = {"label": shown_label, "text": shown_value, "focused": focused, "rect": get_rect()}

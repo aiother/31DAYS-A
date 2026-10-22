@@ -198,24 +198,24 @@ func key_list_cases() -> void:
 	check(focus_label() == "按键列表" and page().keys.offset == 0, "down reaches the key list")
 	var seen: Array = []
 	var inside: bool = true
+	var texts: bool = true
 	var keys_rect: Rect2 = Rect2(Vector2.ZERO, page().keys.size)
+	var actions: Array = expected.map(func(item: Dictionary) -> String: return item["action"])
 	for step: int in range(20):
+		# Review R2: every scroll position, every row, the full drawn text.
 		for shown: Dictionary in page().keys.drawn["rows"]:
 			inside = inside and keys_rect.encloses(shown["rect"])
+			var source: Dictionary = expected[actions.find(shown["action"])]
+			texts = texts and shown["name"] == source["name"] and shown["keyboard"] == "键盘  " + str(source["keyboard"]) and shown["controller"] == "手柄  " + str(source["controller"])
 			if not seen.has(shown["action"]):
 				seen.append(shown["action"])
 		if focus_label() != "按键列表":
 			break
 		await key(KEY_DOWN)
-	var actions: Array = expected.map(func(item: Dictionary) -> String: return item["action"])
 	check(expected.size() == 15 and seen == actions, "scrolling shows every frozen binding in table order")
 	check(inside, "key rows stay inside the list while scrolling")
 	check(page().keys.max_offset() > 0 and focus_label() == "恢复默认", "the long list scrolls, then down moves on to restore defaults")
-	var texts: bool = true
-	for shown: Dictionary in page().keys.drawn["rows"]:
-		var source: Dictionary = expected[actions.find(shown["action"])]
-		texts = texts and shown["name"] == source["name"] and shown["keyboard"] == source["keyboard"] and shown["controller"] == source["controller"]
-	check(texts, "each row draws the binding's name, keyboard and controller text")
+	check(texts, "each row draws the binding's name, keyboard and controller text on every page")
 	check(page().drawn["note"] == "自定义按键将在后续版本提供", "the list says custom keys come later")
 	await key(KEY_UP)
 	await mouse_at(page().keys.get_global_rect().get_center(), MOUSE_BUTTON_WHEEL_UP)
@@ -223,6 +223,23 @@ func key_list_cases() -> void:
 	await key(KEY_DOWN)
 	await key(KEY_DOWN)
 	check(focus_label() == "恢复默认", "down scrolls to the end, then leaves the list")
+
+## Review R1: with the restore question open, up / down / Tab on keys and the
+## D-pad never leave it for the page or the menu behind; Esc then closes it.
+func held_in_question(where: String) -> void:
+	var before: Dictionary = values()
+	await key(KEY_ENTER)
+	var held: bool = page().confirm != null
+	for move: Variant in [KEY_UP, KEY_DOWN, KEY_TAB, JOY_BUTTON_DPAD_UP, JOY_BUTTON_DPAD_DOWN, KEY_LEFT, KEY_RIGHT]:
+		if move is int and move >= KEY_SPECIAL:
+			await key(move)
+		else:
+			await pad(move)
+		held = held and page().confirm != null and page().confirm.is_ancestor_of(focused())
+	check(held, "the restore question keeps the focus " + where)
+	check(values() == before, "moving inside the question restores nothing " + where)
+	await key(KEY_ESCAPE)
+	check(page().confirm == null and focus_label() == "恢复默认" and page().visible, "Esc closes it back onto 恢复默认 " + where)
 
 func restore_cases() -> void:
 	settings.call("set_value", "master_volume", 35.0)
@@ -234,6 +251,7 @@ func restore_cases() -> void:
 	await key(KEY_ENTER)
 	await key(KEY_ESCAPE)
 	check(page().confirm == null and page().visible and values()["master_volume"] == 35.0, "Esc closes the question but stays on the page")
+	await held_in_question("from the pause menu")
 	await key(KEY_ENTER)
 	await key(KEY_LEFT)
 	await key(KEY_ENTER)
@@ -292,6 +310,9 @@ func title_cases() -> void:
 	await walk_up(7)
 	await key(KEY_LEFT)
 	check(focus_label() == "效果音" and values()["sfx_volume"] == 95.0 and saved().get("sfx_volume") == 95.0, "changes from the title also go through the service")
+	page().restore.grab_focus()
+	await held_in_question("from the title")
+	page().rows["sfx_volume"].grab_focus()
 	await key(KEY_ESCAPE)
 	check(title.visible and not menu().visible and mode() == "title" and focus_label() == "设置" and not session.has_session(), "Esc returns to the title on 设置")
 	await key(KEY_ENTER)
