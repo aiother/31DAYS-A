@@ -342,6 +342,28 @@ func talk_first_cases() -> void:
 	check(seen, "still nearby afterwards, the tag shows once")
 	await frames(int(FieldDialogue.MISSED_SECONDS * 60) + 70)
 	check(dialogue().missed_drawn.is_empty() and dialogue().missed_age < 0.0, "and only once")
+	# A dialogue already open when the player gets near: the tag does not start.
+	await enter(FieldSession.FIELD_ID)
+	session._mount_room(RavineRescueSession.RESCUE_ID)
+	session._bind_room()
+	session.player.life.scripted_control_locked = false
+	quiet()
+	var survivor: Node2D = session.room.get_node("Survivor") as Node2D
+	session.player.position = survivor.position + Vector2(2000, 0)
+	await frames(200)
+	dialogue().start((session.room as RavineRescueRoom).dialogue, PackedStringArray(["……"]))
+	session.player.position = survivor.position + Vector2(40, 0)
+	await frames(240)
+	check(dialogue().missed_age < 0.0 and not dialogue()._missed_shown and dialogue().missed_drawn.is_empty(), "while a dialogue is open the tag neither starts nor is used up")
+	dialogue().dismiss()
+	var after: bool = false
+	for i: int in range(120):
+		await frames(1)
+		if dialogue().missed_drawn.get("text") == FieldDialogue.MISSED_TEXT:
+			after = true
+			break
+	check(after, "it shows once the dialogue is over")
+	await frames(int(FieldDialogue.MISSED_SECONDS * 60) + 10)
 
 ## The ravine depth rescue clears enemies and has no talk target: the tag
 ## uses MISSED_REACH as a display distance only (review N1).
