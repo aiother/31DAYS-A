@@ -28,7 +28,7 @@ func _on_encounter() -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if _tian_intro_retry and room is TrenchRoom and Input.is_action_just_pressed("interact") and (room as WorldRoom)._currently_overlaps(room.get_node("Encounter") as Area2D,player):
+	if _interaction_input() and _can_tian_retry():
 		_on_encounter()
 
 func _process(delta: float) -> void:
@@ -37,3 +37,17 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "天人：连击 / 长前摇重击 / 格挡反击 · 上下攻击寻找破绽\nE / RB 拾取珍珠 · 沿平台向上到达本阶段边界"
 		if _tian_intro_retry:
 			$Instructions/Help.text = "首次介绍尚未保存 · 在战斗区域按 E / RB 重试"
+
+func _can_tian_retry() -> bool:
+	return _tian_intro_retry and room is TrenchRoom and not _world_dialogue_blocked() and has_session() and player.life.can_control() and not bool(data["events"].get(TIAN_INTRO,false)) and (room as WorldRoom)._currently_overlaps(room.get_node("Encounter") as Area2D,player)
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if _tian_intro_retry and room is TrenchRoom:
+		var area: Area2D = room.get_node("Encounter") as Area2D
+		var shape: CollisionShape2D = area.get_node("CollisionShape2D") as CollisionShape2D
+		var target: Dictionary = _target(TIAN_INTRO, "重试", "保存首次介绍", area.global_position, null,
+			room._currently_overlaps(area,player), not get_tree().paused and _can_tian_retry(), false, "area")
+		target["bounds"] = shape.global_transform * Rect2(-(shape.shape as RectangleShape2D).size/2, (shape.shape as RectangleShape2D).size)
+		result.append(target)
+	return result

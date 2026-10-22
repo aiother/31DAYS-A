@@ -119,7 +119,7 @@ func _physics_process(delta: float) -> void:
 		use_medkit()
 	if not has_session() or intro_active:
 		return
-	if Input.is_action_just_pressed("interact"):
+	if _interaction_input():
 		if activate_environment_switch():
 			return
 		for pickup: RoomPickup in _pickups():
@@ -127,7 +127,7 @@ func _physics_process(delta: float) -> void:
 				break
 
 func activate_environment_switch() -> bool:
-	if not has_session() or get_tree().paused or intro_active or _transitioning or room.environment_hazard==null or not room.environment_hazard.can_interact(player):
+	if not _can_environment_switch():
 		return false
 	var hazard: RoomRockfall = room.environment_hazard
 	var key: String = hazard.config.persistence_key
@@ -142,7 +142,7 @@ func activate_environment_switch() -> bool:
 	return true
 
 func collect_pickup(pickup: RoomPickup) -> bool:
-	if get_tree().paused or not has_session() or intro_active or not is_instance_valid(pickup) or not room.is_ancestor_of(pickup) or not pickup.can_collect(player):
+	if not _can_pickup(pickup):
 		return false
 	var key: String = pickup.config.persistence_key
 	if bool(data["events"].get(key, false)):
@@ -172,3 +172,39 @@ func _process(delta: float) -> void:
 			pickup.refresh(player, bool(data["events"].get(pickup.config.persistence_key, false)))
 	if room.config.room_id == EXPLORATION_ID:
 		$Instructions/Help.text = "沿平台上行 · 下层支路可探索珍珠 · E / RB 拾取\n空中 S + J 下攻击 · 主路线不要求珍珠或闪避"
+
+func _can_environment_switch() -> bool:
+	return not _world_dialogue_blocked() and not (not has_session() or get_tree().paused or intro_active or _transitioning or room.environment_hazard==null or not room.environment_hazard.can_interact(player))
+
+func _can_pickup(pickup: RoomPickup) -> bool:
+	return not _world_dialogue_blocked() and not (get_tree().paused or not has_session() or intro_active or not is_instance_valid(pickup) or not room.is_ancestor_of(pickup) or not pickup.can_collect(player)) and not bool(data["events"].get(pickup.config.persistence_key, false))
+
+func _obtained_items(snapshot: Dictionary) -> Dictionary:
+	var result: Dictionary = super._obtained_items(snapshot)
+	var events: Dictionary = snapshot.get("events", {})
+	for key: String in PEARL_KEYS:
+		if bool(events.get(key, false)): result[key] = {"kind":"珍珠", "display_name":"珍珠"}
+	# Supports any current RoomPickup's actual configured name, not a save-message parser.
+	for pickup: RoomPickup in _pickups():
+		if bool(events.get(pickup.config.persistence_key, false)):
+			result[pickup.config.persistence_key] = {"kind":"珍珠" if pickup.config.persistence_key in PEARL_KEYS else "拾取", "display_name":pickup.config.display_name}
+	for id: String in MedkitRules.CONFIG.placements:
+		var key: String = MedkitRules.key(id)
+		if bool(events.get(key, false)): result[key] = {"kind":"药包", "display_name":"应急药包"}
+	return result
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if not has_session(): return result
+	var consumed: bool = _can_environment_switch()
+	for pickup: RoomPickup in _pickups():
+		if bool(data["events"].get(pickup.config.persistence_key, false)): continue
+		result.append(_target(pickup.config.persistence_key, "拾取", "拾取", pickup.global_position,
+			pickup.config.interaction_radius, pickup.in_range(player), not consumed and _can_pickup(pickup), pickup.config.persistence_key.begins_with("keyitem:")))
+		if _can_pickup(pickup): consumed = true
+	if room.environment_hazard != null:
+		var hazard: RoomRockfall = room.environment_hazard
+		var point: Vector2 = hazard.to_global(hazard.config.switch_position)
+		result.append(_target(hazard.config.persistence_key, "开关", "关闭落石", point, hazard.config.interaction_radius,
+			(player.global_position + Vector2(0,-44)).distance_to(point) <= hazard.config.interaction_radius, _can_environment_switch()))
+	return result

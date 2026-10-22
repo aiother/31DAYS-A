@@ -96,7 +96,8 @@ func _try_open_spikes() -> bool:
 	return true
 
 func interact_outskirts_survivor() -> bool:
-	if not has_session() or get_tree().paused or not _near_outskirts_survivor() or intro_active or dialogue_ui.active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy(): return false
+	if not _can_outskirts_survivor():
+		return false
 	if not bool(data["events"].get(OUTSKIRTS_SEEN,false)): record_event(OUTSKIRTS_SEEN)
 	_dialogue_kind = "outskirts_rescue"
 	var config: DialogueConfig = (room as OutskirtsRoom).dialogue
@@ -138,7 +139,7 @@ func _physics_process(delta: float) -> void:
 	if _sees_outskirts_survivor() and not bool(data["events"].get(OUTSKIRTS_SEEN,false)): record_event(OUTSKIRTS_SEEN)
 	if dialogue_ui.active:
 		if not _near_outskirts_survivor(): _end_dialogue()
-	elif _interaction_cooldown==0 and Input.is_action_just_pressed("interact"):
+	elif _interaction_cooldown==0 and _interaction_input():
 		interact_outskirts_survivor()
 
 func _on_room_exit(target: String) -> void:
@@ -180,12 +181,18 @@ func _on_death() -> void:
 	super._on_death()
 
 func quest_status_text() -> String:
-	if room is OutskirtsRoom and has_session():
-		if rescue_expired(OUTSKIRTS_ID): return "外围救助已过期 · 更早抵达可帮助这里的人"
-		if bool(data["events"].get(OUTSKIRTS_HELPED,false)): return "外围救助已完成"+(" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
-		if bool(data["events"].get(OUTSKIRTS_FAILED,false)): return "外围救助机会已永久失去"
-		return "上层尖刺后有人等待帮助 · 强化闪避可通过"
+	if room is OutskirtsRoom and has_session(): return _outskirts_quest_objective()
 	return super.quest_status_text()
+
+func _outskirts_quest_objective() -> String:
+	if rescue_expired(OUTSKIRTS_ID): return "外围救助已过期 · 更早抵达可帮助这里的人"
+	if bool(data["events"].get(OUTSKIRTS_HELPED,false)): return "外围救助已完成"+(" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
+	if bool(data["events"].get(OUTSKIRTS_FAILED,false)): return "外围救助机会已永久失去"
+	return "上层尖刺后有人等待帮助 · 强化闪避可通过"
+
+func _rescue_objective(id: String) -> String:
+	if id == OUTSKIRTS_ID: return _outskirts_quest_objective()
+	return super._rescue_objective(id)
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -193,3 +200,19 @@ func _process(delta: float) -> void:
 		$Instructions/Title.text = "逆时战场 / 战场外围"
 		$Instructions/Help.text = "上层支路：一次强化闪避无伤穿过尖刺 · 建议至少1可能性\n失败回支路入口，可重试 · 主路可普通走跳往返"
 		_refresh_outskirts()
+
+func _can_outskirts_survivor() -> bool:
+	return not _world_dialogue_blocked() and not (not has_session() or get_tree().paused or not _near_outskirts_survivor() or intro_active or dialogue_ui.active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy())
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is OutskirtsRoom:
+		var actor: Node2D = room.get_node("Survivor") as Node2D
+		result.append(_target(room.config.room_id + ":Survivor", "交谈", "交谈", actor.global_position,
+			(room as OutskirtsRoom).challenge.interaction_radius, _near_outskirts_survivor(), _interaction_cooldown == 0 and _can_outskirts_survivor()))
+	if _spike_pending:
+		for target: Dictionary in result: target["available"] = false
+		var retry: Dictionary = _target("spikes:retry", "重试", "保存挑战结果", player.global_position, null, true, false, true, "unlimited")
+		retry["retry_available"] = not get_tree().paused
+		result.append(retry)
+	return result

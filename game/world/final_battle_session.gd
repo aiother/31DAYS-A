@@ -183,7 +183,7 @@ func _physics_process(delta: float) -> void:
 	if area!=null and bool(data["events"].get(FinalClock.WON,false)):
 		if not area.victory:
 			area.set_victory()
-		if not _final_talk and Input.is_action_just_pressed("interact") and player.life.can_control() and player.position.distance_to(area.ten.position)<=110:
+		if _interaction_input() and _can_final_conversation():
 			_final_talk = true
 			intro_active = true
 			player.life.scripted_control_locked = true
@@ -366,3 +366,31 @@ func _process(delta: float) -> void:
 	if _final_arena()!=null:
 		$Instructions/Title.text = "逆时战场 / 中心战场 · 最终战"
 		$Instructions/Help.text = "三波敌军 · 最后一波幸存者与平台支援 · 击杀恢复可能性\n计时暂停于菜单和剧情；死亡/读档不回补 · 最终胜利后与10对话"
+
+func _can_final_conversation() -> bool:
+	var area: FinalBattlefieldRoom = _final_arena()
+	return area != null and has_session() and bool(data["events"].get(FinalClock.WON,false)) and not _final_talk and not _world_dialogue_blocked() and player.life.can_control() and player.position.distance_to(area.ten.position) <= 110
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	var area: FinalBattlefieldRoom = _final_arena()
+	if area != null and has_session() and bool(data["events"].get(FinalClock.WON,false)):
+		result.append(_target("ten:victory", "交谈", "交谈", area.ten.global_position, 110.0,
+			player.position.distance_to(area.ten.position) <= 110, not get_tree().paused and _can_final_conversation()))
+	if _final_talk or _timeout_active or _ending_active or _start_pending or cinematic != Cinematic.NONE:
+		for target: Dictionary in result: target["available"] = false
+	# Save retries during deliberate settlement locks remain usable by their existing
+	# raw E/RB paths, but are not offered as available world objects during a lock.
+	var retry: String = ""
+	if _start_pending: retry = "final:start"
+	elif _ending_active and _ending_remaining == 0 and not bool(data["events"].get(FinalClock.END,false)): retry = "final:ending"
+	elif cinematic == Cinematic.SAVE: retry = "rescue:save"
+	if not retry.is_empty():
+		var target: Dictionary = _target(retry, "重试", "重试保存", player.global_position, null, true, false, true, "unlimited")
+		target["retry_available"] = not get_tree().paused
+		result.append(target)
+	return result
+
+func _stage_retry_pending() -> bool:
+	if _timeout_active or bool(data.get("events",{}).get(FinalClock.TIMEOUT,false)) or bool(data.get("events",{}).get(FinalClock.WON,false)): return false
+	return super._stage_retry_pending()

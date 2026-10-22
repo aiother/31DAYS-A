@@ -86,8 +86,8 @@ func _retry_passage() -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if _passage()!=null and has_session() and Input.is_action_just_pressed("interact") and player.life.can_control():
-		if player.position.distance_to(_checkpoint(PASSAGE_CHECKPOINT).config.spawn_position)<=96:
+	if _passage()!=null and has_session() and _interaction_input() and player.life.can_control():
+		if _checkpoint_retry_in_range(PASSAGE_CHECKPOINT):
 			activate_checkpoint(PASSAGE_CHECKPOINT)
 		_retry_passage()
 
@@ -118,3 +118,16 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "清敌后返回 · 上层落石预警0.6秒 · 可等待或走跳躲避\n通过通道后攻击碎石堆开前路 · 状态未保存可 E / RB 重试"
 		if has_session() and data["checkpoint"]!=PASSAGE_CHECKPOINT:
 			$Instructions/Help.text = "入口检查点尚未保存 · 靠近旗帜按 E / RB 重试"
+
+func _passage_retry_pending() -> bool:
+	var area: TrenchPassageRoom = _passage()
+	return area != null and has_session() and player.life.can_control() and ((_cleared() and not bool(data["events"].get(TrenchPassageRoom.CLEARED,false))) or (area.challenge_earned and not area.challenge_saved) or (area.return_open and area.challenge_saved and area.rubble.pending_break))
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and _passage() != null:
+		result.append(_checkpoint_target(PASSAGE_CHECKPOINT))
+		if _passage_retry_pending():
+			result.append(_target("passage:retry", "重试", "保存通路", player.global_position, null, true,
+				not get_tree().paused and not _world_dialogue_blocked(), true, "unlimited"))
+	return result

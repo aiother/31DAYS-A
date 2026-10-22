@@ -112,18 +112,24 @@ func _on_death() -> void:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if room is RavineDepthRoom and has_session() and not dialogue_ui.confirming and Input.is_action_just_pressed("interact"):
+	if room is RavineDepthRoom and has_session() and not dialogue_ui.confirming and _interaction_input():
 		settle_depth()
 
 func quest_status_text() -> String:
-	if room is RavineDepthRoom and has_session():
-		if rescue_expired(DEPTH_ID): return "沟壑深处救助已过期 · 清敌仍可开启通路"
-		if bool(data["events"].get(DEPTH_HELPED,false)):
-			return "清敌救助已完成" + (" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
-		if bool(data["events"].get(DEPTH_FAILED,false)):
-			return "本次救助已永久放弃 · 清敌仍可开启通路"
-		return "消灭当前区域全部敌人，帮助幸存者"
+	if room is RavineDepthRoom and has_session(): return _depth_quest_objective()
 	return super.quest_status_text()
+
+func _depth_quest_objective() -> String:
+	if rescue_expired(DEPTH_ID): return "沟壑深处救助已过期 · 清敌仍可开启通路"
+	if bool(data["events"].get(DEPTH_HELPED,false)):
+		return "清敌救助已完成" + (" · 成长待首次注视结算" if not bool(data["events"].get(GAZE,false)) else " · 可能性上限%d" % player.possibility.maximum)
+	if bool(data["events"].get(DEPTH_FAILED,false)):
+		return "本次救助已永久放弃 · 清敌仍可开启通路"
+	return "消灭当前区域全部敌人，帮助幸存者"
+
+func _rescue_objective(id: String) -> String:
+	if id == DEPTH_ID: return _depth_quest_objective()
+	return super._rescue_objective(id)
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -139,3 +145,10 @@ func _process(delta: float) -> void:
 			$Instructions/Help.text = "救助已过期 · 清敌仍可永久开启通路\n两端已开启" if bool(data["events"].get(RavineDepthRoom.GATES,false)) else "救助已过期 · 清敌仍可永久开启通路\n向左可撤回 · 向右需先清敌"
 		if _cleared() and not bool(data["events"].get(RavineDepthRoom.GATES,false)):
 			$Instructions/Help.text = "结算尚未保存 · 按 E / RB 重试"
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is RavineDepthRoom and _cleared() and (not bool(data["events"].get(RavineDepthRoom.GATES,false)) or _depth_pending()):
+		result.append(_target("depth:retry", "重试", "保存清敌结算", player.global_position, null, true,
+			not get_tree().paused and not _world_dialogue_blocked() and player.life.is_alive(), true, "unlimited"))
+	return result

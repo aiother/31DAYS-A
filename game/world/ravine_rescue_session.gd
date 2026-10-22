@@ -28,7 +28,7 @@ func _on_encounter() -> void:
 	super._on_encounter()
 
 func interact_ravine_survivor() -> bool:
-	if not has_session() or get_tree().paused or not _near_ravine_survivor() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
+	if not _can_ravine_survivor():
 		return false
 	data["events"][SEEN] = true
 	var config: DialogueConfig = (room as RavineRescueRoom).dialogue
@@ -111,18 +111,24 @@ func _physics_process(delta: float) -> void:
 		if not _near_ravine_survivor():
 			_end_dialogue()
 		return
-	if _interaction_cooldown == 0 and Input.is_action_just_pressed("interact"):
+	if _interaction_cooldown == 0 and _interaction_input():
 		interact_ravine_survivor()
 
 func quest_status_text() -> String:
-	if room is RavineRescueRoom and has_session():
-		if rescue_expired(RESCUE_ID): return "沟壑救助已过期 · 更早抵达可帮助这里的人"
-		if bool(data["events"].get(HELPED, false)):
-			return "沟壑救助已完成" + (" · 成长已记录，获得7的注视后结算" if not bool(data["events"].get(GAZE, false)) else " · 可能性上限%d" % player.possibility.maximum)
-		if bool(data["events"].get(FAILED, false)):
-			return "沟壑救助机会已永久失去"
-		return "上层有人等待救助 · E / RB 互动"
+	if room is RavineRescueRoom and has_session(): return _ravine_quest_objective()
 	return super.quest_status_text()
+
+func _ravine_quest_objective() -> String:
+	if rescue_expired(RESCUE_ID): return "沟壑救助已过期 · 更早抵达可帮助这里的人"
+	if bool(data["events"].get(HELPED, false)):
+		return "沟壑救助已完成" + (" · 成长已记录，获得7的注视后结算" if not bool(data["events"].get(GAZE, false)) else " · 可能性上限%d" % player.possibility.maximum)
+	if bool(data["events"].get(FAILED, false)):
+		return "沟壑救助机会已永久失去"
+	return "上层有人等待救助 · E / RB 互动"
+
+func _rescue_objective(id: String) -> String:
+	if id == RESCUE_ID: return _ravine_quest_objective()
+	return super._rescue_objective(id)
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -133,3 +139,14 @@ func _process(delta: float) -> void:
 		if rescue_expired(RESCUE_ID):
 			$Instructions/Help.text = "救助已过期 · E / RB 了解错失的机会\n向左返回入口 · 向右继续探索"
 		dialogue_ui.quest.text = quest_status_text()
+
+func _can_ravine_survivor() -> bool:
+	return not _world_dialogue_blocked() and not (not has_session() or get_tree().paused or not _near_ravine_survivor() or dialogue_ui.active or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy())
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is RavineRescueRoom:
+		var actor: Node2D = room.get_node("Survivor") as Node2D
+		result.append(_target(room.config.room_id + ":Survivor", "交谈", "交谈", actor.global_position,
+			(room as RavineRescueRoom).dialogue.interaction_radius, _near_ravine_survivor(), _interaction_cooldown == 0 and _can_ravine_survivor()))
+	return result

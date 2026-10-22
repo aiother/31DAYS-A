@@ -100,3 +100,15 @@ func _on_room_exit(target: String) -> void:
 		_exit_shown = false
 		return
 	ui.call("show_room_boundary", target)
+
+func _checkpoint_retry_in_range(id: String, correct_room: bool = true) -> bool:
+	return correct_room and has_session() and player.life.can_control() and player.position.distance_to(_checkpoint(id).config.spawn_position) <= 96
+
+func _checkpoint_target(id: String) -> Dictionary:
+	var point: Vector2 = _checkpoint(id).config.spawn_position
+	var needed: bool = str(data["checkpoint"]) != id
+	# Ravine additionally settles its permanent flag and day on the same retry.
+	if id == "HD_20001_1_N001":
+		needed = needed or not bool(data["events"].get(id, false)) or (bool(data["events"].get("TY_10001_1_N002", false)) and int(data.get("day",1)) < 2)
+	return _target(id, "检查点", "记录检查点", to_global(point), 96.0,
+		player.position.distance_to(point) <= 96, not get_tree().paused and not _world_dialogue_blocked() and _checkpoint_retry_in_range(id) and needed)

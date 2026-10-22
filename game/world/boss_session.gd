@@ -101,7 +101,7 @@ func _enter_boss() -> void:
 	ui.call("show_enemy_intro", actor.config.intro_duration, "渴望俯视\n\n留意落击提示。\n利用召唤平台接近高空目标。")
 
 func _physics_process(delta: float) -> void:
-	if _needs_combat_growth() and Input.is_action_just_pressed("interact"):
+	if _needs_combat_growth() and _interaction_input():
 		save_current("战斗强化已补领")
 		return
 	if _boss_intro_remaining > 0.0:
@@ -120,7 +120,7 @@ func _physics_process(delta: float) -> void:
 			_end_boss_intro(true)
 		return
 	super._physics_process(delta)
-	if room is BossRoom and has_session() and Input.is_action_just_pressed("interact"):
+	if room is BossRoom and has_session() and _interaction_input():
 		if _victory_pending:
 			save_current("胜利状态已保存")
 		else:
@@ -189,3 +189,20 @@ func _process(delta: float) -> void:
 			$Instructions/Help.text = "已获得攻击范围强化 · 四方向范围+20%\n天窗开启 · 向上寻找通路"
 	if _needs_combat_growth():
 		$Instructions/EnemyStatus.text += " · 战斗强化尚未补领（E / RB 重试保存）"
+
+func _obtained_items(snapshot: Dictionary) -> Dictionary:
+	var result: Dictionary = super._obtained_items(snapshot)
+	if bool(snapshot.get("events", {}).get(COMBAT_GROWTH, false)):
+		result[COMBAT_GROWTH] = {"kind":"成长", "display_name":"攻击范围强化"}
+	return result
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if _needs_combat_growth():
+		for target: Dictionary in result: target["available"] = false
+		result.append(_target(COMBAT_GROWTH, "补领", "重试保存", player.global_position, null, true,
+			not get_tree().paused and not _world_dialogue_blocked() and player.life.can_control(), true, "unlimited"))
+	if has_session() and room is BossRoom and (_victory_pending or room.get_node("Boss").state == OverlookBoss.State.WAITING):
+		result.append(_target(room.config.room_id + ":retry", "重试", "重试保存", player.global_position, null, true,
+			not intro_active, true, "unlimited"))
+	return result

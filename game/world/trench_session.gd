@@ -37,7 +37,7 @@ func activate_checkpoint(id: String) -> bool:
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if room is TrenchRoom and has_session() and Input.is_action_just_pressed("interact") and player.life.can_control() and player.position.distance_to(_checkpoint(TRENCH_CHECKPOINT).config.spawn_position) <= 96:
+	if _interaction_input() and _checkpoint_retry_in_range(TRENCH_CHECKPOINT, room is TrenchRoom):
 		activate_checkpoint(TRENCH_CHECKPOINT)
 
 func _process(delta: float) -> void:
@@ -47,3 +47,9 @@ func _process(delta: float) -> void:
 		$Instructions/Help.text = "沿平台向上探索 · E / RB 拾取珍珠：近战范围 +5%\n两端无清敌限制 · 沿上层道路继续探索"
 		if has_session() and data["checkpoint"] != TRENCH_CHECKPOINT:
 			$Instructions/Help.text = "检查点尚未保存 · 靠近旗帜按 E / RB 重试"
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	if has_session() and room is TrenchRoom:
+		result.append(_checkpoint_target(TRENCH_CHECKPOINT))
+	return result

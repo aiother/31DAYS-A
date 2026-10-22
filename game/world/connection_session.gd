@@ -40,22 +40,35 @@ func _on_room_enemy_defeated(reward: int) -> void:
 	if _connection() != null and _cleared():
 		_persist_gate(_connection().return_key)
 
-func activate_switch() -> bool:
+func _switch_in_range() -> bool:
 	var area: ConnectionRoom = _connection()
-	if area == null or not has_session() or get_tree().paused or intro_active or not player.life.can_control() or player.combat.is_attacking() or player.possibility.busy():
-		return false
-	if (player.global_position + Vector2(0, -44)).distance_to(area.get_node("Switch").global_position) > area.interaction_radius:
-		return false
+	return area != null and (player.global_position + Vector2(0,-44)).distance_to(area.get_node("Switch").global_position) <= area.interaction_radius
+
+func _switch_actor_ready() -> bool:
+	return not _world_dialogue_blocked() and _connection() != null and has_session() and not get_tree().paused and not intro_active and player.life.can_control() and not player.combat.is_attacking() and not player.possibility.busy() and _switch_in_range()
+
+func _can_connection_switch() -> bool:
+	return _switch_actor_ready() and _cleared() and not bool(data["events"].get(_connection().forward_key, false))
+
+func activate_switch() -> bool:
+	if not _switch_actor_ready(): return false
 	if not _cleared():
 		_notify("先消灭当前区域的敌人")
 		return false
-	if bool(data["events"].get(area.forward_key, false)):
-		return false
-	return _persist_gate(area.return_key) and _persist_gate(area.forward_key)
+	if not _can_connection_switch(): return false
+	return _persist_gate(_connection().return_key) and _persist_gate(_connection().forward_key)
+
+func interaction_targets() -> Array[Dictionary]:
+	var result: Array[Dictionary] = super.interaction_targets()
+	var area: ConnectionRoom = _connection()
+	if has_session() and area != null:
+		result.append(_target(area.forward_key, "开关", "开启", area.get_node("Switch").global_position,
+			area.interaction_radius, _switch_in_range(), _can_connection_switch(), true))
+	return result
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
-	if Input.is_action_just_pressed("interact"):
+	if _interaction_input():
 		activate_switch()
 
 func _on_room_exit(target: String) -> void:
