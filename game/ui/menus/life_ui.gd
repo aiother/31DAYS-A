@@ -25,7 +25,10 @@ var _intro_tween: Tween
 ## UI-004 formal title and slot screens; they draw over every other page.
 var _title: TitleScreen
 var _slots: SlotSelect
-var _settings_from_title: bool = false
+## Where settings were opened from outside the pause menu: "title" or "death".
+var _settings_over: String = ""
+## UI-005 formal death sheet (A-014).
+var _death: OutcomeSheet
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -107,13 +110,19 @@ func _ready() -> void:
 	_menu.add_theme_constant_override("separation", 16)
 	_panel.add_child(_menu)
 	_panel.hide()
-	# UI-003: the pause page is formal; death, slots and other panels stay graybox.
+	# UI-005: the death sheet sits under the pause menu, so settings opened
+	# from it cover it.
+	_death = OutcomeSheet.new()
+	_death.dim = 0.0
+	_death.question_closed.connect(func() -> void:
+		if _mode == "confirm_quit" and _death.visible: _mode = "death")
+	_root.add_child(_death)
 	_pause = PauseMenu.new()
 	var actions: Dictionary = {"continue": resume_game, "settings": show_settings, "quit": _quit_game,
 		"quit_label": "保存并退出" if get_parent().has_method("save_current") else "退出游戏"}
-	# User 2026-10-21: keep the slot entry until the main menu exists.
-	if get_parent().has_method("start_slot"):
-		actions["slots"] = show_slots
+	# UI-005: the title exists, so the kept slot entry becomes 返回标题.
+	if get_parent().has_method("return_to_title"):
+		actions["title"] = _confirm_title
 	_pause.setup(get_parent(), _hud, actions)
 	_root.add_child(_pause)
 	_pause.returned.connect(_on_pause_returned)
@@ -166,7 +175,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			show_death()
 		elif _mode == "pause":
 			resume_game()
-		elif _pause.visible and _mode in ["settings", "confirm_quit"]:
+		elif _pause.visible and _mode in ["settings", "confirm_quit", "confirm_title"]:
 			_pause.back()
 		else:
 			show_pause()
@@ -202,7 +211,7 @@ func _button(text: String, callback: Callable, focus: bool = false) -> Button:
 func show_pause() -> void:
 	_panel.hide()
 	_hide_screens()
-	_settings_from_title = false
+	_settings_over = ""
 	_pause_below_screens()
 	_mode = "pause"
 	get_tree().paused = true
@@ -229,18 +238,40 @@ func resume_game() -> void:
 	_mode = ""
 	get_tree().paused = false
 
+## UI-005 death sheet (A-014): from the checkpoint, 返回标题, settings and
+## quit, over the existing whiten-then-dark edge animation.
 func show_death() -> void:
-	_clear_menu("你倒下了", "death")
+	_panel.hide()
+	_hide_screens()
+	_pause.close()
+	_pause_below_screens()
+	_settings_over = ""
+	_mode = "death"
+	get_tree().paused = true
 	var checkpoint_mode: bool = get_parent().has_method("start_slot")
-	_button("从检查点继续" if checkpoint_mode else "重新挑战（灰盒出生点）", restart_challenge, true)
-	_button("退出游戏", _quit_game)
-	var note: Label = Label.new()
-	note.text = "满生命复活 · 可能性减半向下取整 · 负数清零" if checkpoint_mode else "此开发场景不使用检查点存档"
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.add_theme_font_size_override("font_size", 20)
-	_menu.add_child(note)
+	var entries: Array = [["从检查点继续" if checkpoint_mode else "重新挑战（灰盒出生点）", restart_challenge]]
+	if get_parent().has_method("return_to_title"):
+		entries.append(["返回标题", _title_from_death])
+	entries.append(["设置", _death_settings])
+	entries.append(["退出游戏", _quit_game])
+	var note: String = "满生命复活 · 可能性减半向下取整 · 负数清零" if checkpoint_mode else "此开发场景不使用检查点存档"
+	_death.open("你倒下了", note, DuskStyle.LIFE, entries)
+	_death.set_error(_error_label.text)
+	_error_label.hide()
+
+func _title_from_death() -> void:
+	get_parent().call("return_to_title")
+
+## Settings over the death sheet; 返回 / Esc / Back come back to it.
+func _death_settings() -> void:
+	_settings_over = "death"
+	_mode = "settings"
+	_pause.visible = true
+	_pause.show_settings(true)
 
 func restart_challenge() -> void:
+	_death.close()
+	_error_label.visible = not _error_label.text.is_empty()
 	_panel.hide()
 	_mode = ""
 	get_tree().paused = false
@@ -267,8 +298,16 @@ func _quit_game() -> void:
 func save_failed(message: String) -> void:
 	_error_label.text = message
 	var screen: MenuScreen = _open_screen()
+	var final_ui: Variant = get_parent().get("final_ui")
 	if screen != null:
 		screen.set_prompt(message)
+		_error_label.hide()
+	elif _death != null and _death.visible:
+		# UI-005: the death and outcome sheets carry their own error line.
+		_death.set_error(message)
+		_error_label.hide()
+	elif final_ui is FinalBattleUI and (final_ui as FinalBattleUI).sheet.visible:
+		(final_ui as FinalBattleUI).sheet.set_error(message)
 		_error_label.hide()
 	else:
 		_error_label.visible = not message.is_empty()
@@ -283,7 +322,8 @@ func _open_screen() -> MenuScreen:
 func _hide_screens() -> void:
 	if _title == null:
 		return
-	var was_open: bool = _open_screen() != null
+	var was_open: bool = _open_screen() != null or _death.visible
+	_death.close()
 	_title.close_dialog(false)
 	_slots.close_dialog(false)
 	_title.hide()
@@ -304,7 +344,7 @@ func show_title() -> void:
 	_pause.close()
 	_pause_below_screens()
 	_hide_screens()
-	_settings_from_title = false
+	_settings_over = ""
 	_mode = "title"
 	get_tree().paused = true
 	_title.open(lab.has_any_save(), {"new": show_slots.bind("new"), "continue": show_slots.bind("continue"),
@@ -367,7 +407,7 @@ func _confirm_new_slot(selected: int, occupied: bool) -> void:
 ## UI-006: the same settings page as the pause menu, centred over the
 ## dimmed title; 返回 / Esc / Back come back to the title on 设置.
 func _title_settings() -> void:
-	_settings_from_title = true
+	_settings_over = "title"
 	_title.close_dialog(false)
 	_root.move_child(_pause, -1)
 	_pause.visible = true
@@ -376,16 +416,27 @@ func _title_settings() -> void:
 	_pause.show_settings(true)
 
 func _on_pause_returned() -> void:
-	if not _settings_from_title:
+	var origin: String = _settings_over
+	_settings_over = ""
+	if origin.is_empty():
 		_mode = "pause"
 		return
-	_settings_from_title = false
 	_pause.close()
 	_pause_below_screens()
-	_mode = "title"
-	var entry: Button = _title.button("设置")
+	_mode = origin
+	var entry: Button = _title.button("设置") if origin == "title" else _death.button("设置")
 	if entry != null:
 		entry.grab_focus()
+
+## UI-005: the pause menu's 返回标题 asks first, then goes through SYS-008's
+## return_to_title(); a failed save stays with the error on the page.
+func _confirm_title() -> void:
+	_mode = "confirm_title"
+	_pause.show_title_confirm(_title_from_pause, _error_label.text)
+
+func _title_from_pause() -> void:
+	if not get_parent().call("return_to_title"):
+		_pause.set_error(_error_label.text)
 
 ## The pause menu normally sits under the title and slot screens.
 func _pause_below_screens() -> void:
@@ -398,6 +449,10 @@ func _quit_now() -> void:
 	_quit_handler.call()
 
 func confirm_quit() -> void:
+	if _death.visible:
+		_mode = "confirm_quit"
+		_death.ask("保存并退出游戏？\n下次从最近的检查点继续", "保存并退出", _save_and_quit)
+		return
 	if _pause.visible:
 		_mode = "confirm_quit"
 		_pause.show_confirm(_save_and_quit, _error_label.text)

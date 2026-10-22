@@ -22,6 +22,8 @@ var _actions: Dictionary = {}
 var _page_nodes: Array[Control] = []
 var _return_focus: int = 0
 var _error_text: String = ""
+## "quit" or "title": which question the confirm page asks.
+var _confirm_kind: String = "quit"
 ## UI-006: the settings page, made on first use and kept.
 var settings_page: SettingsPage
 ## Settings opened from the title: no pause options, page centred.
@@ -30,7 +32,7 @@ var _menu: VBoxContainer
 ## What the last _draw put on screen; read by tests.
 var drawn: Dictionary = {}
 
-## actions: {"continue", "settings", "slots" (optional), "quit"} -> Callable;
+## actions: {"continue", "settings", "title" (optional), "quit"} -> Callable;
 ## "quit_label" names the last option (保存并退出 when the session can save).
 func setup(owner_session: Node, formal_hud: FormalHud, actions: Dictionary) -> void:
 	session = owner_session
@@ -41,8 +43,9 @@ func setup(owner_session: Node, formal_hud: FormalHud, actions: Dictionary) -> v
 	_menu.add_theme_constant_override("separation", 14)
 	add_child(_menu)
 	var entries: Array = [["继续游戏", "continue"], ["设置", "settings"]]
-	if actions.has("slots"):
-		entries.append(["存档槽", "slots"])
+	# UI-005: 返回标题 replaces the kept slot entry now that the title exists.
+	if actions.has("title"):
+		entries.append(["返回标题", "title"])
 	entries.append([str(actions.get("quit_label", "保存并退出")), "quit"])
 	for i: int in range(entries.size()):
 		var button: InkButton = InkButton.new().setup(entries[i][0], 30, 300 + i)
@@ -118,8 +121,17 @@ func page_rect() -> Rect2:
 ## sheet covers LifeUI's own error prompt.
 func show_confirm(confirm: Callable, error_text: String = "") -> void:
 	_open_page("confirm", buttons.size() - 1)
+	_confirm_kind = "quit"
 	_error_text = error_text
 	_page_button(str(_actions.get("quit_label", "保存并退出")), confirm, Vector2(60, 330))
+	_page_button("返回", back, Vector2(60, 400)).grab_focus()
+
+## UI-005: 返回标题 asks first, like save and quit.
+func show_title_confirm(confirm: Callable, error_text: String = "") -> void:
+	_open_page("confirm", buttons.find(button("返回标题")))
+	_confirm_kind = "title"
+	_error_text = error_text
+	_page_button("返回标题", confirm, Vector2(60, 330))
 	_page_button("返回", back, Vector2(60, 400)).grab_focus()
 
 func set_error(error_text: String) -> void:
@@ -267,8 +279,11 @@ func _draw_settings(time: Dictionary) -> void:
 	_page_sheet(time, "设置")
 
 func _draw_confirm(time: Dictionary) -> void:
-	_page_sheet(time, "%s？" % str(_actions.get("quit_label", "保存并退出")))
-	ink_text(PAGE.position + Vector2(60, 190), "保存当前进度并退出游戏；下次从最近的检查点继续。", 26)
+	var heading: String = "保存并返回标题？" if _confirm_kind == "title" else "%s？" % str(_actions.get("quit_label", "保存并退出"))
+	var line: String = "下次从最近的检查点继续。" if _confirm_kind == "title" else "保存当前进度并退出游戏；下次从最近的检查点继续。"
+	_page_sheet(time, heading)
+	ink_text(PAGE.position + Vector2(60, 190), line, 26)
+	drawn["confirm"] = {"heading": heading, "text": line}
 	if not _error_text.is_empty():
 		ink_text(PAGE.position + Vector2(60, 250), _error_text, UiTheme.SIZE_SMALL, DuskStyle.LIFE, HORIZONTAL_ALIGNMENT_LEFT, PAGE.size.x - 120)
 	drawn["error"] = _error_text

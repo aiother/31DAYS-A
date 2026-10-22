@@ -124,7 +124,7 @@ func clock_cases() -> void:
 	await key(KEY_ESCAPE)
 	await frames(2)
 	check(paused and mode() == "pause" and menu().visible and focus_text() == "继续游戏", "real Esc opens the formal pause menu on continue")
-	check(menu().button("存档槽") != null and menu().button("保存并退出") != null and menu().buttons.size() == 4, "options are continue, settings, the kept slot entry and save and quit")
+	check(menu().button("返回标题") != null and menu().button("存档槽") == null and menu().button("保存并退出") != null and menu().buttons.size() == 4, "options are continue, settings, 返回标题 (UI-005, was the kept slot entry) and save and quit")
 	var time: Dictionary = session.call("ui_time_state")
 	var clock: Dictionary = menu().drawn.get("clock", {})
 	var hud: FormalHud = session.ui.get("_hud") as FormalHud
@@ -171,7 +171,7 @@ func navigation_cases() -> void:
 	await key(KEY_DOWN)
 	check(focus_text() == "设置", "arrow key moves focus to settings")
 	await pad(JOY_BUTTON_DPAD_DOWN)
-	check(focus_text() == "存档槽", "D-pad moves focus to the slot entry")
+	check(focus_text() == "返回标题", "D-pad moves focus to 返回标题")
 	await key(KEY_DOWN)
 	check(focus_text() == "保存并退出", "focus reaches save and quit")
 	check(menu().button("保存并退出").ink_state() == "focus", "focused option draws its ink marker")

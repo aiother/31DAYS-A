@@ -176,7 +176,7 @@ func run() -> void:
 	await ticks(4)
 	session = current_scene as FinalBattleSession
 	check(not session.retry_final_battle() and paused,"no time can be invented for a zero original budget")
-	check((session.final_ui.column.get_child(1) as Button).text.contains("存档槽"),"zero-budget UI offers slots instead of an impossible retry")
+	check(session.final_ui.sheet.drawn.get("buttons",[]) == ["返回标题"],"zero-budget UI offers only 返回标题 instead of an impossible retry (UI-005, was slots)")
 	# Timer-start transaction failure locks both teams until explicit retry.
 	check(session.store.save_slot(3,snapshot) and session.start_slot(3,false),"independent unstarted slot remains loadable")
 	await ticks(4)
