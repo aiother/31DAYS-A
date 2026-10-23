@@ -218,3 +218,7 @@ func _on_hit(damage: int, impulse: Vector2, _source: Node2D, _id: int) -> void:
 			queue_free()
 		return
 	request_interrupt(InterruptReason.HIT,impulse)
+
+## SYS-010: read-only visual projection; never advances gameplay.
+func animation_state() -> Dictionary:
+	return CharacterAnimationState.enemy(self)

@@ -152,3 +152,7 @@ func _update_facing(axis: float, delta: float) -> void:
 	if _turn_remaining <= 0.0:
 		facing = desired
 		facing_changed.emit(facing)
+
+## SYS-010: read-only visual projection; never advances gameplay.
+func animation_state() -> Dictionary:
+	return CharacterAnimationState.player(self, get_node_or_null("VisualRoot/Animator"))
