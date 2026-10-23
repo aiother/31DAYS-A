@@ -6,6 +6,7 @@ var world: Node2D
 var body: PlayerController
 var animator: CharacterAnimator
 var seen: Array[String] = []
+var monochrome_samples: Array[Dictionary] = []
 
 func _initialize() -> void:
 	run.call_deferred()
@@ -142,6 +143,31 @@ func clip_for(scale: Vector2) -> Animation:
 	clip.track_insert_key(track, 0, scale)
 	return clip
 
+func property_clip(path: NodePath, value: Variant) -> Animation:
+	var clip: Animation = Animation.new()
+	clip.length = 1.0
+	var track: int = clip.add_track(Animation.TYPE_VALUE)
+	clip.track_set_path(track, path)
+	clip.track_insert_key(track, 0.0, value)
+	return clip
+
+## Assert rejection before arming the clip. A broken guard must fail assertions,
+## not execute an unsafe resource and abort the suite with SCRIPT ERROR.
+func rejected_clip(clip: Animation, message: String) -> void:
+	var rejected: bool = not animator.safe(clip)
+	check(rejected, message + ": safe() rejects it")
+	if not rejected:
+		check(false, message + ": unsafe acceptance prevents testing fallback")
+		return
+	var original: CharacterAnimationMap = animator.mapping
+	var invalid: CharacterAnimationMap = CharacterAnimationMap.new()
+	invalid.clips["idle"] = clip
+	animator.mapping = invalid
+	await ticks(2)
+	check(animator.resolved.fallback and animator.player.is_playing() and body.scale == Vector2.ONE, message + ": driver plays fallback without changing the body")
+	animator.mapping = original
+	await ticks(2)
+
 func resource_cases() -> void:
 	await reset()
 	var before: Array = snapshot()
@@ -181,9 +207,12 @@ func resource_cases() -> void:
 	check(animator.resolved.fallback and animator.player.is_playing(), "missing resource path falls back without loading error")
 	var unsafe: Animation = clip_for(Vector2(9, 9))
 	unsafe.track_set_path(0, NodePath("../..:scale"))
-	missing.clips["idle"] = unsafe
-	await ticks(2)
-	check(animator.resolved.fallback and body.scale == Vector2.ONE, "escaping the visual subtree is rejected")
+	await rejected_clip(unsafe, "parent path escaping the visual subtree")
+	unsafe = property_clip(NodePath("..:scale"), Vector2(9, 9))
+	await rejected_clip(unsafe, "immediate parent path")
+	unsafe = property_clip(NodePath(".:process_priority"), 4321)
+	await rejected_clip(unsafe, "existing non-visual property outside the whitelist")
+	check(animator.visual.process_priority != 4321, "rejected property never changes node scheduling")
 	unsafe = Animation.new()
 	unsafe.add_track(Animation.TYPE_METHOD)
 	missing.clips["idle"] = unsafe
@@ -197,6 +226,65 @@ func resource_cases() -> void:
 	animator.mapping = original
 	await reset()
 
+func mapping_driver_cases() -> void:
+	await reset()
+	var original: CharacterAnimationMap = animator.mapping
+	var generic: Animation = clip_for(Vector2(0.9, 1.1))
+	generic.length = 0.8
+	var detailed: Animation = clip_for(Vector2(1.2, 0.8))
+	detailed.length = 2.0
+	var map: CharacterAnimationMap = CharacterAnimationMap.new()
+	map.clips["attack"] = generic
+	map.clips["attack.horizontal.1.windup"] = detailed
+	animator.mapping = map
+	Input.action_press("attack")
+	await ticks(1)
+	Input.action_release("attack")
+	check(body.combat.phase == PlayerCombat.Phase.WINDUP and animator.current.key == "attack.horizontal.1.windup", "real attack enters the detailed-key fixture")
+	check(animator.resolved.clip == detailed and animator.resolved.key == "attack.horizontal.1.windup", "detailed attack key wins over a simultaneously supplied generic key")
+	check(animator.visual.scale.is_equal_approx(Vector2(1.2, 0.8)), "detailed clip drives the actual visual pose")
+	# A two-second animation mapped to a short real windup must seek, not advance.
+	for sample: int in range(3):
+		await ticks(1)
+		var state: Dictionary = body.animation_state()
+		var expected: float = float(state.progress) * detailed.length
+		check(state.phase == "windup" and float(state.progress) > 0 and is_equal_approx(animator.player.current_animation_position, expected), "real windup progress locates the AnimationPlayer: sample %d" % sample)
+	while body.combat.phase == PlayerCombat.Phase.WINDUP: await ticks(1)
+	check(body.animation_state().phase == "active" and animator.resolved.clip == generic and animator.resolved.key == "attack", "unmapped active phase falls back to the generic attack clip")
+	check(animator.visual.scale.is_equal_approx(Vector2(0.9, 1.1)), "generic phase drives its distinct actual pose")
+	while body.combat.phase == PlayerCombat.Phase.ACTIVE: await ticks(1)
+	check(body.animation_state().phase == "recovery" and animator.resolved.clip == generic, "unmapped recovery phase also keeps the generic clip")
+	animator.mapping = original
+	await reset()
+	# Give a dedicated visual child a known rest pose. Unlike VisualRoot's own
+	# transform, only the per-track restoration loop can restore these values.
+	var probe: Node2D = Node2D.new()
+	probe.name = "AnimationProbe"
+	probe.position = Vector2(11, 13)
+	probe.modulate = Color(0.2, 0.4, 0.6, 0.8)
+	animator.visual.add_child(probe)
+	var position_before: Vector2 = probe.position
+	var colour_before: Color = probe.modulate
+	var changed: CharacterAnimationMap = original.duplicate() as CharacterAnimationMap
+	changed.clips = original.clips.duplicate()
+	var pose: Animation = property_clip(NodePath("AnimationProbe:position"), Vector2(40, 60))
+	var track: int = pose.add_track(Animation.TYPE_VALUE)
+	pose.track_set_path(track, NodePath("AnimationProbe:modulate"))
+	pose.track_insert_key(track, 0.0, Color(0.9, 0.7, 0.5, 0.3))
+	changed.clips["idle"] = pose
+	animator.mapping = changed
+	await ticks(2)
+	check(probe.position == Vector2(40, 60) and probe.modulate.is_equal_approx(Color(0.9, 0.7, 0.5, 0.3)), "fixture clip actually changes two properties on a visual child")
+	Input.action_press("move_right")
+	await ticks(8)
+	check(body.animation_state().name == "walk" and animator.resolved.clip == original.clips["walk"], "a real state transition leaves the child-pose clip")
+	check(probe.position == position_before, "switching states restores the visual child's original position")
+	check(probe.modulate.is_equal_approx(colour_before), "switching states restores the visual child's original colour")
+	animator.mapping = original
+	await reset()
+	probe.queue_free()
+	await ticks(2)
+
 func spawn(path: String, point: Vector2 = Vector2(292, 896)) -> ColorlessEntity:
 	var actor: ColorlessEntity = (load("res://" + "enemies/" + path + ".tscn") as PackedScene).instantiate() as ColorlessEntity
 	actor.position = point
@@ -209,6 +297,8 @@ func observe(actor: ColorlessEntity, count: int) -> Array[String]:
 	for i: int in range(count):
 		await ticks(1)
 		var value: Dictionary = actor.animation_state()
+		if actor is MonochromeEntity and value.name == "attack":
+			monochrome_samples.append({"strong": (actor as MonochromeEntity).strong_attack, "ranged": actor._ranged, "key": value.key, "phase": value.phase})
 		if not keys.has(value.key): keys.append(value.key)
 	return keys
 
@@ -232,6 +322,10 @@ func enemy_cases() -> void:
 		check(keys.any(func(key: String) -> bool: return key.ends_with("recovery")), path + " actual AI recovery")
 		if actor is MonochromeEntity:
 			check(keys.has("attack.melee.light.windup") and keys.has("attack.melee.strong.windup"), "monochrome light and strong attacks: " + str(keys))
+			for strong: bool in [false, true]:
+				var samples: Array[Dictionary] = monochrome_samples.filter(func(value: Dictionary) -> bool: return value.strong == strong)
+				check(not samples.is_empty(), "real AI produced samples with strong_attack=%s" % strong)
+				check(samples.all(func(value: Dictionary) -> bool: return value.key == "attack.%s.%s.%s" % ["ranged" if value.ranged else "melee", "strong" if strong else "light", value.phase]), "every sampled variant agrees with simultaneous strong_attack=%s" % strong)
 		if actor is TianWarrior:
 			check(keys.has("attack.combo.1.windup") and keys.has("attack.combo.2.windup"), "tian combo steps retain separate keys")
 		var before: Array = [actor.position, actor.velocity, actor.health, actor.state, actor._remaining, actor.config.damage]
@@ -306,6 +400,7 @@ func run() -> void:
 	animator = body.get_node("VisualRoot/Animator") as CharacterAnimator
 	await player_cases()
 	await resource_cases()
+	await mapping_driver_cases()
 	await enemy_cases()
 	release()
 	world.queue_free()
