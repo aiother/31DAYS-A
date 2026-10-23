@@ -243,4 +243,11 @@
 
 ### G4
 
-用户 G4（无存档验收入口 `sys010_animation.gd`）待进行；复审通过后由用户决定。
+用户 G4（无存档验收入口 `sys010_animation.gd`）：**通过**（2026-10-23，用户：“这两点不影响动画验收，SYS-010 的 G4 算通过”）。
+
+用户试玩时发现两处现象，Claude 已在无头模式下复现并确认都出在验收入口，不是正式游戏或 SYS-010 运行时代码的问题。用户判定不影响动画验收，记为非阻断：
+
+- **闪避出现绿色获得光圈**：入口开局与 F6 直接写 `possibility.balance = 10`，不发 `balance_changed`；`placeholder_visual.gd` 的 `_last_balance` 停在默认值 3，第一次闪避（10→9）被当成余额增加，触发获得可能性光圈（复现：闪避后 `_reward_flash=0.35`）。正式流程中余额变化都会发信号，不受影响。
+- **敌人打不到玩家**：入口使用 `debug/movement_lab.tscn`，该场景没有像 `enemy_lab.tscn`、`start_room_session.tscn` 那样打开玩家 `Hurtbox`（`player.tscn` 默认 `monitorable=false`、形状 disabled）。复现：三类敌人各 600 物理帧，完整出招，玩家受伤 0 次；在 master 上同样，不是 SYS-010 引入的问题。F4 直接调用受击，不经受击区，所以能受伤。
+
+如果以后还要复用这个入口，建议改用会发信号的接口设置余额，并打开玩家受击区；不阻断本任务集成。
