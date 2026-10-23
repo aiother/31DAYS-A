@@ -4,7 +4,6 @@ extends SceneTree
 ## Each look gets three frames: strikes (swing, hit, enemy hurt), movement
 ## (dodge, poor dodge, spend, invulnerability) and outcomes (death, gain,
 ## heal, hurt, revive, reflect, bounce), each caught mid-animation.
-const OUT: String = "res://prototypes/EXP-005/screenshots/"
 var preview: Control
 
 func _initialize() -> void:
@@ -14,12 +13,16 @@ func frames(count: int) -> void:
 	for i: int in range(count):
 		await process_frame
 
+## screenshots/ sits beside tests/ in this prototype folder (as in EXP-004).
+func folder() -> String:
+	return (get_script() as Script).resource_path.get_base_dir().get_base_dir().path_join("screenshots")
+
 func shot(name: String) -> void:
 	await frames(2)
-	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(OUT + name + ".png"))
+	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(folder().path_join(name + ".png")))
 
 func run() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(folder()))
 	preview = (load("res://prototypes/EXP-005/preview.tscn") as PackedScene).instantiate() as Control
 	root.add_child(preview)
 	await frames(3)
