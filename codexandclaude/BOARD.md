@@ -47,7 +47,7 @@
 | ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
 | PLN-001 | M | 规划刷新与 M2 收尾核对 | Claude | Codex | 已完成（第八批；用户整体通关验收通过，集成检查通过） | [tasks/PLN-001](tasks/PLN-001/task.md) |
 | DOC-008 | M | T2 改写为现行版 | Claude | Codex | 已批准（第八批，未开始） | [tasks/DOC-008](tasks/DOC-008/task.md) |
-| SYS-010 | L | 角色动画接入框架 | Codex | Claude | 审查中（第八批；第1轮需修改） | [tasks/SYS-010](tasks/SYS-010/task.md) |
+| SYS-010 | L | 角色动画接入框架 | Codex | Claude | 已完成（第八批；用户 G4 通过，集成检查通过） | [tasks/SYS-010](tasks/SYS-010/task.md) |
 | EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已完成（第八批；用户定稿 D 融合，集成检查通过） | [tasks/EXP-005](tasks/EXP-005/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
