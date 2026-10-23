@@ -3,8 +3,74 @@
 实现者：Claude｜审查者：Codex｜分支：`claude/UI-010`
 基线：`96f0400b08f770ee86d8385db2c0f9c29e5e31a1`（UI-009、CLN-001 合入后的 master）
 实现 SHA：`6522d5a56abe8d0f064dec766041ae8345f8a57b`（`bbfe707` 实现与测试 + `6522d5a` 验收适配与文档）
-状态：第1轮审查（`review.md`，R1、R2 需修改）已修复，待 Codex 复审；G4 待用户验收。
-修复后实现 SHA：`81095965a442d8ca9b032522f4d49f7a200eef9a`；第1轮审查记录 `be9682c` 已快进合入本分支。
+状态：第2轮复审（`review.md`“第2轮复审”，R2 剩余一项）已修复，待 Codex 复审；G4 待用户验收。
+修复后实现 SHA：`a9569d99c47ad79a242a5c821d6344c70dcf6681`（第1轮修复 `8109596` + 本轮 `a9569d9`）；第1轮审查 `be9682c` 与第2轮复审 `ca802e7` 均已快进合入本分支。
+
+## 第2轮复审修复（2026-10-23）
+
+复审记录见 [review.md](review.md)“第2轮复审”（Codex，`ca802e75`）。R1 已确认解决；R2 剩余的一项成立。
+
+| 问题 | 修复 | 回归 |
+| --- | --- | --- |
+| 信号先到、文字并入后，同一段文字再到仍成第二条；文字先到则只有一条，结果依赖到达顺序 | 文字并入信号的提示时，把原文记在该条目的 `text` 上；重复文字判断改为查窗口内**任何**持有同一原文的条目，不再只看来源为文字的条目 | 文字→信号→同文、信号→文字→同文，各只一条（合成、标题取信号、下行取文字）；窗口外同一段文字仍是新的一条。原有回归保留：两次独立同名获得仍两条，一个信号配两段不同文字仍一条合成、一条单独 |
+
+没有改信号的处理：信号从不因文字相同而丢弃，一对一合成保护不变。文档去重规则第 2 条已补充“与到达顺序无关”。
+
+`QUEST_NOTICES_TESTS` 68 → **74/0**。
+
+**变异**（逐项只改一处，跑新套件，按原字节恢复并核对）：
+
+| 变异 | 结果 |
+| --- | --- |
+| 并入时不记原文 | 2 项失败 |
+| 重复文字只查来源为文字的条目（第1轮修复的写法） | 2 项失败 |
+| 重复文字从不丢弃 | 6 项失败 |
+| 忽略窗口（同一段文字永远不再显示） | 5 项失败 |
+| 一段文字可并入多个信号 | 1 项失败 |
+| 文字与其信号不合成 | 9 项失败 |
+
+**full**（修复后实现 SHA、起点干净，记录草稿在临时目录）：**通过**，G2 **94/94**，G3 **108/108 + 67/67**，**content_stable=True**，ObjectDB 泄漏 0 处，引擎报告 WARNING 行 0 处。摘要 `codexandclaude/runs/20261023T075050.248686Z/`（不入库）。外观未变，G4 仍按原入口进行。
+
+<!-- 第2轮修复后 full 自动摘要 -->
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`a9569d99c47ad79a242a5c821d6344c70dcf6681`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-23T07:50:50.249687+00:00；结束：2026-10-23T08:01:44.383731+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际94 / 预期94；完整=True；通过=True。
+- G3:tests：实际108 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.19.0`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`d773dbc32cce49dd32191c9e1ba2393fa5973d4b`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`b0b5cc688fab6469dca2e0b047bf16f6f21677796f17c0673465b39fd67ef6da`；工作区范围指纹（原始字节）：`3e531d466be1168c2523184212dee811e23207964046755ec7ca6e5422b2a3aa`。
+全工作区指纹：`4320078bbb11f6763205ebf556f855a75ac717ed9015284884ba35b2b1cbe270`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\001.txt`；SHA256=`11907754109f78ad77b0014217f718eba3af6c92c8f1234e1d625b39542f1686`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.297秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\006.txt`；SHA256=`bc697de995dc791df53d688ef69c08994cdffc8ce30c906b1ffc65b131ccd0eb`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\claude\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\runs\\20261023T075050.248686Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=630.266秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\007.txt`；SHA256=`8f83e3974b5de6a4a7fbd17d367236551eed80e90f6246d898d9ee18f2750dec`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.296秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\008.txt`；SHA256=`14dc2b30c561485160086c22b6a549d07328f77f2c299baff9e2cb215564ea18`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=18.657秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\009.txt`；SHA256=`6eba78be806ec6aec5a1e00c16c8f67510a6f50dbcc7bbc0df4afc0fad4eac70`。
+- 报告 `D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T075050.248686Z\engine.txt` SHA256=`07979ccc090e9f70ff9a5a2189e12ec8412b3705edb1fea953e41f1a5db1af48`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
 
 ## 第1轮审查修复（2026-10-23）
 
