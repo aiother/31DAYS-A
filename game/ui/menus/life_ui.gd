@@ -24,6 +24,9 @@ var _error_label: Label
 ## separate battlefield banner.
 var _enemy_intro: EnemyCard
 var _battle_banner: BattleBanner
+## UI-010: the task slip at the left and the centre notices.
+var _quest_slip: QuestSlip
+var _center_notice: CenterNotice
 var _enemy_intro_remaining: float = 0.0
 var _intro_leaving: bool = false
 var _intro_tween: Tween
@@ -92,6 +95,16 @@ func _ready() -> void:
 	_battle_banner = BattleBanner.new()
 	_battle_banner.avoid = _banner_avoided
 	_root.add_child(_battle_banner)
+	_quest_slip = QuestSlip.new()
+	_quest_slip.setup(get_parent(), _hud)
+	_quest_slip.protected = _error_rects
+	_root.add_child(_quest_slip)
+	_center_notice = CenterNotice.new()
+	_center_notice.setup(get_parent(), _hud)
+	_center_notice.avoid = _notice_avoided
+	_root.add_child(_center_notice)
+	# The session adds its dialogue node after this one is ready.
+	(func() -> void: _center_notice.listen(get_parent().get("dialogue_ui") as Node)).call_deferred()
 	for i: int in range(4):
 		var edge: ColorRect = ColorRect.new()
 		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -316,6 +329,29 @@ func _protected_rects() -> Array[Rect2]:
 		result.append(_enemy_intro.get_global_rect())
 	if _battle_banner.drawn.has("rect"):
 		result.append(_battle_banner.drawn["rect"])
+	# UI-010: and off the task slip and the centre notice.
+	for node: Control in [_quest_slip, _center_notice]:
+		if node.get("drawn").has("rect"):
+			result.append(node.get("drawn")["rect"])
+	return result
+
+func _error_rects() -> Array[Rect2]:
+	var result: Array[Rect2] = []
+	if _error_label.is_visible_in_tree() and not _error_label.text.is_empty():
+		result.append(_error_label.get_global_rect())
+	return result
+
+## What the centre notice keeps clear of: everything the battle banner avoids,
+## the banner itself and the task slip.
+func _notice_avoided() -> Array[Rect2]:
+	var result: Array[Rect2] = _banner_avoided()
+	# Not its own last position.
+	if _center_notice.drawn.has("rect"):
+		result.erase(_center_notice.drawn["rect"])
+	if _battle_banner.drawn.has("rect"):
+		result.append(_battle_banner.drawn["rect"])
+	if _quest_slip.drawn.has("rect"):
+		result.append(_quest_slip.drawn["rect"])
 	return result
 
 ## What the battle banner keeps clear of: the save error, the enemy card, the
@@ -333,8 +369,8 @@ func _banner_avoided() -> Array[Rect2]:
 	if talk is FieldDialogue and (talk as FieldDialogue).drawn.has("box"):
 		var slip: Dictionary = (talk as FieldDialogue).drawn
 		result.append((slip["box"] as Rect2).merge(slip.get("hint_rect", slip["box"])))
-	for node: Control in [_area_banner, _interact_prompt]:
-		if node.get("drawn") is Dictionary and node.get("drawn").has("rect"):
+	for node: Control in [_area_banner, _interact_prompt, _center_notice]:
+		if node != null and node.get("drawn") is Dictionary and node.get("drawn").has("rect"):
 			result.append(node.get("drawn")["rect"])
 	return result
 
