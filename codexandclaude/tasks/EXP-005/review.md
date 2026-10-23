@@ -118,3 +118,94 @@
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+# EXP-005 第2轮审查（第1轮修复复审）
+
+审查者：Codex｜日期：2026-10-23｜结论：**通过，无阻断项**。R1～R3 已解决；N1、N2 的措辞修正成立。只追加审查记录，未修改 Claude 实现或 master。
+
+## 固定对象与范围
+
+- 用 `git switch --detach` 固定最新交付 `93dc4d21a37001fed238598512118fbd5d7f2a43`；修复实现 `5963898a24d3f9728c6cb1c804a7aaa81a371d69`。首轮审查 `e0a850617e723f7fa3e2f029360c307b96e8f22a` 已经由 `21f8feb` 保留。
+- `5963898..93dc4d2` 仅 delivery.md 追加 45 行，包含修复 full 的证据与标题/计数更正。历史定稿证据和修复证据已区分，没有把旧 full 冒充新修复的检查。
+- `519a7f6..93dc4d2` 排除原型目录和本任务记录后 diff 为空。正式游戏代码、共享脚本、project.godot、输入映射、存档及流水线均未改。
+- 用户反馈增加的 D 融合与三轮手感调整均留在原型内。默认 D，普通攻击顿帧 0.10 秒，普通命中不震、受击 5 像素；未命中不顿帧，命中时挥砍停在当前进度、随后接着播放。新增的近落地弹起回归覆盖了用户试出的飞离问题。修复相对定稿的运行代码只增加绘制记录和手柄路径，没有另改定稿数值与绘制参数。查看了 D 攻击截图，警示仍在特效之上、HUD 独立于特效层。
+
+## R1～R3 逐项复核
+
+| 项目 | 独立核对 | 结论 |
+| --- | --- | --- |
+| R1 实画与方向 | 特效函数中的绘制经记录 helper；空效果得到零图元/透明而不能靠外层元数据通过。四风格 × 15 种逐一检查有可见图元；真实 J、W+J、空中 S+J 的轨迹点重心分别指向水平、上、下。原删除绘制和方向变异均失败。 | 已解决 |
+| R2 结束与残留 | 原来被丢弃的等待改为 ends() 内 check(await settle())；另两处既有 settle 也保留 check。固定 120 帧等待不取被测 LIFE；每风格 13 种有限效果逐一在固定 90 帧内消失，循环 stop 后验证消失。INF 复活被拦下。 | 已解决 |
+| R3 手柄路径 | 原型自己的 InputEventJoypadButton 分支补 Back、十字键四向、Start、L3/R3，README 和屏幕说明同步；测试注入真实事件，透支闪避、投射物弹反、受击、复活等可达。原有摇杆移动/瞄准和 A/X/B/Y 保留。 | 已解决 |
+
+N1 现已明确限帧测量只说明该设备/窗口设置下未观察到明显掉帧，不比较实际绘制成本；N2 改为先评估既有 hit_confirmed/defeated 通道。两项均准确。性能采样起点仍有首条短样本的既有局限，平均 16.11 ms 不应解读为快于空场或资源开销证明；不影响本原型的可演示与未明显掉帧判断。
+
+## 独立冒烟与变异
+
+固定交付直接运行冒烟 **EXP005_SMOKE_TESTS 297/0**，无 ERROR/WARNING。变异使用忽略的 runs 下独立副本，仅重定向 preload/scene 路径，未改正在执行 full 的被测工作树；副本基线同为 297/0。
+
+| 单点变异 | 检查数 | 失败数 |
+| --- | --- | --- |
+| 未变异基线 | 297 | 0 |
+| 靶子受击不画，保留颜色 | 297 | 4 |
+| 复活完全不画 | 297 | 4 |
+| 所有挥砍均水平 | 297 | 8 |
+| 复活寿命 INF | 297 | 22 |
+| 删除手柄 Back 路径 | 297 | 2 |
+| 删除手柄十字键上路径 | 297 | 2 |
+| 删除手柄十字键左路径 | 297 | 1 |
+| 删除手柄十字键右路径 | 297 | 1 |
+
+八项变异全部退出 1；均正常跑完 297 项，无 SCRIPT ERROR，不以编译失败充当回归命中。
+
+- 独立日志 `codexandclaude/runs/exp005-r2-smoke.txt`，SHA256 `de378a0889899ff6b252cc87c30e498b001a8789b9118ae2b5e31bc0fb37815f`。
+- 独立日志 `codexandclaude/runs/exp005-r2-mutations/results.json`，SHA256 `97677dbda6c84d0ebfce1882450fd44f89ab486d7ca11b12fb9d5985785dec29`。
+- 独立日志 `codexandclaude/runs/exp005-r2-perf.txt`，SHA256 `77f90052eebf07f2c346a95a5367a18b649018e1ac950f75daa84927a6233935`。
+
+## 真实渲染复测
+
+使用有窗口的 perf.gd（非 headless），RTX 3060、OpenGL 3.3 Compatibility、驱动 617.42。保留实际设置服务窗口行为，不把命令中的 1920×1080 冒称为独立确认的物理窗口尺寸。四风格空场平均均 16.67 ms；八靶三轮平均 A/B/D 均 16.11 ms，C 为 16.11/16.11/16.10 ms；最大峰值 A 16.83、B 16.79、C 16.70、D 16.74 ms。未观察到明显掉帧。headless 冒烟中的计时不作渲染性能依据。
+
+## 独立 G2 + G3
+
+固定最新交付、起止干净，独立执行 full --jobs 4：**G2 94/94、G3 108/108 + 67/67，content_stable=True**；引擎 ERROR、WARNING、ObjectDB 泄漏均 0。独立运行 `20261023T184942.043329Z`。未沿用实现方摘要。
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`93dc4d21a37001fed238598512118fbd5d7f2a43`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-23T18:49:42.043329+00:00；结束：2026-10-23T19:02:15.156059+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际94 / 预期94；完整=True；通过=True。
+- G3:tests：实际108 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`186ecf118bc54bf08b89ac2a75e7fe10b1af7d7a`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`b94d042c98d4d92ae48447e38b2ad803551beafc3cd8105dd7d46f81b814e6c4`；工作区范围指纹（原始字节）：`5258d97bfb5f3913c58740898f716fd376a795eef6545a615a17a2b81600ec5d`。
+全工作区指纹：`ee4eda4347bc319c7e101067d6f0a9e8295c606f78b996f5f9ca7c8e774738d2`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\001.txt`；SHA256=`4e03219fdd05bf1b30f28a150b05aa5b24b608f3da074e788d2a0e7c69f04be8`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.25秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.046秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.328秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\006.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\codex\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\runs\\20261023T184942.043329Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=734.797秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\007.txt`；SHA256=`7a6162092e7ae7ee8842cd2188466bba7abd1f45f4995dad1f3390656273d49c`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.812秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\008.txt`；SHA256=`72b7f49f35fd3b2d9da094b2a2411b903bd98eee7635d3d0e77b1588bde54523`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=12.625秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\009.txt`；SHA256=`0a26bb4e1c583e08746ca3cc07e402fe9e5e170cfe60dbb2e2c27c5959b86324`。
+- 报告 `D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261023T184942.043329Z\engine.txt` SHA256=`fe339ca9756aead2ce4e0c72f3105ed3cd1755a1fe60ee3f72d115944c7c005c`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
