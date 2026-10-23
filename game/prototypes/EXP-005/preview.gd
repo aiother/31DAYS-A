@@ -13,7 +13,8 @@ const HUD_RECT: Rect2 = Rect2(16, 16, 300, 300)
 ## User feedback 2026-10-23: the hit-stop should be felt more, the shake was
 ## too strong. Hit-stop is longer and adjustable; shake is halved and kept off
 ## for ordinary hits (reserved for heavy blows), still light on being hurt.
-const HITSTOP_DEFAULT: float = 0.12
+## Final (user, 2026-10-23): 0.10 s for ordinary attacks.
+const HITSTOP_DEFAULT: float = 0.10
 const HITSTOP_RANGE: Vector2 = Vector2(0.04, 0.20)
 const HIT_SHAKE: float = 3.0
 const HURT_SHAKE: float = 5.0
