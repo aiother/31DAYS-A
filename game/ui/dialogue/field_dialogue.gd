@@ -15,6 +15,8 @@ extends CanvasLayer
 signal finished
 signal departure_confirmed
 signal departure_cancelled
+## UI-010: every show_notice() text, for the formal centre notice.
+signal noticed(message: String)
 const BOX: Rect2 = Rect2(540, 120, 840, 250)
 const CHOICE_SIZE: Vector2 = Vector2(300, 56)
 const CHOICE_GAP: float = 40.0
@@ -106,14 +108,21 @@ func _ready() -> void:
 	missed.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	missed.draw.connect(_draw_missed)
 	add_child(missed)
+	# UI-010: the task text and the notice stay as data the sessions write;
+	# the formal quest slip and centre notice (LifeUI) show them, so these
+	# graybox Labels sit under a hidden holder and never draw.
+	var models: Control = Control.new()
+	models.name = "GrayboxModels"
+	models.hide()
+	add_child(models)
 	quest = Label.new()
 	quest.position = Vector2(64, 490)
 	quest.add_theme_font_size_override("font_size", 23)
-	add_child(quest)
+	models.add_child(quest)
 	notice = Label.new()
 	notice.position = Vector2(560, 540)
 	notice.add_theme_font_size_override("font_size", 30)
-	add_child(notice)
+	models.add_child(notice)
 	dismiss()
 
 func show_notice(message: String) -> void:
@@ -122,6 +131,7 @@ func show_notice(message: String) -> void:
 	# This node runs while paused (button guard); the notice still stops
 	# while paused, as before UI-008.
 	create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP).tween_property(notice, "modulate:a", 0.0, 3.0)
+	noticed.emit(message)
 
 func start(config: DialogueConfig, lines: PackedStringArray) -> void:
 	_config = config
