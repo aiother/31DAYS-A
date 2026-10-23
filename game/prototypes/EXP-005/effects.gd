@@ -43,6 +43,15 @@ func look_for(kind: String, chosen: int) -> int:
 		return chosen
 	return 0 if kind in FUSION_FROM_A else 1
 
+## Freezes the newest effect of this kind for `seconds` (used by the
+## hit-stop on the swing that just landed). Returns whether one was found.
+func hold(kind: String, seconds: float) -> bool:
+	for i: int in range(entries.size() - 1, -1, -1):
+		if entries[i]["kind"] == kind:
+			entries[i]["hold"] = maxf(float(entries[i].get("hold", 0.0)), seconds)
+			return true
+	return false
+
 func stop(kind: String) -> void:
 	entries = entries.filter(func(entry: Dictionary) -> bool: return entry["kind"] != kind)
 	queue_redraw()
@@ -60,7 +69,13 @@ func _process(delta: float) -> void:
 		return
 	clock += delta
 	for entry: Dictionary in entries:
-		entry["age"] = float(entry["age"]) + delta
+		# A held effect stays exactly where it is (the blade caught in the
+		# target during the hit-stop), then carries on.
+		var held: float = float(entry.get("hold", 0.0))
+		if held > 0.0:
+			entry["hold"] = maxf(0.0, held - delta)
+		else:
+			entry["age"] = float(entry["age"]) + delta
 		var follow: Variant = entry["follow"]
 		if follow is Node2D and is_instance_valid(follow):
 			entry["at"] = (follow as Node2D).position + Vector2(0, -48)
@@ -75,6 +90,7 @@ func _draw() -> void:
 		record["kind"] = entry["kind"]
 		record["style"] = entry["style"]
 		record["look"] = entry["look"]
+		record["held"] = float(entry.get("hold", 0.0)) > 0.0
 		record["age"] = entry["age"]
 		record["life"] = entry["life"]
 		record["at"] = entry["at"]

@@ -219,8 +219,11 @@ func _strike(target: Dictionary, direction: Vector2) -> void:
 		effects.spawn("enemy_death", at)
 		effects.spawn("gain", at)
 	if hitstop:
+		# The blade bites: this swing's trail stops where it met the target,
+		# with the player and the target, then sweeps on (user, 2026-10-23).
 		stop_left = hitstop_seconds
 		struck.append(target)
+		effects.hold("swing", hitstop_seconds)
 	_kick(HIT_SHAKE, false)
 
 ## Hurt always shakes (lightly); ordinary hits only when V turns it on.
@@ -284,10 +287,14 @@ func _simulate(delta: float) -> void:
 		velocity.y += GRAVITY * delta
 	player.position += velocity * delta
 	player.position.x = clampf(player.position.x, 80.0, 1840.0)
-	if player.position.y >= GROUND:
+	# Grounded only when at the ground and not moving up; anything that sends
+	# the player upwards (jump, bounce) leaves the floor, so gravity applies.
+	if player.position.y >= GROUND and velocity.y >= 0.0:
 		player.position.y = GROUND
 		velocity.y = 0.0
 		on_floor = true
+	else:
+		on_floor = false
 	# Attack: the active window checks the targets once.
 	if attack_left > 0.0:
 		attack_left = maxf(0.0, attack_left - delta)
@@ -299,6 +306,7 @@ func _simulate(delta: float) -> void:
 					_strike(target, attack_dir)
 					if attack_dir == Vector2.DOWN:
 						velocity.y = -760.0
+						on_floor = false
 						effects.spawn("bounce", center())
 			for shot: Dictionary in projectiles:
 				if not shot["reflected"] and (shot["at"] as Vector2).distance_to(reach) < 70.0:

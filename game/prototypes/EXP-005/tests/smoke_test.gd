@@ -82,6 +82,8 @@ func run() -> void:
 	await fusion_cases()
 	await toggle_cases()
 	await hitstop_cases()
+	await bite_cases()
+	await landing_bounce_cases()
 	await layout_cases()
 	await perf_cases()
 	print("EXP005_SMOKE_TESTS checks=%d failures=%d" % [checks, failures])
@@ -300,4 +302,78 @@ func hitstop_cases() -> void:
 		hurt_shake = maxf(hurt_shake, (preview.get("world") as Node2D).position.length())
 	check(hurt_shake > 0.0 and hurt_shake <= preview.HURT_SHAKE * 1.5, "being hurt still shakes, at half the old strength (%.1f px)" % hurt_shake)
 	await settle()
+
+## User feedback round two: the hit-stop is the blade caught in the target.
+## The swing that landed stops where it met the target, together with the
+## player and the target, then sweeps on.
+func bite_cases() -> void:
+	await key(KEY_4)
+	preview.set("hitstop", true)
+	preview.set("hitstop_seconds", 0.12)
+	revive_targets()
+	fx().call("clear")
+	place(690.0)
+	await frames(2)
+	await key(KEY_J)
+	var caught: Dictionary = {}
+	for i: int in range(20):
+		await frames(1)
+		var swings: Array = seen("swing")
+		if not swings.is_empty() and swings[0].get("held", false):
+			caught = swings[0]
+			break
+	check(not caught.is_empty(), "the swing that lands is held at the moment of the hit")
+	var body: Node2D = preview.get("player")
+	var where: Vector2 = body.position
+	var age: float = caught.get("age", -1.0)
+	await frames(3)
+	var still: Array = seen("swing")
+	check(not still.is_empty() and float(still[0]["age"]) == age and still[0].get("held", false) and body.position == where and float(preview.get("stop_left")) > 0.0, "during the hit-stop the trail, the player and the target all stay put")
+	var moved: bool = false
+	for i: int in range(12):
+		await frames(1)
+		var after: Array = seen("swing")
+		if not after.is_empty() and not after[0].get("held", false) and float(after[0]["age"]) > age:
+			moved = true
+			break
+	check(moved, "after the hit-stop the trail sweeps on from where it was caught")
+	await settle()
+	# A miss is not held: the trail sweeps straight through.
+	place(300.0)
+	await frames(2)
+	await key(KEY_J)
+	var ever_held: bool = false
+	for i: int in range(20):
+		await frames(1)
+		for record: Dictionary in seen("swing"):
+			ever_held = ever_held or record.get("held", false)
+	check(not ever_held, "a swing that hits nothing is never held")
+	await settle()
+
+## Bug from the user's trial: a downward attack started just before landing
+## hit after the player touched down; the bounce then left the player marked
+## on the floor, gravity never applied, and the player flew off the top.
+func landing_bounce_cases() -> void:
+	preview.set("hitstop", false)
+	revive_targets()
+	fx().call("clear")
+	place(760.0)
+	await key(KEY_SPACE)
+	var body: Node2D = preview.get("player")
+	for i: int in range(120):
+		await frames(1)
+		if (preview.get("velocity") as Vector2).y > 0.0 and body.position.y > preview.GROUND - 30.0:
+			break
+	press(KEY_S, true)
+	await key(KEY_J)
+	press(KEY_S, false)
+	var bounced: bool = not (await wait_for("bounce", 20)).is_empty()
+	var highest: float = body.position.y
+	for i: int in range(150):
+		await frames(1)
+		highest = minf(highest, body.position.y)
+	check(bounced, "a downward attack started just before landing still hits and bounces")
+	check(highest > preview.GROUND - 300.0 and is_equal_approx(body.position.y, preview.GROUND) and preview.get("on_floor"), "the bounce rises a little and comes back down (highest %.0f px above the ground)" % (preview.GROUND - highest))
+	await settle()
+	preview.set("hitstop", true)
 
