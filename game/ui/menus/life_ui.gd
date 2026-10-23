@@ -20,7 +20,10 @@ var _panel: PanelContainer
 var _menu: VBoxContainer
 var _mode: String = ""
 var _error_label: Label
-var _enemy_intro: PanelContainer
+## UI-009: the enemy card (still a PanelContainer, slid by position) and the
+## separate battlefield banner.
+var _enemy_intro: EnemyCard
+var _battle_banner: BattleBanner
 var _enemy_intro_remaining: float = 0.0
 var _intro_leaving: bool = false
 var _intro_tween: Tween
@@ -82,15 +85,13 @@ func _ready() -> void:
 	_error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_error_label.hide()
 	status.add_child(_error_label)
-	_enemy_intro = PanelContainer.new()
-	_enemy_intro.position = Vector2(1390, 100)
-	_enemy_intro.size = Vector2(460, 220)
+	_enemy_intro = EnemyCard.new()
+	_enemy_intro.setup("无色实体", EnemyCard.KINDS[0], DEFAULT_TIPS)
 	_root.add_child(_enemy_intro)
-	var intro_text: Label = Label.new()
-	intro_text.text = "无色实体\n\n这里不安全。\n观察攻击前摇，寻找反击或闪避机会。"
-	intro_text.add_theme_font_size_override("font_size", 22)
-	_enemy_intro.add_child(intro_text)
 	_enemy_intro.hide()
+	_battle_banner = BattleBanner.new()
+	_battle_banner.avoid = _banner_avoided
+	_root.add_child(_battle_banner)
 	for i: int in range(4):
 		var edge: ColorRect = ColorRect.new()
 		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -309,6 +310,32 @@ func _protected_rects() -> Array[Rect2]:
 	var result: Array[Rect2] = []
 	if _error_label.is_visible_in_tree() and not _error_label.text.is_empty():
 		result.append(_error_label.get_global_rect())
+	# UI-009: the area name, interaction prompt and G-08 tag also keep off the
+	# enemy card and the battle banner.
+	if _enemy_intro.is_visible_in_tree():
+		result.append(_enemy_intro.get_global_rect())
+	if _battle_banner.drawn.has("rect"):
+		result.append(_battle_banner.drawn["rect"])
+	return result
+
+## What the battle banner keeps clear of: the save error, the enemy card, the
+## HUD as drawn, the open dialogue slip, the area name and the prompt.
+func _banner_avoided() -> Array[Rect2]:
+	var result: Array[Rect2] = []
+	if _error_label.is_visible_in_tree() and not _error_label.text.is_empty():
+		result.append(_error_label.get_global_rect())
+	if _enemy_intro.is_visible_in_tree():
+		result.append(_enemy_intro.get_global_rect())
+	for key: String in ["emblem", "hint", "horizon", "warning", "final", "banner"]:
+		if _hud.drawn.has(key) and _hud.drawn[key].has("rect"):
+			result.append(_hud.drawn[key]["rect"])
+	var talk: Variant = get_parent().get("dialogue_ui")
+	if talk is FieldDialogue and (talk as FieldDialogue).drawn.has("box"):
+		var slip: Dictionary = (talk as FieldDialogue).drawn
+		result.append((slip["box"] as Rect2).merge(slip.get("hint_rect", slip["box"])))
+	for node: Control in [_area_banner, _interact_prompt]:
+		if node.get("drawn") is Dictionary and node.get("drawn").has("rect"):
+			result.append(node.get("drawn")["rect"])
 	return result
 
 ## Errors land on the open title or slot screen's prompt line, clear of the
@@ -504,8 +531,16 @@ func show_room_boundary(_target: String) -> void:
 	_button("继续探索当前区域", resume_game, true)
 	_button("保存并退出", confirm_quit)
 
-func show_enemy_intro(duration: float, text: String = "无色实体\n\n这里不安全。\n观察攻击前摇，寻找反击或闪避机会。") -> void:
-	(_enemy_intro.get_child(0) as Label).text = text
+const DEFAULT_TIPS: String = "这里不安全。\n观察攻击前摇，寻找反击或闪避机会。"
+
+## Ordinary enemy card; the first line of `text` is the name, the rest the tips.
+func show_enemy_intro(duration: float, text: String = "无色实体\n\n" + DEFAULT_TIPS) -> void:
+	var lines: PackedStringArray = text.split("\n")
+	show_enemy_card(duration, lines[0], EnemyCard.KINDS[0], "\n".join(lines.slice(1)))
+
+## `kind` is one of EnemyCard.KINDS; "首领" adds the vermilion seal.
+func show_enemy_card(duration: float, title: String, kind: String, tips: String) -> void:
+	_enemy_intro.setup(title, kind, tips)
 	if _intro_tween != null and _intro_tween.is_valid():
 		_intro_tween.kill()
 	_intro_leaving = false
@@ -513,7 +548,11 @@ func show_enemy_intro(duration: float, text: String = "无色实体\n\n这里不
 	_enemy_intro.position.x = 1920
 	_enemy_intro.show()
 	_intro_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_STOP)
-	_intro_tween.tween_property(_enemy_intro, "position:x", 1920.0 - _enemy_intro.size.x, 0.2)
+	_intro_tween.tween_property(_enemy_intro, "position:x", _enemy_intro.settled_x(), 0.2)
+
+## Battlefield stage and wave notices (UI-009), never in the card's corner.
+func show_battle_banner(duration: float, text: String) -> void:
+	_battle_banner.show_text(duration, text)
 
 func hide_enemy_intro() -> void:
 	if _intro_tween != null and _intro_tween.is_valid():
@@ -521,3 +560,6 @@ func hide_enemy_intro() -> void:
 	_intro_leaving = false
 	_enemy_intro_remaining = 0.0
 	_enemy_intro.hide()
+	# The sessions call this to clear whatever notice is up; stage notices
+	# used to share the card, so the banner goes too.
+	_battle_banner.clear()

@@ -142,7 +142,7 @@ func _enter_coop() -> void:
 	player.set_physics_process(true)
 	_arena().start_coop()
 	ui.call("save_failed","")
-	ui.call("show_enemy_intro",3.0,"新一波敌人进入战场\n\n刚才的敌人已被10全灭。\n现在与10共同迎战增援。")
+	ui.call("show_battle_banner",3.0,"新一波敌人进入战场\n\n刚才的敌人已被10全灭。\n现在与10共同迎战增援。")
 
 func _on_stage_completed() -> void:
 	var area: RescueBattlefieldRoom = _arena()
@@ -156,7 +156,7 @@ func _on_stage_completed() -> void:
 		stage_notified = true
 		area.get_node("StageLabel").text = "中心战场 · 10协同阶段完成\n最终波次、计时与结局待下一阶段\n返回通路尚未开启"
 		ui.call("save_failed","")
-		ui.call("show_enemy_intro",6.0,"中心战场 · 10协同阶段完成\n\n最终波次、15分钟时限与结局将在下一阶段接入。\n本提示不代表最终胜利。")
+		ui.call("show_battle_banner",6.0,"中心战场 · 10协同阶段完成\n\n最终波次、15分钟时限与结局将在下一阶段接入。\n本提示不代表最终胜利。")
 
 func _process(delta: float) -> void:
 	var seconds: float = float(data.get("play_seconds",0))

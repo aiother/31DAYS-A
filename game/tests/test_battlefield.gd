@@ -130,7 +130,7 @@ func run() -> void:
 	await ticks(2)
 	check(session.stage_notified and session.store.load_slot(1)["balance"]==10,"E retries stage resource save and ally kill pays normal reward")
 	check((session.ui.get("_error_label") as Label).text.is_empty(),"successful retry clears stale save error feedback")
-	check((session.ui.get("_enemy_intro") as Control).visible and not paused,"stage-only prompt leaves player operational")
+	check((session.ui.get("_battle_banner") as BattleBanner).showing() and (session.ui.get("_battle_banner") as BattleBanner).heading.contains("首段完成") and not (session.ui.get("_enemy_intro") as Control).visible and not paused,"stage-only prompt (UI-009 battle banner, not the enemy card) leaves player operational")
 	session._on_room_exit(TrenchPassageSession.PASSAGE_ID)
 	check(session.room==area,"return remains locked pending full battle implementation")
 	check(session.start_slot(1,false),"normal load remains available")

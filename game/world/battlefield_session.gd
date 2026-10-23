@@ -30,7 +30,7 @@ func _on_stage_completed() -> void:
 	if save_current("中心战场首段已完成 · 当前资源已保存"):
 		stage_notified = true
 		ui.call("save_failed","")
-		ui.call("show_enemy_intro",6.0,"中心战场 · 首段完成\n\n本轮混战验证完成。\n10救场、最终波次、时限及结局将在下一阶段接入。\n本提示不代表最终胜利。")
+		ui.call("show_battle_banner",6.0,"中心战场 · 首段完成\n\n本轮混战验证完成。\n10救场、最终波次、时限及结局将在下一阶段接入。\n本提示不代表最终胜利。")
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)

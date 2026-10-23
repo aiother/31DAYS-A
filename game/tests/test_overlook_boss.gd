@@ -90,7 +90,7 @@ func run() -> void:
 	check(absf(session.player.position.x - 224) < 2, "introduction ignores movement input")
 	await ticks(6) # Finish the 0.2-second slide before checking its final edge.
 	var card: PanelContainer = session.ui.get("_enemy_intro") as PanelContainer
-	check(absf(card.position.x + card.size.x - 1920) < 1, "introduction card sits flush against right edge")
+	check(absf(card.position.x + card.size.x - EnemyCard.RIGHT) < 1, "introduction card settles at the right edge inset (UI-009 variant 2)")
 	await ticks(300)
 	check(not session.intro_active and session.player.life.can_control() and boss().state == OverlookBoss.State.WINDUP, "introduction ends into first telegraphed attack")
 	check((session.player.get_node("Camera2D") as Camera2D).offset == Vector2.ZERO, "intro camera returns to player without lingering shake")

@@ -98,7 +98,7 @@ func _enter_boss() -> void:
 	_boss_intro_remaining = actor.config.intro_duration
 	player.reset_kinematics()
 	player.life.scripted_control_locked = true
-	ui.call("show_enemy_intro", actor.config.intro_duration, "渴望俯视\n\n留意落击提示。\n利用召唤平台接近高空目标。")
+	ui.call("show_enemy_card", actor.config.intro_duration, "渴望俯视", "首领", "留意落击提示。\n利用召唤平台接近高空目标。")
 
 func _physics_process(delta: float) -> void:
 	if _needs_combat_growth() and _interaction_input():
