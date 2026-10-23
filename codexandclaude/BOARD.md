@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-23（第八批起草：PLN-001、DOC-008、SYS-010、EXP-005 待用户批准，起草时核对 master@ae8a9c5；第七批已完成、M2-c 已收尾；全面刷新由 PLN-001 完成，规划汇总基线仍为 master@6591165）
+更新：2026-10-23（第八批起草：PLN-001、DOC-008、SYS-010、EXP-005 已由用户批准，起草时核对 master@ae8a9c5；第七批已完成、M2-c 已收尾；全面刷新由 PLN-001 完成，规划汇总基线仍为 master@6591165）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -45,10 +45,10 @@
 | UI-010 | M | 任务信息与中央提示 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-010](tasks/UI-010/task.md) |
 | CLN-001 | S | 清理已被正式交互提示取代的灰盒世界提示 | Codex | Claude | 已完成 | [tasks/CLN-001](tasks/CLN-001/task.md) |
 | ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
-| PLN-001 | M | 规划刷新与 M2 收尾核对 | Claude | Codex | 待批准（第八批） | [tasks/PLN-001](tasks/PLN-001/task.md) |
-| DOC-008 | M | T2 改写为现行版 | Claude | Codex | 待批准（第八批） | [tasks/DOC-008](tasks/DOC-008/task.md) |
-| SYS-010 | L | 角色动画接入框架 | Codex | Claude | 待批准（第八批） | [tasks/SYS-010](tasks/SYS-010/task.md) |
-| EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 待批准（第八批） | [tasks/EXP-005](tasks/EXP-005/task.md) |
+| PLN-001 | M | 规划刷新与 M2 收尾核对 | Claude | Codex | 已批准（第八批） | [tasks/PLN-001](tasks/PLN-001/task.md) |
+| DOC-008 | M | T2 改写为现行版 | Claude | Codex | 已批准（第八批） | [tasks/DOC-008](tasks/DOC-008/task.md) |
+| SYS-010 | L | 角色动画接入框架 | Codex | Claude | 已批准（第八批） | [tasks/SYS-010](tasks/SYS-010/task.md) |
+| EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已批准（第八批） | [tasks/EXP-005](tasks/EXP-005/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 
