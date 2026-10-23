@@ -3,7 +3,7 @@ extends Control
 ## on a dark field, to compare three effect looks. Mock data only; nothing
 ## here touches the real combat, saves or input map.
 const EffectsScript: GDScript = preload("res://prototypes/EXP-005/effects.gd")
-const HELP: String = "EXP-005 战斗反馈特效原型（F1 隐藏说明）\n1 / 2 / 3 / 4  风格 A 墨迹飞溅 / B 光痕 / C 极简几何 / D 融合（默认，手柄 LB / RB 切换）\nH 顿帧开关 · [ / ] 顿帧缩短 / 加长 · V 普通命中也震动（默认关，受击仍轻震）\nA D / ← → 移动 · 空格 跳 · J 攻击（W 上 / 空中 S 下）· K 闪避 · 长按 L 恢复\nP 切换“可能性不足”（闪避变为透支闪避）· R 靶子投射物（攻击可弹反）\nT 受击 · Z 复活 · G 八个靶子同时受击（记录帧时间）\n手柄：A 跳 · X 攻击 · B 闪避 · 长按 Y 恢复"
+const HELP: String = "EXP-005 战斗反馈特效原型（F1 隐藏说明）\n1 / 2 / 3 / 4  风格 A 墨迹飞溅 / B 光痕 / C 极简几何 / D 融合（默认，手柄 LB / RB 切换）\nH 顿帧开关 · [ / ] 顿帧缩短 / 加长 · V 普通命中也震动（默认关，受击仍轻震）\nA D / ← → 移动 · 空格 跳 · J 攻击（W 上 / 空中 S 下）· K 闪避 · 长按 L 恢复\nP 切换“可能性不足”（闪避变为透支闪避）· R 靶子投射物（攻击可弹反）\nT 受击 · Z 复活 · G 八个靶子同时受击（记录帧时间）\n手柄：A 跳 · X 攻击 · B 闪避 · 长按 Y 恢复 · Back 可能性不足 · 十字键 上 投射物 / 左 受击 / 右 复活 / 下 八靶受击\n　　　Start 顿帧开关 · 按下左 / 右摇杆 顿帧缩短 / 加长"
 const GROUND: float = 860.0
 const GRAVITY: float = 2600.0
 const SPEED: float = 420.0
@@ -129,6 +129,15 @@ func _input(event: InputEvent) -> void:
 			JOY_BUTTON_X: attack()
 			JOY_BUTTON_B: dodge()
 			JOY_BUTTON_LEFT_SHOULDER: set_style((effects.style + 3) % 4)
+			# Review R3: every effect can be reached with a controller alone.
+			JOY_BUTTON_BACK: poor = not poor
+			JOY_BUTTON_DPAD_UP: throw()
+			JOY_BUTTON_DPAD_LEFT: hurt()
+			JOY_BUTTON_DPAD_RIGHT: revive()
+			JOY_BUTTON_DPAD_DOWN: stress()
+			JOY_BUTTON_START: hitstop = not hitstop
+			JOY_BUTTON_LEFT_STICK: hitstop_seconds = clampf(hitstop_seconds - 0.02, HITSTOP_RANGE.x, HITSTOP_RANGE.y)
+			JOY_BUTTON_RIGHT_STICK: hitstop_seconds = clampf(hitstop_seconds + 0.02, HITSTOP_RANGE.x, HITSTOP_RANGE.y)
 			JOY_BUTTON_RIGHT_SHOULDER: set_style((effects.style + 1) % 4)
 
 func set_style(value: int) -> void:

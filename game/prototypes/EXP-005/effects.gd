@@ -2,8 +2,10 @@ extends Node2D
 ## EXP-005 combat feedback effects in three looks, drawn in code with the
 ## UI-001 palette (no art assets). Every effect is an entry with a kind, a
 ## place and a life; loops (healing, invulnerability) last until stopped.
-## `drawn` lists what the last frame put on screen, built from what each draw
-## call returned.
+## `drawn` lists what the last frame put on screen. Every primitive an effect
+## draws goes through a helper below that records it (review R1): an effect's
+## record holds the count, colours and points of what it actually drew, so an
+## effect that draws nothing cannot pass as drawn.
 const STYLES: Array[String] = ["A · 墨迹飞溅", "B · 光痕", "C · 极简几何", "D · 融合（A 的攻击 + B）"]
 ## Look D (user feedback 2026-10-23): A's swing and hit, with B's warm glow
 ## under them so they sit in B's light; every other effect is B.
@@ -25,6 +27,8 @@ var entries: Array[Dictionary] = []
 var drawn: Array[Dictionary] = []
 var clock: float = 0.0
 var _serial: int = 0
+## Primitives drawn by the effect being drawn right now.
+var _prims: Array[Dictionary] = []
 
 ## Starts an effect at `at` (world space). `follow` makes it track a node.
 func spawn(kind: String, at: Vector2, direction: Vector2 = Vector2.RIGHT, follow: Node2D = null) -> Dictionary:
@@ -86,7 +90,20 @@ func _draw() -> void:
 	drawn = []
 	for entry: Dictionary in entries:
 		var t: float = 0.0 if is_inf(float(entry["life"])) else clampf(float(entry["age"]) / float(entry["life"]), 0.0, 1.0)
+		_prims = []
 		var record: Dictionary = call("_" + str(entry["kind"]), entry, t, int(entry["look"]))
+		record["prims"] = _prims.size()
+		record["color"] = _prims.back()["color"] if not _prims.is_empty() else Color.TRANSPARENT
+		var strongest: float = 0.0
+		var sum: Vector2 = Vector2.ZERO
+		var count: int = 0
+		for prim: Dictionary in _prims:
+			strongest = maxf(strongest, (prim["color"] as Color).a)
+			for point: Vector2 in prim["points"]:
+				sum += point
+				count += 1
+		record["alpha"] = strongest
+		record["centroid"] = sum / count if count > 0 else Vector2.INF
 		record["kind"] = entry["kind"]
 		record["style"] = entry["style"]
 		record["look"] = entry["look"]
@@ -98,18 +115,35 @@ func _draw() -> void:
 
 # --- drawing helpers that return what they drew ---------------------------
 
-func _line(a: Vector2, b: Vector2, color: Color, width: float) -> Color:
-	draw_line(a, b, color, width, true)
+func _note(color: Color, points: PackedVector2Array) -> Color:
+	_prims.append({"color": color, "points": points})
 	return color
 
+func _line(a: Vector2, b: Vector2, color: Color, width: float) -> Color:
+	draw_line(a, b, color, width, true)
+	return _note(color, PackedVector2Array([a, b]))
+
 func _poly(points: PackedVector2Array, color: Color, width: float) -> Color:
-	if points.size() >= 2:
-		draw_polyline(points, color, width, true)
-	return color
+	if points.size() < 2:
+		return color
+	draw_polyline(points, color, width, true)
+	return _note(color, points)
 
 func _dot(at: Vector2, radius: float, color: Color) -> Color:
 	draw_circle(at, maxf(radius, 0.5), color)
-	return color
+	return _note(color, PackedVector2Array([at]))
+
+func _rect(rect: Rect2, color: Color, filled: bool = true, width: float = -1.0) -> Color:
+	draw_rect(rect, color, filled, width)
+	return _note(color, PackedVector2Array([rect.position, rect.end]))
+
+## A soft glow (UI-001's layered circles); recorded at its effective strength.
+func _glow(center: Vector2, radius: float, color: Color, strength: float) -> Color:
+	InkDraw.glow(self, center, radius, color, strength)
+	return _note(Color(color, color.a * clampf(strength, 0.0, 1.0)), PackedVector2Array([center]))
+
+func _ring(center: Vector2, radius: float, color: Color, width: float, seed: int, wobble: float) -> Color:
+	return _poly(InkDraw.circle_points(center, radius, seed, wobble), color, width)
 
 func _arc_points(center: Vector2, radius: float, from: float, to: float, count: int = 18) -> PackedVector2Array:
 	var points: PackedVector2Array = PackedVector2Array()
@@ -167,18 +201,17 @@ func _hit(e: Dictionary, t: float, s: int) -> Dictionary:
 			var light: Color = DuskStyle.PAPER_DAY
 			if e.get("fusion", false):
 				# Fusion: a short warm flash at the point of impact, pearl specks.
-				InkDraw.glow(self, c, 22.0 + t * 18.0, DuskStyle.SUN, a)
-				record_glow = Color(DuskStyle.SUN, a)
+				record_glow = _glow(c, 22.0 + t * 18.0, DuskStyle.SUN, a)
 				light = DuskStyle.PEARL
 			for i: int in range(12):
 				var spread: float = (_n(i, e["seed"]) - 0.5) * 1.6
 				var reach: float = (18.0 + _n(i, e["seed"] + 1) * 52.0) * minf(1.0, t * 3.0)
 				var p: Vector2 = c + dir.rotated(spread) * reach
 				color = _dot(p, (3.0 + _n(i, e["seed"] + 2) * 5.0) * (1.0 - t * 0.6), Color(DuskStyle.LIFE if i % 3 else light, a))
-			InkDraw.rough_circle(self, c, 10.0 + t * 26.0, Color(light, 0.7 * a), 3.0, e["seed"], 2.0)
+			_ring(c, 10.0 + t * 26.0, Color(light, 0.7 * a), 3.0, e["seed"], 2.0)
 		1:
 			# A white star with a short glow.
-			InkDraw.glow(self, c, 18.0 + t * 20.0, DuskStyle.SUN, a)
+			_glow(c, 18.0 + t * 20.0, DuskStyle.SUN, a)
 			for i: int in range(8):
 				var ray: Vector2 = Vector2.from_angle(TAU * i / 8.0 + 0.2) * (12.0 + t * 40.0) * (1.4 if i % 2 == 0 else 0.8)
 				color = _line(c + ray * 0.3, c + ray, Color(DuskStyle.PEARL, a), 3.0 if i % 2 == 0 else 1.6)
@@ -208,7 +241,7 @@ func _reflect(e: Dictionary, t: float, s: int) -> Dictionary:
 	var a: float = _fade(t)
 	var tint: Color = [DuskStyle.GROWTH, DuskStyle.SUN, DuskStyle.GROWTH][s]
 	if s == 1:
-		InkDraw.glow(self, c, 26.0, DuskStyle.SUN, a)
+		_glow(c, 26.0, DuskStyle.SUN, a)
 	var color: Color = _poly(_arc_points(c, 22.0 + t * 18.0, dir.angle() - 1.2, dir.angle() + 1.2, 12), Color(tint, a), [4.0, 3.0, 1.6][s])
 	_line(c, c + dir * (30.0 + t * 50.0), Color(tint, a), [3.0, 2.4, 1.4][s])
 	return {"color": color}
@@ -238,12 +271,11 @@ func _ghosts(e: Dictionary, t: float, s: int, poor: bool) -> Dictionary:
 					var length: float = 30.0 * (1.0 - k * 0.2) * (0.6 if poor and j == 1 else 1.0)
 					color = _line(at + Vector2(-length * 0.5, y), at + Vector2(length * 0.5, y), Color(tint, alpha), 8.0 - k * 2.0)
 			1:
-				InkDraw.glow(self, at, 22.0, tint, alpha)
+				_glow(at, 22.0, tint, alpha)
 				color = _dot(at, 10.0 - k * 2.0, Color(tint, alpha))
 			_:
 				var rect: Rect2 = Rect2(at - Vector2(16, 46), Vector2(32, 92))
-				draw_rect(rect, Color(tint, alpha), false, 1.5)
-				color = Color(tint, alpha)
+				color = _rect(rect, Color(tint, alpha), false, 1.5)
 	if poor:
 		# A crack mark at the start of the dash.
 		_line(c + Vector2(-10, -10), c + Vector2(10, 10), Color(DuskStyle.LIFE, a), 3.0)
@@ -257,7 +289,7 @@ func _invuln(e: Dictionary, _t: float, s: int) -> Dictionary:
 	match s:
 		0: color = _poly(InkDraw.circle_points(c, 54.0, int(clock * 10.0), 3.0, 36), Color(DuskStyle.PAPER_DAY, 0.25 + 0.25 * pulse), 2.4)
 		1:
-			InkDraw.glow(self, c, 40.0, DuskStyle.POSSIBILITY_GLOW, 0.4 + 0.4 * pulse)
+			_glow(c, 40.0, DuskStyle.POSSIBILITY_GLOW, 0.4 + 0.4 * pulse)
 			color = Color(DuskStyle.POSSIBILITY_GLOW, 0.4 + 0.4 * pulse)
 		_:
 			for i: int in range(12):
@@ -276,7 +308,7 @@ func _spend(e: Dictionary, t: float, s: int) -> Dictionary:
 		match s:
 			0: color = _dot(p, 4.0 * a + 1.0, Color(DuskStyle.POSSIBILITY, a))
 			1:
-				InkDraw.glow(self, p, 6.0, DuskStyle.POSSIBILITY_GLOW, a)
+				_glow(p, 6.0, DuskStyle.POSSIBILITY_GLOW, a)
 				color = _dot(p, 2.5, Color(DuskStyle.POSSIBILITY_GLOW, a))
 			_: color = _dot(p, 2.0, Color(DuskStyle.POSSIBILITY, a))
 	return {"color": color}
@@ -289,7 +321,7 @@ func _gain(e: Dictionary, t: float, s: int) -> Dictionary:
 	for i: int in range(5 if s < 2 else 3):
 		var p: Vector2 = c + Vector2((_n(i, e["seed"]) - 0.5) * 50.0, -t * (40.0 + _n(i, e["seed"] + 3) * 40.0))
 		if s == 1:
-			InkDraw.glow(self, p, 8.0, DuskStyle.POSSIBILITY_GLOW, a)
+			_glow(p, 8.0, DuskStyle.POSSIBILITY_GLOW, a)
 		color = _dot(p, [4.0, 3.0, 2.0][s], Color(DuskStyle.POSSIBILITY_GLOW, a))
 	return {"color": color}
 
@@ -303,7 +335,7 @@ func _heal_loop(e: Dictionary, _t: float, s: int) -> Dictionary:
 		match s:
 			0: color = _dot(p, 3.0 + 3.0 * phase, Color(DuskStyle.PAPER_DAY, 0.8 * phase))
 			1:
-				InkDraw.glow(self, p, 8.0, DuskStyle.POSSIBILITY_GLOW, phase)
+				_glow(p, 8.0, DuskStyle.POSSIBILITY_GLOW, phase)
 				color = _dot(p, 2.5, Color(DuskStyle.POSSIBILITY_GLOW, phase))
 			_: color = _dot(p, 2.0, Color(DuskStyle.PAPER_DAY, phase))
 	return {"color": color}
@@ -313,7 +345,7 @@ func _heal_done(e: Dictionary, t: float, s: int) -> Dictionary:
 	var c: Vector2 = e["at"]
 	var a: float = 1.0 - t
 	if s == 1:
-		InkDraw.glow(self, c, 30.0 + t * 30.0, DuskStyle.LIFE, a)
+		_glow(c, 30.0 + t * 30.0, DuskStyle.LIFE, a)
 	var color: Color = _poly(InkDraw.circle_points(c, 70.0 - t * 40.0, e["seed"], [2.5, 0.5, 0.0][s], 36), Color(DuskStyle.PAPER_DAY, a), [3.0, 2.0, 1.4][s])
 	_dot(c, [8.0, 6.0, 4.0][s] * a, Color(DuskStyle.LIFE, a))
 	return {"color": color}
@@ -329,7 +361,7 @@ func _hurt(e: Dictionary, t: float, s: int) -> Dictionary:
 				var p: Vector2 = c + Vector2.from_angle(TAU * _n(i, e["seed"])) * (16.0 + t * 50.0 * _n(i, e["seed"] + 1))
 				color = _dot(p, 5.0 * a + 1.0, Color(DuskStyle.LIFE, a))
 		1:
-			InkDraw.glow(self, c, 40.0, DuskStyle.DENY, a)
+			_glow(c, 40.0, DuskStyle.DENY, a)
 			color = _poly(InkDraw.circle_points(c, 30.0 + t * 30.0, 0, 0.0, 32), Color(DuskStyle.DENY, a), 3.0)
 		_:
 			color = _poly(InkDraw.circle_points(c, 26.0 + t * 20.0, 0, 0.0, 24), Color(DuskStyle.LIFE, a), 2.0)
@@ -341,7 +373,7 @@ func _enemy_hurt(e: Dictionary, t: float, s: int) -> Dictionary:
 	var a: float = 1.0 - t
 	var color: Color = Color(DuskStyle.PAPER_DAY, a * [0.55, 0.7, 0.4][s])
 	# A and B flash the body; C only outlines it.
-	draw_rect(Rect2(c - Vector2(30, 40), Vector2(60, 80)), color, s != 2, 2.0 if s == 2 else -1.0)
+	color = _rect(Rect2(c - Vector2(30, 40), Vector2(60, 80)), color, s != 2, 2.0 if s == 2 else -1.0)
 	return {"color": color}
 
 ## A target is defeated.
@@ -357,15 +389,14 @@ func _enemy_death(e: Dictionary, t: float, s: int) -> Dictionary:
 				var p: Vector2 = c + dir * (20.0 + t * 90.0 * _n(i, e["seed"] + 1)) + Vector2(0, t * t * 120.0)
 				color = _line(p, p + dir * 12.0 * a, Color(DuskStyle.PAPER_DAY if i % 4 else DuskStyle.LIFE, a), 4.0)
 		1:
-			InkDraw.glow(self, c, 50.0 * (1.0 - t * 0.5), DuskStyle.SUN, a)
+			_glow(c, 50.0 * (1.0 - t * 0.5), DuskStyle.SUN, a)
 			for i: int in range(10):
 				var dir: Vector2 = Vector2.from_angle(TAU * i / 10.0 + _n(i, e["seed"]))
 				var p: Vector2 = c + dir * (10.0 + t * 110.0)
 				color = _poly(PackedVector2Array([p, p + dir.rotated(0.5) * 10.0, p + dir * 18.0]), Color(DuskStyle.PEARL, a), 2.0)
 		_:
 			var k: float = 34.0 * (1.0 - t)
-			draw_rect(Rect2(c - Vector2(k, k), Vector2(k, k) * 2.0), Color(DuskStyle.PAPER_DAY, a), false, 1.6)
-			color = Color(DuskStyle.PAPER_DAY, a)
+			color = _rect(Rect2(c - Vector2(k, k), Vector2(k, k) * 2.0), Color(DuskStyle.PAPER_DAY, a), false, 1.6)
 	return {"color": color}
 
 ## Revival at a checkpoint.
@@ -379,7 +410,7 @@ func _revive(e: Dictionary, t: float, s: int) -> Dictionary:
 				var x: float = (i - 2) * 14.0
 				color = _line(c + Vector2(x, 0), c + Vector2(x, -t * 140.0 * (0.6 + _n(i, e["seed"]) * 0.4)), Color(DuskStyle.PAPER_DAY, a * 0.8), 5.0)
 		1:
-			InkDraw.glow(self, c + Vector2(0, -60), 60.0, DuskStyle.SUN, a)
+			_glow(c + Vector2(0, -60), 60.0, DuskStyle.SUN, a)
 			color = _line(c, c + Vector2(0, -180.0 * t), Color(DuskStyle.PEARL, a), 6.0)
 		_:
 			color = _poly(InkDraw.circle_points(c + Vector2(0, -48), 20.0 + t * 60.0, 0, 0.0, 32), Color(DuskStyle.PAPER_DAY, a), 1.6)
