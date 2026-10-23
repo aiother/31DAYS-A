@@ -24,7 +24,7 @@ func _on_encounter() -> void:
 	_tian_intro_retry = false
 	_bind_room()
 	ui.call("save_failed","")
-	ui.call("show_enemy_intro",4.0,"天人战士\n\n这里不安全。\n留意连击、瞬移与格挡反击。\n从侧后方或上下攻击，抓住重击后摇。")
+	ui.call("show_enemy_card",4.0,"天人战士","精英","这里不安全。\n留意连击、瞬移与格挡反击。\n从侧后方或上下攻击，抓住重击后摇。")
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)

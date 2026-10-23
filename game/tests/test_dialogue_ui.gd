@@ -160,6 +160,13 @@ func slip_cases() -> void:
 	for point: Vector2 in paper.get("top", PackedVector2Array()):
 		torn = torn and absf(point.y - box.position.y) <= 4.0
 		heights[snappedf(point.y, 0.5)] = true
+	# UI-008 review suggestion (done in UI-009): the bottom edge too, end to end.
+	var bottom: PackedVector2Array = paper.get("bottom", PackedVector2Array())
+	var lows: Dictionary = {}
+	for point: Vector2 in bottom:
+		torn = torn and absf(point.y - box.end.y) <= 4.0
+		lows[snappedf(point.y, 0.5)] = true
+	torn = torn and lows.size() > 5 and bottom.size() == 41 and is_equal_approx(bottom[0].x, box.position.x) and is_equal_approx(bottom[40].x, box.end.x)
 	check(torn and heights.size() > 5 and is_equal_approx(outline[0].x, box.position.x) and is_equal_approx(outline[40].x, box.end.x), "the drawn paper spans the slip with torn top and bottom edges")
 	check(said().get("speaker", {}).get("text") == config.speaker and said().get("speaker", {}).get("color") == DuskStyle.PAPER_DAY, "the speaker sits on the ink tag in paper colour")
 	var early: int = shown_text().length()
@@ -175,7 +182,7 @@ func slip_cases() -> void:
 	check(not paused and dialogue().active, "and the dialogue goes on after resuming")
 	await key(KEY_E)
 	var mark: Dictionary = said().get("marker_shape", {})
-	check(shown_text() == dialogue().text.text and said().get("marker") == "continue" and mark.get("color") == DuskStyle.LIFE and (mark.get("points", []) as PackedVector2Array).size() == 3 and said()["box"].grow(1).has_point((mark["points"] as PackedVector2Array)[0]), "one E finishes the line and draws the go-on triangle in the slip")
+	check(shown_text() == dialogue().text.text and said().get("marker") == "continue" and mark.get("color") == DuskStyle.LIFE and (mark.get("points", []) as PackedVector2Array).size() == 3 and (mark.get("points", PackedVector2Array()) as PackedVector2Array).size() == 3 and Array(mark["points"]).all(func(point: Vector2) -> bool: return (said()["box"] as Rect2).grow(1).has_point(point)) and absf((mark["points"] as PackedVector2Array)[1].x - (mark["points"] as PackedVector2Array)[0].x - 16.0) < 0.01 and (mark["points"] as PackedVector2Array)[2].y > (mark["points"] as PackedVector2Array)[0].y, "one E finishes the line and draws the go-on triangle (all three corners, pointing down) in the slip")
 	for i: int in range(12):
 		if not dialogue().active:
 			break

@@ -90,8 +90,8 @@ func run() -> void:
 	for id: int in newcomers:
 		all_new = all_new and not original.has(id)
 	check(all_new and session.cinematic==RescueBattlefieldSession.Cinematic.NONE,"only after warning three distinct new hostile instances arrive")
-	var card: Control = session.ui.get("_enemy_intro") as Control
-	check(card.visible and (card.get_child(0) as Label).text.contains("新一波"),"new-wave arrival is explicitly identified during restored gameplay")
+	var banner: BattleBanner = session.ui.get("_battle_banner") as BattleBanner
+	check(banner.showing() and banner.heading.contains("新一波") and not (session.ui.get("_enemy_intro") as Control).visible,"new-wave arrival is explicitly identified during restored gameplay (UI-009 battle banner)")
 	check(session.player.life.health==1 and session.player.possibility.balance==10 and not session.player.life.scripted_control_locked,"clear presentation preserves no-heal full-cap reward and control restoration")
 	paused = false
 	session.queue_free()

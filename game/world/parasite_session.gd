@@ -86,7 +86,7 @@ func _enter_parasite() -> void:
 	_parasite_intro_remaining = actor.config.intro_duration
 	player.reset_kinematics()
 	player.life.scripted_control_locked = true
-	ui.call("show_enemy_intro", actor.config.intro_duration, "寄生同伴者\n\n弹反连续投射物。\n被命中会让Boss恢复生命。")
+	ui.call("show_enemy_card", actor.config.intro_duration, "寄生同伴者", "首领", "弹反连续投射物。\n被命中会让Boss恢复生命。")
 
 func _physics_process(delta: float) -> void:
 	if _needs_dodge_growth() and _interaction_input():

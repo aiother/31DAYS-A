@@ -66,7 +66,7 @@ func _bind_room() -> void:
 			area.set_victory()
 
 func _on_wave_changed(index: int) -> void:
-	ui.call("show_enemy_intro",1.0,"敌方第%d波即将进入\n\n最后一波会有幸存者与平台支援。" % [index+1])
+	ui.call("show_battle_banner",1.0,"敌方第%d波即将进入\n\n最后一波会有幸存者与平台支援。" % [index+1])
 
 func _on_final_started() -> void:
 	if bool(data["events"].get(FinalClock.STARTED,false)):
