@@ -144,3 +144,103 @@
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 第2轮复审（2026-10-23）
+
+审查者：Claude｜结论：**通过**，无阻断项。不合并 master（由 Codex 在用户授权后集成）。
+
+### 固定对象
+
+- 修订实现：`bee6026ecfe46d8997421670c894af50112bf389`；交付：`72899f021df32dda96b1075fe24ad49afa8a9690`。审查分支 `claude/SYS-010-review-r2` 从交付 SHA 建立，只新增本节。
+- 第1轮审查 `ff719c5` 已快进保留在交付历史中。
+- `f1fde41..bee6026` 只改 `game/tests/test_character_animation.gd`、`game/docs/character_animation.md` 与 review.md；`game/animation/`、玩家与敌人脚本、场景均无差异，运行时行为与第1轮所审一致。
+
+### R1～R3 核对
+
+| 编号 | 第1轮问题 | 本轮回归 | 核对 |
+| --- | --- | --- | --- |
+| R1 | 映射“详细键优先”无回归 | 同一映射同时给 `attack` 与 `attack.horizontal.1.windup`，真实攻击先播细分前摇，判定与后摇回落到通用名，核对 resolved 片段与 VisualRoot 实际姿态 | 成立；“先通用名后详细键”变异 5 项失败 |
+| R2 | 单色轻 / 重变体与真实招式对应无回归 | 每个物理采样同时记录 `strong_attack` 与查询键，逐条核对同帧一致，并要求两组都采到 | 成立；轻 / 重对调变异 2 项失败 |
+| R3 | 驱动层 seek、切换还原、属性白名单、父级路径无断言 | 两秒片段映射到真实短前摇，三个进度点核对 AnimationPlayer 位置 = progress × length；测试子节点 position / modulate 改动后切状态核对还原；`process_priority`、`..:scale`、`../..:scale` 直接断言 `safe()` 为假并核对回退 | 成立；一律 advance 3 项失败、去掉逐轨道还原 2 项失败、去掉白名单 2 项失败、允许父级路径 4 项失败 |
+
+非阻断 N1（朝向约定：专用 `Facing` 子节点）、N2（walk / run 只是视觉档位）已写入接入文档，措辞准确、未改玩法；N3 本轮 full 在固定修订实现 SHA、干净工作区运行。
+
+### 更正第1轮审查的一处说法
+
+第1轮审查 R3 写“允许 `..` 父级路径的变异只靠运行时 SCRIPT ERROR 拦下”。本轮复查发现这是**我的变异写法造成的**：我删除了 `if path.get_name(n) == "..": return false` 整行，使 `for` 循环体为空，脚本本身解析失败，测试根本没有运行。改为语法正确的等价变异（条件恒假）后，本轮测试以 4 项断言失败拦下，正常产出汇总、无 SCRIPT ERROR，与交付记录一致。第1轮那句结论因此不成立，特此更正。第1轮 R3 的其余三点（seek、还原、白名单）与这一处无关，结论不变。
+
+### 审查方变异复跑
+
+第1轮的 16 项变异在交付 SHA 上逐项复跑（只改运行时脚本一处，跑新套件，按原字节恢复并核对）：
+
+| 变异 | 第1轮 | 本轮 |
+| --- | --- | --- |
+| 单色轻 / 重对调 | 存活 | 2 项失败 |
+| 天人重击 / 远程对调 | 6 项失败 | 6 项失败 |
+| 映射先通用名后详细键 | 存活 | 5 项失败 |
+| 允许 `..` 父级路径（语法正确写法，条件恒假） | （见上更正） | 4 项失败，无 SCRIPT ERROR |
+| 属性不限白名单 | 存活 | 2 项失败 |
+| 不安全片段不回退占位 | 11 项失败 | 5 项失败 |
+| 换状态不还原视觉属性 | 存活 | 2 项失败 |
+| 玩家受击不报告 | 2 项失败 | 2 项失败 |
+| 恢复报告为待机 | 1 项失败 | 1 项失败 |
+| 跑步 / 步行对调 | 3 项失败 | 4 项失败 |
+| 转身不报告 | 1 项失败 | 1 项失败 |
+| 攻击上 / 下对调 | 4 项失败 | 4 项失败 |
+| 敌人硬直报告为待机 | 3 项失败 | 3 项失败 |
+| 起跳不报告 | 1 项失败 | 1 项失败 |
+| 复活不报告 | 1 项失败 | 1 项失败 |
+| 一律 advance、不按进度定位 | 存活 | 3 项失败 |
+
+（“不安全片段不回退占位”本轮伴随 4 处 SCRIPT ERROR，这是去掉回退后驱动实际去写不安全轨道所致，属于变异本身的预期后果，套件仍正常产出汇总并以断言失败。）
+
+新套件 `CHARACTER_ANIMATION_TESTS` 在交付 SHA 上 100/0，无 SCRIPT ERROR、WARNING。
+
+### 独立 full
+
+在交付 SHA、起点干净执行 `python codexandclaude/tools/run_checks.py full --jobs 4`：**通过**，G2 **95/95**，G3 **108/108 + 67/67**，**content_stable=True**，ObjectDB 泄漏 0 处，引擎报告 WARNING 行 0 处。摘要 `codexandclaude/runs/20261023T185105.127263Z/`（不入库）。变异在 full 之前进行并已按原字节恢复，full 起点无源码差异。
+
+<!-- 第2轮复审 full 自动摘要 -->
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`72899f021df32dda96b1075fe24ad49afa8a9690`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-23T18:51:05.127263+00:00；结束：2026-10-23T19:03:59.505315+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际95 / 预期95；完整=True；通过=True。
+- G3:tests：实际108 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`5eb164dfe53f854ee4c44beb01d80b1b52462707`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`18690586fdbf17b9a9e927c6d4c29ec4990c3803769415dd408d1973fb138984`；工作区范围指纹（原始字节）：`bb95b9d2a79b794d26e65bc3800ff49c827591a3320fcdf26a34d69ccd78935b`。
+全工作区指纹：`fc0adbcf9bbc7b61102098ca4a0e213a69072c673e704eca4f09e46a885268a0`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\001.txt`；SHA256=`b72ed9cff0bf679990fbc0709c147f59706d225df9ecaacea8ee4086a315ed14`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.062秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.406秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\006.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\claude\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\runs\\20261023T185105.127263Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=749.907秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\007.txt`；SHA256=`67dd78e45294a1771eda015576c32ba2020366ae231914de6368d5caf2542164`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.343秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\008.txt`；SHA256=`2539b6e4ac5e72311ed812b32fbf5f650768edc60df875f4c89a893ee1aa885c`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=18.563秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\009.txt`；SHA256=`aeedcf4f0c5aedd74a75c2a2f4117e6ab3676f154ac30b493627f32c6eb39f10`。
+- 报告 `D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T185105.127263Z\engine.txt` SHA256=`ee503c14e3eff85074467cb0019001e958c7c672a27c6c7de3fcd0b3fe2e2a8e`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+### G4
+
+用户 G4（无存档验收入口 `sys010_animation.gd`）待进行；复审通过后由用户决定。
