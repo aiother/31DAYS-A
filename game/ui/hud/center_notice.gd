@@ -84,11 +84,16 @@ func same_event(a: Dictionary, b: Dictionary) -> bool:
 
 func push(entry: Dictionary) -> void:
 	entry["at"] = clock
+	# A text already shown -- alone, or folded into a signal's notice in
+	# either order -- is not shown again. Every entry that holds a text keeps
+	# it under "text", whatever its source.
+	if entry["source"] == "notice":
+		for known: Dictionary in history:
+			if clock - float(known["at"]) <= MERGE_SECONDS and known.get("text", "") == entry["text"]:
+				return
 	for known: Dictionary in history:
 		if clock - float(known["at"]) > MERGE_SECONDS:
 			continue
-		if entry["source"] == "notice" and known["source"] == "notice" and known["text"] == entry["text"]:
-			return
 		if not known.get("merged", false) and same_event(known, entry):
 			# The signal names the event; the text keeps its detail.
 			var signal_entry: Dictionary = entry if entry["source"] != "notice" else known
@@ -96,6 +101,7 @@ func push(entry: Dictionary) -> void:
 			known["title"] = signal_entry["title"]
 			known["color"] = signal_entry["color"]
 			known["line"] = text_entry["line"]
+			known["text"] = text_entry["text"]
 			known["merged"] = true
 			return
 	history.append(entry)

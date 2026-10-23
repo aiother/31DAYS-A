@@ -371,6 +371,36 @@ func same_name_cases() -> void:
 	var lines: Array = added.map(func(entry: Dictionary) -> String: return "%s/%s/%s" % [entry["source"], entry["line"], entry.get("merged", false)])
 	check(added.size() == 2 and added[0]["source"] == "item" and added[0]["line"] == "甲" and added[1]["source"] == "notice" and added[1]["line"] == "乙", "one signal takes one text; the other text is its own notice: %s" % str(lines))
 	await drain()
+	# Re-review R2: a repeated text stays one notice in either order.
+	for order: String in ["text first", "signal first"]:
+		var extra: RoomPickup = RoomPickup.new()
+		extra.config = PickupConfig.new()
+		extra.config.persistence_key = "item:ui010:order_" + order.replace(" ", "_")
+		extra.config.display_name = "测试拾取"
+		session.room.add_child(extra)
+		extra.position = session.player.position + Vector2(0, -44)
+		before = notices().history.size()
+		var text: String = "获得测试拾取 · 重复文字"
+		if order == "text first":
+			session.dialogue_ui.show_notice(text)
+			await frames(1)
+			check(session.collect_pickup(extra), order + ": the pickup saves")
+			await frames(2)
+		else:
+			check(session.collect_pickup(extra), order + ": the pickup saves")
+			await frames(2)
+			session.dialogue_ui.show_notice(text)
+			await frames(1)
+		session.dialogue_ui.show_notice(text)
+		await frames(2)
+		added = notices().history.slice(before)
+		check(added.size() == 1 and added[0]["title"] == "获得 · 测试拾取" and added[0]["line"] == "重复文字" and added[0].get("merged", false), "%s, then the same text again: one notice (%d)" % [order, added.size()])
+		await drain()
+		# Outside the window the same text is news again.
+		session.dialogue_ui.show_notice(text)
+		await frames(2)
+		check(notices().history.size() == before + 2, order + ": later the same text is a new notice")
+		await drain()
 
 ## Review R1: one save that changes several tasks leaves the slip on the
 ## current one -- the same as quest_state() and the pause menu.
