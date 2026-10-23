@@ -9,7 +9,7 @@ func _ready() -> void:
 	prompt = Label.new()
 	prompt.position = Vector2(-88, -96)
 	prompt.add_theme_font_size_override("font_size", 20)
-	prompt.text = "E / RB · 拾取" + config.display_name
+	prompt.text = ""
 	add_child(prompt)
 	prompt.hide()
 	queue_redraw()
@@ -19,7 +19,7 @@ func can_collect(player: PlayerController) -> bool:
 
 func refresh(player: PlayerController, collected: bool) -> void:
 	visible = not collected
-	prompt.visible = not collected and can_collect(player)
+	prompt.visible = false
 
 ## UI-007 (BL-049): key items pulse so they read on the map; same rule as
 ## SYS-009's key_item. Collected items are hidden by refresh().

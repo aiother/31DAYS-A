@@ -28,8 +28,8 @@ func refresh(open: bool, helped: bool, failed: bool, prompt: bool) -> void:
 	opened = open
 	$AbilityGate/Visual.visible = false
 	$AbilityGate/Label.text = "尖刺已关闭 · 救助通路永久开启" if opened else "强化闪避穿过尖刺 · 建议至少1可能性"
-	$Survivor/Prompt.visible = prompt
-	$Survivor/Prompt.text = "E / RB · 交谈" if helped or failed else "E / RB · 免费救助"
+	$Survivor/Prompt.text = ""
+	$Survivor/Prompt.visible = prompt and not $Survivor/Prompt.text.is_empty()
 	$Survivor/Name.text = "外围幸存者 · 已救助" if helped else ("外围幸存者 · 救助机会已失去" if failed else "外围幸存者")
 	$Survivor/VisualRoot/Body.polygon = PackedVector2Array([Vector2(-24,0),Vector2(-24,-80),Vector2(24,-80),Vector2(24,0)]) if helped else PackedVector2Array([Vector2(-36,0),Vector2(-36,-40),Vector2(36,-40),Vector2(36,0)])
 	queue_redraw()

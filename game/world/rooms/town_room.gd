@@ -3,8 +3,8 @@ extends WorldRoom
 @export var dialogue: DialogueConfig
 
 func refresh_rescue(completed: bool, failed: bool, prompt: bool) -> void:
-	$Survivor/Prompt.visible = prompt
-	$Survivor/Prompt.text = "E / RB · 救助" if not completed and not failed else "E / RB · 交谈"
+	$Survivor/Prompt.text = ""
+	$Survivor/Prompt.visible = prompt and not $Survivor/Prompt.text.is_empty()
 	$Survivor/VisualRoot/Body.polygon = PackedVector2Array([Vector2(-24, 0), Vector2(-24, -80), Vector2(24, -80), Vector2(24, 0)]) if completed else PackedVector2Array([Vector2(-36, 0), Vector2(-36, -40), Vector2(36, -40), Vector2(36, 0)])
 	$Survivor/VisualRoot/Body.color = Color(0.6, 0.75, 0.55) if completed else Color(0.6, 0.55, 0.42)
 	$Survivor/Name.text = "幸存者 · 已救助" if completed else ("幸存者 · 救助机会已失去" if failed else "幸存者")

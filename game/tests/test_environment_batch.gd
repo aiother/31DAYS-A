@@ -98,7 +98,7 @@ func case_room(id: String) -> void:
 		await ticks(120)
 		check(session.player.possibility.balance==-2,id+" later stones and corpse do not repeat kill reward")
 	await place(config.switch_position+Vector2(0,44))
-	check(hazard.prompt.visible,id+" nearby switch has interaction feedback")
+	check(not hazard.prompt.visible and session.interaction_targets().any(func(value: Dictionary) -> bool: return value["id"] == config.persistence_key and value["available"]),id+" nearby switch keeps formal interaction without duplicate gray text")
 	paused = true
 	check(not session.activate_environment_switch(),id+" paused switch cannot mutate progress")
 	paused = false

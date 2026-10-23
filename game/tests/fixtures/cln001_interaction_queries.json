@@ -1,0 +1,961 @@
+{
+  "HD_10002_3:medkits:0": [],
+  "HD_10002_3:medkits:3": [],
+  "HD_20001_1:rockfall-off": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_1:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1936.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "HD_20001_1_N001",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1280.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_1:rockfall-on": [
+    {
+      "action": "关闭落石",
+      "available": true,
+      "id": "hazard:HD_20001_1:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1936.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "HD_20001_1_N001",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1280.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:medkits:0": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "HD_20001_2:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:medkits:3": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "HD_20001_2:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:npc:completed": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "HD_20001_2:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:npc:failed": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "HD_20001_2:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:npc:pending": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "HD_20001_2:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:rockfall-off": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": false,
+      "id": "HD_20001_2:Survivor",
+      "in_range": false,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_2:rockfall-on": [
+    {
+      "action": "关闭落石",
+      "available": true,
+      "id": "hazard:HD_20001_2:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1108.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "交谈",
+      "available": false,
+      "id": "HD_20001_2:Survivor",
+      "in_range": false,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1088.0,
+        720.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_3:rockfall-off": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20001_3:rockfall-on": [
+    {
+      "action": "关闭落石",
+      "available": true,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20002_1:medkits:0": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20002_1:medkits:3": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20002_1:rockfall-off": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "HD_20002_1:rockfall-on": [
+    {
+      "action": "关闭落石",
+      "available": true,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": true,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "NSZC_10001_1:npc:completed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "NSZC_10001_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        2608.0,
+        848.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "NSZC_10001_1:npc:failed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "NSZC_10001_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        2608.0,
+        848.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "NSZC_10001_1:npc:pending": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "NSZC_10001_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        2608.0,
+        848.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "NSZC_10002_1:medkits:0": [
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "NSZC_10002_1:medkits:3": [
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10001_1:npc:completed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10001_1:Seven",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1728.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10001_1:npc:failed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10001_1:Seven",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1728.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10001_1:npc:pending": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10001_1:Seven",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        1728.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10002_1:npc:completed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10002_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        960.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10002_1:npc:failed": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10002_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        960.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "TY_10002_1:npc:pending": [
+    {
+      "action": "交谈",
+      "available": true,
+      "id": "TY_10002_1:Survivor",
+      "in_range": true,
+      "key_item": false,
+      "kind": "交谈",
+      "position": [
+        960.0,
+        896.0
+      ],
+      "radius": 110.0,
+      "range_kind": "circle"
+    }
+  ],
+  "connection:locked": [
+    {
+      "action": "开启",
+      "available": false,
+      "id": "gate:HD_10003_1:forward",
+      "in_range": true,
+      "key_item": true,
+      "kind": "开关",
+      "position": [
+        1184.0,
+        840.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "connection:open": [
+    {
+      "action": "开启",
+      "available": false,
+      "id": "gate:HD_10003_1:forward",
+      "in_range": true,
+      "key_item": true,
+      "kind": "开关",
+      "position": [
+        1184.0,
+        840.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "connection:ready": [
+    {
+      "action": "开启",
+      "available": true,
+      "id": "gate:HD_10003_1:forward",
+      "in_range": true,
+      "key_item": true,
+      "kind": "开关",
+      "position": [
+        1184.0,
+        840.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:HD_10002_3:pearl_01:collected": [],
+  "item:HD_10002_3:pearl_01:far": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "item:HD_10002_3:pearl_01",
+      "in_range": false,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        1632.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:HD_10002_3:pearl_01:near": [
+    {
+      "action": "拾取",
+      "available": true,
+      "id": "item:HD_10002_3:pearl_01",
+      "in_range": true,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        1632.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:HD_10002_3:pearl_01:paused": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "item:HD_10002_3:pearl_01",
+      "in_range": true,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        1632.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:NSZC_10002_1:pearl_01:collected": [
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:NSZC_10002_1:pearl_01:far": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "item:NSZC_10002_1:pearl_01",
+      "in_range": false,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        704.0,
+        1752.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:NSZC_10002_1:pearl_01:near": [
+    {
+      "action": "拾取",
+      "available": true,
+      "id": "item:NSZC_10002_1:pearl_01",
+      "in_range": true,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        704.0,
+        1752.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "item:NSZC_10002_1:pearl_01:paused": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "item:NSZC_10002_1:pearl_01",
+      "in_range": true,
+      "key_item": false,
+      "kind": "拾取",
+      "position": [
+        704.0,
+        1752.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "记录检查点",
+      "available": false,
+      "id": "NSZC_10002_1_N002",
+      "in_range": false,
+      "key_item": false,
+      "kind": "检查点",
+      "position": [
+        224.0,
+        1792.0
+      ],
+      "radius": 96.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20001_3:pearl_01:collected": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20001_3:pearl_01:far": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "keyitem:HD_20001_3:pearl_01",
+      "in_range": false,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        840.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20001_3:pearl_01:near": [
+    {
+      "action": "拾取",
+      "available": true,
+      "id": "keyitem:HD_20001_3:pearl_01",
+      "in_range": true,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        840.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20001_3:pearl_01:paused": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "keyitem:HD_20001_3:pearl_01",
+      "in_range": true,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1120.0,
+        840.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20001_3:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1712.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20002_1:pearl_01:collected": [
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20002_1:pearl_01:far": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "keyitem:HD_20002_1:pearl_01",
+      "in_range": false,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1872.0,
+        804.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20002_1:pearl_01:near": [
+    {
+      "action": "拾取",
+      "available": true,
+      "id": "keyitem:HD_20002_1:pearl_01",
+      "in_range": true,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1872.0,
+        804.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ],
+  "keyitem:HD_20002_1:pearl_01:paused": [
+    {
+      "action": "拾取",
+      "available": false,
+      "id": "keyitem:HD_20002_1:pearl_01",
+      "in_range": true,
+      "key_item": true,
+      "kind": "拾取",
+      "position": [
+        1872.0,
+        804.0
+      ],
+      "radius": 80.0,
+      "range_kind": "circle"
+    },
+    {
+      "action": "关闭落石",
+      "available": false,
+      "id": "hazard:HD_20002_1:disabled",
+      "in_range": false,
+      "key_item": false,
+      "kind": "开关",
+      "position": [
+        1600.0,
+        1236.0
+      ],
+      "radius": 88.0,
+      "range_kind": "circle"
+    }
+  ]
+}
