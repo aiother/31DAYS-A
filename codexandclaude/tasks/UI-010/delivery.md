@@ -3,9 +3,88 @@
 实现者：Claude｜审查者：Codex｜分支：`claude/UI-010`
 基线：`96f0400b08f770ee86d8385db2c0f9c29e5e31a1`（UI-009、CLN-001 合入后的 master）
 实现 SHA：`6522d5a56abe8d0f064dec766041ae8345f8a57b`（`bbfe707` 实现与测试 + `6522d5a` 验收适配与文档）
-状态：实现与 G1/G2/G3 完成，待 Codex 审查；G4 待用户验收。
+状态：第1轮审查（`review.md`，R1、R2 需修改）已修复，待 Codex 复审；G4 待用户验收。
+修复后实现 SHA：`81095965a442d8ca9b032522f4d49f7a200eef9a`；第1轮审查记录 `be9682c` 已快进合入本分支。
 
-## 改动
+## 第1轮审查修复（2026-10-23）
+
+审查记录 [review.md](review.md)（Codex，`be9682c7`）。两项均成立，按建议修复。
+
+| 编号 | 问题 | 修复 | 回归 |
+| --- | --- | --- | --- |
+| R1 | 纸签直接采用任意 `quest_changed` 的任务，一次保存发出多项任务变化时停在最后一项 | `quest_changed` 是所有任务的事件流；纸签收到事件时重新读 `quest_state()`，只显示查询给出的当前任务（中央提示仍逐条显示所有事件） | 田野中开始 7 的救助，同一 Room、同一 data 下把日期改为第 3 日并真实 `save_current()`：确认一次保存发出 3 条“救助已过期”，纸签的 id、objective、state 与 `quest_state()` 相同，objective 与暂停菜单所读 `quest_status_text()` 相同，绘制的也是它 |
+| R2 | 1.5 秒同文去重吞掉独立、保存成功的同名获得 | 信号（`quest_changed` / `item_obtained`）每条都是独立事件，**从不因文字相同而丢弃**；只丢弃 1.5 秒内重复的同一段 `show_notice()` 文字；文字与信号合成改为一对一（一段文字只并入一个信号，一个信号只并入一段文字） | 两件不同持久化 key、同名“测试拾取”的拾取先后写盘成功 → 两条提示，并逐帧确认两条都作为队首依次画出；同名拾取与自己的“获得测试拾取 · 第三件”文字仍合成一条；一个信号与两段不同的“获得测试拾取”文字 → 一条合成、一条单独 |
+
+文档 `quest_notices_ui.md` 的去重定义与纸签数据来源已同步更正（不是缩小窗口）。
+
+`QUEST_NOTICES_TESTS` 53 → **68/0**。
+
+**变异**（逐项只改一处，跑新套件，按原字节恢复并核对）：
+
+| 变异 | 结果 |
+| --- | --- |
+| R1：纸签采用事件里的任务（原实现） | 3 项失败 |
+| R2：任何来源同标题同下行都丢弃（原实现） | 2 项失败 |
+| R2：一段文字可并入多个信号 | 1 项失败（在 68 项版本上；66 项版本时存活，补“一个信号两段文字”用例后杀死） |
+| 同一段文字两次都保留 | 2 项失败 |
+| 读档补发当前任务为“救助开始” | 3 项失败 |
+| 文字与其信号不合成 | 4 项失败 |
+| 保存失败仍发获得 | 4 项失败 |
+| 提示不避让保存失败提示 | 2 项失败 |
+| 排队时多条同时推进 | 2 项失败 |
+| 对话中提示照常显示 | 1 项失败 |
+| 纸签结束状态不收起 | 1 项失败 |
+| 纸签只在换 Room 时刷新 | 2 项失败 |
+| 剧情（HUD 隐藏）时纸签仍显示 | 1 项失败 |
+| 灰盒 `notice` Label 重新显示 | 1 项失败 |
+| 放弃按墨色显示 | 2 项失败 |
+
+除标明者外均在 66 项版本上运行（最后一次改动只新增断言）。
+
+**full**（修复后实现 SHA、起点干净，修复记录草稿在临时目录，运行中未改工作区）：**通过**，G2 **94/94**，G3 **108/108 + 67/67**，**content_stable=True**，ObjectDB 泄漏 0 处，引擎报告 WARNING 行 0 处。摘要 `codexandclaude/runs/20261023T061217.876036Z/`（不入库）。修复不改纸签与提示的外观，G4 仍按原入口进行。
+
+<!-- 修复后 full 自动摘要 -->
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`81095965a442d8ca9b032522f4d49f7a200eef9a`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-23T06:12:17.876036+00:00；结束：2026-10-23T06:23:07.153325+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际94 / 预期94；完整=True；通过=True。
+- G3:tests：实际108 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.19.0`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`e0c32cd979b98e82978e99d4c852fa1963b1bc7b`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`44d0e5320c6213cbeb858f7928ccbd7f327e8a0bb18b054e8d93e9ae4bbd2aa9`；工作区范围指纹（原始字节）：`7c2532105284206968b82ddf4907fe2965908225dbf549abfdd7500bdda11050`。
+全工作区指纹：`8f2cea3ecd0c95006adbd96c022cff0d4965a190b66060ee87e1815a8b267d2d`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\001.txt`；SHA256=`caa761aeb0c33dd52604f94134f4c0daf696199c1e415c86ccc637710141d214`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.313秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\006.txt`；SHA256=`bc697de995dc791df53d688ef69c08994cdffc8ce30c906b1ffc65b131ccd0eb`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\claude\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\runs\\20261023T061217.876036Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=623.89秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\007.txt`；SHA256=`169bc2dd60946ce63ffd06c58c213875c8eaa6c4e200fa3fb770f58b4fc60600`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.313秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\008.txt`；SHA256=`b65e21291e82582f84867f84595056e4cf4ee490d72b10d5568167113c74ab03`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=20.172秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\009.txt`；SHA256=`9d91961522c5364aac52d8004d5f167fbb882c1b2015c3e8f804337886d3ad31`。
+- 报告 `D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T061217.876036Z\engine.txt` SHA256=`956f52acdcc08b5563745338a52b671a1aad51b96a67d5f4637e6a92ee3314ae`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 改动（首次交付）
 
 | 文件 | 内容 |
 | --- | --- |
@@ -29,7 +108,7 @@
 | 4 避让 | 纸签与提示不压 HUD（含地平线）、对话纸笺、区域名称、交互提示、介绍卡、横幅、可见保存失败提示；放不下时等待（提示试四档高度，纸签下移），不覆盖 |
 | 5 暂停菜单 | “当前任务”未改，仍读 `quest_status_text()`，与纸签的 `objective` 同源 |
 
-**去重规则**（交付记录要求写明）：①1.5 秒内标题与下行都相同的第二条丢弃；②1.5 秒内 `show_notice()` 文字与描述同一事件的信号合成一条——任务结束信号（完成 / 放弃 / 过期）与含同一个词的文字，获得信号与以“获得”开头且含该名称的文字；标题与颜色取信号，下行取文字的细节；③其余各自成条。实例：麦秆镇救助完成时“救助完成 · 可能性 +N · 返回7”与 `quest_changed(完成)` 合成一条“救助完成 / 可能性 +N · 返回7”；回 7 结算得到“救助进展”和“获得 · 泥粪中的理想家的注视 / 可能性上限12”两条（后者由获得信号与结算文字合成）。
+**去重规则**（首次交付版本，已由上面的审查修复更正，现行规则见 `quest_notices_ui.md`）：①1.5 秒内标题与下行都相同的第二条丢弃；②1.5 秒内 `show_notice()` 文字与描述同一事件的信号合成一条——任务结束信号（完成 / 放弃 / 过期）与含同一个词的文字，获得信号与以“获得”开头且含该名称的文字；标题与颜色取信号，下行取文字的细节；③其余各自成条。实例：麦秆镇救助完成时“救助完成 · 可能性 +N · 返回7”与 `quest_changed(完成)` 合成一条“救助完成 / 可能性 +N · 返回7”；回 7 结算得到“救助进展”和“获得 · 泥粪中的理想家的注视 / 可能性上限12”两条（后者由获得信号与结算文字合成）。
 
 **三处补充判断**：
 1. 纸签的“剧情”判断用 HUD 是否被隐藏与 `intro_active`，不用 `scripted_control_locked`——后者在读档后等非剧情场合也会短暂为真，会让纸签误隐藏。
