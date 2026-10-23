@@ -1,0 +1,207 @@
+[gd_resource type="Resource" script_class="CharacterAnimationMap" load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://animation/character_animation_map.gd" id="1"]
+
+[sub_resource type="Animation" id="idle"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.015, 0.985), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="walk"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.025, 0.975), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="run"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.05, 0.95), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="turn"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.94, 1.02), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="takeoff"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.9, 1.1), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="rise"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.96, 1.04), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="apex"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.04, 0.96), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="fall"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.97, 1.03), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="land"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.12, 0.88), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="hard_land"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.2, 0.8), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="attack"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.08, 0.94), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="dodge"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.13, 0.88), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="poor_dodge"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.04, 0.96), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="heal"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.97, 1.03), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="hurt"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.9, 1.03), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="downed"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.1, 0.8), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="fade"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.88, 0.88), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="dead"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.1, 0.8), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="respawn"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.95, 1.05), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="dash"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.1, 0.92), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="blink"]
+length = 0.6
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(0.92, 1.03), Vector2(1, 1)]}
+
+[sub_resource type="Animation" id="guard"]
+length = 0.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.3, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(1, 1), Vector2(1.06, 0.94), Vector2(1, 1)]}
+
+[resource]
+script = ExtResource("1")
+clips = {
+"idle": SubResource("idle"),
+"walk": SubResource("walk"),
+"run": SubResource("run"),
+"turn": SubResource("turn"),
+"takeoff": SubResource("takeoff"),
+"rise": SubResource("rise"),
+"apex": SubResource("apex"),
+"fall": SubResource("fall"),
+"land": SubResource("land"),
+"hard_land": SubResource("hard_land"),
+"attack": SubResource("attack"),
+"dodge": SubResource("dodge"),
+"poor_dodge": SubResource("poor_dodge"),
+"heal": SubResource("heal"),
+"hurt": SubResource("hurt"),
+"downed": SubResource("downed"),
+"fade": SubResource("fade"),
+"dead": SubResource("dead"),
+"respawn": SubResource("respawn"),
+"dash": SubResource("dash"),
+"blink": SubResource("blink"),
+"guard": SubResource("guard")
+}
+fallback = SubResource("idle")

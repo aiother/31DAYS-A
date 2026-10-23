@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
 [ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
@@ -11,6 +11,8 @@
 [ext_resource type="Resource" path="res://data/player/graybox_life.tres" id="9"]
 [ext_resource type="Script" path="res://player/player_possibility.gd" id="10"]
 [ext_resource type="Resource" path="res://data/player/graybox_possibility.tres" id="11"]
+
+[ext_resource type="Script" path="res://animation/character_animator.gd" id="sys010"]
 
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 22.0
@@ -91,3 +93,6 @@ script = ExtResource("4")
 [node name="PlaceholderSprite" type="Sprite2D" parent="VisualRoot"]
 position = Vector2(0, -48)
 texture = ExtResource("3")
+
+[node name="Animator" type="Node" parent="VisualRoot"]
+script = ExtResource("sys010")
