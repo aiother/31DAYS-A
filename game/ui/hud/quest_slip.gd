@@ -39,8 +39,10 @@ func setup(owner_session: Node, formal_hud: Control) -> void:
 	if session.has_signal("quest_changed"):
 		session.connect("quest_changed", _on_quest_changed)
 
-func _on_quest_changed(_kind: String, value: Dictionary) -> void:
-	_take(value)
+## quest_changed reports every task (one save can change several); the slip
+## shows the current one, so it reads the query again instead of the event.
+func _on_quest_changed(_kind: String, _value: Dictionary) -> void:
+	refresh()
 
 func _take(value: Dictionary) -> void:
 	var old: String = "%s|%s|%s" % [state.get("id", ""), state.get("state", ""), state.get("objective", "")]

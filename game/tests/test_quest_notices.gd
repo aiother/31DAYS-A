@@ -91,6 +91,8 @@ func run() -> void:
 	directory = OS.get_cache_dir().path_join("31days_quest_notices_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()])
 	await quest_cases()
 	await item_cases()
+	await same_name_cases()
+	await current_task_cases()
 	await merge_cases()
 	await hidden_cases()
 	await load_cases()
@@ -309,3 +311,86 @@ func layout_cases() -> void:
 		session.ui.call("hide_enemy_intro")
 		await drain()
 	root.size = Vector2i(1920, 1080)
+
+## Review R2: two different pickups with the same name, both saved, are two
+## notices; one pickup and its own text stay one.
+func same_name_cases() -> void:
+	await open()
+	await enter(ExplorationSession.EXPLORATION_ID)
+	var before: int = notices().history.size()
+	for key: String in ["item:ui010:same_a", "item:ui010:same_b"]:
+		var pickup: RoomPickup = RoomPickup.new()
+		pickup.config = PickupConfig.new()
+		pickup.config.persistence_key = key
+		pickup.config.display_name = "测试拾取"
+		session.room.add_child(pickup)
+		pickup.position = session.player.position + Vector2(0, -44)
+		check(session.collect_pickup(pickup) and session.store.load_slot(1)["events"].get(key, false), "%s is picked up and saved" % key)
+		await frames(2)
+	var added: Array = notices().history.slice(before)
+	check(added.size() == 2 and added.all(func(entry: Dictionary) -> bool: return entry["title"] == "获得 · 测试拾取" and entry["source"] == "item"), "two saved pickups with one name are two notices")
+	# Count the distinct queue heads that were actually drawn.
+	var heads: Array = []
+	for i: int in range(600):
+		await frames(1)
+		if not notices().showing():
+			break
+		if notices().drawn.has("title") and not heads.any(func(known: Dictionary) -> bool: return is_same(known, notices().queue[0])):
+			heads.append(notices().queue[0])
+	var shown: int = heads.filter(func(entry: Dictionary) -> bool: return added.any(func(mine: Dictionary) -> bool: return is_same(mine, entry))).size()
+	check(shown == 2, "and they show one after the other (%d)" % shown)
+	# One event, one notice still: a pickup's own "获得…" text joins its signal.
+	var third: RoomPickup = RoomPickup.new()
+	third.config = PickupConfig.new()
+	third.config.persistence_key = "item:ui010:same_c"
+	third.config.display_name = "测试拾取"
+	session.room.add_child(third)
+	third.position = session.player.position + Vector2(0, -44)
+	before = notices().history.size()
+	session.dialogue_ui.show_notice("获得测试拾取 · 第三件")
+	check(session.collect_pickup(third), "a third one with a session text")
+	await frames(3)
+	added = notices().history.slice(before)
+	check(added.size() == 1 and added[0]["title"] == "获得 · 测试拾取" and added[0]["line"] == "第三件" and added[0].get("merged", false), "its text and its signal are one notice")
+	await drain()
+	# One text per signal: a second, different text about the same name does
+	# not fold into a signal that already has its text.
+	var fourth: RoomPickup = RoomPickup.new()
+	fourth.config = PickupConfig.new()
+	fourth.config.persistence_key = "item:ui010:same_d"
+	fourth.config.display_name = "测试拾取"
+	session.room.add_child(fourth)
+	fourth.position = session.player.position + Vector2(0, -44)
+	before = notices().history.size()
+	check(session.collect_pickup(fourth), "a fourth one")
+	await frames(2)
+	session.dialogue_ui.show_notice("获得测试拾取 · 甲")
+	session.dialogue_ui.show_notice("获得测试拾取 · 乙")
+	await frames(2)
+	added = notices().history.slice(before)
+	var lines: Array = added.map(func(entry: Dictionary) -> String: return "%s/%s/%s" % [entry["source"], entry["line"], entry.get("merged", false)])
+	check(added.size() == 2 and added[0]["source"] == "item" and added[0]["line"] == "甲" and added[1]["source"] == "notice" and added[1]["line"] == "乙", "one signal takes one text; the other text is its own notice: %s" % str(lines))
+	await drain()
+
+## Review R1: one save that changes several tasks leaves the slip on the
+## current one -- the same as quest_state() and the pause menu.
+func current_task_cases() -> void:
+	await open()
+	await enter(FieldSession.FIELD_ID)
+	session.record_event(FieldSession.HEAL_GUIDE)
+	await frames(3)
+	var room: Node = session.room
+	var data: Dictionary = session.data
+	var before: int = notices().history.size()
+	session.data["day"] = 3
+	check(session.save_current(), "the day rules run on a real save")
+	await frames(4)
+	var expired: Array = notices().history.slice(before).filter(func(entry: Dictionary) -> bool: return entry["title"] == "救助已过期")
+	var query: Dictionary = session.quest_state()
+	check(expired.size() >= 2 and session.room == room and is_same(session.data, data), "one save sent several tasks' expiry in the same Room and save (%d)" % expired.size())
+	check(slip().state.get("id") == query["id"] and slip().state.get("objective") == query["objective"] and slip().state.get("state") == query["state"], "the slip shows the current task %s, not the last event" % query["id"])
+	check(slip().objective() == query["objective"].trim_prefix("救助：") and query["objective"] == session.quest_status_text(), "the same text as the pause menu's current task")
+	await frames(2)
+	check(slip().drawn.is_empty() or (slip().drawn.get("id") == query["id"] and str(slip().drawn.get("objective", {}).get("text", "")) == slip().objective()), "and that is what it draws")
+	await drain()
+

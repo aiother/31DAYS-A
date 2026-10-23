@@ -6,11 +6,15 @@ extends Control
 ## for SECONDS; the queue waits (clock stopped) while hidden by dialogue,
 ## story, pause or death, or while no spot is clear.
 ##
-## One event, one notice: a show_notice() text and a signal that describe the
-## same event within MERGE_SECONDS become one notice -- the signal gives the
-## title and colour, the text gives its detail line. "Same event": a task
-## ending (完成 / 放弃 / 过期) and a text naming it, or an obtained thing and a
-## "获得…" text that names it. An identical notice inside the window is dropped.
+## One event, one notice. Every quest_changed / item_obtained signal is its
+## own event (SYS-009 sends each once, after a good save), so signals are
+## never dropped, even when two read the same. A show_notice() text and a
+## signal for the same event within MERGE_SECONDS become one notice -- the
+## signal gives the title and colour, the text its detail line; each text
+## joins at most one signal and each signal at most one text. "Same event":
+## a task ending (完成 / 放弃 / 过期) and a text naming it, or an obtained
+## thing and a "获得…" text that names it. The same text twice inside the
+## window is dropped.
 const WIDTH: float = 560.0
 const TOPS: Array[float] = [236.0, 380.0, 500.0, 640.0]
 const SECONDS: float = 2.5
@@ -83,9 +87,9 @@ func push(entry: Dictionary) -> void:
 	for known: Dictionary in history:
 		if clock - float(known["at"]) > MERGE_SECONDS:
 			continue
-		if known["title"] == entry["title"] and known["line"] == entry["line"]:
+		if entry["source"] == "notice" and known["source"] == "notice" and known["text"] == entry["text"]:
 			return
-		if same_event(known, entry):
+		if not known.get("merged", false) and same_event(known, entry):
 			# The signal names the event; the text keeps its detail.
 			var signal_entry: Dictionary = entry if entry["source"] != "notice" else known
 			var text_entry: Dictionary = entry if entry["source"] == "notice" else known
