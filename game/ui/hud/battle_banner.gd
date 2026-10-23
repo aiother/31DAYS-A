@@ -74,6 +74,10 @@ func _process(delta: float) -> void:
 			age = -1.0
 	queue_redraw()
 
+func _fill(rect: Rect2, color: Color) -> Dictionary:
+	draw_rect(rect, color)
+	return {"rect": rect, "color": color}
+
 func _ink(at: Vector2, value: String, size_px: int, color: Color, width: float) -> Dictionary:
 	draw_multiline_string(font, at, value, HORIZONTAL_ALIGNMENT_CENTER, width, size_px, -1, color)
 	return {"text": value, "color": color}
@@ -86,8 +90,7 @@ func _draw() -> void:
 	if rect.size == Vector2.ZERO:
 		return
 	var a: float = alpha()
-	draw_rect(rect, Color(INK_BAND, INK_BAND.a * a))
-	var band: Dictionary = {"rect": rect, "color": Color(INK_BAND, INK_BAND.a * a)}
+	var band: Dictionary = _fill(rect, Color(INK_BAND, INK_BAND.a * a))
 	InkDraw.rough_line(self, rect.position + Vector2(24, 8), rect.position + Vector2(rect.size.x - 24, 8), Color(DuskStyle.LIFE, 0.8 * a), 2.0, 980, DuskStyle.WOBBLE)
 	var record: Dictionary = {"rect": rect, "alpha": a, "band": band}
 	record["heading"] = _ink(rect.position + Vector2(0, 46), heading, UiTheme.SIZE_HEADING - 2, Color(DuskStyle.PAPER_DAY, a), rect.size.x)

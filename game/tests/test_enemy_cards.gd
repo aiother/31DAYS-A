@@ -71,6 +71,7 @@ func run() -> void:
 	await parasite_cases()
 	await banner_cases()
 	await layout_cases()
+	await presence_cases()
 	paused = false
 	session.queue_free()
 	await ticks(2)
@@ -110,6 +111,30 @@ func ordinary_cases() -> void:
 	check(card().visible and (card().drawn["rect"] as Rect2).position.x > settled.position.x, "when its time is up it slides out to the right")
 	await ticks(20)
 	check(not card().visible and card().drawn.is_empty(), "and is gone")
+	# Review R2: paused halfway in, then halfway out.
+	session.ui.call("show_enemy_intro", 1.0)
+	await ticks(2)
+	session.ui.call("show_pause")
+	var halfway: float = card().position.x
+	var left: float = session.ui.get("_enemy_intro_remaining")
+	await ticks(30)
+	check(halfway > card().settled_x() + 1.0 and halfway < 1920.0 and card().position.x == halfway and session.ui.get("_enemy_intro_remaining") == left, "pausing halfway in holds the card where it is and its time")
+	session.ui.call("resume_game")
+	await ticks(16)
+	check(is_equal_approx(card().position.x, card().settled_x()), "resuming lets it finish sliding in")
+	var out: bool = false
+	for i: int in range(120):
+		await ticks(1)
+		if card().position.x > card().settled_x() + 1.0:
+			out = true
+			break
+	session.ui.call("show_pause")
+	var leaving: float = card().position.x
+	await ticks(30)
+	check(out and card().visible and leaving < 1920.0 and card().position.x == leaving, "pausing halfway out holds the card where it is")
+	session.ui.call("resume_game")
+	await ticks(20)
+	check(not card().visible, "resuming lets it finish sliding out")
 	session.ui.call("show_enemy_intro", 5.0)
 	await ticks(6)
 	session.ui.call("hide_enemy_intro")
@@ -205,14 +230,15 @@ func banner_cases() -> void:
 	var seen: Dictionary = {}
 	for i: int in range(120):
 		await ticks(1)
-		if banner().drawn.has("heading"):
+		if banner().drawn.has("heading") and float(banner().drawn["alpha"]) > 0.5:
 			seen = banner().drawn.duplicate(true)
 			break
 	check(str(seen.get("heading", {}).get("text", "")) == "敌方第2波即将进入" and str(seen.get("line", {}).get("text", "")).contains("最后一波"), "the real wave warning shows on the battle banner")
 	var corner: Rect2 = Rect2(Vector2(EnemyCard.RIGHT - EnemyCard.BOSS_WIDTH, EnemyCard.TOP), Vector2(EnemyCard.BOSS_WIDTH, 300))
 	var rect: Rect2 = seen.get("rect", Rect2())
 	check(not card().visible and not rect.intersects(corner) and absf(rect.get_center().x - 960.0) < 1.0 and rect.position.y < 540.0, "at the top centre, not in the card's corner, and the card stays away")
-	check(seen.get("band", {}).get("rect") == rect and str(seen.get("heading", {}).get("color")) == str(Color(DuskStyle.PAPER_DAY, seen["alpha"])), "drawn as an ink band with paper-coloured text")
+	var ink: Color = Color(BattleBanner.INK_BAND, BattleBanner.INK_BAND.a * float(seen.get("alpha", 0.0)))
+	check(seen.get("band", {}).get("rect") == rect and str(seen.get("band", {}).get("color")) == str(ink) and float(seen["alpha"]) > 0.0 and str(seen.get("heading", {}).get("color")) == str(Color(DuskStyle.PAPER_DAY, seen["alpha"])), "drawn as an ink band (the colour actually filled, at its alpha) with paper-coloured text")
 	session.ui.call("show_battle_banner", 3.0, "新一波敌人进入战场\n\n刚才的敌人已被10全灭。")
 	await ticks(30)
 	session.ui.call("show_pause")
@@ -272,3 +298,51 @@ func layout_cases() -> void:
 		session.ui.call("hide_enemy_intro")
 		await ticks(2)
 	root.size = Vector2i(1920, 1080)
+
+## Review N1: with the area name and the interaction prompt really on screen
+## (no dialogue), the card and banner stay clear of them; and when every
+## banner height is taken the banner gives way without stopping its clock.
+func presence_cases() -> void:
+	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
+		root.size = window
+		session.data["events"][FieldSession.FIELD_STORY] = true
+		session._mount_room(FieldSession.FIELD_ID)
+		session._bind_room()
+		session.intro_active = false
+		session.player.life.scripted_control_locked = false
+		for enemy: Node in session.room.get_node("Enemies").get_children():
+			enemy.set_physics_process(false)
+		session.player.position = session.room.get_node("Seven").position
+		session.player.reset_kinematics()
+		var area: AreaBanner = session.ui.get("_area_banner") as AreaBanner
+		area.pending = "测试区域"
+		session.ui.call("show_enemy_card", 20.0, "渴望俯视", "首领", "留意落击提示。\n利用召唤平台接近高空目标。")
+		session.ui.call("show_battle_banner", 20.0, "中心战场 · 首段完成\n\n本提示不代表最终胜利。")
+		var prompt: InteractPrompt = session.ui.get("_interact_prompt") as InteractPrompt
+		var both: bool = false
+		for i: int in range(120):
+			await ticks(1)
+			if area.drawn.has("rect") and prompt.drawn.has("rect") and banner().drawn.has("rect") and card().drawn.has("rect") and is_equal_approx((card().drawn["rect"] as Rect2).end.x, EnemyCard.RIGHT):
+				both = true
+				break
+		check(both, "%dx%d: the area name, the prompt, the card and the banner are all drawn" % [window.x, window.y])
+		var shown: Array[Rect2] = [area.drawn.get("rect", Rect2()), prompt.drawn.get("rect", Rect2()), card().drawn.get("rect", Rect2()), banner().drawn.get("rect", Rect2())]
+		var apart: bool = both
+		for a: int in range(shown.size()):
+			apart = apart and Rect2(Vector2.ZERO, Vector2(1920, 1080)).encloses(shown[a])
+			for b: int in range(a + 1, shown.size()):
+				apart = apart and not shown[a].intersects(shown[b])
+		check(apart, "%dx%d: area name, prompt, card and banner are on screen and apart" % [window.x, window.y])
+		session.ui.call("hide_enemy_intro")
+		await ticks(2)
+	root.size = Vector2i(1920, 1080)
+	var avoid: Callable = banner().avoid
+	banner().avoid = func() -> Array[Rect2]: return [Rect2(Vector2.ZERO, Vector2(1920, 1080))]
+	session.ui.call("show_battle_banner", 2.0, "敌方第3波即将进入")
+	await ticks(30)
+	check(banner().showing() and banner().drawn.is_empty() and banner().age > 0.4, "with every height taken the banner gives way and its clock keeps running")
+	banner().avoid = avoid
+	await ticks(2)
+	check(banner().drawn.has("heading"), "and it shows as soon as a spot is free")
+	session.ui.call("hide_enemy_intro")
+
