@@ -1,6 +1,6 @@
 # DOC-008 交付记录：T2 改写为现行版
 
-状态：已交付，待 Codex 审查｜实现：Claude｜日期：2026-10-23
+状态：第1轮审查 R1、R2 已修复（`6aed673`），待复审｜实现：Claude｜日期：2026-10-23
 
 ## 固定对象
 
@@ -122,6 +122,69 @@
 - `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T193946.085814Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
 - `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.265秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T193946.085814Z\006.txt`；SHA256=`e4f3729defe79d3d9a472290255e358e8cf2c7294234638f94506b807bc49104`。
 - `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=18.515秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T193946.085814Z\007.txt`；SHA256=`9740a0a4d87a8136a273a0e8d611a66bcef4b29c243a09b51cb8f4f937f4c116`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 第1轮审查修复（2026-10-23）
+
+审查记录 [review.md](review.md)（Codex，`74d3887`，已快进并入本分支）。R1、R2 均成立。修复提交 `6aed673302425a252437f267833968c953854fb1`，只改 T2 与 T2 相关断言。
+
+| 编号 | 问题 | 修复 | 回归 |
+| --- | --- | --- | --- |
+| R1 | §2 漏掉珍珠“按四个旧永久拾取记录重建、不新增存档字段、旧档自动生效”，以及渴望俯视补发“消费原待领取、已领取与待领取互斥” | §2 保存规则拆成渴望俯视、珍珠、共同三条：渴望俯视补发时消费原有的待领取标记，两种状态互斥；珍珠只按当前槽四处原有的永久拾取记录重建，不新增存档字段，旧档自动生效 | §2 断言这两组表述；正文反向断言不得出现“旧档不自动生效”“需新增专用存档字段” |
+| R2 | §7.1 漏掉下行修订中“活动路线支持暂停、既有打断及超时重规划” | §7.1 新增“活动路线”一条：执行中的路线支持暂停，暂停冻结移动与路线超时计时；受击、失衡、死亡沿用既有打断；超时后退出并重新规划。不写原 T2 没有列出的超时秒数 | §7 断言三句现行表述 |
+
+**自查补漏**：按审查思路把 9 段追加修订逐句重新比对，又找回 3 处被一并删掉的约束，同样写回正文并加断言：
+
+- 渴望俯视旧档补发“不额外回血/补可能性/推进日期”“不新增地图或主动技能”（§2）；
+- bug2 绕行“仍需全身碰撞、连续支撑及可达跳跃弧线”（§7.1“绕行”）；
+- 单色灰盒“不新增地图”（§8.2）。
+
+对照表相应行据此更新：追加 5 → §7.1“下行”“活动路线”；追加 6 → §2“攻击范围成长”与保存规则“渴望俯视”条；追加 7 → §7.1“绕行”（含碰撞与支撑条件）；珍珠附记 → §2“攻击范围成长”与保存规则“珍珠”条；§8.2 单色修订 → §8.2“灰盒规格”（含不新增地图）。
+
+**变异**（逐项只改一处，跑 `tests.test_planning_documents`，按原字节恢复并比对）：
+
+| 变异 | 结果 |
+| --- | --- |
+| R1：珍珠改为“需新增专用存档字段记录数量，旧档不自动生效”（审查探针的写法） | 3 项失败（原为 35/0 存活） |
+| R1：删去消费待领取与互斥两句 | 2 项失败 |
+| R2：删去“活动路线”整条 | 3 项失败 |
+
+第1轮交付的 4 项变异继续有效。
+
+<!-- 第1轮审查修复 G3 自动摘要 -->
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`6aed673302425a252437f267833968c953854fb1`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-23T19:51:34.765981+00:00；结束：2026-10-23T19:52:04.692790+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际109 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`dbb771448aef2357a2bd22b734d3ef16d8d2622b`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`6e0d30fd575f4184d72b5cfc1389dccb2dafea5e62db065036778f0999536c37`；工作区范围指纹（原始字节）：`d5f4c3299b8727279cdcd86af114532ce962a6d8ab8d59ab2c1c782243c7ba3e`。
+全工作区指纹：`89601d45efb42c8887e8480c6716073a551022639ebaf62f8f6f17b4b36e95ae`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.032秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\001.txt`；SHA256=`0c99b30c31b0fb9bbb04a53401174ea929500f1276a94dc8410f2e51d64f42a8`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.391秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=4.437秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\006.txt`；SHA256=`a56cba77dcc901f7094b5230b315f98e881bff21ede27fbdfbd46c8a6484f63b`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=23.282秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261023T195134.765981Z\007.txt`；SHA256=`4579120f8a01923b6be521c8afa7adaaa814f913bca884a8ec0e6845d80390ed`。
 
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
