@@ -4,7 +4,11 @@ extends Node2D
 ## place and a life; loops (healing, invulnerability) last until stopped.
 ## `drawn` lists what the last frame put on screen, built from what each draw
 ## call returned.
-const STYLES: Array[String] = ["A · 墨迹飞溅", "B · 光痕", "C · 极简几何"]
+const STYLES: Array[String] = ["A · 墨迹飞溅", "B · 光痕", "C · 极简几何", "D · 融合（A 的攻击 + B）"]
+## Look D (user feedback 2026-10-23): A's swing and hit, with B's warm glow
+## under them so they sit in B's light; every other effect is B.
+const FUSION: int = 3
+const FUSION_FROM_A: Array[String] = ["swing", "hit"]
 ## Seconds per kind and style (A, B, C). C is the shortest and lightest.
 const LIFE: Dictionary = {
 	"swing": [0.22, 0.17, 0.12], "hit": [0.40, 0.30, 0.18], "bounce": [0.34, 0.28, 0.18],
@@ -25,12 +29,19 @@ var _serial: int = 0
 ## Starts an effect at `at` (world space). `follow` makes it track a node.
 func spawn(kind: String, at: Vector2, direction: Vector2 = Vector2.RIGHT, follow: Node2D = null) -> Dictionary:
 	_serial += 1
-	var life: float = INF if kind in LOOPS else float(LIFE[kind][style])
+	var look: int = look_for(kind, style)
+	var life: float = INF if kind in LOOPS else float(LIFE[kind][look])
 	var entry: Dictionary = {"kind": kind, "at": at, "dir": direction.normalized() if direction != Vector2.ZERO else Vector2.RIGHT,
-		"age": 0.0, "life": life, "seed": _serial * 37, "follow": follow, "style": style}
+		"age": 0.0, "life": life, "seed": _serial * 37, "follow": follow, "style": style, "look": look, "fusion": style == FUSION}
 	entries.append(entry)
 	queue_redraw()
 	return entry
+
+## Which of A, B, C draws this kind under the chosen style.
+func look_for(kind: String, chosen: int) -> int:
+	if chosen != FUSION:
+		return chosen
+	return 0 if kind in FUSION_FROM_A else 1
 
 func stop(kind: String) -> void:
 	entries = entries.filter(func(entry: Dictionary) -> bool: return entry["kind"] != kind)
@@ -60,9 +71,10 @@ func _draw() -> void:
 	drawn = []
 	for entry: Dictionary in entries:
 		var t: float = 0.0 if is_inf(float(entry["life"])) else clampf(float(entry["age"]) / float(entry["life"]), 0.0, 1.0)
-		var record: Dictionary = call("_" + str(entry["kind"]), entry, t, int(entry["style"]))
+		var record: Dictionary = call("_" + str(entry["kind"]), entry, t, int(entry["look"]))
 		record["kind"] = entry["kind"]
 		record["style"] = entry["style"]
+		record["look"] = entry["look"]
 		record["age"] = entry["age"]
 		record["life"] = entry["life"]
 		record["at"] = entry["at"]
@@ -107,9 +119,13 @@ func _swing(e: Dictionary, t: float, s: int) -> Dictionary:
 	var tail: float = maxf(base - sweep * 0.5, head - sweep * 0.7)
 	var a: float = 1.0 - t
 	var color: Color
+	var record_glow: Color = Color.TRANSPARENT
 	match s:
 		0:
 			# A dry paper-coloured brush with a bristle edge and a vermilion fleck.
+			if e.get("fusion", false):
+				# Fusion: B's warm light under A's brush.
+				record_glow = _poly(_arc_points(c, 72.0, tail, head, 18), Color(DuskStyle.SUN, 0.28 * a), 28.0)
 			for k: int in range(4):
 				var r: float = 64.0 + k * 7.0
 				color = _poly(_arc_points(c, r, tail + k * 0.03, head, 16), Color(DuskStyle.PAPER_DAY, a * (0.9 - k * 0.18)), 12.0 - k * 2.6)
@@ -120,7 +136,7 @@ func _swing(e: Dictionary, t: float, s: int) -> Dictionary:
 			color = _poly(_arc_points(c, 70.0, tail, head, 18), Color(DuskStyle.PEARL, a), 4.0)
 		_:
 			color = _poly(_arc_points(c, 70.0, tail, head, 12), Color(DuskStyle.PAPER_DAY, 0.8 * a), 2.0)
-	return {"color": color}
+	return {"color": color, "glow": record_glow}
 
 ## A blow landing on a target.
 func _hit(e: Dictionary, t: float, s: int) -> Dictionary:
@@ -128,15 +144,22 @@ func _hit(e: Dictionary, t: float, s: int) -> Dictionary:
 	var dir: Vector2 = e["dir"]
 	var a: float = _fade(t)
 	var color: Color
+	var record_glow: Color = Color.TRANSPARENT
 	match s:
 		0:
 			# Ink-like splatter thrown along the blow, vermilion and paper.
+			var light: Color = DuskStyle.PAPER_DAY
+			if e.get("fusion", false):
+				# Fusion: a short warm flash at the point of impact, pearl specks.
+				InkDraw.glow(self, c, 22.0 + t * 18.0, DuskStyle.SUN, a)
+				record_glow = Color(DuskStyle.SUN, a)
+				light = DuskStyle.PEARL
 			for i: int in range(12):
 				var spread: float = (_n(i, e["seed"]) - 0.5) * 1.6
 				var reach: float = (18.0 + _n(i, e["seed"] + 1) * 52.0) * minf(1.0, t * 3.0)
 				var p: Vector2 = c + dir.rotated(spread) * reach
-				color = _dot(p, (3.0 + _n(i, e["seed"] + 2) * 5.0) * (1.0 - t * 0.6), Color(DuskStyle.LIFE if i % 3 else DuskStyle.PAPER_DAY, a))
-			InkDraw.rough_circle(self, c, 10.0 + t * 26.0, Color(DuskStyle.PAPER_DAY, 0.7 * a), 3.0, e["seed"], 2.0)
+				color = _dot(p, (3.0 + _n(i, e["seed"] + 2) * 5.0) * (1.0 - t * 0.6), Color(DuskStyle.LIFE if i % 3 else light, a))
+			InkDraw.rough_circle(self, c, 10.0 + t * 26.0, Color(light, 0.7 * a), 3.0, e["seed"], 2.0)
 		1:
 			# A white star with a short glow.
 			InkDraw.glow(self, c, 18.0 + t * 20.0, DuskStyle.SUN, a)
@@ -148,7 +171,7 @@ func _hit(e: Dictionary, t: float, s: int) -> Dictionary:
 			var k: float = 8.0 + t * 14.0
 			color = _line(c + Vector2(-k, -k), c + Vector2(k, k), Color(DuskStyle.PAPER_DAY, a), 2.0)
 			_line(c + Vector2(-k, k), c + Vector2(k, -k), Color(DuskStyle.PAPER_DAY, a), 2.0)
-	return {"color": color}
+	return {"color": color, "glow": record_glow}
 
 ## The downward attack's rebound: a ring at the feet and lift lines.
 func _bounce(e: Dictionary, t: float, s: int) -> Dictionary:

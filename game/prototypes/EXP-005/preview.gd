@@ -3,13 +3,22 @@ extends Control
 ## on a dark field, to compare three effect looks. Mock data only; nothing
 ## here touches the real combat, saves or input map.
 const EffectsScript: GDScript = preload("res://prototypes/EXP-005/effects.gd")
-const HELP: String = "EXP-005 战斗反馈特效原型（F1 隐藏说明）\n1 / 2 / 3  风格 A 墨迹飞溅 / B 光痕 / C 极简几何（手柄 LB / RB 切换）\nH 顿帧开关 · V 屏幕震动开关\nA D / ← → 移动 · 空格 跳 · J 攻击（W 上 / 空中 S 下）· K 闪避 · 长按 L 恢复\nP 切换“可能性不足”（闪避变为透支闪避）· R 靶子投射物（攻击可弹反）\nT 受击 · Z 复活 · G 八个靶子同时受击（记录帧时间）\n手柄：A 跳 · X 攻击 · B 闪避 · 长按 Y 恢复"
+const HELP: String = "EXP-005 战斗反馈特效原型（F1 隐藏说明）\n1 / 2 / 3 / 4  风格 A 墨迹飞溅 / B 光痕 / C 极简几何 / D 融合（默认，手柄 LB / RB 切换）\nH 顿帧开关 · [ / ] 顿帧缩短 / 加长 · V 普通命中也震动（默认关，受击仍轻震）\nA D / ← → 移动 · 空格 跳 · J 攻击（W 上 / 空中 S 下）· K 闪避 · 长按 L 恢复\nP 切换“可能性不足”（闪避变为透支闪避）· R 靶子投射物（攻击可弹反）\nT 受击 · Z 复活 · G 八个靶子同时受击（记录帧时间）\n手柄：A 跳 · X 攻击 · B 闪避 · 长按 Y 恢复"
 const GROUND: float = 860.0
 const GRAVITY: float = 2600.0
 const SPEED: float = 420.0
 const TARGET_X: Array[float] = [760.0, 880.0, 1000.0, 1120.0, 1240.0, 1360.0, 1480.0, 1600.0]
 ## Mock HUD area (top-left emblem) and the help panel; effects never draw there.
 const HUD_RECT: Rect2 = Rect2(16, 16, 300, 300)
+## User feedback 2026-10-23: the hit-stop should be felt more, the shake was
+## too strong. Hit-stop is longer and adjustable; shake is halved and kept off
+## for ordinary hits (reserved for heavy blows), still light on being hurt.
+const HITSTOP_DEFAULT: float = 0.12
+const HITSTOP_RANGE: Vector2 = Vector2(0.04, 0.20)
+const HIT_SHAKE: float = 3.0
+const HURT_SHAKE: float = 5.0
+## Struck targets shiver this far during the hit-stop.
+const STOP_JITTER: float = 4.0
 
 var world: Node2D
 var player: Node2D
@@ -32,8 +41,12 @@ var heal_hold: float = 0.0
 var healing: float = -1.0
 var poor: bool = false
 var hitstop: bool = true
-var shake: bool = true
+## Ordinary hits shake too (off by default; being hurt always shakes lightly).
+var shake: bool = false
+var hitstop_seconds: float = HITSTOP_DEFAULT
 var stop_left: float = 0.0
+## Targets struck in the current hit-stop; they shiver until it ends.
+var struck: Array[Dictionary] = []
 var shake_left: float = 0.0
 var shake_power: float = 0.0
 var hitstop_frames: int = 0
@@ -77,6 +90,8 @@ func _ready() -> void:
 	help.add_theme_color_override("font_color", DuskStyle.PAPER_DAY)
 	help.text = HELP
 	hud_layer.add_child(help)
+	# The user's direction (2026-10-23) is the default look.
+	effects.style = effects.FUSION
 	for i: int in range(TARGET_X.size()):
 		targets.append({"x": TARGET_X[i], "hp": 3, "dead": 0.0, "windup": 0.0, "cycle": 1.0 + i * 0.37})
 
@@ -88,6 +103,9 @@ func _input(event: InputEvent) -> void:
 			KEY_1: set_style(0)
 			KEY_2: set_style(1)
 			KEY_3: set_style(2)
+			KEY_4: set_style(3)
+			KEY_BRACKETLEFT: hitstop_seconds = clampf(hitstop_seconds - 0.02, HITSTOP_RANGE.x, HITSTOP_RANGE.y)
+			KEY_BRACKETRIGHT: hitstop_seconds = clampf(hitstop_seconds + 0.02, HITSTOP_RANGE.x, HITSTOP_RANGE.y)
 			KEY_H: hitstop = not hitstop
 			KEY_V: shake = not shake
 			KEY_P: poor = not poor
@@ -109,8 +127,8 @@ func _input(event: InputEvent) -> void:
 			JOY_BUTTON_A: jump()
 			JOY_BUTTON_X: attack()
 			JOY_BUTTON_B: dodge()
-			JOY_BUTTON_LEFT_SHOULDER: set_style((effects.style + 2) % 3)
-			JOY_BUTTON_RIGHT_SHOULDER: set_style((effects.style + 1) % 3)
+			JOY_BUTTON_LEFT_SHOULDER: set_style((effects.style + 3) % 4)
+			JOY_BUTTON_RIGHT_SHOULDER: set_style((effects.style + 1) % 4)
 
 func set_style(value: int) -> void:
 	effects.style = value
@@ -166,7 +184,7 @@ func hurt() -> void:
 	effects.spawn("hurt", center())
 	invuln_left = 1.0
 	_end_heal(false)
-	_kick(10.0)
+	_kick(HURT_SHAKE, true)
 
 func revive() -> void:
 	effects.spawn("revive", center())
@@ -201,11 +219,13 @@ func _strike(target: Dictionary, direction: Vector2) -> void:
 		effects.spawn("enemy_death", at)
 		effects.spawn("gain", at)
 	if hitstop:
-		stop_left = 0.07
-	_kick(6.0)
+		stop_left = hitstop_seconds
+		struck.append(target)
+	_kick(HIT_SHAKE, false)
 
-func _kick(power: float) -> void:
-	if shake:
+## Hurt always shakes (lightly); ordinary hits only when V turns it on.
+func _kick(power: float, always: bool) -> void:
+	if always or shake:
 		shake_left = 0.2
 		shake_power = power
 
@@ -239,6 +259,8 @@ func _process(delta: float) -> void:
 		# Hit-stop: the world holds still for a few frames; effects go on.
 		stop_left = maxf(0.0, stop_left - delta)
 		hitstop_frames += 1
+		if stop_left == 0.0:
+			struck.clear()
 	else:
 		_simulate(delta)
 	if invuln_left > 0.0 and not effects.active("invuln"):
@@ -328,7 +350,10 @@ func _draw_world() -> void:
 	for target: Dictionary in targets:
 		if float(target["dead"]) > 0.0:
 			continue
-		var rect: Rect2 = Rect2(Vector2(float(target["x"]) - 26.0, GROUND - 88.0), Vector2(52, 88))
+		var shiver: float = 0.0
+		if stop_left > 0.0 and struck.has(target):
+			shiver = STOP_JITTER * (1.0 if int(clock * 60.0) % 2 == 0 else -1.0)
+		var rect: Rect2 = Rect2(Vector2(float(target["x"]) - 26.0 + shiver, GROUND - 88.0), Vector2(52, 88))
 		world.draw_rect(rect, Color(0.55, 0.6, 0.64))
 		for i: int in range(int(target["hp"])):
 			world.draw_rect(Rect2(rect.position + Vector2(6 + i * 14, -12), Vector2(10, 6)), DuskStyle.PAPER_DAY)
@@ -351,7 +376,7 @@ func _draw_warnings() -> void:
 func _draw_overlay() -> void:
 	InkDraw.paper_disc(overlay, HUD_RECT.position + Vector2(140, 140), 120.0, Color(DuskStyle.PAPER_DAY, 0.9), 3, 1.5)
 	InkDraw.rough_circle(overlay, HUD_RECT.position + Vector2(140, 140), 92.0, DuskStyle.POSSIBILITY, 10.0, 4, 1.0)
-	var status: String = "风格 %s · 顿帧 %s · 震动 %s · %s" % [effects.STYLES[effects.style], "开" if hitstop else "关", "开" if shake else "关", "可能性不足" if poor else "可能性充足"]
+	var status: String = "风格 %s · 顿帧 %s · 普通命中震动 %s · %s" % [effects.STYLES[effects.style], ("开 %.2f 秒" % hitstop_seconds) if hitstop else "关", "开" if shake else "关", "可能性不足" if poor else "可能性充足"]
 	if not perf.is_empty():
 		status += " · 八靶同时受击后 30 帧：平均 %.1f ms，峰值 %.1f ms" % [perf["avg_ms"], perf["peak_ms"]]
 	overlay.draw_string(UiTheme.font(), Vector2(340, 1050), status, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, DuskStyle.PAPER_DAY)

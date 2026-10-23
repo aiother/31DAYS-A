@@ -29,7 +29,7 @@ func run() -> void:
 	preview.set("hitstop", false)
 	preview.set("shake", false)
 	var fx: Node2D = preview.get("effects")
-	for style: int in range(3):
+	for style: int in range(4):
 		preview.call("set_style", style)
 		var y: float = 860.0 - 48.0
 		# Strikes.
@@ -40,7 +40,7 @@ func run() -> void:
 			fx.call("spawn", "hit", Vector2(x, y), Vector2.RIGHT)
 			fx.call("spawn", "enemy_hurt", Vector2(x, y))
 		await frames(4)
-		await shot("style_%s_strikes" % "abc"[style])
+		await shot("style_%s_strikes" % "abcd"[style])
 		fx.call("clear")
 		# Movement and resources.
 		fx.call("spawn", "dodge", Vector2(700, y), Vector2.RIGHT)
@@ -51,7 +51,7 @@ func run() -> void:
 		fx.call("spawn", "invuln", Vector2(1700, y))
 		fx.call("spawn", "heal_loop", Vector2(400, y))
 		await frames(6)
-		await shot("style_%s_movement" % "abc"[style])
+		await shot("style_%s_movement" % "abcd"[style])
 		fx.call("clear")
 		# Outcomes.
 		fx.call("spawn", "enemy_death", Vector2(760, y))
@@ -62,7 +62,7 @@ func run() -> void:
 		fx.call("spawn", "reflect", Vector2(1680, y - 80), Vector2.LEFT)
 		fx.call("spawn", "bounce", Vector2(440, y))
 		await frames(8)
-		await shot("style_%s_outcomes" % "abc"[style])
+		await shot("style_%s_outcomes" % "abcd"[style])
 		fx.call("clear")
 	print("CAPTURED")
 	quit()

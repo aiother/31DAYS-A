@@ -73,12 +73,15 @@ func run() -> void:
 	preview = (load("res://prototypes/EXP-005/preview.tscn") as PackedScene).instantiate() as Control
 	root.add_child(preview)
 	await frames(3)
+	check(fx().get("style") == fx().FUSION and not preview.get("shake") and is_equal_approx(float(preview.get("hitstop_seconds")), preview.HITSTOP_DEFAULT), "the preview opens on the fusion look, longer hit-stop, no shake on ordinary hits")
 	check(fx().z_index < (preview.get("warnings") as Node2D).z_index and (preview.get("hud_layer") as CanvasLayer).layer > 0, "warnings and the HUD layer sit above every effect")
-	for style: int in range(3):
-		await key([KEY_1, KEY_2, KEY_3][style])
+	for style: int in range(4):
+		await key([KEY_1, KEY_2, KEY_3, KEY_4][style])
 		check(fx().get("style") == style, "key %d picks look %s" % [style + 1, fx().STYLES[style]])
 		await style_cases(style)
+	await fusion_cases()
 	await toggle_cases()
+	await hitstop_cases()
 	await layout_cases()
 	await perf_cases()
 	print("EXP005_SMOKE_TESTS checks=%d failures=%d" % [checks, failures])
@@ -222,8 +225,8 @@ func layout_cases() -> void:
 func perf_cases() -> void:
 	revive_targets()
 	fx().call("clear")
-	for style: int in range(3):
-		await key([KEY_1, KEY_2, KEY_3][style])
+	for style: int in range(4):
+		await key([KEY_1, KEY_2, KEY_3, KEY_4][style])
 		revive_targets()
 		preview.set("perf", {})
 		await key(KEY_G)
@@ -234,3 +237,67 @@ func perf_cases() -> void:
 		check(perf.has("avg_ms"), "%s: frame times recorded" % fx().STYLES[style])
 		print("PERF %s avg=%.2fms peak=%.2fms (headless)" % [fx().STYLES[style], float(perf.get("avg_ms", -1.0)), float(perf.get("peak_ms", -1.0))])
 		await settle()
+
+## Look D: A's swing and hit with B's warm glow; every other effect is B.
+func fusion_cases() -> void:
+	await key(KEY_4)
+	revive_targets()
+	fx().call("clear")
+	preview.set("hitstop", false)
+	place(690.0)
+	await frames(2)
+	await key(KEY_J)
+	var swing: Dictionary = await wait_for("swing")
+	var hit: Dictionary = await wait_for("hit")
+	check(swing.get("look") == 0 and hit.get("look") == 0 and (swing.get("glow", Color.TRANSPARENT) as Color).a > 0.0 and (hit.get("glow", Color.TRANSPARENT) as Color).a > 0.0, "D: the swing and the hit are A's, with B's warm glow under them")
+	await settle()
+	place(500.0)
+	await key(KEY_K)
+	var dodge: Dictionary = await wait_for("dodge")
+	var spend: Dictionary = await wait_for("spend")
+	check(dodge.get("look") == 1 and spend.get("look") == 1, "D: the dodge and the spend are B's")
+	await settle()
+	await key(KEY_T)
+	check((await wait_for("hurt")).get("look") == 1, "D: being hurt is B's")
+	await settle()
+	preview.set("hitstop", true)
+
+## Hit-stop is adjustable, and struck targets shiver while it lasts; hurt
+## always shakes lightly, ordinary hits only when V turns it on.
+func hitstop_cases() -> void:
+	preview.set("hitstop", true)
+	preview.set("shake", false)
+	preview.set("hitstop_seconds", preview.HITSTOP_DEFAULT)
+	await key(KEY_BRACKETRIGHT)
+	var longer: float = preview.get("hitstop_seconds")
+	for i: int in range(12):
+		await key(KEY_BRACKETLEFT)
+	var shortest: float = preview.get("hitstop_seconds")
+	check(is_equal_approx(longer, preview.HITSTOP_DEFAULT + 0.02) and is_equal_approx(shortest, preview.HITSTOP_RANGE.x), "] lengthens and [ shortens the hit-stop, within its range")
+	preview.set("hitstop_seconds", 0.12)
+	revive_targets()
+	fx().call("clear")
+	place(690.0)
+	var before: int = preview.get("hitstop_frames")
+	await key(KEY_J)
+	var shivered: bool = false
+	var shook: bool = false
+	for i: int in range(4):
+		await frames(1)
+		shivered = shivered or (not (preview.get("struck") as Array).is_empty() and float(preview.get("stop_left")) > 0.0)
+		shook = shook or (preview.get("world") as Node2D).position != Vector2.ZERO
+	for i: int in range(20):
+		await frames(1)
+		shook = shook or (preview.get("world") as Node2D).position != Vector2.ZERO
+	var held: int = int(preview.get("hitstop_frames")) - before
+	check(held >= 6 and held <= 9 and shivered and (preview.get("struck") as Array).is_empty(), "a 0.12 s hit-stop holds about 7 frames, the struck target shivers, then it is released (%d frames)" % held)
+	check(not shook, "with V off an ordinary hit does not shake")
+	await settle()
+	await key(KEY_T)
+	var hurt_shake: float = 0.0
+	for i: int in range(6):
+		await frames(1)
+		hurt_shake = maxf(hurt_shake, (preview.get("world") as Node2D).position.length())
+	check(hurt_shake > 0.0 and hurt_shake <= preview.HURT_SHAKE * 1.5, "being hurt still shakes, at half the old strength (%.1f px)" % hurt_shake)
+	await settle()
+

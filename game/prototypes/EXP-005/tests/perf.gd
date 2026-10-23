@@ -16,7 +16,7 @@ func run() -> void:
 	preview = (load("res://prototypes/EXP-005/preview.tscn") as PackedScene).instantiate() as Control
 	root.add_child(preview)
 	await frames(30)
-	for style: int in range(3):
+	for style: int in range(4):
 		preview.call("set_style", style)
 		await frames(30)
 		var quiet: Array[float] = []
