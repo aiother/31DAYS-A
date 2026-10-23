@@ -41,7 +41,7 @@
 | SYS-009 | M | 任务信息与交互对象数据 | Codex | Claude | 已完成 | [tasks/SYS-009](tasks/SYS-009/task.md) |
 | UI-007 | M | 区域名称与场景交互提示 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-007](tasks/UI-007/task.md) |
 | UI-008 | L | 正式对话界面与 G-08 错失救助提示 | Claude | Codex | 已完成（用户 G4 通过） | [tasks/UI-008](tasks/UI-008/task.md) |
-| UI-009 | M | 正式敌人介绍卡与战场波次横幅 | Claude | Codex | 已批准 | [tasks/UI-009](tasks/UI-009/task.md) |
+| UI-009 | M | 正式敌人介绍卡与战场波次横幅 | Claude | Codex | 已完成 | [tasks/UI-009](tasks/UI-009/task.md) |
 | UI-010 | M | 任务信息与中央提示 | Claude | Codex | 已批准 | [tasks/UI-010](tasks/UI-010/task.md) |
 | CLN-001 | S | 清理已被正式交互提示取代的灰盒世界提示 | Codex | Claude | 已完成 | [tasks/CLN-001](tasks/CLN-001/task.md) |
 | ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
