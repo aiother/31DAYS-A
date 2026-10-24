@@ -69,8 +69,9 @@ class PlanningDocumentsTests(unittest.TestCase):
                 for rule in ("地面/空中左右闪避", "攻击中可跳跃且不打断攻击", "2.8秒", "最多连续3次", "满血不可",
                              "不恢复生命"):
                     self.assertIn(rule, content)
-        # T1 is a current spec: values T3 has frozen are cited, not deferred.
-        self.assertIn("留到T3", self.docs["T2"])
+        # T1 and T2 are current specs: values T3 has frozen are cited, not deferred.
+        self.assertNotIn("留到T3", self.docs["T2"])
+        self.assertIn("见T3", self.docs["T2"])
         self.assertIn("见T3", self.docs["T1"])
         self.assertNotIn("留到T3", self.docs["T1"])
         self.assertIn("V0.1不做墙跳、贴墙、蹬墙", self.docs["T1"])
@@ -108,6 +109,66 @@ class PlanningDocumentsTests(unittest.TestCase):
             self.assertIn(trigger, t1.split("### 4.2")[1].split("### 4.3")[0])
         for stale in ("T2第10节", "幸存者死亡达到一半", "幸存者战士损失达到一半"):
             self.assertNotIn(stale, t1)
+
+    def test_t2_is_current_spec_with_change_log(self):
+        t2 = self.docs["T2"]
+        self.assertIn("现行版更新：", t2)
+        self.assertNotRegex(t2, r"【20\d\d-")
+        self.assertNotRegex(t2, r"(?m)^\*\*20\d\d-")
+        self.assertNotRegex(t2, r"(?m)^## 20\d\d-")
+        headings = re.findall(r"^## (\d+)\. (.+)$", t2, re.M)
+        self.assertEqual(headings[-1], ("16", "变更记录"))
+        # Sections 1-15 keep their numbers and titles (other documents cite "T2 §N").
+        self.assertEqual([title for _, title in headings[:15]],
+                         ["战斗总体", "玩家攻击", "命中规则", "玩家受击", "闪避战斗规则", "恢复战斗规则",
+                          "敌人公共AI", "三类敌人", "友军AI与战场计算", "10特殊救场", "逆时战场流程与胜负",
+                          "敌人死亡与奖励", "战斗场景", "战斗反馈", "设计验收与后续测试"])
+        body, log = t2.split("## 16. 变更记录")
+        self.assertIn("| 日期 | 变更 | 来源 |", log)
+        for date in ("2026-10-07", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17",
+                     "2026-10-18", "2026-10-19", "2026-10-23"):
+            self.assertIn(f"| {date} |", log)
+        self.assertIn("DOC-008", log)
+        # T1 cites this revision by its original title.
+        self.assertIn("2026-10-16追加修订：10一次性救场与协同测试", log)
+        for stale in ("留到T3", "后续配置更新", "修订标记", "幸存者战士死亡达到一半", "幸存者战士损失达到一半",
+                      "幸存者死亡达到一半", "秒杀威胁单位", "未冻结恢复生命量", "救场无敌时长未确定",
+                      "波次数量、各波单位数量与增援间隔尚未冻结", "前摇0.3秒/后摇0.65秒",
+                      "两个条件共享同一事件", "仅地面", "旧档不自动生效", "需新增专用存档字段"):
+            with self.subTest(stale=stale):
+                self.assertNotIn(stale, body)
+
+        def section(number):
+            return body.split(f"\n## {number}. ")[1].split(f"\n## {number + 1}. ")[0]
+
+        checks = {
+            2: ("不超过0.5秒", "前摇与对应段后摇均乘2", "长按跳跃最大高度的50%", "下攻击不可弹反",
+                "永久扩大20%", "各永久扩大5%", "140%", "不叠乘",
+                # Save compatibility of the range growth (DOC-008 review R1).
+                "消费原有的待领取标记", "已领取与待领取两种状态互斥", "不额外回血、补可能性或推进日期",
+                "原有的永久拾取记录重建，不新增存档字段；旧档自动生效"),
+            3: ("不会被玩家普通攻击打断", "致死优先终止动作"),
+            4: ("1、2、3点", "伤害1-2点（见T3"),
+            5: ("1、2、3可能性", "1.3秒", "前摇较大、无敌帧减少", "-9"),
+            6: ("开始时扣除3可能性", "2.8秒", "当前可能性小于3时禁止启动", "一次性恢复2生命",
+                "全部损失且不恢复生命", "提前松键与滑步取消同样不退还"),
+            7: ("切换场景前持续追击", "950", "安全落差上限默认320", "960像素", "32像素", "480/600",
+                # Active routes pause and expire (DOC-008 review R2).
+                "执行中的追击路线支持暂停", "冻结移动与路线超时计时", "路线超时后退出并重新规划",
+                "全身碰撞、连续支撑及可达跳跃弧线"),
+            8: ("15/17", "生命21、击杀+7", "生命31、击杀+11", "含地面与空中实例，不新增地图"),
+            9: ("不可被击败，每击10伤害", "移动420", "前摇0.18秒、后摇0.32秒"),
+            10: ("有效致命伤，在扣血前优先拦截", "两名幸存者均到达后，存活严格少于50%（即全部倒下）",
+                 "第二波（2天人+1单色）作为兜底", "三个条件共享同一次事件NSZC_10003_1_N002",
+                 "清除当前全部敌人", "补满可能性，不回血", "无额外救场无敌"),
+            11: ("2天人+1单色、3天人+1单色、4天人+2单色", "15分钟与第三日剩余时间的较小值",
+                 "同帧归零与击杀时胜利优先", "可确认重试", "单个波次结束不等于V0.1结束"),
+        }
+        for number, rules in checks.items():
+            text = section(number)
+            for rule in rules:
+                with self.subTest(section=number, rule=rule):
+                    self.assertIn(rule, text)
 
     def test_user_decisions_of_2026_10_19_are_written_into_specs(self):
         t0, t1, t3, t54 = (self.docs[key] for key in ("T0", "T1", "T3", "T5.4"))
@@ -174,7 +235,8 @@ class PlanningDocumentsTests(unittest.TestCase):
         for rule in rules:
             with self.subTest(rule=rule):
                 self.assertIn(rule, t2)
-        self.assertIn("两个条件共享同一事件", t2)
+        self.assertIn("三个条件共享同一次事件", t2)
+        self.assertNotIn("两个条件共享同一事件", t2)
         self.assertIn("玩家再次死亡正常进入死亡复活流程", t2)
         self.assertIn("自身低血量时提高闪避欲望", t2)
         self.assertIn("单个波次结束不等于V0.1结束", t2)
