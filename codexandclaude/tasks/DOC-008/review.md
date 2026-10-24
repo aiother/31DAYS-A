@@ -116,3 +116,85 @@
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 第2轮复审：R1、R2 修复（2026-10-23）
+
+结论：**通过，无阻断项**。首轮 R1、R2 均已解决；首轮记录保留，本节为最新结论。没有修改 Claude 实现分支，没有合并 master。
+
+### 固定对象与范围
+
+- 用 `git switch --detach 5823fe51567326eee672ed9c9d8705fbca238dd0` 固定交付。
+- 修复实现 `6aed673302425a252437f267833968c953854fb1` 是首轮审查 `74d3887897bc0585af446e6e5f275bc865f0daf1` 的直接后继，仅修改 `Words/T2_战斗系统.md` 与 `tests/test_planning_documents.py` 的 T2 断言。
+- 修复实现到交付仅 delivery.md 的修复说明/证据和任务卡首部状态，没有额外规格、测试或代码变化。首轮修订去向表由末尾修复节补充五处相应去向，历史记录保留可追溯。
+
+### 逐项核对
+
+| 项目 | 独立核对与原文依据 | 结论 |
+| --- | --- | --- |
+| R1：范围成长持久化与兼容 | §2 保存规则拆为 Boss / 珍珠 / 共同三条。Boss 与胜利、通路、已领取同存，旧待领取被消费，已领取/待领取互斥；珍珠只按当前槽四处旧永久来源重建，不增字段，旧档自动生效。与基线 T2 第241、266行相符，不把 Boss 的补发事务误套成珍珠新增领取事务。 | 已解决 |
+| R2：活动路线 | §7.1 明确暂停冻结移动与路线超时、保留受击/失衡/死亡既有打断、超时退出重规划。依据原下行追击修订及其入库实施说明，没有自行冻结超时秒数。 | 已解决 |
+| 自查补漏1：成长补发边界 | 不额外回血、补可能性、推进日期，不新增地图或主动技能，来自原 Boss 范围强化修订，补回未扩大范围。 | 成立 |
+| 自查补漏2：绕行安全 | 全身碰撞、连续支撑、可达跳跃弧线，来自原 bug2 绕行修订，保留地形安全边界。 | 成立 |
+| 自查补漏3：单色首批 | 地面/空中实例仍放已开放堑壕第一间、不新增地图，来自原 §8.2 灰盒修订。 | 成立 |
+
+其余文本未改变；首轮已经核对的数值、救场、最终战、八条歧义解释及跨文档问题的处理范围仍成立。T1、T3～T5.4、game/docs 与游戏代码均未在本轮改动，不要求越界修复。
+
+### 回归与独立变异
+
+新增正向断言检查旧待领取消费/互斥、补发不额外奖励、珍珠兼容、路线暂停/超时、绕行安全与单色不增地图；反向断言拦住正文“旧档不自动生效”“需新增专用存档字段”。既有 T2 检查保留，没有删除有效断言或降低测试计数。
+
+使用内存中的 T2 副本替换 PlanningDocumentsTests.setUp() 的文档数据，未编辑交付文件；每个变异重新运行全部 35 项规划文档测试。
+
+| 变异 | 失败数（均无 errors） |
+| --- | --- |
+| 未变异基线 | 0 |
+| 珍珠改为新增专用字段、旧档不自动生效（原反转探针） | 3 |
+| 删除消费待领取与互斥两句 | 2 |
+| 删除活动路线整条 | 3 |
+| 换回改写前 T2 | 3 |
+| 同帧改超时优先 | 2 |
+| 删除救场不回血 | 1 |
+| 加回留到 T3 | 2 |
+
+三项修复变异和原四项均被拦下，与交付一致。
+
+### 独立 G3
+
+固定交付、干净工作区执行 `python codexandclaude/tools/run_checks.py focused --python-all`：**109/109 + 67/67 通过，content_stable=True**。纯文档不需要 G2，没有沿用实现者摘要。运行 UTC 日期为 2026-10-24，对应本地 America/Los_Angeles 仍为 2026-10-23。
+
+独立变异结果：`codexandclaude/runs/doc008-r2-mutations.json`，SHA256 `4155d10e73fc8c997d2c3f395c8b2f51902183891a56af3327f4b77a37ba3599`。
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`5823fe51567326eee672ed9c9d8705fbca238dd0`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-24T06:15:51.027995+00:00；结束：2026-10-24T06:16:07.258199+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际109 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`7a1543e5c3ca2608c2f8d6b323aad7d945a65e52`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`76cefcaed7925b7ad28d05b7e0d3ff9a37b4bf6e09021f8e07b739026499f4ac`；工作区范围指纹（原始字节）：`fae33a96a799ba92ca529b877e834da61683e108a7e3d562ab5ccf236daa7ef4`。
+全工作区指纹：`6980f8e0d37198ccc971df6ab47ec884a3127f63cd50f1d183e92ea0bcd47a0e`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\001.txt`；SHA256=`bb66e2b9d5f6cf90f53555fef54303011f7c2ada2c28dda0c48ba221bb5cdbf3`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.281秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.297秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\006.txt`；SHA256=`45f8df0a98e1841eb7ce25db308b54f73fd132dfdef964a6a3588e3aba21c162`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=11.109秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T061551.027995Z\007.txt`；SHA256=`87fc2965605f16e39557ef060e4fbfb2180c775da87481e5af9baa8e3a1b4012`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
