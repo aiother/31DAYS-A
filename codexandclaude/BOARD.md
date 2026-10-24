@@ -50,7 +50,7 @@
 | SYS-010 | L | 角色动画接入框架 | Codex | Claude | 已完成（第八批；用户 G4 通过，集成检查通过） | [tasks/SYS-010](tasks/SYS-010/task.md) |
 | EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已完成（第八批；用户定稿 D 融合，集成检查通过） | [tasks/EXP-005](tasks/EXP-005/task.md) |
 | FX-001 | L | 正式战斗反馈特效 | Claude | Codex | 已批准（第九批） | [tasks/FX-001](tasks/FX-001/task.md) |
-| SYS-011 | L | 音效事件框架与占位音 | Codex | Claude | 已批准（第九批） | [tasks/SYS-011](tasks/SYS-011/task.md) |
+| SYS-011 | L | 音效事件框架与占位音 | Codex | Claude | 已完成 | [tasks/SYS-011](tasks/SYS-011/task.md) |
 | DOC-009 | M | T3 改写为现行版 | Claude | Codex | 已批准（第九批） | [tasks/DOC-009](tasks/DOC-009/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
