@@ -31,6 +31,7 @@ func start_combat() -> void:
 
 func _windup() -> void:
 	state = State.WINDUP
+	GameAudio.emit_from(self, &"enemy.windup", global_position)
 	remaining = config.windup_duration
 	impact_x = clampf(target.position.x, 160.0, 1760.0)
 	_windup_start = position

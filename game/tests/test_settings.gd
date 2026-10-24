@@ -161,11 +161,12 @@ func run() -> void:
 	finish()
 
 func routing() -> void:
-	for entry: Array in [["res://player/player.tscn","_hit_sound"],["res://enemies/colorless_entity.tscn","_warning"],["res://enemies/monochrome_entity.tscn","_warning"],["res://enemies/tian_warrior.tscn","warning"]]:
+	for entry: Array in [["res://player/player.tscn","combat.hit"],["res://enemies/colorless_entity.tscn","enemy.windup"],["res://enemies/monochrome_entity.tscn","enemy.windup"],["res://enemies/tian_warrior.tscn","enemy.windup"]]:
 		var actor: Node = (load(entry[0]) as PackedScene).instantiate()
 		root.add_child(actor)
 		actor.set_physics_process(false)
-		var sound: AudioStreamPlayer = actor.get_node("VisualRoot").get(entry[1]) as AudioStreamPlayer
+		var record: Dictionary = GameAudio.service(actor).play(entry[1], Vector2.INF, actor)
+		var sound: AudioStreamPlayer = record["voice"].get_ref() as AudioStreamPlayer
 		check(sound != null and sound.bus == &"效果音", str(entry[0]) + " routes the real placeholder player through effects")
 		actor.queue_free()
 	await frames()

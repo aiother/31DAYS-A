@@ -228,6 +228,7 @@ func try_block(impulse: Vector2, source: Node2D) -> bool:
 	motion_remaining = tuning().guard_duration
 	guard_cooldown_remaining = tuning().guard_cooldown
 	counter_remaining = tuning().counter_lifetime
+	GameAudio.emit_from(self, &"combat.block", global_position)
 	velocity.x = 0
 	return true
 

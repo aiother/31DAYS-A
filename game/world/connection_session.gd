@@ -33,6 +33,7 @@ func _persist_gate(key: String) -> bool:
 			data["events"].erase(key)
 		return false
 	ui.call("save_failed", "")
+	GameAudio.emit_from(self, &"interaction.gate")
 	return true
 
 func _on_room_enemy_defeated(reward: int) -> void:

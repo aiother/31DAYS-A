@@ -22,7 +22,7 @@
 | 输入 | V0.1 键位已冻结并与配置一致 | T1 §7；`game/project.godot`；`game/tests/test_input_bindings.gd` |
 | UI | **M2 全部界面已正式化**（样张二视觉与霞鹜文楷，样式模块 UI-001）：HUD 与时间显示（UI-002）、暂停菜单与保存反馈（UI-003）、主界面与书签存档选择（UI-004）、死亡 / 结束 / 超时界面与返回标题（UI-005）、设置界面（UI-006，音量分开、分辨率、全屏、帧率、只读按键列表）、区域名称与交互提示（UI-007）、对话界面与 G-08（UI-008）、敌人介绍卡与战场横幅（UI-009）、任务纸签与中央提示（UI-010）；灰盒世界按键文字已清理（CLN-001）。各界面用户 G4 均已通过；整体 T7-G 验收见 PLN-001 | `game/ui/hud/`；`game/ui/menus/`；`game/ui/dialogue/`；`game/ui/style/`；原型 `game/prototypes/EXP-001/`～`EXP-004/` |
 | 美术 | 只有两张占位 SVG；角色、敌人、友军由代码绘制几何占位，敌人攻击前摇有灰盒警示 | `game/assets/`；`game/player/placeholder_visual.gd`、`game/enemies/*_visual.gd`、`game/allies/ten_visual.gd` |
-| 音频 | 没有外部音频资源；只有程序生成的占位音效：警示音与玩家命中音 | `game/core/utilities/graybox_audio.gd`（警示音）；`game/player/placeholder_visual.gd`（命中音，由 `combat.hit_confirmed` 触发） |
+| 音频 | 没有外部音频资源；占位音效（含警示音与命中音）统一经事件入口发出，音乐与区域环境音预留空槽 | `game/systems/audio/audio_events.gd`；`game/systems/audio/default_audio_map.tres`；`game/systems/audio/placeholder_tone.gd` |
 | 文本与演出 | 对话已用正式界面显示（UI-008），但台词仍为临时文本（含已过期 NPC 处的错失机会文本）；救场、结局等演出为几何与文字占位 | `game/data/dialogue/`；`game/ui/dialogue/field_dialogue.gd`；`game/ui/cinematics/rescue_overlay.gd`；`game/ui/menus/final_battle_ui.gd` |
 | 测试 | 引擎专项 92 个套件（加导入与主场景启动共 94 项），各自在文件第一行登记（ENV-004），加 Python 检查（108 + 67 项），全部纳入统一检查入口；full 内容稳定可作复用来源（ENV-007）；需要实机验收的任务用通用 G4 启动器（ENV-006，`game/tests/acceptance/`） | `game/tests/test_*.gd` 首行；`scripts/verify_game.py`；`codexandclaude/tools/run_checks.py` |
 | 规格 | T0、T1、T2 为现行版（T2 由 DOC-008 改写）；T3～T5.4 仍有补丁式修订待改写；T7 核对表已随 UI 任务修订（对话外观、暂停菜单方案四等）；待决事项总表 A 类 20 条已全部裁决；C 类未决参数保留在 BL-026 | `Words/`；`Words/T7核对表.md`；`Words/待决事项总表.md` |

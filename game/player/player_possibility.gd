@@ -63,6 +63,7 @@ func try_dodge() -> bool:
 	poor_dodge = balance < cost
 	balance -= cost
 	balance_changed.emit(balance, maximum)
+	GameAudio.emit_from(player, &"possibility.spend", player.global_position)
 	if poor_dodge:
 		shortfall.emit(ShortfallKind.DODGE)
 	chain += 1
@@ -88,6 +89,8 @@ func try_heal() -> bool:
 	player.combat.reset_combo()
 	state = State.HEALING
 	remaining = config.heal_duration
+	GameAudio.emit_from(player, &"possibility.spend", player.global_position)
+	GameAudio.emit_from(player, &"heal.start", player.global_position)
 	return true
 
 # Explicitly ticked before ordinary movement/combat. Costs are never refunded.
@@ -113,6 +116,7 @@ func tick(delta: float) -> void:
 		return
 	match state:
 		State.HEALING:
+			GameAudio.emit_from(player, &"heal.done", player.global_position)
 			player.life.heal(config.heal_amount)
 			cancel()
 		State.DODGE_WINDUP:

@@ -1,22 +1,5 @@
 extends Node2D
 @onready var entity: ColorlessEntity = get_parent() as ColorlessEntity
-var _warning: AudioStreamPlayer
-
-func _ready() -> void:
-	_warning = AudioStreamPlayer.new()
-	_warning.bus = &"效果音"
-	_warning.stream = GrayboxAudio.make_warning()
-	_warning.volume_db = -20.0
-	add_child(_warning)
-	entity.attack_started.connect(_on_attack_started)
-
-func _on_attack_started(_ranged: bool) -> void:
-	_warning.play()
-
-func _exit_tree() -> void:
-	if is_instance_valid(_warning):
-		_warning.stop()
-		_warning.stream = null
 
 func _draw() -> void:
 	if entity.state == ColorlessEntity.State.DEAD:

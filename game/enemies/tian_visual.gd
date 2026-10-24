@@ -1,20 +1,5 @@
 extends Node2D
 @onready var actor: TianWarrior = get_parent() as TianWarrior
-var warning: AudioStreamPlayer
-func _ready() -> void:
-	warning = AudioStreamPlayer.new()
-	warning.bus = &"效果音"
-	warning.stream = GrayboxAudio.make_warning()
-	warning.volume_db = -20
-	add_child(warning)
-	actor.attack_started.connect(_on_attack)
-func _on_attack(_ranged: bool) -> void:
-	warning.pitch_scale = 0.6 if actor.attack_kind == TianWarrior.Attack.HEAVY else 1.1
-	warning.play()
-func _exit_tree() -> void:
-	if is_instance_valid(warning):
-		warning.stop()
-		warning.stream = null
 func _draw() -> void:
 	if actor.state == ColorlessEntity.State.DEAD:
 		for i: int in range(4):

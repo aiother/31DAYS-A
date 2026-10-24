@@ -9,6 +9,7 @@ config/icon="res://assets/characters/player_placeholder.svg"
 
 [autoload]
 GameSettings="*res://systems/game_settings.gd"
+AudioEvents="*res://systems/audio/audio_events.gd"
 
 [audio]
 buses/default_bus_layout="res://default_bus_layout.tres"

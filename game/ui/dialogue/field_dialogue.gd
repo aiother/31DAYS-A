@@ -186,6 +186,7 @@ func _guard_pause(paused: bool) -> void:
 func advance() -> void:
 	if not active or confirming or get_tree().paused:
 		return
+	GameAudio.emit_from(self, &"interaction.dialogue")
 	if text.visible_characters < text.get_total_character_count():
 		_count = text.get_total_character_count()
 		text.visible_characters = text.get_total_character_count()

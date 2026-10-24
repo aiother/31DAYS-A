@@ -3,7 +3,6 @@ extends Node2D
 @onready var player: PlayerController = get_parent() as PlayerController
 @onready var sprite: Sprite2D = $PlaceholderSprite
 @onready var combat: PlayerCombat = get_parent().get_node("GameplayRoot/Combat") as PlayerCombat
-var _hit_sound: AudioStreamPlayer
 var _feedback: Tween
 var _pulse: float = 0.0
 var _hurt_flash: float = 0.0
@@ -15,12 +14,6 @@ var _last_balance: int = 3
 func _ready() -> void:
 	player.landed.connect(_on_landed)
 	player.facing_changed.connect(_on_facing_changed)
-	_hit_sound = AudioStreamPlayer.new()
-	_hit_sound.bus = &"效果音"
-	_hit_sound.stream = _make_hit_sound()
-	_hit_sound.volume_db = -16.0
-	add_child(_hit_sound)
-	combat.hit_confirmed.connect(_on_hit_confirmed)
 	life.damaged.connect(_on_damaged)
 	life.died.connect(_on_died)
 	life.respawned.connect(_on_respawned)
@@ -50,29 +43,6 @@ func _on_respawned() -> void:
 	sprite.rotation = 0.0
 	sprite.position = Vector2(0, -48)
 	_hurt_flash = 0.0
-
-func _make_hit_sound() -> AudioStreamWAV:
-	var stream: AudioStreamWAV = AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.mix_rate = 22050
-	var samples: int = 1764
-	var bytes: PackedByteArray = PackedByteArray()
-	bytes.resize(samples * 2)
-	for i: int in range(samples):
-		var t: float = float(i) / float(stream.mix_rate)
-		var envelope: float = (1.0 - float(i) / float(samples)) * minf(float(i) / 32.0, 1.0)
-		var value: int = int(sin(TAU * (700.0 * t - 2200.0 * t * t)) * envelope * 16000.0)
-		bytes.encode_s16(i * 2, value)
-	stream.data = bytes
-	return stream
-
-func _on_hit_confirmed(_target: CombatHurtbox, _damage: int, _impulse: Vector2) -> void:
-	_hit_sound.play()
-
-func _exit_tree() -> void:
-	if is_instance_valid(_hit_sound):
-		_hit_sound.stop()
-		_hit_sound.stream = null
 
 func _process(delta: float) -> void:
 	_hurt_flash = maxf(0.0, _hurt_flash - delta)

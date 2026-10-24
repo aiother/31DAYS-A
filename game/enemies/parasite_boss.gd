@@ -44,6 +44,7 @@ func _physics_process(delta: float) -> void:
 			position.x = move_toward(position.x,_move_goal,config.move_speed*delta)
 			if remaining==0:
 				state = State.WINDUP
+				GameAudio.emit_from(self, &"enemy.windup", global_position)
 				remaining = config.windup
 		State.WINDUP:
 			if remaining==0:

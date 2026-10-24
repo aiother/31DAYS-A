@@ -118,6 +118,7 @@ func _change_room(target: String) -> void:
 	_update_flags()
 	(player.get_node("Camera2D") as Camera2D).reset_smoothing()
 	_notify(room.config.display_name)
+	GameAudio.emit_from(self, &"interaction.gate")
 
 func _process(delta: float) -> void:
 	super._process(delta)

@@ -138,6 +138,7 @@ func activate_environment_switch() -> bool:
 		else: data["events"].erase(key)
 		return false
 	hazard.refresh(player,data["events"])
+	GameAudio.emit_from(self, &"interaction.mechanism")
 	ui.call("save_failed","")
 	return true
 

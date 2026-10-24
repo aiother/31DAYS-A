@@ -68,6 +68,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0:
 		if not combat.is_attacking():
 			combat.reset_combo()
+		GameAudio.emit_from(self, &"player.jump", global_position)
 		velocity.y = -movement.jump_speed
 		_bounce_rising = false
 		_hold_remaining = movement.jump_hold_duration

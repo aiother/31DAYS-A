@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AudioEventMap" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/audio/audio_map.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+clips = {
+"player.jump": null,
+"player.land": null,
+"player.hard_land": null,
+"combat.swing": null,
+"combat.hit": null,
+"combat.reflect": null,
+"combat.block": null,
+"player.hurt": null,
+"enemy.hurt": null,
+"player.death": null,
+"enemy.death": null,
+"boss.defeated": null,
+"possibility.gain": null,
+"possibility.spend": null,
+"possibility.shortfall": null,
+"heal.start": null,
+"heal.done": null,
+"interaction.dialogue": null,
+"interaction.pickup": null,
+"interaction.mechanism": null,
+"interaction.gate": null,
+"enemy.windup": null,
+"ui.focus": null,
+"ui.confirm": null,
+"ui.back": null
+}
+placeholders = PackedStringArray("player.jump", "player.land", "player.hard_land", "combat.swing", "combat.hit", "combat.reflect", "combat.block", "player.hurt", "enemy.hurt", "player.death", "enemy.death", "boss.defeated", "heal.start", "heal.done", "interaction.dialogue", "interaction.pickup", "interaction.mechanism", "interaction.gate", "enemy.windup", "ui.focus", "ui.confirm", "ui.back")
