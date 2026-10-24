@@ -33,6 +33,8 @@ func _move() -> void:
 	_move_goal = clampf(target.position.x+_side*280.0,368.0,1648.0)
 
 func _physics_process(delta: float) -> void:
+	if HitStop.held(self, delta):
+		return
 	flash = maxf(0,flash-delta)
 	$VisualRoot.modulate = Color(1.8,1.8,1.8) if flash>0 else Color.WHITE
 	queue_redraw()

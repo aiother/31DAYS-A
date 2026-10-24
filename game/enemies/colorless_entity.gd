@@ -48,6 +48,8 @@ func _can_see_target() -> bool:
 	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 func _physics_process(delta: float) -> void:
+	if HitStop.held(self, delta):
+		return
 	if state == State.DEAD:
 		return
 	_flash = maxf(0.0, _flash - delta * 4.0)

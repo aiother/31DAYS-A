@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CombatEffectConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://effects/combat_effect_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+hit_stop_seconds = 0.1
+stop_jitter = 4.0
+hit_shake = 0.0
+hurt_shake = 5.0
+shake_seconds = 0.2

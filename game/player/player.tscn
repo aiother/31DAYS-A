@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://player/player_controller.gd" id="1"]
 [ext_resource type="Resource" path="res://data/player/graybox_movement.tres" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="Resource" path="res://data/player/graybox_possibility.tres" id="11"]
 
 [ext_resource type="Script" path="res://animation/character_animator.gd" id="sys010"]
+[ext_resource type="Script" path="res://effects/combat_effect_director.gd" id="fx001"]
 
 [sub_resource type="CapsuleShape2D" id="Body"]
 radius = 22.0
@@ -96,3 +97,6 @@ texture = ExtResource("3")
 
 [node name="Animator" type="Node" parent="VisualRoot"]
 script = ExtResource("sys010")
+
+[node name="EffectDirector" type="Node" parent="."]
+script = ExtResource("fx001")

@@ -36,6 +36,8 @@ func _windup() -> void:
 	_windup_start = position
 
 func _physics_process(delta: float) -> void:
+	if HitStop.held(self, delta):
+		return
 	flash = maxf(0.0, flash - delta)
 	$VisualRoot.modulate = Color(1.8, 1.8, 1.8) if flash > 0 else Color.WHITE
 	queue_redraw()
