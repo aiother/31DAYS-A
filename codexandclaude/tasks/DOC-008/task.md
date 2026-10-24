@@ -1,6 +1,6 @@
 # DOC-008：T2 改写为现行版
 
-状态：审查修复后待复审（2026-10-23 用户批准；实现 `7abae7a`，第1轮修复 `6aed673`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-23 复审通过，用户授权合入；master G3 通过，见 [integration.md](integration.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无
 
 ## 目标

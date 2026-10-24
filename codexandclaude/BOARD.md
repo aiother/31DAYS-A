@@ -46,7 +46,7 @@
 | CLN-001 | S | 清理已被正式交互提示取代的灰盒世界提示 | Codex | Claude | 已完成 | [tasks/CLN-001](tasks/CLN-001/task.md) |
 | ENV-007 | S | 检查工具小修（内容稳定、改名漏检、调度顺序） | Codex | Claude | 已完成 | [tasks/ENV-007](tasks/ENV-007/task.md) |
 | PLN-001 | M | 规划刷新与 M2 收尾核对 | Claude | Codex | 已完成（第八批；用户整体通关验收通过，集成检查通过） | [tasks/PLN-001](tasks/PLN-001/task.md) |
-| DOC-008 | M | T2 改写为现行版 | Claude | Codex | 已批准（第八批，未开始） | [tasks/DOC-008](tasks/DOC-008/task.md) |
+| DOC-008 | M | T2 改写为现行版 | Claude | Codex | 已完成（第八批；复审与集成 G3 通过） | [tasks/DOC-008](tasks/DOC-008/task.md) |
 | SYS-010 | L | 角色动画接入框架 | Codex | Claude | 已完成（第八批；用户 G4 通过，集成检查通过） | [tasks/SYS-010](tasks/SYS-010/task.md) |
 | EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已完成（第八批；用户定稿 D 融合，集成检查通过） | [tasks/EXP-005](tasks/EXP-005/task.md) |
 
