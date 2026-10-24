@@ -87,7 +87,7 @@ func play(event: StringName, at: Vector2 = Vector2.INF, source: Node = null) -> 
 		voice.bus = &"效果音"
 		voice.process_mode = Node.PROCESS_MODE_ALWAYS if ui else Node.PROCESS_MODE_PAUSABLE
 		voice.set_meta("ui", ui)
-		voice.set_meta("source", weakref(source) if is_instance_valid(source) else null)
+		voice.set_meta("source", weakref(_lifetime(source)) if is_instance_valid(source) else null)
 		voice.stream = clip
 		voice.volume_db = -18.0
 		add_child(voice)
@@ -100,6 +100,14 @@ func play(event: StringName, at: Vector2 = Vector2.INF, source: Node = null) -> 
 	if history.size() > 512: history.pop_front()
 	event_emitted.emit(record)
 	return record
+
+func _lifetime(source: Node) -> Node:
+	# A one-shot belongs to its scene/Room, not a disposable corpse or button.
+	# Removing a corpse/closing a menu must not truncate the just-started sound.
+	var scope: Node = source
+	while scope.get_parent() != null and scope.get_parent() != get_tree().root and not scope is WorldRoom:
+		scope = scope.get_parent()
+	return scope
 
 func _dispose(voice: AudioStreamPlayer) -> void:
 	voices.erase(voice)

@@ -157,6 +157,19 @@ func service_cases() -> void:
 	check(ui.audible and not (ui.voice.get_ref() as AudioStreamPlayer).stream_paused, "UI voice can play while paused")
 	paused = false
 	await frames()
+	# A real source may be freed immediately after producing its one-shot.
+	var scope := Node2D.new()
+	root.add_child(scope)
+	var emitter := Node2D.new()
+	scope.add_child(emitter)
+	var one_shot: Dictionary = audio.play(&"enemy.death", Vector2.ZERO, emitter)
+	var one_voice: AudioStreamPlayer = one_shot.voice.get_ref()
+	emitter.queue_free()
+	await frames(2)
+	check(is_instance_valid(one_voice) and one_voice.playing, "freeing a corpse does not truncate its one-shot")
+	scope.queue_free()
+	await frames(2)
+	check(not is_instance_valid(one_voice) or one_voice.stream == null, "removing its scene clears the remaining one-shot")
 	var original: AudioEventMap = audio.mapping
 	audio.mapping = original.duplicate(true)
 	var replacement: AudioStreamWAV = PlaceholderTone.make(1234)
