@@ -96,13 +96,22 @@ func enemy_cases() -> void:
 		for i: int in range(240):
 			await frames(1)
 			if not started.is_empty(): break
-		check(not started.is_empty() and seen("enemy.windup").size() == 1, path + " actual windup emits exactly one warning")
-		if not started.is_empty() and not seen("enemy.windup").is_empty():
-			check(seen("enemy.windup")[0].physics_frame == started[0] and enemy.state == ColorlessEntity.State.WINDUP, path + " warning shares visual windup physics frame")
+		var warning: String = ("enemy.windup.monochrome_heavy" if enemy.strong_attack else "enemy.windup.monochrome") if enemy is MonochromeEntity else (("enemy.windup.tian_heavy" if enemy.attack_kind == TianWarrior.Attack.HEAVY else "enemy.windup.tian") if enemy is TianWarrior else "enemy.windup")
+		check(not started.is_empty() and seen(warning).size() == 1, path + " actual windup emits exactly one warning")
+		if not started.is_empty() and not seen(warning).is_empty():
+			check(seen(warning)[0].physics_frame == started[0] and enemy.state == ColorlessEntity.State.WINDUP, path + " warning shares visual windup physics frame")
 		enemy.set_physics_process(false)
 		begin()
 		enemy.hurtbox.receive_attack(1, Vector2.ZERO, body, 100)
 		check(seen("enemy.hurt").size() == 1, path + " accepted damage reports hurt")
+		# A stale damage flash must not turn a zero/rejected hit into hurt audio.
+		begin()
+		var health: int = enemy.health
+		enemy.hurtbox.receive_attack(0, Vector2.ZERO, body, 102)
+		check(enemy.health == health and seen("enemy.hurt").is_empty(), path + " zero damage after a real flash emits no hurt sound")
+		enemy.hurtbox.accepts_hits = false
+		check(not enemy.hurtbox.receive_attack(1, Vector2.ZERO, body, 103) and seen("enemy.hurt").is_empty(), path + " rejected hit emits no hurt sound")
+		enemy.hurtbox.accepts_hits = true
 		begin()
 		enemy.hurtbox.receive_attack(1000, Vector2.ZERO, body, 101)
 		check(seen("enemy.death").size() == 1, path + " actual defeat reports death")
@@ -142,6 +151,88 @@ func enemy_cases() -> void:
 	lab.queue_free()
 	await frames(3)
 
+func capture_warning(samples: Array[Dictionary], actor: ColorlessEntity) -> void:
+	var rows: Array = audio.history.filter(func(row: Dictionary) -> bool: return String(row.event).begins_with("enemy.windup"))
+	var row: Dictionary = rows.back() if not rows.is_empty() else {}
+	var voice: AudioStreamPlayer = row.voice.get_ref() if row.get("voice") != null else null
+	samples.append({"strong":actor.strong_attack if actor is MonochromeEntity else false,
+		"kind":actor.attack_kind if actor is TianWarrior else -1, "state":actor.state,
+		"frame":Engine.get_physics_frames(), "event":row.get("event", ""),
+		"event_frame":row.get("physics_frame", -1), "pitch":voice.pitch_scale if voice != null else -1.0,
+		"record_pitch":row.get("pitch", -2.0), "stream":voice.stream if voice != null else null})
+
+func warning_variants() -> void:
+	lab = (load("res://debug/movement_lab.tscn") as PackedScene).instantiate()
+	root.add_child(lab)
+	body = lab.get_node("Player") as PlayerController
+	await reset()
+	body.set_physics_process(false)
+	body.life.protection_remaining = 1000
+	var original: AudioEventMap = audio.mapping
+	# First hear the baseline placeholder pitches, then independently replace both clips.
+	for replaced: bool in [false, true]:
+		audio.mapping = original.duplicate(true)
+		var normal_clip: AudioStream = PlaceholderTone.make(500)
+		var heavy_clip: AudioStream = PlaceholderTone.make(250)
+		if replaced:
+			audio.mapping.clips["enemy.windup.monochrome"] = normal_clip
+			audio.mapping.clips["enemy.windup.monochrome_heavy"] = heavy_clip
+		var mono: MonochromeEntity = (load("res://enemies/monochrome_entity.tscn") as PackedScene).instantiate()
+		lab.add_child(mono)
+		mono.global_position = body.global_position + Vector2(80,0)
+		mono.target = body
+		var samples: Array[Dictionary] = []
+		mono.attack_started.connect(func(_ranged: bool) -> void: capture_warning(samples, mono))
+		begin()
+		for i: int in range(600):
+			await frames(1)
+			if samples.any(func(row: Dictionary) -> bool: return row.strong) and samples.any(func(row: Dictionary) -> bool: return not row.strong): break
+		check(samples.size() >= 2, "monochrome AI reaches ordinary and strong windups, replacement=" + str(replaced))
+		for strong: bool in [false, true]:
+			var matches: Array = samples.filter(func(row: Dictionary) -> bool: return row.strong == strong)
+			var sample: Dictionary = matches[0] if not matches.is_empty() else {}
+			var expected: String = "enemy.windup.monochrome_heavy" if strong else "enemy.windup.monochrome"
+			check(sample.get("event") == expected and sample.get("state") == ColorlessEntity.State.WINDUP and sample.get("frame") == sample.get("event_frame"), "monochrome real action selects " + expected + " in the windup frame")
+			var pitch: float = 0.7 if strong else 1.3
+			check(is_equal_approx(float(sample.get("pitch", -1.0)), pitch) and sample.get("pitch") == sample.get("record_pitch"), "monochrome actual voice retains pitch " + str(pitch))
+			if replaced: check(sample.get("stream") == (heavy_clip if strong else normal_clip), "monochrome replacement affects only its matching attack slot")
+		mono.queue_free()
+		await frames(2)
+	# Fresh real Tian action entries cover every non-heavy kind, not manually emitted signals.
+	for kind: int in [TianWarrior.Attack.COMBO, TianWarrior.Attack.HEAVY, TianWarrior.Attack.RANGED, TianWarrior.Attack.COUNTER]:
+		audio.mapping = original.duplicate(true)
+		var normal_clip: AudioStream = PlaceholderTone.make(550)
+		var heavy_clip: AudioStream = PlaceholderTone.make(200)
+		audio.mapping.clips["enemy.windup.tian"] = normal_clip
+		audio.mapping.clips["enemy.windup.tian_heavy"] = heavy_clip
+		var tian: TianWarrior = (load("res://enemies/tian_warrior.tscn") as PackedScene).instantiate()
+		lab.add_child(tian)
+		tian.global_position = body.global_position + Vector2(100,0)
+		tian.target = body
+		var samples: Array[Dictionary] = []
+		tian.attack_started.connect(func(_ranged: bool) -> void: capture_warning(samples, tian))
+		begin()
+		tian._start_attack(kind)
+		var sample: Dictionary = samples[0] if not samples.is_empty() else {}
+		var heavy: bool = kind == TianWarrior.Attack.HEAVY
+		check(sample.get("event") == ("enemy.windup.tian_heavy" if heavy else "enemy.windup.tian") and sample.get("kind") == kind and sample.get("state") == ColorlessEntity.State.WINDUP and sample.get("frame") == sample.get("event_frame"), "Tian real action chooses matching warning for kind " + str(kind))
+		check(is_equal_approx(float(sample.get("pitch", -1.0)), 0.6 if heavy else 1.1) and sample.get("pitch") == sample.get("record_pitch"), "Tian actual warning pitch matches heavy versus ordinary")
+		check(sample.get("stream") == (heavy_clip if heavy else normal_clip), "Tian formal warning slots independently replaceable")
+		tian.queue_free()
+		await frames(2)
+	audio.mapping = original
+	lab.queue_free()
+	await frames(3)
+
+func raw_key(code: Key) -> void:
+	for down: bool in [true, false]:
+		var event := InputEventKey.new()
+		event.keycode = code
+		event.physical_keycode = code
+		event.pressed = down
+		Input.parse_input_event(event)
+		await frames()
+
 func service_cases() -> void:
 	audio.stop_game()
 	begin()
@@ -155,6 +246,9 @@ func service_cases() -> void:
 	check(audio.history.size() == count and voice.stream_paused, "pause suspends game sound and refuses new game events")
 	var ui: Dictionary = audio.play(&"ui.confirm")
 	check(ui.audible and not (ui.voice.get_ref() as AudioStreamPlayer).stream_paused, "UI voice can play while paused")
+	var backs: int = seen("ui.back").size()
+	await raw_key(KEY_ESCAPE)
+	check(seen("ui.back").size() == backs + 1, "real Esc emits one back sound while paused")
 	paused = false
 	await frames()
 	# A real source may be freed immediately after producing its one-shot.
@@ -220,6 +314,9 @@ func service_cases() -> void:
 	begin()
 	button.grab_focus()
 	await frames()
+	var focused_backs: int = seen("ui.back").size()
+	await raw_key(KEY_ESCAPE)
+	check(seen("ui.back").size() == focused_backs + 1, "real Esc emits back with a focused control while unpaused")
 	for down: bool in [true, false]:
 		var key := InputEventKey.new()
 		key.keycode = KEY_ENTER
@@ -362,6 +459,7 @@ func run() -> void:
 			routed = routed and voice != null and voice.bus == &"效果音" and row.bus == voice.bus and row.stream == voice.stream and voice.playing)
 	await player_cases()
 	await enemy_cases()
+	await warning_variants()
 	await service_cases()
 	await session_cases()
 	for id: String in audio.mapping.clips.keys():

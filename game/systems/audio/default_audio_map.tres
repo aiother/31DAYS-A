@@ -27,8 +27,19 @@ clips = {
 "interaction.mechanism": null,
 "interaction.gate": null,
 "enemy.windup": null,
+"enemy.windup.monochrome": null,
+"enemy.windup.monochrome_heavy": null,
+"enemy.windup.tian": null,
+"enemy.windup.tian_heavy": null,
 "ui.focus": null,
 "ui.confirm": null,
 "ui.back": null
 }
-placeholders = PackedStringArray("player.jump", "player.land", "player.hard_land", "combat.swing", "combat.hit", "combat.reflect", "combat.block", "player.hurt", "enemy.hurt", "player.death", "enemy.death", "boss.defeated", "heal.start", "heal.done", "interaction.dialogue", "interaction.pickup", "interaction.mechanism", "interaction.gate", "enemy.windup", "ui.focus", "ui.confirm", "ui.back")
+placeholders = PackedStringArray("player.jump", "player.land", "player.hard_land", "combat.swing", "combat.hit", "combat.reflect", "combat.block", "player.hurt", "enemy.hurt", "player.death", "enemy.death", "boss.defeated", "heal.start", "heal.done", "interaction.dialogue", "interaction.pickup", "interaction.mechanism", "interaction.gate", "enemy.windup", "enemy.windup.monochrome", "enemy.windup.monochrome_heavy", "enemy.windup.tian", "enemy.windup.tian_heavy", "ui.focus", "ui.confirm", "ui.back")
+
+pitches = {
+"enemy.windup.monochrome": 1.3,
+"enemy.windup.monochrome_heavy": 0.7,
+"enemy.windup.tian": 1.1,
+"enemy.windup.tian_heavy": 0.6
+}

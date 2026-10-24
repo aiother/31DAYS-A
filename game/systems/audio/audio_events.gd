@@ -34,7 +34,7 @@ func _bind(node: Node) -> void:
 		player.possibility.shortfall.connect(func(_kind: int) -> void: GameAudio.emit_from(player, &"possibility.shortfall", player.global_position))
 	elif node is ColorlessEntity:
 		var enemy := node as ColorlessEntity
-		enemy.attack_started.connect(func(_ranged: bool) -> void: GameAudio.emit_from(enemy, &"enemy.windup", enemy.global_position))
+		enemy.attack_started.connect(_windup.bind(enemy))
 		enemy.defeated.connect(func(_reward: int) -> void: GameAudio.emit_from(enemy, &"enemy.death", enemy.global_position))
 		enemy.hurtbox.hit_received.connect(_enemy_hit.bind(enemy))
 	elif node is OverlookBoss or node is ParasiteBoss:
@@ -51,6 +51,15 @@ func _bind(node: Node) -> void:
 		node.focus_entered.connect(func() -> void: GameAudio.emit_from(node, &"ui.focus"))
 		if node is BaseButton:
 			node.pressed.connect(_button.bind(node))
+
+func _windup(_ranged: bool, enemy: ColorlessEntity) -> void:
+	# Observe the action chosen before attack_started, never change its state.
+	var event: StringName = &"enemy.windup"
+	if enemy is MonochromeEntity:
+		event = &"enemy.windup.monochrome_heavy" if enemy.strong_attack else &"enemy.windup.monochrome"
+	elif enemy is TianWarrior:
+		event = &"enemy.windup.tian_heavy" if enemy.attack_kind == TianWarrior.Attack.HEAVY else &"enemy.windup.tian"
+	GameAudio.emit_from(enemy, event, enemy.global_position)
 
 func _confirmed(target: CombatHurtbox, _damage: int, _impulse: Vector2, player: PlayerController) -> void:
 	var reflected: bool = target.get_parent() is ColorlessProjectile and (target.get_parent() as ColorlessProjectile).reflected
@@ -76,7 +85,7 @@ func play(event: StringName, at: Vector2 = Vector2.INF, source: Node = null) -> 
 	var clip: AudioStream = mapping.clips.get(String(event)) as AudioStream
 	if clip == null and String(event) in mapping.placeholders:
 		if not _tones.has(event):
-			_tones[event] = PlaceholderTone.make(330.0 if event == &"enemy.windup" else 700.0)
+			_tones[event] = PlaceholderTone.make(330.0 if String(event).begins_with("enemy.windup") else 700.0)
 		clip = _tones[event]
 	var voice: AudioStreamPlayer
 	if clip != null:
@@ -89,13 +98,14 @@ func play(event: StringName, at: Vector2 = Vector2.INF, source: Node = null) -> 
 		voice.set_meta("ui", ui)
 		voice.set_meta("source", weakref(_lifetime(source)) if is_instance_valid(source) else null)
 		voice.stream = clip
+		voice.pitch_scale = clampf(float(mapping.pitches.get(String(event), 1.0)), 0.01, 4.0)
 		voice.volume_db = -18.0
 		add_child(voice)
 		voices.append(voice)
 		voice.finished.connect(_dispose.bind(voice))
 		voice.play()
 	var record: Dictionary = {"event":String(event), "bus":voice.bus if voice != null else &"效果音", "stream":voice.stream if voice != null else null,
-		"voice":weakref(voice) if voice != null else null, "position":at, "physics_frame":Engine.get_physics_frames(), "audible":voice != null}
+		"pitch":voice.pitch_scale if voice != null else null, "voice":weakref(voice) if voice != null else null, "position":at, "physics_frame":Engine.get_physics_frames(), "audible":voice != null}
 	history.append(record)
 	if history.size() > 512: history.pop_front()
 	event_emitted.emit(record)
@@ -124,6 +134,8 @@ func _world_exited(id: int) -> void:
 	if id != _world_id: return
 	_world = null
 	_world_id = 0
+	# Immediate stop; _process also clears voices whose scene WeakRef expired.
+	# These are intentionally redundant cleanup paths.
 	stop_game()
 	set_context("", "")
 
