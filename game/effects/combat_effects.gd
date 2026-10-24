@@ -116,6 +116,8 @@ func _summaries() -> Array[Dictionary]:
 				count += 1
 		record["alpha"] = strongest
 		record["centroid"] = sum / count if count > 0 else Vector2.INF
+		# Every colour actually drawn (review R2): looks are checked from these.
+		record["colors"] = prims.map(func(prim: Dictionary) -> Color: return prim["color"])
 		out.append(record)
 	return out
 

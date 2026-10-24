@@ -20,6 +20,8 @@ var _dodge_serial: int = 0
 var _healing: bool = false
 var _heal_health: int = 0
 var _bounce_attack: int = -1
+## The swing (PlayerCombat.attack_id) that has already stopped the player.
+var _stopped_attack: int = -1
 
 func _ready() -> void:
 	player = get_parent() as PlayerController
@@ -99,10 +101,13 @@ func _on_hit_confirmed(target: CombatHurtbox, _damage: int, _impulse: Vector2) -
 
 ## The blade bites (user, 2026-10-23): the player and every target this swing
 ## met stop together; the swing trail stays where it met them, then sweeps on.
-## However many targets one swing meets, the player stops once.
+## However many targets one swing meets, at once or one after another, the
+## player and the trail stop once (review R1); each target still gets its own.
 func _stop(actor: Node) -> void:
 	var seconds: float = config.hit_stop_seconds
-	if HitStop.start(player, seconds):
+	var swing: int = player.combat.attack_id
+	if swing != _stopped_attack and HitStop.start(player, seconds):
+		_stopped_attack = swing
 		stops += 1
 		effects.hold("swing", seconds)
 	if HitStop.start(actor, seconds):
