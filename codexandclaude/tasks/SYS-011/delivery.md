@@ -155,3 +155,79 @@
 
 
 变异结果SHA256：`90ad9f946fd57114bbe46f213619cbf6be5f5aa785f49d40d4cb7d462609ae7c`。
+
+## 第1轮审查后修正（2026-10-24）
+
+先在 `codex/SYS-011` 快进合入审查提交 `0c85cda6e9292c88aa3719ea19adabe22c6752a0`，保留首轮 review.md 原文。修订实现为 `1bbba093fafe2b31dafe961144ba37f875447b9b`；本轮只改音频服务、AudioEventMap、默认映射、音频专项测试与接入说明五个文件。不改玩法、敌人动作、前摇时机、输入、存档、FX-001 视觉或 master。上文 101 项/25 事件是首轮历史记录，本轮为 137 项/29 事件。
+
+### 逐项处理
+
+- **R1 已修复**：单色普通/强力分别发 `enemy.windup.monochrome` / `enemy.windup.monochrome_heavy`，天人非 HEAVY/HEAVY 分别发 `enemy.windup.tian` / `enemy.windup.tian_heavy`。在原 attack_started 回调读取实际 `strong_attack` / `attack_kind`，不改动作选择；无色及 Boss 保留通用 `enemy.windup`。默认音高恢复基线单色 1.3/0.7、天人 1.1/0.6。四槽可分别替换正式 AudioStream；音高集中在资源 `pitches` 字典，正式流同样遵循该配置，素材已含目标音高时可单独设为 1。
+- **真实回归**：单色由真实 AI 连续选出普通/强力，分别验证默认占位和替换两种正式流；天人由真实 `_start_attack()` 动作入口覆盖 COMBO/HEAVY/RANGED/COUNTER。采样既有动作信号、动作类型、WINDUP 状态、同一物理帧、实际播放器的 pitch_scale/stream，并与映射记录比对；不是手工发信号或仅检查事件标签。四槽分别使用不同测试流，验证只替换对应动作。早期专项首跑有 1 项失败：旧测试固定假定天人首次 AI 动作是普通攻击；现按实际 attack_kind 核对，独立重击/普通用例仍直接断言各自固定映射，未放宽区分要求。
+- **N1 已补充/说明**：三类敌人真实受伤后再接零伤害和拒绝命中，保证不发受击音；真实 Esc 输入分别在暂停中和持有焦点时各发一次返回音。`_world_exited().stop_game()` 的立即清理与 `_process` 的场景 WeakRef 失效清理有意冗余，文档明确后者可兜住删除前者的变异，不宣称该等价变异被杀死。
+- **N2 已采纳**：`heal.start/done` 改标“A 级，暂用占位”，不把阶段占位当作已满足正式素材质量。没有改变恢复流程或额外添加素材。
+- **N3 已说明**：接入文档记下 `interaction.gate` 也用于普通 Room 通行，未来正式门音可拆出通行事件。本轮保留既有触发，不另改玩法。
+
+### 本轮专项与变异
+
+`Godot --headless --path game --fixed-fps 60 --script res://tests/test_audio_events.gd`：**137/0**。测试仍使用独立临时存档与隔离设置，不碰用户正式文件。
+
+每次仅修改一处服务，独立进程执行，再按原字节恢复；均无 SCRIPT ERROR：
+
+| 单点变异 | 失败项 |
+| --- | --- |
+| 单色强力也发普通提示 | 6 |
+| 天人 HEAVY 也发普通提示 | 5 |
+| 实际播放器音高全部设为 1 | 8 |
+| 敌人受击守卫恒真（零伤害也报告） | 6 |
+| 移除 Esc 返回音入口 | 2 |
+
+结果在不入库的 `codexandclaude/runs/sys011-r1-mutations.json`；各原始日志为 `sys011-r1-mutant-*.txt`。计数天人同提示变异为 136 项（失败分支少执行一次后续同帧检查），正常为 137 项。没有把错误退出或解析失败冒充断言覆盖。
+
+本轮代码提交前 G3 通过：109/109 + 67/67，运行 `20261024T074823.706419Z`，当时 dirty=true，改动即五个修订文件；最终完整证据见下文干净提交运行。
+
+### 本轮最终全量证据
+
+在修订实现 SHA 的干净工作区执行 full --jobs 4：**G2 96/96、G3 109/109 + 67/67，通过，content_stable=True**。专项在同一并发 full 中再次 137/0；卡上 G1 相关套件也在本次实际执行通过。引擎报告 ERROR / WARNING / ObjectDB 泄漏均 0。摘要：`codexandclaude/runs/20261024T074854.195532Z/summary.json`。本轮未重做用户可选听感 G4，不声称已经通过。交付提交只追加本节记录，待 Claude 复审，不合入 master。
+
+变异结果 SHA256：`ac0404ce1d2fbbd3361be466728443affed3061f685ee04eb7075addc7ba4dcb`。
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`1bbba093fafe2b31dafe961144ba37f875447b9b`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-24T07:48:54.195532+00:00；结束：2026-10-24T08:01:29.469303+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际96 / 预期96；完整=True；通过=True。
+- G3:tests：实际109 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`6d2aa12b619037cfb169e1ac87ddb59120b6dece`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`28f13208f2ea7f43ff094bed5440a995664d762dd030d7ffe5fec2e30cc3c8b6`；工作区范围指纹（原始字节）：`74269bcb1b542be202828cbb9d32d3f62b592a34ab2c9360ff14953141099224`。
+全工作区指纹：`63278e1b883b316ace457deb2353450e433ba0f3426fcb56a052c760a6962418`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\001.txt`；SHA256=`025fdfa89c6dd9ec836bafefaf5177c41c7a22b5f8908718bfb4996855437635`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.297秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\006.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\codex\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\runs\\20261024T074854.195532Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=732.109秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\007.txt`；SHA256=`dc168ea025e6f074cf72e8d3f5ad88cb5319b81b5bc8cabfbd9c1ab7a009b38e`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=4.437秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\008.txt`；SHA256=`a87f2e6fd658e85585cb622f48b2ee27dba70ba6cd2bad90b6e0c76247f0f024`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=16.875秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\009.txt`；SHA256=`3dfdc6768f067e74e184c2a66d7a236895d06013620d7912e842bee52091faa5`。
+- 报告 `D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261024T074854.195532Z\engine.txt` SHA256=`ee863dc178cd75f0f638d97bea8030a9f64e2296bd7deb3f73c2df8440d41599`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
