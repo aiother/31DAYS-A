@@ -1,6 +1,6 @@
 # DOC-010：T4 改写为现行版
 
-状态：已交付，待审查（2026-10-24 用户批准；实现 `3bab3d5`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
+状态：第1轮审查 R1 已修复，待复审（2026-10-24 用户批准；实现 `3bab3d5`，修复 `9cfba69`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；排在 PLN-002 之后（同一实现者）
 
 ## 目标
