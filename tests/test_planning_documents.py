@@ -441,6 +441,25 @@ class PlanningDocumentsTests(unittest.TestCase):
         for wrong in ("进入逆时战场时启动", "触发10剧情时启动", "死亡与正常读档回补", "超时优先"):
             with self.subTest(wrong=wrong):
                 self.assertNotIn(wrong, body)
+        # Stage order (DOC-010 R1): rescue before the formal start, the three
+        # cooperative waves after it, inside the final budget.
+        flow = re.search(r"^临界流程：([^。\n]+)", section(3), re.M)
+        self.assertIsNotNone(flow)
+        stages = [stage.strip() for stage in flow.group(1).split("→")]
+
+        def stage_of(word):
+            found = [i for i, stage in enumerate(stages) if word in stage]
+            self.assertEqual(len(found), 1, word)
+            return found[0]
+
+        start = stage_of("正式开战")
+        self.assertLess(stage_of("10救场"), start)
+        self.assertGreater(stage_of("三波协同战斗"), start)
+        self.assertIn("最终战预算内", stages[stage_of("三波协同战斗")])
+        self.assertIn("救场后的三波协同战斗就是计时的最终战", section(3))
+        for wrong in ("不计入最终战预算", "协同战斗全部完成", "开战前另计的协同"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, body)
 
     def test_t4_world_changes_and_full_game_separation(self):
         t4 = self.docs["T4"]
