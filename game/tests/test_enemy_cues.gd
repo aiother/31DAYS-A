@@ -43,6 +43,50 @@ func drew_hue(rows: Array[Dictionary], hue: Color) -> bool:
 			if c.a > 0.0 and is_equal_approx(c.r, hue.r) and is_equal_approx(c.g, hue.g) and is_equal_approx(c.b, hue.b): return true
 	return false
 
+## Overlook: every dive dash lies on the line from the Boss to its marked
+## landing spot and the two brackets sit either side of that spot. Parasite:
+## every tendril point reaches from the real muzzle toward the player.
+func boss_aim_ok(boss: Node2D, arena: Node2D, r: Dictionary) -> bool:
+	var c: Vector2 = r["at"]
+	if boss is OverlookBoss:
+		var o: OverlookBoss = boss as OverlookBoss
+		var spot: Vector2 = arena.to_global(Vector2(o.impact_x, o.config.floor_y))
+		var lane: int = 0
+		var left: float = INF
+		var right: float = -INF
+		for point: Vector2 in r["points"]:
+			if point.y > spot.y - 30.0 and point.y <= spot.y + 1.0:
+				left = minf(left, point.x)
+				right = maxf(right, point.x)
+			elif point.distance_to(c) > 34.0 * CombatEffectDirector.BOSS_SIZE * 1.15:
+				lane += 1
+				if Geometry2D.get_closest_point_to_segment(point, c, spot).distance_to(point) > 6.0: return false
+		# Early in the wind-up the dive line has not left the eye yet.
+		return (lane > 0 or float(r.get("progress", 0.0)) < 0.5) and is_finite(left) and absf((left + right) * 0.5 - spot.x) < 4.0
+	var leech: ParasiteBoss = boss as ParasiteBoss
+	var muzzle: Vector2 = arena.to_global(leech.position + Vector2(-80 if body.position.x < leech.position.x else 80, -64))
+	var toward: Vector2 = body.global_position + Vector2(0, -44) - muzzle
+	var reached: int = 0
+	for point: Vector2 in r["points"]:
+		if point.distance_to(muzzle) > 60.0 and point.y > muzzle.y - 40.0:
+			reached += 1
+			if absf((point - muzzle).angle_to(toward)) > 0.4: return false
+	return reached > 0
+
+## Width of what the cue draws on the Boss's own body (around its centre, or
+## the parasite's mouth).
+func body_width(boss: Node2D, r: Dictionary) -> float:
+	var c: Vector2 = r["at"]
+	var near: float = 100.0 if boss is OverlookBoss else 47.0
+	var from: Vector2 = c if boss is OverlookBoss else (director.cue_for(boss).get("aim_from", c) as Vector2)
+	var left: float = INF
+	var right: float = -INF
+	for point: Vector2 in r["points"]:
+		if point.distance_to(from) <= near:
+			left = minf(left, point.x)
+			right = maxf(right, point.x)
+	return right - left if is_finite(left) else 0.0
+
 func widest(rows: Array[Dictionary]) -> float:
 	var out: float = 0.0
 	for r: Dictionary in rows: out = maxf(out, float(r["span"]))
@@ -121,7 +165,13 @@ func ordinary_cases() -> void:
 	check(result["windup_frames"] > 0 and result["mismatch"] == 0, "the ordinary cue shows exactly while a real wind-up lasts (%d frames, %d mismatches)" % [result["windup_frames"], result["mismatch"]])
 	check(result["kinds"].keys() == ["windup"], "a colourless enemy uses the ordinary cue")
 	var rows: Array[Dictionary] = seen("windup")
-	check(not rows.is_empty() and drew_hue(rows, DuskStyle.PEARL) and drew_hue(rows, DuskStyle.SUN) and not drew_hue(rows, DuskStyle.LIFE), "the ordinary cue is drawn in pearl and warm light, never vermilion")
+	check(not rows.is_empty() and drew_hue(rows, DuskStyle.PEARL) and not drew_hue(rows, DuskStyle.LIFE) and not drew_hue(rows, DuskStyle.SUN), "the colourless cue is its own ash and pearl, never vermilion nor the player's warm hit light")
+	check(not drew_hue(rows, DuskStyle.DUSK_TOP) and not drew_hue(rows, DuskStyle.GROWTH), "the colourless cue does not borrow the single-colour violet or the Tian gold")
+	var ahead: bool = false
+	for r: Dictionary in rows:
+		for point: Vector2 in r["points"]:
+			if (point - (r["at"] as Vector2)).dot(r["dir"] as Vector2) > 45.0: ahead = true
+	check(ahead, "its claw marks reach out ahead in the direction of the blow")
 	check(not started.is_empty() and sound.get("event") == "enemy.windup" and int(sound.get("physics_frame", -1)) == started.back(), "its warning sound is sent in the wind-up frame")
 	# Hit during the wind-up: the stun ends the wind-up and the cue with it.
 	await clean()
@@ -184,6 +234,7 @@ func strong_cases() -> void:
 	light_rows.assign(by_kind["windup"])
 	check(drew_hue(heavy_rows, DuskStyle.LIFE) and not drew_hue(heavy_rows, DuskStyle.PEARL), "the heavy cue is drawn wholly in vermilion")
 	check(drew_hue(light_rows, DuskStyle.PEARL) and not drew_hue(light_rows, DuskStyle.LIFE), "the ordinary cue is pearl and warm light, never vermilion")
+	check(drew_hue(light_rows, DuskStyle.DUSK_TOP) and not drew_hue(light_rows, DuskStyle.GROWTH), "the single-colour ordinary cue is its own violet")
 	var heavy_reach: float = 0.0
 	for r: Dictionary in heavy_rows: heavy_reach = maxf(heavy_reach, int(r["prims"]))
 	var light_reach: float = 0.0
@@ -206,6 +257,11 @@ func strong_cases() -> void:
 		check(cue.get("kind") == ("windup_heavy" if heavy else "windup") and int(cue.get("frame", -2)) == int(sound.get("physics_frame", -1)) and sound.get("event") == ("enemy.windup.tian_heavy" if heavy else "enemy.windup.tian"), "Tian attack kind %d gets the %s cue with its sound" % [kind, "heavy" if heavy else "ordinary"])
 		var result: Dictionary = await watch(tian, 200, func() -> bool: return tian.state != ColorlessEntity.State.WINDUP)
 		check(result["mismatch"] == 0 and director.cue_for(tian).is_empty(), "the Tian cue ends with its wind-up")
+		var tian_rows: Array[Dictionary] = seen("windup_heavy" if heavy else "windup")
+		if heavy:
+			check(drew_hue(tian_rows, DuskStyle.LIFE) and not drew_hue(tian_rows, DuskStyle.PEARL) and not drew_hue(tian_rows, DuskStyle.GROWTH), "the Tian heavy cue is vermilion only")
+		else:
+			check(drew_hue(tian_rows, DuskStyle.GROWTH) and not drew_hue(tian_rows, DuskStyle.LIFE) and not drew_hue(tian_rows, DuskStyle.DUSK_TOP), "the Tian cue (kind %d) is its own gold" % kind)
 		await clean()
 
 func boss_cases() -> void:
@@ -224,14 +280,24 @@ func boss_cases() -> void:
 		# Started inside a physics step, as the sessions do.
 		physics_frame.connect(func() -> void: boss.call("start_combat"), CONNECT_ONE_SHOT)
 		var wound: Array[int] = [-1]
+		# Each frame of the wind-up: does the drawn cue point where the blow
+		# will really go? (G4 2026-10-25: the Boss cue pointed the wrong way.)
+		var aim: Dictionary = {"frames": 0, "wrong": 0, "body": 0.0}
 		var result: Dictionary = await watch(boss, 600, func() -> bool:
 			if CombatEffectDirector._winding(boss) and wound[0] < 0: wound[0] = Engine.get_physics_frames()
+			if CombatEffectDirector._winding(boss):
+				for r: Dictionary in fx.drawn:
+					if r["kind"] == "windup_heavy":
+						aim["frames"] += 1
+						if not boss_aim_ok(boss, arena, r): aim["wrong"] += 1
+						aim["body"] = maxf(float(aim["body"]), body_width(boss, r))
 			return wound[0] >= 0 and not CombatEffectDirector._winding(boss))
 		var sound: Dictionary = last_windup_sound()
 		check(wound[0] >= 0 and result["mismatch"] == 0 and result["kinds"].keys() == ["windup_heavy"], path.get_file() + " winds up with the heavy cue only while winding up")
 		check(int(sound.get("physics_frame", -1)) == wound[0] and sound.get("event") == "enemy.windup", path.get_file() + " cue appears in the frame of its warning sound")
 		var rows: Array[Dictionary] = seen("windup_heavy")
-		check(not rows.is_empty() and widest(rows) >= 2.0 * heavy_cue_span and heavy_cue_span > 0.0, path.get_file() + " cue is drawn at Boss size (%.0f px against %.0f px for an ordinary heavy cue)" % [widest(rows), heavy_cue_span])
+		check(not rows.is_empty() and int(aim["frames"]) > 10 and int(aim["wrong"]) == 0, path.get_file() + " cue points where the blow really goes (%d frames, %d wrong)" % [aim["frames"], aim["wrong"]])
+		check(float(aim["body"]) >= (120.0 if boss is OverlookBoss else 80.0), path.get_file() + " cue on the Boss itself is drawn at Boss size (%.0f px wide)" % aim["body"])
 		# Defeat: the Boss burst, not the ordinary one.
 		records.clear()
 		boss.get_node("GameplayRoot/Hurtbox").call("receive_attack", 100000, Vector2.ZERO, body, 900100)
@@ -242,6 +308,11 @@ func boss_cases() -> void:
 		for i: int in range(80): await frames(1)
 		big = seen("boss_death")
 		check(widest(big) >= 2.0 * ordinary_death_span and ordinary_death_span > 0.0, path.get_file() + " Boss burst reaches much further than an ordinary defeat (%.0f px against %.0f px)" % [widest(big), ordinary_death_span])
+		if boss is ParasiteBoss:
+			check(drew_hue(big, DuskStyle.OVERDRAFT) and drew_hue(big, DuskStyle.POSSIBILITY_GLOW), "the parasite bursts into dark tendrils and releases the possibility it leeched")
+		else:
+			check(drew_hue(big, DuskStyle.INK) and not drew_hue(big, DuskStyle.OVERDRAFT) and not drew_hue(big, DuskStyle.POSSIBILITY_GLOW), "Overlook shatters into ink shards, not the parasite's burst")
+		check(not drew_hue(big, DuskStyle.SUN), path.get_file() + " Boss burst is not the warm ordinary-defeat glow")
 		await clean()
 	for i: int in range(80): await frames(1)
 	check(not fx.entries.any(func(e: Dictionary) -> bool: return e["kind"] == "boss_death"), "the Boss burst ends")
@@ -298,10 +369,26 @@ func arrival_cases() -> void:
 				if row["kind"] == kind and (row["at"] as Vector2).distance_to(unit.global_position + CombatEffects.CHEST) < 12.0:
 					placed += 1
 					break
+		if index == last - 1:
+			var rift: Array[Dictionary] = seen("arrival_enemy")
+			var most: float = 0.0
+			for r: Dictionary in rift:
+				var box: Rect2 = r["box"]
+				if box.size.x > 0.0: most = maxf(most, box.size.y / box.size.x)
+			check(most >= 2.0 and drew_hue(rift, DuskStyle.INK) and not drew_hue(rift, DuskStyle.PEARL), "an enemy steps out of a tall ink rift, without a cue's pearl glint (height %.1f times the width)" % most)
 		check(appear >= 0 and units.size() == expected.size() and effects_seen.size() == units.size() and placed == units.size() and drew_hue(seen("arrival_enemy"), DuskStyle.LIFE), "wave %d: one arrival effect where each of its %d units appears (%d placed)" % [index, units.size(), placed])
 		check(appear >= 0 and first >= 0 and appear - first >= ceili(CombatEffects.LIFE["arrival_enemy"] * 60.0) and alive_on_appear == 0 and after == 0, "wave %d: the units appear after their arrival effect has ended (effect at frame %d, units at %d, %d still alive, %d more after)" % [index, first, appear, alive_on_appear, after])
 	check(drew_hue(seen("arrival_ally"), DuskStyle.POSSIBILITY_GLOW) and not drew_hue(seen("arrival_ally"), DuskStyle.LIFE), "last-wave allies arrive with the teal arrival effect")
 	check(room.final_support_spawned, "the last wave brought its allies")
+	# An arrival must not look like a cue (G4 2026-10-25): an enemy's is a tall
+	# ink rift, an ally's a tall shaft of teal light; neither has a cue's glint.
+	var tall: Callable = func(rows: Array[Dictionary]) -> bool:
+		var most: float = 0.0
+		for r: Dictionary in rows:
+			var box: Rect2 = r["box"]
+			if box.size.x > 0.0: most = maxf(most, box.size.y / box.size.x)
+		return most >= 2.0
+	check(tall.call(seen("arrival_ally")) and not drew_hue(seen("arrival_ally"), DuskStyle.PEARL), "an ally arrives in a tall shaft of teal light, without a cue's pearl glint")
 	# A reinforcement with no warning before it (a survivor joining mid-wave)
 	# still gets its effect as it appears.
 	records.clear()

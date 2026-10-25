@@ -139,6 +139,12 @@ func _summaries() -> Array[Dictionary]:
 				count += 1
 		# How far the drawing actually reaches (review R3): sizes are checked from this.
 		record["span"] = maxf(box.size.x, box.size.y)
+		record["box"] = box
+		# Every point drawn, so where a cue points can be checked (G4 2026-10-25).
+		var points: PackedVector2Array = PackedVector2Array()
+		for prim: Dictionary in prims:
+			points.append_array(prim["points"])
+		record["points"] = points
 		record["alpha"] = strongest
 		record["centroid"] = sum / count if count > 0 else Vector2.INF
 		# Every colour actually drawn (review R2): looks are checked from these.
@@ -362,66 +368,251 @@ func _revive(e: Dictionary, t: float) -> Dictionary:
 	return {}
 
 # --- FX-002 ------------------------------------------------------------------
+# Enemy cues are the enemy's own: a glint at its eye that flares twice over
+# the wind-up (T2 §14 "闪烁") and a mark of the coming blow drawn out as the
+# wind-up runs, shaped by what that enemy does (G4 2026-10-25: not the
+# player's hit look). Ordinary blows never use vermilion; heavy and strong
+# blows and every Boss blow are vermilion and carry no pearl. Entry fields set
+# by the director: "style", "attack", "expect" (wind-up seconds), "facing",
+# "count", and for aimed blows "aim_from" / "aim_to" (world space, live).
 
-## An enemy is about to strike (G-07, ordinary attack): a pearl ring that
-## pulses quickly around the body and a short warm stroke along the coming blow.
 func _windup(e: Dictionary, _t: float) -> Dictionary:
-	var c: Vector2 = e["at"]
-	var k: float = float(e["size"])
-	var pulse: float = 0.5 + 0.5 * sin(clock * 22.0)
-	_glow(c, 26.0 * k, DuskStyle.SUN, 0.35 + 0.25 * pulse)
-	_ring(c, (30.0 + 6.0 * pulse) * k, Color(DuskStyle.PEARL, 0.55 + 0.35 * pulse), 2.5, e["seed"], 1.5)
-	var dir: Vector2 = e["dir"]
-	_line(c + dir * 34.0 * k, c + dir * 62.0 * k, Color(DuskStyle.SUN, 0.8), 3.0)
-	return {"heavy": false}
+	return _cue(e, false)
 
-## A heavy or strong blow is coming (single-colour strong attack, Tian heavy,
-## both Bosses): vermilion, larger and doubled, with ink specks and a long
-## stroke, so it cannot be mistaken for the ordinary cue.
 func _windup_heavy(e: Dictionary, _t: float) -> Dictionary:
+	return _cue(e, true)
+
+func _cue(e: Dictionary, heavy: bool) -> Dictionary:
+	var p: float = clampf(float(e["age"]) / maxf(0.05, float(e.get("expect", 0.5))), 0.0, 1.0)
+	match String(e.get("style", "colorless")):
+		"mono": _cue_mono(e, p, heavy)
+		"tian": _cue_tian(e, p, heavy)
+		"overlook": _cue_overlook(e, p)
+		"parasite": _cue_parasite(e, p)
+		_: _cue_colorless(e, p, heavy)
+	return {"heavy": heavy, "progress": p}
+
+## A four-point glint at the eye, flaring twice over the wind-up.
+func _glint(at: Vector2, size: float, color: Color, p: float) -> void:
+	var flare: float = absf(sin(p * TAU))
+	var r: float = size * (0.45 + 0.55 * flare)
+	var tint: Color = Color(color, 0.55 + 0.45 * flare)
+	_inked(PackedVector2Array([at - Vector2(r, 0), at + Vector2(r, 0)]), tint, 2.0)
+	_inked(PackedVector2Array([at - Vector2(0, r * 1.7), at + Vector2(0, r * 1.7)]), tint, 2.0)
+	_dot(at, 3.5 + 2.0 * flare, Color(DuskStyle.INK, 0.5))
+	_dot(at, 2.0 + 2.0 * flare, Color(color, 0.95))
+
+## A stroke with a dark ink edge under it, so it reads on light and dark ground.
+func _inked(points: PackedVector2Array, color: Color, width: float) -> void:
+	_poly(points, Color(DuskStyle.INK, color.a * 0.55), width + 3.0)
+	_poly(points, color, width)
+
+func _eye(e: Dictionary, k: float = 1.0) -> Vector2:
+	return (e["at"] as Vector2) + Vector2(float(e.get("facing", 1.0)) * 12.0, -12.0) * k
+
+## Colourless (grey, formless): three ash claw marks reaching out ahead, or a
+## dotted aim toward its target for a throw.
+func _cue_colorless(e: Dictionary, p: float, heavy: bool) -> void:
+	var c: Vector2 = e["at"]
+	var tint: Color = DuskStyle.LIFE if heavy else DuskStyle.PEARL
+	_glint(_eye(e), 9.0, tint, p)
+	if e.get("attack") == "ranged":
+		var to: Vector2 = e.get("aim_to", c + (e["dir"] as Vector2) * 220.0)
+		var shown: int = maxi(1, ceili(9.0 * p))
+		for i: int in range(1, shown + 1):
+			_dot(c.lerp(to, float(i) / 10.0), 2.6, Color(tint, 0.8))
+		return
+	var dir: Vector2 = e["dir"]
+	var side: Vector2 = dir.orthogonal()
+	for i: int in range(3):
+		var a: Vector2 = c + dir * 30.0 + side * (i - 1) * 15.0
+		var reach: float = 14.0 + 38.0 * p
+		_inked(PackedVector2Array([a - side * 10.0, a + dir * reach * 0.55 - side * 2.0, a + dir * reach + side * 10.0]), Color(tint, 0.45 + 0.5 * p), 3.0)
+
+## Single-colour (violet, fast, dashing): chevrons running ahead along the lane
+## it will cut through; a strong blow is vermilion, three chevrons and edged.
+func _cue_mono(e: Dictionary, p: float, heavy: bool) -> void:
+	var c: Vector2 = e["at"]
+	var dir: Vector2 = e["dir"]
+	var side: Vector2 = dir.orthogonal()
+	var tint: Color = DuskStyle.LIFE if heavy else DuskStyle.DUSK_TOP
+	_glint(_eye(e), 12.0 if heavy else 9.0, DuskStyle.LIFE if heavy else DuskStyle.PEARL, p)
+	var run: float = fmod(clock * 3.0, 1.0)
+	for i: int in range(3 if heavy else 2):
+		var tip: Vector2 = c + dir * (44.0 + (i + run) * 30.0 * (0.5 + p))
+		_inked(PackedVector2Array([tip - dir * 12.0 + side * 13.0, tip, tip - dir * 12.0 - side * 13.0]), Color(tint, 0.4 + 0.55 * p), 4.0 if heavy else 3.0)
+	if heavy:
+		var length: float = 40.0 + 120.0 * p
+		for s: float in [-1.0, 1.0]:
+			_line(c + dir * 36.0 + side * 20.0 * s, c + dir * (36.0 + length) + side * 20.0 * s, Color(DuskStyle.LIFE, 0.6 * p), 2.0)
+
+## Tian warrior (gold, armed): one gold slash tick per blow of the combo; a
+## heavy blow is a vermilion overhead arc ending in a crack on the ground; a
+## throw is a gold aim line toward its target.
+func _cue_tian(e: Dictionary, p: float, heavy: bool) -> void:
+	var c: Vector2 = e["at"]
+	var dir: Vector2 = e["dir"]
+	var f: float = signf(dir.x) if not is_zero_approx(dir.x) else float(e.get("facing", 1.0))
+	_glint(_eye(e), 12.0 if heavy else 9.0, DuskStyle.LIFE if heavy else DuskStyle.PEARL, p)
+	if heavy:
+		var start: float = -PI * 0.5 - f * PI * 0.35
+		var finish: float = -PI * 0.5 + f * PI * 0.55
+		_inked(_arc_points(c + Vector2(f * 20.0, 0), 78.0, start, lerpf(start, finish, 0.25 + 0.75 * p), 16), Color(DuskStyle.LIFE, 0.5 + 0.45 * p), 5.0)
+		var ground: Vector2 = c - CHEST + Vector2(f * 90.0, 0)
+		var crack: PackedVector2Array = PackedVector2Array()
+		for i: int in range(6):
+			crack.append(ground + Vector2(f * (i - 2.5) * 14.0 * p, -4.0 * _n(i, e["seed"]) * p))
+		_line(ground - Vector2(0, 6), ground - Vector2(0, 6 + 10.0 * p), Color(DuskStyle.LIFE, p), 2.0)
+		_inked(crack, Color(DuskStyle.LIFE, 0.4 + 0.5 * p), 2.5)
+		return
+	if e.get("attack") == "ranged":
+		var to: Vector2 = e.get("aim_to", c + dir * 240.0)
+		var head: Vector2 = c.lerp(to, 0.25 + 0.6 * p)
+		var back: Vector2 = (c - to).normalized()
+		_inked(PackedVector2Array([c + (to - c).normalized() * 30.0, head]), Color(DuskStyle.GROWTH, 0.5 + 0.45 * p), 2.5)
+		_inked(PackedVector2Array([head + back.rotated(0.5) * 12.0, head, head + back.rotated(-0.5) * 12.0]), Color(DuskStyle.GROWTH, 0.9), 2.5)
+		return
+	var count: int = maxi(1, int(e.get("count", 2)))
+	for i: int in range(count):
+		if p < float(i) / count:
+			break
+		var at: Vector2 = c + Vector2(f * (40.0 + i * 22.0), -14.0 + i * 10.0)
+		_inked(PackedVector2Array([at + Vector2(-f * 8.0, -14.0), at + Vector2(f * 8.0, 14.0)]), Color(DuskStyle.GROWTH, 0.9), 3.5)
+
+## Overlook (it looks down, then dives): an eye around it that narrows as the
+## dive nears and looks at the marked spot, a dashed dive line down to that
+## spot and two brackets closing in on it.
+func _cue_overlook(e: Dictionary, p: float) -> void:
 	var c: Vector2 = e["at"]
 	var k: float = float(e["size"])
-	var pulse: float = 0.5 + 0.5 * sin(clock * 14.0)
-	_glow(c, 40.0 * k, DuskStyle.LIFE, 0.45 + 0.35 * pulse)
-	_ring(c, (42.0 + 10.0 * pulse) * k, Color(DuskStyle.LIFE, 0.8), 4.5, e["seed"], 3.0)
-	_ring(c, (58.0 + 10.0 * pulse) * k, Color(DuskStyle.LIFE, 0.45), 2.5, e["seed"] + 5, 3.0)
-	var dir: Vector2 = e["dir"]
-	_line(c + dir * 48.0 * k, c + dir * 120.0 * k, Color(DuskStyle.LIFE, 0.9), 5.0)
-	for i: int in range(5):
-		var p: Vector2 = c + Vector2.from_angle(TAU * _n(i, e["seed"])) * (50.0 + 14.0 * _n(i, e["seed"] + 1)) * k
-		_dot(p, 3.0 * k, Color(DuskStyle.LIFE, 0.6 + 0.3 * pulse))
-	return {"heavy": true}
+	var to: Vector2 = e.get("aim_to", c + Vector2(0, 300))
+	var dir: Vector2 = (to - c).normalized() if not (to - c).is_zero_approx() else Vector2.DOWN
+	var open: float = 1.0 - 0.6 * p
+	var w: float = 34.0 * k
+	_inked(_arc_points(c, w, PI * (1.0 + 0.18 * open), PI * (2.0 - 0.18 * open), 14), Color(DuskStyle.LIFE, 0.85), 4.0)
+	var lower: PackedVector2Array = _arc_points(c, w, PI * 0.18 * open, PI * (1.0 - 0.18 * open), 14)
+	for i: int in range(lower.size()):
+		lower[i] = c + (lower[i] - c) * Vector2(1.0, open)
+	_inked(lower, Color(DuskStyle.LIFE, 0.85), 4.0)
+	_dot(c + dir * 9.0 * k, 5.0 * k * (0.6 + 0.4 * open), Color(DuskStyle.LIFE, 0.95))
+	var dashes: int = 8
+	for i: int in range(dashes):
+		var a: float = float(i) / dashes
+		if a > p + 0.15:
+			break
+		_line(c.lerp(to, a + 0.02), c.lerp(to, a + 0.08), Color(DuskStyle.LIFE, 0.35 + 0.55 * p), 3.0)
+	var gap: float = lerpf(150.0, 48.0, p)
+	for s: float in [-1.0, 1.0]:
+		var x: Vector2 = to + Vector2(gap * s, 0)
+		_inked(PackedVector2Array([x + Vector2(-10.0 * s, -26.0), x + Vector2(0, -26.0), x, x + Vector2(-10.0 * s, 0)]), Color(DuskStyle.LIFE, 0.5 + 0.45 * p), 3.5)
 
-## A Boss is defeated: a large warm burst, a vermilion ink ring opening wide
-## and many pearl shards; longer and larger than an ordinary defeat.
+## Parasite companion (it fires leeching shots): a swelling sac at its mouth
+## and one writhing tendril per shot of the burst, reaching for the target.
+func _cue_parasite(e: Dictionary, p: float) -> void:
+	var from: Vector2 = e.get("aim_from", e["at"])
+	var to: Vector2 = e.get("aim_to", from + Vector2(300, 0))
+	var k: float = float(e["size"])
+	var dir: Vector2 = (to - from).normalized() if not (to - from).is_zero_approx() else Vector2.RIGHT
+	var swell: float = 0.5 + 0.5 * sin(clock * 9.0)
+	_dot(from, (6.0 + 6.0 * p + 2.0 * swell) * k, Color(DuskStyle.OVERDRAFT, 0.9))
+	_ring(from, (10.0 + 8.0 * p) * k, Color(DuskStyle.LIFE, 0.8), 3.0, e["seed"], 2.0)
+	_glint(from + Vector2(0, -22.0 * k), 12.0, DuskStyle.LIFE, p)
+	var count: int = maxi(1, int(e.get("count", 3)))
+	var length: float = minf(from.distance_to(to), 60.0 + 260.0 * p)
+	for i: int in range(count):
+		var spread: float = (i - (count - 1) * 0.5) * 0.12
+		var line: Vector2 = dir.rotated(spread)
+		var points: PackedVector2Array = PackedVector2Array()
+		for j: int in range(10):
+			var a: float = float(j) / 9.0
+			var wave: float = sin(a * 9.0 + clock * 10.0 + i) * 7.0 * a
+			points.append(from + line * length * a + line.orthogonal() * wave)
+		_inked(points, Color(DuskStyle.LIFE, 0.4 + 0.5 * p), 2.5)
+
+## A Boss is defeated: a burst of its own, longer and much larger than an
+## ordinary defeat. Overlook's eye cracks and shatters into ink shards that
+## rain down; the parasite bursts into whipping tendrils and blood drops, and
+## the possibility it leeched escapes upward.
 func _boss_death(e: Dictionary, t: float) -> Dictionary:
 	var c: Vector2 = e["at"]
 	var k: float = float(e["size"])
 	var a: float = 1.0 - t
-	_glow(c, 90.0 * k * (1.0 - t * 0.4), DuskStyle.SUN, a)
-	_ring(c, (40.0 + t * 200.0) * k, Color(DuskStyle.LIFE, 0.8 * a), 6.0, e["seed"], 4.0)
-	_ring(c, (20.0 + t * 120.0) * k, Color(DuskStyle.PEARL, 0.6 * a), 3.0, e["seed"] + 3, 2.0)
-	for i: int in range(18):
-		var dir: Vector2 = Vector2.from_angle(TAU * i / 18.0 + _n(i, e["seed"]))
-		var p: Vector2 = c + dir * (20.0 + t * 220.0 * (0.6 + 0.4 * _n(i, e["seed"] + 1))) * k
-		_poly(PackedVector2Array([p, p + dir.rotated(0.5) * 14.0 * k, p + dir * 26.0 * k]), Color(DuskStyle.PEARL, a), 2.5)
+	var flash: float = clampf(1.0 - t * 4.0, 0.0, 1.0)
+	_glow(c, 70.0 * k, DuskStyle.LIFE if e.get("style") == "parasite" else DuskStyle.PEARL, flash)
+	if e.get("style") == "parasite":
+		for i: int in range(10):
+			var dir: Vector2 = Vector2.from_angle(TAU * i / 10.0 + _n(i, e["seed"]) * 0.6)
+			var points: PackedVector2Array = PackedVector2Array()
+			var reach: float = (30.0 + 110.0 * minf(1.0, t * 2.5)) * k
+			for j: int in range(8):
+				var s: float = float(j) / 7.0
+				points.append(c + dir * reach * s + dir.orthogonal() * sin(s * 7.0 + t * 18.0 + i) * 10.0 * s * k)
+			_inked(points, Color(DuskStyle.OVERDRAFT, a), 3.5)
+		for i: int in range(24):
+			var v: Vector2 = Vector2.from_angle(TAU * _n(i, e["seed"] + 4)) * (120.0 + 180.0 * _n(i, e["seed"] + 5)) * k
+			var q: Vector2 = c + v * t + Vector2(0, 260.0 * k * t * t)
+			_dot(q, (3.0 + 3.0 * _n(i, e["seed"] + 6)) * k * 0.6, Color(DuskStyle.LIFE, a))
+		for i: int in range(8):
+			var q: Vector2 = c + Vector2((_n(i, e["seed"] + 7) - 0.5) * 120.0 * k, -t * (80.0 + 80.0 * _n(i, e["seed"] + 8)) * k)
+			_glow(q, 8.0 * k * 0.6, DuskStyle.POSSIBILITY_GLOW, a)
+		return {"style": "parasite"}
+	for i: int in range(6):
+		var dir: Vector2 = Vector2.from_angle(TAU * i / 6.0 + _n(i, e["seed"]))
+		var crack: PackedVector2Array = PackedVector2Array([c])
+		for j: int in range(1, 4):
+			crack.append(c + dir.rotated((_n(i * 4 + j, e["seed"]) - 0.5) * 0.6) * j * 16.0 * k * minf(1.0, t * 6.0))
+		_poly(crack, Color(DuskStyle.LIFE, clampf(1.0 - t * 2.5, 0.0, 1.0)), 3.0)
+	for i: int in range(22):
+		var dir: Vector2 = Vector2.from_angle(TAU * i / 22.0 + _n(i, e["seed"] + 1) * 0.4)
+		var v: Vector2 = dir * (110.0 + 170.0 * _n(i, e["seed"] + 2)) * k
+		var q: Vector2 = c + v * t + Vector2(0, 300.0 * k * t * t)
+		var spin: float = t * 8.0 + i
+		var size: float = (6.0 + 6.0 * _n(i, e["seed"] + 3)) * k * 0.6
+		var shard: PackedVector2Array = PackedVector2Array([q + Vector2.from_angle(spin) * size, q + Vector2.from_angle(spin + 2.2) * size * 0.6, q + Vector2.from_angle(spin + 4.0) * size, q + Vector2.from_angle(spin) * size])
+		_poly(shard, Color(DuskStyle.INK, a), 3.0)
+		if i % 3 == 0:
+			_poly(shard, Color(DuskStyle.LIFE, a), 1.5)
+	for i: int in range(5):
+		var q: Vector2 = c + Vector2.from_angle(TAU * i / 5.0) * 40.0 * k * t
+		_dot(q, (10.0 + 30.0 * t) * k * 0.6, Color(DuskStyle.INK, 0.25 * a))
+	return {"style": "overlook"}
+
+## Arrivals look nothing like a cue. An enemy steps out of an ink rift that
+## tears open from the ground up and seals behind it; an ally comes down in
+## a teal shaft of light that settles on the ground.
+func _arrival_enemy(e: Dictionary, t: float) -> Dictionary:
+	var feet: Vector2 = (e["at"] as Vector2) - CHEST
+	var a: float = _fade(t)
+	var open: float = sin(t * PI)
+	var height: float = 130.0 * minf(1.0, t * 2.5)
+	for s: float in [-1.0, 1.0]:
+		var edge: PackedVector2Array = PackedVector2Array()
+		for j: int in range(8):
+			var y: float = float(j) / 7.0
+			edge.append(feet + Vector2(s * (2.0 + 14.0 * open * sin(y * PI) + (_n(j, e["seed"]) - 0.5) * 4.0), -height * y))
+		_poly(edge, Color(DuskStyle.INK, a), 4.0)
+	_line(feet, feet - Vector2(0, height * 0.9), Color(DuskStyle.LIFE, a * open), 2.0)
+	for i: int in range(5):
+		var drip: Vector2 = feet + Vector2((_n(i, e["seed"] + 2) - 0.5) * 30.0 * open, -height * _n(i, e["seed"] + 3) + 60.0 * t * t)
+		_dot(drip, 2.5, Color(DuskStyle.INK, a))
+	_line(feet - Vector2(24.0 * open, 0), feet + Vector2(24.0 * open, 0), Color(DuskStyle.INK, a), 3.0)
 	return {}
 
-## A reinforcement arrives: brush strokes gathering onto the spot and a
-## closing ring; vermilion accents for enemies, possibility teal for allies.
-func _arrival_enemy(e: Dictionary, t: float) -> Dictionary:
-	return _arrival(e, t, DuskStyle.LIFE)
-
 func _arrival_ally(e: Dictionary, t: float) -> Dictionary:
-	return _arrival(e, t, DuskStyle.POSSIBILITY_GLOW)
-
-func _arrival(e: Dictionary, t: float, tint: Color) -> Dictionary:
-	var c: Vector2 = e["at"]
+	var feet: Vector2 = (e["at"] as Vector2) - CHEST
 	var a: float = _fade(t)
-	_glow(c, 36.0, tint, a * 0.7)
-	_ring(c, 70.0 - t * 40.0, Color(DuskStyle.PAPER_DAY, a), 2.5, e["seed"], 2.0)
-	for i: int in range(6):
-		var dir: Vector2 = Vector2.from_angle(TAU * i / 6.0 + _n(i, e["seed"]) * 0.5)
-		var far: float = 90.0 * (1.0 - t)
-		_line(c + dir * (far + 24.0), c + dir * far, Color(tint, a), 3.0)
+	var fall: float = minf(1.0, t * 2.2)
+	var top: Vector2 = feet - Vector2(0, 200)
+	_line(top, top.lerp(feet, fall), Color(DuskStyle.POSSIBILITY_GLOW, a * 0.6), 12.0)
+	_line(top, top.lerp(feet, fall), Color(DuskStyle.POSSIBILITY, a), 3.0)
+	_line(top + Vector2(-6, 0), (top + Vector2(-6, 0)).lerp(feet + Vector2(-6, 0), fall), Color(DuskStyle.POSSIBILITY, a * 0.6), 2.0)
+	_line(top + Vector2(6, 0), (top + Vector2(6, 0)).lerp(feet + Vector2(6, 0), fall), Color(DuskStyle.POSSIBILITY, a * 0.6), 2.0)
+	if fall >= 1.0:
+		var spread: float = (t - 1.0 / 2.2) * 2.0
+		var ripple: PackedVector2Array = _arc_points(feet, 20.0 + 26.0 * spread, PI, TAU, 16)
+		for i: int in range(ripple.size()):
+			ripple[i] = feet + (ripple[i] - feet) * Vector2(1.0, 0.25)
+		_poly(ripple, Color(DuskStyle.POSSIBILITY, a), 3.0)
+	for i: int in range(4):
+		_dot(top.lerp(feet, fmod(fall + i * 0.25, 1.0)) + Vector2((_n(i, e["seed"]) - 0.5) * 16.0, 0), 3.0, Color(DuskStyle.POSSIBILITY, a))
 	return {}

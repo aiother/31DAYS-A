@@ -119,7 +119,8 @@ func _defeated(actor: Node) -> void:
 		return
 	_cue_stop(actor)
 	if _is_boss(actor):
-		effects.spawn("boss_death", _center(actor), Vector2.RIGHT, null, BOSS_SIZE)
+		var burst: Dictionary = effects.spawn("boss_death", _center(actor), Vector2.RIGHT, null, BOSS_SIZE)
+		burst["style"] = _style(actor)
 	else:
 		effects.spawn("enemy_death", _chest(actor))
 
@@ -148,11 +149,60 @@ func _cue_start(actor: Node) -> void:
 	if not is_instance_valid(actor) or _cues.has(actor.get_instance_id()):
 		return
 	var boss: bool = _is_boss(actor)
-	var dir: Vector2 = Vector2.DOWN if boss else (actor as ColorlessEntity)._attack_direction
+	var dir: Vector2 = Vector2.RIGHT if boss else (actor as ColorlessEntity)._attack_direction
 	var entry: Dictionary = effects.spawn("windup_heavy" if _heavy(actor) else "windup", _center(actor), dir, actor, BOSS_SIZE if boss else 1.0)
 	entry["heavy"] = _heavy(actor)
 	entry["frame"] = Engine.get_physics_frames()
+	# What the drawing needs to be this enemy's own (G4 2026-10-25).
+	entry["style"] = _style(actor)
+	entry["attack"] = _attack(actor)
+	entry["expect"] = _time_left(actor)
+	entry["facing"] = float(actor.get("facing")) if actor is ColorlessEntity else 1.0
+	entry["count"] = int(actor.get("combo_total")) if actor is TianWarrior else ((actor as ParasiteBoss).config.burst_count if actor is ParasiteBoss else 1)
+	_aim(actor, entry)
 	_cues[actor.get_instance_id()] = entry
+
+static func _style(actor: Node) -> String:
+	if actor is OverlookBoss: return "overlook"
+	if actor is ParasiteBoss: return "parasite"
+	if actor is TianWarrior: return "tian"
+	if actor is MonochromeEntity: return "mono"
+	return "colorless"
+
+static func _attack(actor: Node) -> String:
+	if actor is TianWarrior:
+		return ["combo", "heavy", "ranged"][(actor as TianWarrior).attack_kind] if (actor as TianWarrior).attack_kind <= TianWarrior.Attack.RANGED else "combo"
+	if actor is ColorlessEntity:
+		return "ranged" if (actor as ColorlessEntity)._ranged else "melee"
+	return "dive" if actor is OverlookBoss else "burst"
+
+## Seconds the wind-up still has as it starts (the cue's mark fills over it).
+static func _time_left(actor: Node) -> float:
+	if actor is ColorlessEntity: return (actor as ColorlessEntity)._remaining
+	return float(actor.get("remaining"))
+
+## Where the blow is going, kept current (a Boss moves while it winds up).
+func _aim(actor: Node, entry: Dictionary) -> void:
+	var parent: Node2D = actor.get_parent() as Node2D
+	if actor is OverlookBoss:
+		var boss: OverlookBoss = actor as OverlookBoss
+		var spot: Vector2 = Vector2(boss.impact_x, boss.config.floor_y)
+		entry["aim_to"] = parent.to_global(spot) if parent != null else spot
+		entry["dir"] = ((entry["aim_to"] as Vector2) - _center(boss)).normalized()
+	elif actor is ParasiteBoss:
+		var leech: ParasiteBoss = actor as ParasiteBoss
+		if is_instance_valid(leech.target):
+			# The muzzle and aim of ParasiteBoss._fire().
+			var origin: Vector2 = leech.position + Vector2(-80 if leech.target.position.x < leech.position.x else 80, -64)
+			entry["aim_from"] = parent.to_global(origin) if parent != null else origin
+			entry["aim_to"] = leech.target.global_position + Vector2(0, -44)
+			entry["dir"] = ((entry["aim_to"] as Vector2) - (entry["aim_from"] as Vector2)).normalized()
+	elif actor is ColorlessEntity:
+		var enemy: ColorlessEntity = actor as ColorlessEntity
+		entry["dir"] = enemy._attack_direction
+		entry["facing"] = enemy.facing
+		if is_instance_valid(enemy.target):
+			entry["aim_to"] = enemy.target.global_position + CombatEffects.CHEST
 
 func _cue_stop(actor: Node) -> void:
 	var id: int = actor.get_instance_id()
@@ -175,6 +225,8 @@ func _update_cues() -> void:
 			_cue_start(actor)
 		elif not winding:
 			_cue_stop(actor)
+		else:
+			_aim(actor, _cues[actor.get_instance_id()])
 	# Cues of enemies that are gone.
 	for id: int in _cues.keys():
 		if not is_instance_id_valid(id):
