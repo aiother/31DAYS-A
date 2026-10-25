@@ -474,11 +474,22 @@ func player_cases() -> void:
 	await frames(3)
 	var drawn_kinds: Array = fx.drawn.map(func(r: Dictionary) -> String: return r["kind"] if int(r["prims"]) > 0 else "")
 	check(CombatEffects.LIFE.keys().all(func(k: String) -> bool: return k in drawn_kinds), "every kind draws real primitives")
-	# Each ends within its own life (the longest is FX-002's Boss burst, 1.2 s).
-	var longest: float = 0.0
-	for life: float in CombatEffects.LIFE.values(): longest = maxf(longest, life)
-	await frames(ceili(longest * Engine.physics_ticks_per_second) + 6)
-	check(fx.entries.all(func(e: Dictionary) -> bool: return e["kind"] in CombatEffects.LOOPS), "all of them end within their own life (longest %.2f s)" % longest)
+	# Bounds fixed here, not read from CombatEffects.LIFE (FX-002 review R2):
+	# FX-001's effects within one second; FX-002's Boss burst within 1.5 s and
+	# its arrival within 0.8 s (it has to be over inside the 1 s wave warning).
+	var bound: Dictionary = {"boss_death": 1.5, "arrival_enemy": 0.8, "arrival_ally": 0.8}
+	var last_alive: Dictionary = {}
+	for i: int in range(100):
+		await frames(1)
+		for e: Dictionary in fx.entries:
+			last_alive[e["kind"]] = i + 1
+	var late: Array = []
+	for kind: String in CombatEffects.LIFE.keys():
+		var limit: int = ceili(float(bound.get(kind, 1.0)) * 60.0)
+		if int(last_alive.get(kind, 0)) > limit:
+			late.append("%s %d>%d" % [kind, last_alive[kind], limit])
+	check(late.is_empty(), "FX-001 effects end within one second, the Boss burst within 1.5 s and arrivals within 0.8 s %s" % [late])
+	check(fx.entries.all(func(e: Dictionary) -> bool: return e["kind"] in CombatEffects.LOOPS), "all of them end and leave nothing behind")
 
 ## The day clock (and the final-battle budget, fed from it) keeps running
 ## through a stop: T4 only pauses it for the menu, story and death menu.

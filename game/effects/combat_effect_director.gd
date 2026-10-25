@@ -28,6 +28,13 @@ var _cues: Dictionary = {}
 ## Bosses are drawn about 2.5 times the player (T6-E); their cues match.
 const BOSS_SIZE: float = 2.5
 const BOSS_CENTER: Vector2 = Vector2(0, -120)
+## T2 §11: a wave's units appear after their arrival effect has ended. The
+## effect is played inside the existing warning before the wave (between waves
+## and after the 10 rescue), starting this long before the units appear, so it
+## is over 0.1 s before they do. Spawn times, AI and waves are unchanged.
+const ARRIVAL_LEAD: float = 0.8
+## Battlefield Rooms whose next wave is watched, and the ones already announced.
+var _fields: Array[WeakRef] = []
 
 func _ready() -> void:
 	# After the actors' own physics step, so a Boss's wind-up is seen in the
@@ -50,8 +57,13 @@ func _bind_player() -> void:
 	# Enemies already in the scene, then every one added later.
 	for node: Node in _actors_under(get_tree().root):
 		_bind_actor(node)
+	for node: Node in get_tree().root.find_children("*", "RescueBattlefieldRoom", true, false):
+		_fields.append(weakref(node))
 
 func _added(node: Node) -> void:
+	if node is RescueBattlefieldRoom:
+		_fields.append(weakref(node))
+		return
 	var enemy: bool = _is_enemy(node)
 	if not enemy and not node is SurvivorFighter:
 		return
@@ -60,7 +72,7 @@ func _added(node: Node) -> void:
 	var room: Node = node.get_parent()
 	while room != null and not room is WorldRoom:
 		room = room.get_parent()
-	if room != null and room.is_node_ready():
+	if room != null and room.is_node_ready() and not room.has_meta(&"fx_wave_announced"):
 		node.set_meta(&"fx_arrival", true)
 	if enemy:
 		node.ready.connect(_bind_actor.bind(node), CONNECT_ONE_SHOT)
@@ -169,6 +181,32 @@ func _update_cues() -> void:
 			effects.stop_entry(_cues[id])
 			_cues.erase(id)
 
+## Seconds until `room`'s next wave appears and which wave it is, or empty.
+func _wave_lead(room: RescueBattlefieldRoom) -> Dictionary:
+	if room is FinalBattlefieldRoom and (room as FinalBattlefieldRoom).arrival_lead() >= 0.0:
+		return {"lead": (room as FinalBattlefieldRoom).arrival_lead(), "index": (room as FinalBattlefieldRoom).wave_index}
+	# The first wave after the 10 rescue (RescueBattlefieldSession REINFORCEMENTS).
+	var session: RescueBattlefieldSession = get_tree().current_scene as RescueBattlefieldSession
+	if session != null and session.cinematic == RescueBattlefieldSession.Cinematic.REINFORCEMENTS and session._arena() == room:
+		return {"lead": session.cinematic_remaining, "index": 0}
+	return {}
+
+func _update_arrivals() -> void:
+	for ref: WeakRef in _fields.duplicate():
+		var room: RescueBattlefieldRoom = ref.get_ref() as RescueBattlefieldRoom
+		if room == null or not room.is_inside_tree():
+			_fields.erase(ref)
+			continue
+		var wave: Dictionary = _wave_lead(room)
+		if wave.is_empty():
+			# The wave has appeared (its units were added before this step).
+			if room.has_meta(&"fx_wave_announced"):
+				room.remove_meta(&"fx_wave_announced")
+		elif float(wave["lead"]) <= ARRIVAL_LEAD and not room.has_meta(&"fx_wave_announced"):
+			room.set_meta(&"fx_wave_announced", true)
+			for slot: Dictionary in room.upcoming_arrivals(int(wave["index"])):
+				effects.spawn("arrival_ally" if slot["ally"] else "arrival_enemy", slot["at"] + CombatEffects.CHEST)
+
 static func _chest(body: Node2D) -> Vector2:
 	return body.global_position + CombatEffects.CHEST
 
@@ -228,6 +266,7 @@ func _physics_process(_delta: float) -> void:
 	if get_tree().paused or player == null or not player.is_node_ready():
 		return
 	_update_cues()
+	_update_arrivals()
 	var actions: PlayerPossibility = player.possibility
 	if actions.dodge_serial != _dodge_serial:
 		_dodge_serial = actions.dodge_serial

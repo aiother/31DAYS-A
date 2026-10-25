@@ -41,7 +41,7 @@ func replace_wave() -> void:
 	var total: int = battle.tian_counts[wave_index]+battle.mono_counts[wave_index]
 	for i: int in range(total):
 		var enemy: ColorlessEntity = (WARRIOR if i<battle.tian_counts[wave_index] else MONO).instantiate() as ColorlessEntity
-		enemy.position = Vector2(960+i*minf(160,800.0/maxi(1,total-1)),896)
+		enemy.position = _final_position(i,total)
 		enemy.target = target
 		enemy.coordinator = $AttackCoordinator
 		if enemy is TianWarrior:
@@ -50,6 +50,28 @@ func replace_wave() -> void:
 		$Enemies.add_child(enemy)
 		enemy.set_physics_process(false)
 		hostile_spawned.emit(enemy)
+
+func _final_position(i: int, total: int) -> Vector2:
+	return Vector2(960+i*minf(160,800.0/maxi(1,total-1)),896)
+
+func _ally_position(i: int) -> Vector2:
+	return Vector2(360+i*90,896)
+
+## FX-002: the units wave `index` will bring (global positions), so the
+## arrival effect can play out in the warning before they appear (T2 §11).
+func upcoming_arrivals(index: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var total: int = battle.tian_counts[index]+battle.mono_counts[index]
+	for i: int in range(total):
+		out.append({"at": $Enemies.to_global(_final_position(i,total)), "ally": false})
+	if index==battle.tian_counts.size()-1 and not final_support_spawned:
+		for i: int in range(battle.last_wave_allies):
+			out.append({"at": $Allies.to_global(_ally_position(i)), "ally": true})
+	return out
+
+## Seconds until the next wave appears, or -1 when none is on its way.
+func arrival_lead() -> float:
+	return wave_remaining if phase==Phase.COOP and wave_state==WaveState.WARNING and not victory else -1.0
 
 func start_coop(use_current_wave: bool = false) -> void:
 	wave_index = 0
@@ -84,7 +106,7 @@ func _begin_wave() -> void:
 		for i: int in range(battle.last_wave_allies):
 			var ally: SurvivorFighter = ALLY.instantiate() as SurvivorFighter
 			ally.opponents = $Enemies
-			ally.position = Vector2(360+i*90,896)
+			ally.position = _ally_position(i)
 			$Allies.add_child(ally)
 		for point: Vector2 in battle.platform_positions:
 			var platform: Node2D = PLATFORM.instantiate() as Node2D

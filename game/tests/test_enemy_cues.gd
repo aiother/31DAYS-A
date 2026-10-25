@@ -11,6 +11,10 @@ var director: CombatEffectDirector
 var fx: CombatEffects
 var audio: AudioEventService
 var records: Array[Dictionary] = []
+## Largest drawn reach (CombatEffects record "span") of an ordinary defeat and an
+## ordinary-sized heavy cue, to compare the Boss versions against (review R3).
+var ordinary_death_span: float = 0.0
+var heavy_cue_span: float = 0.0
 var spawned: Array[Node] = []
 
 func _initialize() -> void:
@@ -38,6 +42,11 @@ func drew_hue(rows: Array[Dictionary], hue: Color) -> bool:
 		for c: Color in r["colors"]:
 			if c.a > 0.0 and is_equal_approx(c.r, hue.r) and is_equal_approx(c.g, hue.g) and is_equal_approx(c.b, hue.b): return true
 	return false
+
+func widest(rows: Array[Dictionary]) -> float:
+	var out: float = 0.0
+	for r: Dictionary in rows: out = maxf(out, float(r["span"]))
+	return out
 
 func last_windup_sound() -> Dictionary:
 	var rows: Array = audio.history.filter(func(row: Dictionary) -> bool: return String(row["event"]).begins_with("enemy.windup"))
@@ -133,6 +142,9 @@ func ordinary_cases() -> void:
 	enemy.hurtbox.receive_attack(1000, Vector2.ZERO, body, 900002)
 	await frames(2)
 	check(director.cue_for(enemy).is_empty() and not fx.entries.any(func(e: Dictionary) -> bool: return e["kind"] == "windup"), "a defeated enemy leaves no cue")
+	for i: int in range(60): await frames(1)
+	ordinary_death_span = widest(seen("enemy_death"))
+	check(ordinary_death_span > 0.0, "an ordinary defeat draws its burst (%.0f px)" % ordinary_death_span)
 	# Removed outright during the wind-up (a Room change): the cue goes with it.
 	await clean()
 	enemy = add("res://enemies/colorless_entity.tscn", Vector2(70, 0)) as ColorlessEntity
@@ -176,6 +188,7 @@ func strong_cases() -> void:
 	for r: Dictionary in heavy_rows: heavy_reach = maxf(heavy_reach, int(r["prims"]))
 	var light_reach: float = 0.0
 	for r: Dictionary in light_rows: light_reach = maxf(light_reach, int(r["prims"]))
+	heavy_cue_span = widest(heavy_rows)
 	check(heavy_reach > light_reach, "the heavy cue draws more than the ordinary one (%d vs %d primitives)" % [heavy_reach, light_reach])
 	await clean()
 	# Tian: real action entries for each attack kind.
@@ -218,7 +231,7 @@ func boss_cases() -> void:
 		check(wound[0] >= 0 and result["mismatch"] == 0 and result["kinds"].keys() == ["windup_heavy"], path.get_file() + " winds up with the heavy cue only while winding up")
 		check(int(sound.get("physics_frame", -1)) == wound[0] and sound.get("event") == "enemy.windup", path.get_file() + " cue appears in the frame of its warning sound")
 		var rows: Array[Dictionary] = seen("windup_heavy")
-		check(not rows.is_empty() and is_equal_approx(float(rows[0]["size"]), CombatEffectDirector.BOSS_SIZE), path.get_file() + " cue is drawn at Boss size")
+		check(not rows.is_empty() and widest(rows) >= 2.0 * heavy_cue_span and heavy_cue_span > 0.0, path.get_file() + " cue is drawn at Boss size (%.0f px against %.0f px for an ordinary heavy cue)" % [widest(rows), heavy_cue_span])
 		# Defeat: the Boss burst, not the ordinary one.
 		records.clear()
 		boss.get_node("GameplayRoot/Hurtbox").call("receive_attack", 100000, Vector2.ZERO, body, 900100)
@@ -226,13 +239,17 @@ func boss_cases() -> void:
 		check(not seen("boss_death").is_empty() and seen("enemy_death").is_empty(), path.get_file() + " defeat draws the Boss burst")
 		var big: Array[Dictionary] = seen("boss_death")
 		check(not big.is_empty() and float(big[0]["life"]) > CombatEffects.LIFE["enemy_death"] and drew_hue(big, DuskStyle.LIFE), path.get_file() + " Boss burst is longer than an ordinary defeat and carries vermilion")
+		for i: int in range(80): await frames(1)
+		big = seen("boss_death")
+		check(widest(big) >= 2.0 * ordinary_death_span and ordinary_death_span > 0.0, path.get_file() + " Boss burst reaches much further than an ordinary defeat (%.0f px against %.0f px)" % [widest(big), ordinary_death_span])
 		await clean()
 	for i: int in range(80): await frames(1)
 	check(not fx.entries.any(func(e: Dictionary) -> bool: return e["kind"] == "boss_death"), "the Boss burst ends")
 
 func arrival_cases() -> void:
-	# The real final-battlefield wave code adds enemies (and, on the last wave,
-	# allies) to a running Room; the units it was loaded with do not count.
+	# The real final-battlefield wave code. Units placed while the Room loads
+	# get no arrival effect; a new wave's units appear after theirs has ended
+	# (T2 §11), the effect playing inside the existing 1 s warning.
 	var room: FinalBattlefieldRoom = (load("res://world/rooms/final_battlefield.tscn") as PackedScene).instantiate() as FinalBattlefieldRoom
 	room.target = body
 	records.clear()
@@ -240,15 +257,55 @@ func arrival_cases() -> void:
 	spawned.append(room)
 	await frames(3)
 	check(room.get_node("Enemies").get_child_count() + room.get_node("Allies").get_child_count() > 0 and seen("arrival_enemy").is_empty() and seen("arrival_ally").is_empty(), "units placed while the Room loads get no arrival effect")
-	room.wave_index = room.battle.tian_counts.size() - 2
-	room.replace_wave()
-	await frames(2)
-	var enemies: int = room.get_node("Enemies").get_child_count()
-	check(enemies > 0 and seen("arrival_enemy").size() >= enemies and drew_hue(seen("arrival_enemy"), DuskStyle.LIFE), "a new wave's enemies arrive with the vermilion arrival effect (%d)" % enemies)
+	check(room.battle.wave_warning >= CombatEffectDirector.ARRIVAL_LEAD and CombatEffectDirector.ARRIVAL_LEAD >= CombatEffects.LIFE["arrival_enemy"] + 0.05, "the arrival effect fits inside the wave warning")
+	room.phase = RescueBattlefieldRoom.Phase.COOP
+	room.started = true
+	var last: int = room.battle.tian_counts.size() - 1
+	for index: int in [last - 1, last]:
+		records.clear()
+		for child: Node in room.get_node("Enemies").get_children(): child.set_physics_process(false)
+		var allies_before: Array[Node] = room.get_node("Allies").get_children()
+		room.wave_index = index - 1
+		var expected: Array[Dictionary] = room.upcoming_arrivals(index)
+		check(room.advance_wave() and room.wave_index == index, "wave %d is announced by the real warning" % index)
+		var effects_seen: Dictionary = {}
+		var appear: int = -1
+		var alive_on_appear: int = -1
+		var first: int = -1
+		var after: int = 0
+		for i: int in range(150):
+			await frames(1)
+			for e: Dictionary in fx.entries:
+				if String(e["kind"]).begins_with("arrival"):
+					if not effects_seen.has(e["serial"]):
+						effects_seen[e["serial"]] = {"kind": e["kind"], "at": e["at"]}
+						if first < 0: first = i
+						if appear >= 0: after += 1
+			if appear < 0 and room.wave_state == FinalBattlefieldRoom.WaveState.ACTIVE:
+				appear = i
+				alive_on_appear = fx.entries.filter(func(e: Dictionary) -> bool: return String(e["kind"]).begins_with("arrival")).size()
+				for child: Node in room.get_node("Enemies").get_children(): child.set_physics_process(false)
+				for child: Node in room.get_node("Allies").get_children(): child.set_physics_process(false)
+			if appear >= 0 and i > appear + 10: break
+		var units: Array[Node2D] = []
+		for child: Node in room.get_node("Enemies").get_children(): units.append(child as Node2D)
+		for child: Node in room.get_node("Allies").get_children():
+			if not child in allies_before: units.append(child as Node2D)
+		var placed: int = 0
+		for unit: Node2D in units:
+			var kind: String = "arrival_ally" if unit is SurvivorFighter else "arrival_enemy"
+			for row: Dictionary in effects_seen.values():
+				if row["kind"] == kind and (row["at"] as Vector2).distance_to(unit.global_position + CombatEffects.CHEST) < 12.0:
+					placed += 1
+					break
+		check(appear >= 0 and units.size() == expected.size() and effects_seen.size() == units.size() and placed == units.size() and drew_hue(seen("arrival_enemy"), DuskStyle.LIFE), "wave %d: one arrival effect where each of its %d units appears (%d placed)" % [index, units.size(), placed])
+		check(appear >= 0 and first >= 0 and appear - first >= ceili(CombatEffects.LIFE["arrival_enemy"] * 60.0) and alive_on_appear == 0 and after == 0, "wave %d: the units appear after their arrival effect has ended (effect at frame %d, units at %d, %d still alive, %d more after)" % [index, first, appear, alive_on_appear, after])
+	check(drew_hue(seen("arrival_ally"), DuskStyle.POSSIBILITY_GLOW) and not drew_hue(seen("arrival_ally"), DuskStyle.LIFE), "last-wave allies arrive with the teal arrival effect")
+	check(room.final_support_spawned, "the last wave brought its allies")
+	# A reinforcement with no warning before it (a survivor joining mid-wave)
+	# still gets its effect as it appears.
 	records.clear()
-	# The last wave also brings the allies (FinalBattlefieldRoom._begin_wave).
-	room.wave_index = room.battle.tian_counts.size() - 1
-	room._begin_wave()
+	room._spawn_ally()
 	await frames(2)
-	check(room.final_support_spawned and not seen("arrival_ally").is_empty() and drew_hue(seen("arrival_ally"), DuskStyle.POSSIBILITY_GLOW) and not drew_hue(seen("arrival_ally"), DuskStyle.LIFE), "last-wave allies arrive with the teal arrival effect")
+	check(not seen("arrival_ally").is_empty(), "a mid-wave survivor reinforcement arrives with the teal effect")
 	await clean()

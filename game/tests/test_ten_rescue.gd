@@ -117,7 +117,28 @@ func run() -> void:
 	Input.action_release("interact")
 	await ticks(2)
 	check(session.cinematic==RescueBattlefieldSession.Cinematic.REINFORCEMENTS,"saved clear is followed by a distinct reinforcement warning")
-	await ticks(62)
+	# FX-002 (T2 §11): the new wave's arrival effects play out inside this
+	# warning and are over before its units appear.
+	var fx: CombatEffects = (session.player.get_node("EffectDirector") as CombatEffectDirector).effects
+	var arrivals: Dictionary = {}
+	var alive_on_appear: int = -1
+	var appeared: Array[Vector2] = []
+	for i: int in range(62):
+		await ticks(1)
+		for e: Dictionary in fx.entries:
+			if e["kind"]=="arrival_enemy" and not arrivals.has(e["serial"]):
+				arrivals[e["serial"]] = e["at"]
+		if alive_on_appear<0 and session.cinematic==RescueBattlefieldSession.Cinematic.NONE:
+			alive_on_appear = fx.entries.filter(func(e: Dictionary) -> bool: return String(e["kind"]).begins_with("arrival")).size()
+			for child: Node in arena().get_node("Enemies").get_children():
+				appeared.append((child as Node2D).global_position+CombatEffects.CHEST)
+	var placed: int = 0
+	for spot: Vector2 in appeared:
+		for at: Vector2 in arrivals.values():
+			if at.distance_to(spot)<12.0:
+				placed += 1
+				break
+	check(arrivals.size()==3 and appeared.size()==3 and placed==3 and alive_on_appear==0,"the new wave's arrival effects end within the warning, one where each unit then appears (%d effects, %d placed, %d alive)" % [arrivals.size(),placed,alive_on_appear])
 	check(session.cinematic==RescueBattlefieldSession.Cinematic.NONE and arena().phase==RescueBattlefieldRoom.Phase.COOP,"successful retry starts cooperative battle")
 	check(session.data["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT,false) and session.store.load_slot(1)["events"].get(RescueBattlefieldSession.RESCUE_DONE_EVENT,false),"one-time rescue event is saved")
 	check(session.player.possibility.balance==10 and session.store.load_slot(1)["balance"]==10 and session.player.life.health==1,"rescue fills possibility but does not heal health")

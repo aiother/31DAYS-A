@@ -128,11 +128,17 @@ func _summaries() -> Array[Dictionary]:
 		var strongest: float = 0.0
 		var sum: Vector2 = Vector2.ZERO
 		var count: int = 0
+		var box: Rect2 = Rect2()
 		for prim: Dictionary in prims:
 			strongest = maxf(strongest, (prim["color"] as Color).a)
+			var reach: Vector2 = Vector2.ONE * float(prim["reach"])
 			for point: Vector2 in prim["points"]:
+				var spot: Rect2 = Rect2(point - reach, reach * 2.0)
+				box = spot if count == 0 else box.merge(spot)
 				sum += point
 				count += 1
+		# How far the drawing actually reaches (review R3): sizes are checked from this.
+		record["span"] = maxf(box.size.x, box.size.y)
 		record["alpha"] = strongest
 		record["centroid"] = sum / count if count > 0 else Vector2.INF
 		# Every colour actually drawn (review R2): looks are checked from these.
@@ -142,8 +148,8 @@ func _summaries() -> Array[Dictionary]:
 
 # --- drawing helpers that return what they drew ---------------------------
 
-func _note(color: Color, points: PackedVector2Array) -> Color:
-	_prims.append({"color": color, "points": points})
+func _note(color: Color, points: PackedVector2Array, reach: float = 0.0) -> Color:
+	_prims.append({"color": color, "points": points, "reach": reach})
 	return color
 
 func _line(a: Vector2, b: Vector2, color: Color, width: float) -> Color:
@@ -158,7 +164,7 @@ func _poly(points: PackedVector2Array, color: Color, width: float) -> Color:
 
 func _dot(at: Vector2, radius: float, color: Color) -> Color:
 	draw_circle(at, maxf(radius, 0.5), color)
-	return _note(color, PackedVector2Array([at]))
+	return _note(color, PackedVector2Array([at]), maxf(radius, 0.5))
 
 func _rect(rect: Rect2, color: Color) -> Color:
 	draw_rect(rect, color, true)
@@ -184,7 +190,7 @@ func _glow(center: Vector2, radius: float, color: Color, strength: float) -> Col
 	var tint: Color = Color(color, color.a * clampf(strength, 0.0, 1.0))
 	var reach: float = radius * 2.95
 	draw_texture_rect(_glow_texture, Rect2(center - Vector2(reach, reach), Vector2(reach, reach) * 2.0), false, tint)
-	return _note(tint, PackedVector2Array([center]))
+	return _note(tint, PackedVector2Array([center]), reach)
 
 func _ring(center: Vector2, radius: float, color: Color, width: float, seed: int, wobble: float) -> Color:
 	return _poly(InkDraw.circle_points(center, radius, seed, wobble), color, width)
