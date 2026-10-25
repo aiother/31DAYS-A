@@ -14,8 +14,14 @@ const TOWN_ROOMS: Dictionary = {
 	TOWN_ID: preload("res://world/rooms/ty_10002_1.tscn")
 }
 var _dialogue_kind: String = ""
-var _gaze_active: bool = false
-var _gaze_remaining: float = 0.0
+var _gaze_active: bool:
+	get: return cinematics.active(&"seven.gaze")
+	set(value):
+		if value: cinematics.begin(&"seven.gaze")
+		else: cinematics.finish(&"seven.gaze")
+var _gaze_remaining: float:
+	get: return cinematics.remaining(&"seven.gaze")
+	set(value): cinematics.duration(&"seven.gaze", value)
 var _gaze_dialogue_done: bool = false
 
 func _room_scenes() -> Dictionary:
@@ -48,14 +54,11 @@ func interact_seven() -> bool:
 	if not _can_seven():
 		return false
 	_dialogue_kind = "gaze"
-	_gaze_active = true
+	cinematics.begin(&"seven.gaze")
 	_gaze_remaining = SETTLEMENT.opening_duration
 	_gaze_dialogue_done = false
-	_forced_dialogue = true
-	intro_active = true
 	_field_opening = 0
 	player.reset_kinematics()
-	player.life.scripted_control_locked = true
 	_story_hud(true)
 	dialogue_ui.start(SETTLEMENT, SETTLEMENT.first_lines)
 	return true
@@ -63,10 +66,7 @@ func interact_seven() -> bool:
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if _gaze_active:
-		_gaze_remaining = maxf(0, _gaze_remaining - delta)
-		if room is FieldRoom:
-			(room as FieldRoom).gaze_progress = 1.0 - _gaze_remaining / maxf(0.001, SETTLEMENT.opening_duration)
-			(room as FieldRoom).gaze_target = player.position + Vector2(0, -44)
+		cinematics.advance(delta)
 		if _gaze_dialogue_done and _gaze_remaining == 0:
 			_commit_gaze()
 		return
@@ -123,7 +123,7 @@ func _commit_gaze() -> bool:
 	data["events"][GAZE] = true
 	data["events"][SEVEN] = true
 	_set_maximum(_gaze_maximum())
-	if not save_current("已获得7的注视 · 可能性上限%d" % player.possibility.maximum):
+	if not cinematics.attempt_commit(&"seven.gaze", func() -> bool: return save_current("已获得7的注视 · 可能性上限%d" % player.possibility.maximum)):
 		data["events"] = before
 		_set_maximum(old_maximum)
 		data["maximum"] = old_maximum
@@ -147,7 +147,7 @@ func _end_dialogue() -> void:
 	if room is FieldRoom:
 		(room as FieldRoom).gaze_progress = -1
 	_dialogue_kind = ""
-	_gaze_active = false
+	cinematics.finish(&"seven.gaze")
 	_gaze_remaining = 0
 	_gaze_dialogue_done = false
 	super._end_dialogue()

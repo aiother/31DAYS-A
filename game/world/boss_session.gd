@@ -15,7 +15,9 @@ const BOSS_ROOMS: Dictionary = {
 	CONNECTION_ID: preload("res://world/rooms/hd_10003_1.tscn"),
 	BOSS_ID: preload("res://world/rooms/hd_10004_1.tscn")
 }
-var _boss_intro_remaining: float = 0.0
+var _boss_intro_remaining: float:
+	get: return cinematics.remaining(&"boss.overlook")
+	set(value): cinematics.duration(&"boss.overlook", value)
 var _victory_pending: bool = false
 
 func _room_scenes() -> Dictionary:
@@ -94,10 +96,9 @@ func _enter_boss() -> void:
 	if not save_current("Boss首次演出已记录"):
 		data["events"].erase(BOSS_INTRO)
 		return
-	intro_active = true
+	cinematics.begin(&"boss.overlook", true)
 	_boss_intro_remaining = actor.config.intro_duration
 	player.reset_kinematics()
-	player.life.scripted_control_locked = true
 	ui.call("show_enemy_card", actor.config.intro_duration, "渴望俯视", "首领", "留意落击提示。\n利用召唤平台接近高空目标。")
 
 func _physics_process(delta: float) -> void:
@@ -108,14 +109,7 @@ func _physics_process(delta: float) -> void:
 		if not player.life.is_alive():
 			_end_boss_intro(false)
 			return
-		_boss_intro_remaining = maxf(0.0, _boss_intro_remaining - delta)
-		var actor: OverlookBoss = room.get_node("Boss") as OverlookBoss
-		var elapsed: float = actor.config.intro_duration - _boss_intro_remaining
-		var camera: Camera2D = player.get_node("Camera2D") as Camera2D
-		camera.offset = Vector2(0, -600 * clampf((3.5 - elapsed) / 1.5, 0, 1))
-		if elapsed > actor.config.intro_duration - 0.8:
-			actor.position.y = move_toward(actor.position.y, actor.config.floor_y, 1200 * delta)
-			camera.offset.x = sin(elapsed * 80) * 5
+		cinematics.advance(delta)
 		if _boss_intro_remaining == 0.0:
 			_end_boss_intro(true)
 		return
@@ -128,9 +122,7 @@ func _physics_process(delta: float) -> void:
 
 func _end_boss_intro(start: bool) -> void:
 	_boss_intro_remaining = 0.0
-	intro_active = false
-	player.life.scripted_control_locked = false
-	(player.get_node("Camera2D") as Camera2D).offset = Vector2.ZERO
+	cinematics.finish(&"boss.overlook")
 	if start:
 		(room.get_node("Boss") as OverlookBoss).start_combat()
 		(room as BossRoom).start_ordinary(player)

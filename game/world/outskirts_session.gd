@@ -62,7 +62,7 @@ func _on_spikes_failed() -> void:
 func _on_spikes_passed() -> void:
 	if not has_session() or not player.life.is_alive(): return
 	_spike_pending = true
-	intro_active = true
+	cinematics.begin(&"world.save")
 	_stop_spike_motion()
 	player.life.scripted_control_locked = true
 	player.set_physics_process(false)
@@ -75,7 +75,7 @@ func _on_spikes_passed() -> void:
 
 func _thaw_spikes() -> void:
 	_spike_pending = false
-	intro_active = false
+	cinematics.finish(&"world.save")
 	player.life.scripted_control_locked = false
 	player.set_physics_process(true)
 	for actor: Node in _spike_paused:

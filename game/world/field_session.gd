@@ -15,12 +15,17 @@ const FIELD_ROOMS: Dictionary = {
 	BOSS_ID: preload("res://world/rooms/hd_10004_1.tscn"),
 	FIELD_ID: preload("res://world/rooms/ty_10001_1.tscn")
 }
-var _field_opening: float = 0.0
-var _forced_dialogue: bool = false
+var _field_opening: float:
+	get: return cinematics.remaining(&"seven.first")
+	set(value): cinematics.duration(&"seven.first", value)
+var _forced_dialogue: bool:
+	get: return cinematics.active(&"seven.first") or cinematics.active(&"seven.gaze")
+	set(value):
+		if value and not _forced_dialogue: cinematics.begin(&"seven.first")
+		elif not value and _forced_dialogue: cinematics.finish()
 var _interaction_cooldown: float = 0.0
 var _guide_time: float = 0.0
 var _departure_target: String = ""
-var _field_camera_offset: float = 0.0
 @onready var dialogue_ui: FieldDialogue = $FieldDialogue
 
 func _restore(snapshot: Dictionary, revive: bool) -> void:
@@ -63,19 +68,13 @@ func _change_room(target: String) -> void:
 func _enter_field() -> void:
 	if bool(data["events"].get(FIELD_STORY, false)):
 		return
-	_forced_dialogue = true
-	intro_active = true
+	cinematics.begin(&"seven.first")
 	_field_opening = (room as FieldRoom).dialogue.opening_duration
-	var half_width: float = 960.0
-	var limits: Rect2 = room.config.bounds
-	var base_center: float = clampf(player.position.x, limits.position.x + half_width, limits.end.x - half_width)
-	var npc_center: float = clampf((room.get_node("Seven") as Node2D).position.x, limits.position.x + half_width, limits.end.x - half_width)
-	_field_camera_offset = npc_center - base_center
 	player.reset_kinematics()
-	player.life.scripted_control_locked = true
 	_story_hud(true)
 
-func _story_hud(hidden: bool) -> void:
+func _story_hud(_hidden: bool) -> void:
+	var hidden: bool = bool(cinematic_state()["hides_hud"])
 	$Instructions.visible = not hidden
 	(ui.get("_health") as Label).visible = not hidden
 
@@ -87,11 +86,10 @@ func _physics_process(delta: float) -> void:
 	_guide_time = maxf(0, _guide_time - delta)
 	if room is FieldRoom and _forced_dialogue:
 		if _field_opening > 0:
-			_field_opening = maxf(0, _field_opening - delta)
-			var camera: Camera2D = player.get_node("Camera2D") as Camera2D
-			camera.offset.x = move_toward(camera.offset.x, _field_camera_offset, 600 * delta)
+			cinematics.advance(delta)
 			if _field_opening == 0:
 				var config: DialogueConfig = (room as FieldRoom).dialogue
+				cinematics.set_phase(&"seven.first",2)
 				dialogue_ui.start(config, config.first_lines)
 		return
 	super._physics_process(delta)
@@ -122,7 +120,7 @@ func _on_dialogue_finished() -> void:
 		_set_balance(player.possibility.maximum)
 	else:
 		data["events"][SEVEN] = true
-	if not save_current("黄金麦湖进度已保存"):
+	if not cinematics.attempt_commit(&"seven.first", func() -> bool: return save_current("黄金麦湖进度已保存")):
 		data["events"] = before
 		_set_balance(old_balance)
 		data["balance"] = old_balance
@@ -140,11 +138,10 @@ func _set_balance(value: int) -> void:
 
 func _end_dialogue() -> void:
 	dialogue_ui.dismiss()
-	_forced_dialogue = false
-	intro_active = false
+	cinematics.finish(&"seven.first")
 	_field_opening = 0
 	_interaction_cooldown = 0.2
-	player.life.scripted_control_locked = false
+	player.life.scripted_control_locked = bool(cinematic_state()["locks_control"])
 	(player.get_node("Camera2D") as Camera2D).offset = Vector2.ZERO
 	_story_hud(false)
 

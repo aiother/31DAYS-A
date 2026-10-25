@@ -5,9 +5,15 @@ const TEN_RESCUE_ROOM: PackedScene = preload("res://world/rooms/rescue_battlefie
 const RESCUE_DIALOGUE: DialogueConfig = preload("res://data/dialogue/ten_rescue.tres")
 const PRESENTATION: RescuePresentationConfig = preload("res://data/world/ten_rescue_presentation.tres")
 enum Cinematic { NONE, DROP, DIALOGUE, SLASH, SAVE, AFTERMATH, REINFORCEMENTS }
-var cinematic: Cinematic = Cinematic.NONE
-var cinematic_remaining: float = 0
-var _rescue_commit_pending: bool = false
+var cinematic: Cinematic:
+	get: return cinematics.phase(&"ten.rescue") as Cinematic
+	set(value): cinematics.set_phase(&"ten.rescue",int(value))
+var cinematic_remaining: float:
+	get: return cinematics.remaining(&"ten.rescue")
+	set(value): cinematics.duration(&"ten.rescue", value)
+var _rescue_commit_pending: bool:
+	get: return cinematics.flag("rescue_commit")
+	set(value): cinematics.set_flag("rescue_commit",value)
 @onready var rescue_overlay: RescueOverlay = $RescueOverlay
 
 func _room_scenes() -> Dictionary:
@@ -50,34 +56,27 @@ func _begin_rescue(reason: String) -> void:
 	if area==null or area.rescue_done or cinematic!=Cinematic.NONE or not has_session() or not player.life.is_alive():
 		return
 	area.begin_rescue(reason)
-	intro_active = true
+	cinematic = Cinematic.DROP
 	player.reset_kinematics()
-	player.life.scripted_control_locked = true
 	player.set_physics_process(false)
 	ui.call("hide_enemy_intro")
 	_story_hud(true)
-	rescue_overlay.show_drop()
-	cinematic = Cinematic.DROP
 	cinematic_remaining = RESCUE_DIALOGUE.opening_duration
-	area.ten.position.y = 160
 
 func _physics_process(delta: float) -> void:
 	if cinematic!=Cinematic.NONE:
 		if cinematic==Cinematic.DROP:
-			cinematic_remaining = maxf(0,cinematic_remaining-delta)
-			_arena().ten.position.y = lerpf(160,896,1-cinematic_remaining/RESCUE_DIALOGUE.opening_duration)
+			cinematics.advance(delta)
 			if cinematic_remaining==0:
 				cinematic = Cinematic.DIALOGUE
 				dialogue_ui.start(RESCUE_DIALOGUE,RESCUE_DIALOGUE.first_lines)
 		elif cinematic==Cinematic.SLASH:
-			cinematic_remaining = maxf(0,cinematic_remaining-delta)
+			cinematics.advance(delta)
 			if cinematic_remaining==0:
 				cinematic = Cinematic.AFTERMATH
 				cinematic_remaining = PRESENTATION.cleared_hold
-				rescue_overlay.show_cleared(_arena().rescue_kill_count)
-				_arena().get_node("StageLabel").text = "10的斩击已清除当前全部敌人"
 		elif cinematic==Cinematic.AFTERMATH:
-			cinematic_remaining = maxf(0,cinematic_remaining-delta)
+			cinematics.advance(delta)
 			if cinematic_remaining==0:
 				cinematic = Cinematic.SAVE
 				_rescue_commit_pending = true
@@ -85,7 +84,7 @@ func _physics_process(delta: float) -> void:
 		elif cinematic==Cinematic.SAVE and (Input.is_action_just_pressed("interact") or bool(data["events"].get(RESCUE_DONE_EVENT,false))):
 			_finish_rescue()
 		elif cinematic==Cinematic.REINFORCEMENTS:
-			cinematic_remaining = maxf(0,cinematic_remaining-delta)
+			cinematics.advance(delta)
 			if cinematic_remaining==0:
 				_enter_coop()
 		return
@@ -100,7 +99,6 @@ func _on_dialogue_finished() -> void:
 	dialogue_ui.dismiss()
 	cinematic = Cinematic.SLASH
 	cinematic_remaining = PRESENTATION.slash_duration
-	rescue_overlay.show_slash()
 	_arena().clear_hostiles()
 
 func _on_room_enemy_defeated(reward: int) -> void:
@@ -125,20 +123,15 @@ func save_current(message: String = "已自动保存") -> bool:
 	return true
 
 func _finish_rescue() -> void:
-	if not save_current("10救场完成 · 可能性已补满"):
-		rescue_overlay.show_save_retry()
+	if not cinematics.attempt_commit(&"ten.rescue", func() -> bool: return save_current("10救场完成 · 可能性已补满")):
 		return
 	cinematic = Cinematic.REINFORCEMENTS
 	cinematic_remaining = PRESENTATION.reinforcement_warning
-	rescue_overlay.show_reinforcements()
 	ui.call("save_failed","")
 
 func _enter_coop() -> void:
 	cinematic = Cinematic.NONE
-	intro_active = false
-	rescue_overlay.hide()
 	_story_hud(false)
-	player.life.scripted_control_locked = false
 	player.set_physics_process(true)
 	_arena().start_coop()
 	ui.call("save_failed","")

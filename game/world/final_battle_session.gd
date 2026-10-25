@@ -3,16 +3,34 @@ extends RescueBattlefieldSession
 signal day_changed(day: int)
 const FINAL_ROOM: PackedScene = preload("res://world/rooms/final_battlefield.tscn")
 const FINAL_DIALOGUE: DialogueConfig = preload("res://data/dialogue/ten_victory.tres")
-var _start_pending: bool = false
-var _win_pending: bool = false
+var _start_pending: bool:
+	get: return cinematics.active(&"final.start")
+	set(value):
+		if value: cinematics.begin(&"final.start")
+		else: cinematics.finish(&"final.start")
+var _win_pending: bool:
+	get: return cinematics.active(&"final.win")
+	set(value):
+		if value: cinematics.begin(&"final.win")
+		else: cinematics.finish(&"final.win")
 var _timeout_pending: bool = false
 var _timeout_active: bool = false
 var _final_resolution_room: int = 0
 var _ending_pending: bool = false
-var _ending_active: bool = false
-var _ending_remaining: float = 0
+var _ending_active: bool:
+	get: return cinematics.active(&"ending")
+	set(value):
+		if value: cinematics.begin(&"ending")
+		else: cinematics.finish(&"ending")
+var _ending_remaining: float:
+	get: return cinematics.remaining(&"ending")
+	set(value): cinematics.duration(&"ending", value)
 var _ending_attempted: bool = false
-var _final_talk: bool = false
+var _final_talk: bool:
+	get: return cinematics.active(&"final.talk")
+	set(value):
+		if value: cinematics.begin(&"final.talk")
+		else: cinematics.finish(&"final.talk")
 var _clock_save_remaining: float = 0.5
 var _exploration_timeout: bool = false
 var _announced_day: int = 0
@@ -73,23 +91,19 @@ func _on_final_started() -> void:
 		return
 	_start_pending = true
 	_final_arena().stop_attempt()
-	player.life.scripted_control_locked = true
 	player.set_physics_process(false)
-	intro_active = true
 	_try_start_clock()
 
 func _try_start_clock() -> bool:
 	var before: Dictionary = data.duplicate(true)
 	var starting_day3: float = float(data.get("day3_remaining",1800.0))
 	FinalClock.start(data)
-	if not save_current("最终战计时已保存"):
+	if not cinematics.attempt_commit(&"final.start", func() -> bool: return save_current("最终战计时已保存")):
 		data = before
 		_notify("计时尚未保存 · E / RB 重试")
 		return false
 	_start_pending = false
 	_final_start_day3_remaining = starting_day3
-	intro_active = false
-	player.life.scripted_control_locked = false
 	player.set_physics_process(true)
 	var area: FinalBattlefieldRoom = _final_arena()
 	area.stopped = false
@@ -103,7 +117,7 @@ func _try_start_clock() -> bool:
 	return true
 
 func _clock_tick(delta: float) -> void:
-	if get_tree().paused or not has_session() or _loading or _reloading or _transitioning or not player.life.is_alive() or intro_active or dialogue_ui.active or dialogue_ui.confirming or cinematic!=Cinematic.NONE or _start_pending or _win_pending or _timeout_active or _ending_active or _final_talk or bool(data["events"].get(FinalClock.WON,false)):
+	if get_tree().paused or not has_session() or _loading or _reloading or _transitioning or not player.life.is_alive() or bool(cinematic_state()["pauses_clock"]):
 		return
 	var elapsed: Dictionary = DayClock.tick(data,delta)
 	if FinalClock.tick(data,float(elapsed["third_delta"])):
@@ -159,14 +173,12 @@ func _physics_process(delta: float) -> void:
 	if _final_talk:
 		return
 	if _ending_active:
-		_ending_remaining = maxf(0,_ending_remaining-delta)
-		if _ending_remaining>0:
-			final_ui.show_ending(1-_ending_remaining/3.0)
+		cinematics.advance(delta)
 		if _ending_remaining==0:
 			if not _ending_attempted or Input.is_action_just_pressed("interact"):
 				_ending_attempted = true
 				_ending_pending = true
-				if not save_current("V0.1结局已保存"):
+				if not cinematics.attempt_commit(&"ending", func() -> bool: return save_current("V0.1结局已保存")):
 					final_ui.message.text = "结局保存失败 · E / RB 重试"
 			if bool(data["events"].get(FinalClock.END,false)):
 				_show_finished()
@@ -185,8 +197,6 @@ func _physics_process(delta: float) -> void:
 			area.set_victory()
 		if _interaction_input() and _can_final_conversation():
 			_final_talk = true
-			intro_active = true
-			player.life.scripted_control_locked = true
 			player.set_physics_process(false)
 			_story_hud(true)
 			ui.call("hide_enemy_intro")
@@ -222,7 +232,7 @@ func _resolve_final_frame(room_id: int) -> void:
 		area.stop_attempt()
 		_timeout_pending = false
 		_win_pending = true
-		if save_current("最终战胜利 · 靠近10对话"):
+		if cinematics.attempt_commit(&"final.win", func() -> bool: return save_current("最终战胜利 · 靠近10对话")):
 			area.set_victory()
 		else:
 			_notify("胜利尚未保存 · E / RB 重试")
@@ -312,7 +322,7 @@ func _on_dialogue_finished() -> void:
 	if get_tree().paused:
 		return
 	data["events"][FinalClock.TALK] = true
-	if not save_current("胜利对话已完成"):
+	if not cinematics.attempt_commit(&"final.talk", func() -> bool: return save_current("胜利对话已完成")):
 		data["events"].erase(FinalClock.TALK)
 		return
 	dialogue_ui.dismiss()
@@ -324,16 +334,13 @@ func _begin_ending() -> void:
 	_ending_active = true
 	_ending_remaining = 3
 	_ending_attempted = false
-	intro_active = true
-	player.life.scripted_control_locked = true
 	player.set_physics_process(false)
 	_story_hud(true)
-	final_ui.show_ending(0)
 
 func _show_finished() -> void:
 	ui.call("save_failed","")
 	_ending_active = false
-	player.life.scripted_control_locked = true
+	cinematics.begin(&"ending.finished")
 	player.set_physics_process(false)
 	_story_hud(true)
 	if final_ui.mode!="finished":
@@ -394,3 +401,8 @@ func interaction_targets() -> Array[Dictionary]:
 func _stage_retry_pending() -> bool:
 	if _timeout_active or bool(data.get("events",{}).get(FinalClock.TIMEOUT,false)) or bool(data.get("events",{}).get(FinalClock.WON,false)): return false
 	return super._stage_retry_pending()
+
+func cinematic_state() -> Dictionary:
+	var result: Dictionary = super.cinematic_state()
+	result["pauses_clock"] = bool(result["pauses_clock"]) or _timeout_active or bool(data.get("events",{}).get(FinalClock.WON,false))
+	return result

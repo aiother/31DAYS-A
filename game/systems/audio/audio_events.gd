@@ -168,7 +168,8 @@ func _context(room: WorldRoom) -> void:
 		return
 	var mode: String = "exploration"
 	var dialogue: Node = session.get_node_or_null("FieldDialogue")
-	if (dialogue != null and (dialogue.get("active") or dialogue.get("confirming"))) or session.get("intro_active") == true or (session.get("cinematic") != null and int(session.get("cinematic")) != 0):
+	var story: bool = bool(session.call("cinematic_state")["story_music"]) if session.has_method("cinematic_state") else (dialogue != null and (dialogue.get("active") or dialogue.get("confirming")))
+	if story:
 		mode = "story"
 	elif room.config.room_id in ["HD_10004_1", "HD_20003_1", "NSZC_10003_1"]:
 		mode = "large_battle"

@@ -8,7 +8,9 @@ const PARASITE_PASSAGE: String = "HD_20003_1_N002"
 const DODGE_PENDING: String = "HD_20003_1:dodge_growth_pending"
 const DODGE_GROWTH: String = "HD_20003_1:dodge_growth_claimed"
 const PARASITE_ROOM: PackedScene = preload("res://world/rooms/hd_20003_1.tscn")
-var _parasite_intro_remaining: float = 0.0
+var _parasite_intro_remaining: float:
+	get: return cinematics.remaining(&"boss.parasite")
+	set(value): cinematics.duration(&"boss.parasite", value)
 var _parasite_victory_pending: bool = false
 
 func _room_scenes() -> Dictionary:
@@ -82,10 +84,9 @@ func _enter_parasite() -> void:
 	if not save_current("Boss首次演出已记录"):
 		data["events"].erase(PARASITE_INTRO)
 		return
-	intro_active = true
+	cinematics.begin(&"boss.parasite", true)
 	_parasite_intro_remaining = actor.config.intro_duration
 	player.reset_kinematics()
-	player.life.scripted_control_locked = true
 	ui.call("show_enemy_card", actor.config.intro_duration, "寄生同伴者", "首领", "弹反连续投射物。\n被命中会让Boss恢复生命。")
 
 func _physics_process(delta: float) -> void:
@@ -96,15 +97,7 @@ func _physics_process(delta: float) -> void:
 		if not player.life.is_alive():
 			_end_parasite_intro(false)
 			return
-		_parasite_intro_remaining = maxf(0.0, _parasite_intro_remaining - delta)
-		var actor: ParasiteBoss = room.get_node("Boss") as ParasiteBoss
-		var elapsed: float = actor.config.intro_duration - _parasite_intro_remaining
-		var camera: Camera2D = player.get_node("Camera2D") as Camera2D
-		camera.offset = Vector2(sin(elapsed*75)* (5 if elapsed>2 else 1),0)
-		var throw_progress: float = clampf((elapsed-2.0)/2.0,0,1)
-		(room.get_node("Corpse") as Node2D).position = actor.position+Vector2(-60-throw_progress*200,-64-sin(throw_progress*PI)*120)
-		(actor.get_node("VisualRoot") as Node2D).rotation = sin(elapsed*16)*0.025 if elapsed<2 else 0
-		(actor.get_node("VisualRoot") as Node2D).scale = Vector2(1,0.72) if elapsed<2 else Vector2.ONE
+		cinematics.advance(delta)
 		if _parasite_intro_remaining == 0.0:
 			_end_parasite_intro(true)
 		return
@@ -117,11 +110,7 @@ func _physics_process(delta: float) -> void:
 
 func _end_parasite_intro(start: bool) -> void:
 	_parasite_intro_remaining = 0.0
-	intro_active = false
-	player.life.scripted_control_locked = false
-	(player.get_node("Camera2D") as Camera2D).offset = Vector2.ZERO
-	(room.get_node("Boss/VisualRoot") as Node2D).scale = Vector2.ONE
-	(room.get_node("Boss/VisualRoot") as Node2D).rotation = 0
+	cinematics.finish(&"boss.parasite")
 	if start:
 		(room.get_node("Boss") as ParasiteBoss).start_combat()
 		(room as ParasiteRoom).start_ordinary(player)
