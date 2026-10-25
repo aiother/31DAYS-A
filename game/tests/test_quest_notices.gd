@@ -236,12 +236,22 @@ func hidden_cases() -> void:
 	await frames(30)
 	check(slip().drawn.is_empty() and notices().drawn.is_empty() and notices().age == age, "a dialogue hides both and the notice waits")
 	session.dialogue_ui.dismiss()
-	# The way story scenes hide the HUD (FieldSession._story_hud).
-	session._story_hud(true)
+	# SYS-012: create the same HUD-only policy through the common component.
+	# _story_hud() now refreshes that policy; it no longer owns a separate flag.
+	var story: CinematicSequence = CinematicCatalog.sequence(&"legacy.lock")
+	story.hides_hud = true
+	story.locks_control = false
+	story.pauses_clock = false
+	story.story_music = false
+	story.presentation = null
+	session.cinematics.overrides[&"legacy.lock"] = story
+	session.cinematics.begin(&"legacy.lock")
+	check(session.cinematic_state()["hides_hud"] and not session.cinematic_state()["locks_control"], "the common story policy hides the HUD without adding a control lock")
 	age = notices().age
 	await frames(30)
 	check(slip().drawn.is_empty() and notices().drawn.is_empty() and notices().age == age, "a story scene (HUD hidden) hides both")
-	session._story_hud(false)
+	session.cinematics.finish(&"legacy.lock")
+	session.cinematics.overrides.erase(&"legacy.lock")
 	paused = true
 	age = notices().age
 	await frames(30)

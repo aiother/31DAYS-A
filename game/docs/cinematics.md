@@ -26,7 +26,7 @@
 
 `CinematicCatalog.sequence(id)` 返回独立的 `CinematicSequence` 资源：
 
-- `id`、`phases`：编号与有序阶段。
+- `id`、`phases`：编号与兼容阶段索引；不代表自动顺序。救场沿用旧枚举的 SAVE / AFTERMATH 数值，实际按原会话的 AFTERMATH → SAVE 顺序执行。
 - `locks_control`、`hides_hud`、`pauses_clock`、`story_music`：现行策略。
 - `completion_events`：既有事件的说明清单；首项用于已保存检查。它不是一个自动写事件的指令。
 - `commit_point`：`entry` / `finish` / `saved`，明确 Boss 的入口提交与结束终态。
