@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-23（第九批起草：FX-001、SYS-011、DOC-009 已由用户批准，起草时核对 master@f6de02f；第八批已完成；汇总基线仍为 master@519a7f6）
+更新：2026-10-24（第九批 FX-001、SYS-011、DOC-009 全部完成；本次为集成收尾，汇总基线仍为 master@519a7f6，全面规划刷新留待后续）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -51,12 +51,12 @@
 | EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已完成（第八批；用户定稿 D 融合，集成检查通过） | [tasks/EXP-005](tasks/EXP-005/task.md) |
 | FX-001 | L | 正式战斗反馈特效 | Claude | Codex | 已完成 | [tasks/FX-001](tasks/FX-001/task.md) |
 | SYS-011 | L | 音效事件框架与占位音 | Codex | Claude | 已完成 | [tasks/SYS-011](tasks/SYS-011/task.md) |
-| DOC-009 | M | T3 改写为现行版 | Claude | Codex | 已批准（第九批） | [tasks/DOC-009](tasks/DOC-009/task.md) |
+| DOC-009 | M | T3 改写为现行版 | Claude | Codex | 已完成 | [tasks/DOC-009](tasks/DOC-009/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 
 第八批（2026-10-23 用户批准）：PLN-001、DOC-008、SYS-010、EXP-005。规划刷新（PLN-001）后，路线图、待办与本表的汇总基线统一为 master@519a7f6；M2 的 T7-G 逐项核对见 [PLN-001 核对表](tasks/PLN-001/t7g_check.md)。第八批四张卡均已完成（master@f6de02f）。
 
-第九批（2026-10-23 用户批准）：FX-001、SYS-011、DOC-009。FX-001 与 SYS-011 并行，两者都会改 `placeholder_visual.gd` 的不同部分，后合入的一方解决冲突；DOC-009 排在 FX-001 之后。
+第九批（2026-10-23 用户批准）：FX-001、SYS-011、DOC-009，三张任务卡均已完成。FX-001 与 SYS-011 联合 full 通过，DOC-009 复审与集成 G3 通过；证据见 [FX-001 集成记录](tasks/FX-001/integration.md)、[SYS-011 集成记录](tasks/SYS-011/integration.md)、[DOC-009 集成记录](tasks/DOC-009/integration.md)。
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
