@@ -124,3 +124,82 @@
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+
+## 第2轮复审（2026-10-24）
+
+审查者：Codex｜结论：**通过，无阻断项**。R1 已解决；本轮仅在 `codex/DOC-009-review-r2` 追加复审记录，不改 Claude 实现，不合并 master。
+
+### 固定对象与差异范围
+
+- 先 `git switch --detach c7a99610f062bf9fca1cacdac4c8a5d33cc22bdc` 固定，再建立复审分支。
+- 修复实现 `e62365ba86e99d7a60032e94a73d92d0ac8cbe7a`，最终交付 `c7a99610f062bf9fca1cacdac4c8a5d33cc22bdc`，首轮审查 `03120dd3e718fd03b4c5de214b1fa61de1f5b63b` 已在祖先中保留。
+- 修复相对首轮审查只改 T3 三行（§3、§8、§9）与 `tests/test_planning_documents.py` 的 T3 相关断言。修复实现到交付只改 delivery.md 与任务卡首部，未再改 T1、其他规格或游戏代码。
+
+### R1 与回归逐项核对
+
+- §3 明确首见剧情 **TY_10001_1_N002** 结束只补满可能性、此时不获得注视；完成麦秆镇救助后返回7，在 **TY_10001_1_N005** 结算时获得注视与首次上限奖励。
+- §8 第一条结算同步标明 N005 与获得注视，仍保留10→12、余额不额外补满。其他NPC帮助前置时的+4、延迟+1、同次保存与一次性边界未变。
+- §9 生效时间不再使用未限定的“完成7剧情”；明确麦秆镇救助后返7完成 N005 结算才永久生效，并同时排除 N002 首见授予。
+- 已复核 T5.4 现行黄金麦湖表：N002 是首次剧情、奖励补满，N005 是完成救助 Node 后返回7互动获得注视。修复与首轮依据一致，不从代码反推规则，也未新增一次奖励或改变永久成长数值。
+- 测试分别在 §3、§9 检查两阶段，并禁止旧句与“N002结束获得注视”等反写。原有互斥、旧槽兼容、过期、死亡等断言仍在，没有为通过本轮而删除旧检查。
+- 交付修订去向表将麦秆镇段的去向补为 §3/§8/§9，歧义第6条补充 N005 返程结算，与实际修复一致。
+
+### 独立单点变异
+
+逐项只改文档，独立进程运行 `python -X utf8 -m unittest tests.test_planning_documents tests.test_game_project`（每次47项）；全部按原字节恢复并确认 Git 干净：
+
+| 变异 | 结果 |
+| --- | --- |
+| 首轮原变异：§9 改成首见N002结束即获得注视并永久生效 | 3项失败 |
+| §9 恢复“完成7剧情后立即永久生效” | 3项失败 |
+| §3 改为首见结束“补满可能性并获得注视” | 1项失败 |
+| 药包旧档不补发反写为补发 | 1项失败 |
+| 删除同一NPC不能用两种帮助方式各领一次 | 1项失败 |
+
+本轮独立复现这5项；没有冒称重跑实现者全部9项历史变异。结果 `codexandclaude/runs/doc009-r2-review-mutations.json`，原始日志 `doc009-r2-review-mutant-*.txt`，不入库。
+
+首轮 N1（T1 §9 历史引用缺少定点回归）本轮未采纳，当前引用文案仍正确，继续保留为非阻断建议，不影响 R1 通过。首轮其余修订去向与六条解释判断未改变。
+
+### 独立 G3
+
+在固定最终交付 SHA、干净工作区运行 `python codexandclaude/tools/run_checks.py focused --python-all`：**110/110 + 67/67 全部通过，content_stable=True**。纯文档按矩阵不跑 G2；摘要 `codexandclaude/runs/20261025T061843.537737Z/summary.json`。复审记录本身另跑 G3，通过后提交。
+
+变异结果 SHA256：`0a4d6d58c3b592bc1536fa90a4d87047882fc1006bc2cc97806e3c4153ceed26`。
+
+### 第2轮复审 G3 自动证据
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`c7a99610f062bf9fca1cacdac4c8a5d33cc22bdc`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-25T06:18:43.537737+00:00；结束：2026-10-25T06:18:58.731852+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际110 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`e3e82c0e060a60d20273063e84588103e9314cf7`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`a46658f3282b4ee68e70d37464b430d1c59e2c22cb56107d4a3717b0ca23bc0e`；工作区范围指纹（原始字节）：`e8c9b3a16375ad24596928ed1bc1f803f667823c0d4b3560e04bc76dca8eaa14`。
+全工作区指纹：`f07b36040de5692227d32ddc58930f2f696d62fe71b7d791681021658c4d1d3c`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\001.txt`；SHA256=`1e4d7ab4ddf2382979a563e89d79138621e84846a00ba0db7e59d06dfb29c591`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.282秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.015秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.125秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\006.txt`；SHA256=`d33eda141c781afeeb77faf7d6080c8f3f5be5e6d276486597895b2abefd2edb`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=10.688秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T061843.537737Z\007.txt`；SHA256=`77b1e0942b57a8e4301b918aabd38321a4e109eca3bf019931e8ed1e86ebf11e`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
