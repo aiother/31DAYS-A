@@ -49,7 +49,7 @@
 | DOC-008 | M | T2 改写为现行版 | Claude | Codex | 已完成（第八批；复审与集成 G3 通过） | [tasks/DOC-008](tasks/DOC-008/task.md) |
 | SYS-010 | L | 角色动画接入框架 | Codex | Claude | 已完成（第八批；用户 G4 通过，集成检查通过） | [tasks/SYS-010](tasks/SYS-010/task.md) |
 | EXP-005 | M | 战斗反馈特效探索原型 | Claude | Codex | 已完成（第八批；用户定稿 D 融合，集成检查通过） | [tasks/EXP-005](tasks/EXP-005/task.md) |
-| FX-001 | L | 正式战斗反馈特效 | Claude | Codex | 已批准（第九批） | [tasks/FX-001](tasks/FX-001/task.md) |
+| FX-001 | L | 正式战斗反馈特效 | Claude | Codex | 已完成 | [tasks/FX-001](tasks/FX-001/task.md) |
 | SYS-011 | L | 音效事件框架与占位音 | Codex | Claude | 已完成 | [tasks/SYS-011](tasks/SYS-011/task.md) |
 | DOC-009 | M | T3 改写为现行版 | Claude | Codex | 已批准（第九批） | [tasks/DOC-009](tasks/DOC-009/task.md) |
 
