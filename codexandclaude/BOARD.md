@@ -52,7 +52,7 @@
 | FX-001 | L | 正式战斗反馈特效 | Claude | Codex | 已完成 | [tasks/FX-001](tasks/FX-001/task.md) |
 | SYS-011 | L | 音效事件框架与占位音 | Codex | Claude | 已完成 | [tasks/SYS-011](tasks/SYS-011/task.md) |
 | DOC-009 | M | T3 改写为现行版 | Claude | Codex | 已完成 | [tasks/DOC-009](tasks/DOC-009/task.md) |
-| PLN-002 | M | 规划刷新（第八、九批收尾） | Claude | Codex | 已批准（第十批） | [tasks/PLN-002](tasks/PLN-002/task.md) |
+| PLN-002 | M | 规划刷新（第八、九批收尾） | Claude | Codex | 已完成 | [tasks/PLN-002](tasks/PLN-002/task.md) |
 | DOC-010 | M | T4 改写为现行版 | Claude | Codex | 已批准（第十批） | [tasks/DOC-010](tasks/DOC-010/task.md) |
 | FX-002 | M | 其余视觉特效（出招提示、Boss 击败、增援、日期与倒计时） | Claude | Codex | 已批准（第十批） | [tasks/FX-002](tasks/FX-002/task.md) |
 | SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已完成 | [tasks/SYS-012](tasks/SYS-012/task.md) |
