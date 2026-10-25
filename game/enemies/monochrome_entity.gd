@@ -39,6 +39,8 @@ func _watch_target() -> void:
 		combat.attack_started.connect(_on_player_attack)
 
 func _physics_process(delta: float) -> void:
+	if HitStop.held(self, delta):
+		return
 	_watch_target()
 	air_pursuit.tick(delta)
 	if not is_instance_valid(target) or (target is PlayerController and not (target as PlayerController).life.is_alive()):

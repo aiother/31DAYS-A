@@ -19,6 +19,8 @@ var _jump_consumed: bool = false
 var _fall_start_y: float = 0.0
 var _was_descending: bool = false
 var _bounce_rising: bool = false
+## A jump pressed during a hit-stop, taken on the first frame after it.
+var _jump_held_press: bool = false
 
 func _ready() -> void:
 	assert(movement != null, "Assign MovementConfig before running player")
@@ -28,6 +30,11 @@ func _ready() -> void:
 	life.respawned.connect(reset_kinematics)
 
 func _physics_process(delta: float) -> void:
+	if HitStop.held(self, delta):
+		_held_step()
+		return
+	var jump_pressed: bool = Input.is_action_just_pressed("jump") or _jump_held_press
+	_jump_held_press = false
 	life.tick(delta)
 	possibility.tick(delta)
 	if not life.can_control():
@@ -65,7 +72,7 @@ func _physics_process(delta: float) -> void:
 		acceleration = movement.ground_deceleration if is_zero_approx(target) else movement.ground_acceleration
 	velocity.x = move_toward(velocity.x, target, acceleration * delta)
 	var edge_allowed: bool = _edge_remaining > 0.0 and absf(global_position.x - _last_floor_x) <= movement.edge_grace_distance
-	if Input.is_action_just_pressed("jump") and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0:
+	if jump_pressed and not _jump_consumed and (grounded or edge_allowed) and landing_lock_remaining <= 0.0:
 		if not combat.is_attacking():
 			combat.reset_combo()
 		GameAudio.emit_from(self, &"player.jump", global_position)
@@ -105,6 +112,17 @@ func _move_with_landing(grounded: bool) -> void:
 		landing_lock_remaining = movement.hard_landing_duration if hard else 0.0
 		_was_descending = false
 		landed.emit(impact_speed, hard)
+
+## FX-001 hit-stop: the body and every timer stay put (no time passes for the
+## player). Presses made meanwhile are not lost: an attack goes into the
+## combat buffer, a dodge cancels the attack at once and runs after the stop,
+## a jump is taken on the first frame after it.
+func _held_step() -> void:
+	if Input.is_action_just_pressed("jump"):
+		_jump_held_press = true
+	possibility.tick(0.0)
+	if not possibility.busy():
+		combat.tick(0.0)
 
 func bounce_from_down_attack() -> void:
 	if not life.can_control():
