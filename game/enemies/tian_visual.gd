@@ -6,9 +6,7 @@ func _draw() -> void:
 			draw_rect(Rect2(-30+i*17,-8-(i%2)*6,12,8),Color(0.55,0.45,0.25))
 		return
 	var color: Color = Color(0.85,0.68,0.3).lerp(Color.WHITE,actor._flash)
-	if actor.state == ColorlessEntity.State.WINDUP:
-		color = Color(1,0.25,0.15) if actor.attack_kind == TianWarrior.Attack.HEAVY else Color(1,0.85,0.5)
-		draw_line(Vector2(0,-40),Vector2(0,-40)+actor._attack_direction*(180 if actor.attack_kind == TianWarrior.Attack.HEAVY else 95),color,4)
+	# The wind-up warning (ordinary / heavy) is the FX-002 cue.
 	if actor.motion == TianWarrior.Motion.GUARD:
 		draw_line(Vector2(actor.facing*34,-84),Vector2(actor.facing*34,-8),Color(0.5,0.9,1),7)
 	if actor.motion == TianWarrior.Motion.BLINK_WARNING:

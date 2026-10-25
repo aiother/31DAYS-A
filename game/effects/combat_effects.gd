@@ -12,8 +12,12 @@ const LIFE: Dictionary = {
 	"swing": 0.22, "hit": 0.40, "bounce": 0.28, "reflect": 0.32, "dodge": 0.28, "poor_dodge": 0.36,
 	"spend": 0.42, "gain": 0.50, "heal_done": 0.52, "hurt": 0.30, "enemy_hurt": 0.20,
 	"enemy_death": 0.66, "revive": 0.86,
+	# FX-002
+	"boss_death": 1.20, "arrival_enemy": 0.70, "arrival_ally": 0.70,
 }
-const LOOPS: Array[String] = ["heal_loop", "invuln"]
+## Loops last until stopped; the wind-up cues (FX-002, G-07) follow an enemy
+## for exactly as long as its wind-up lasts.
+const LOOPS: Array[String] = ["heal_loop", "invuln", "windup", "windup_heavy"]
 ## Height of a body's centre above its feet.
 const CHEST: Vector2 = Vector2(0, -48)
 
@@ -35,10 +39,12 @@ func _ready() -> void:
 	z_index = 20
 
 ## Starts an effect at `at` (world space). `follow` makes it track a body.
-func spawn(kind: String, at: Vector2, direction: Vector2 = Vector2.RIGHT, follow: Node2D = null) -> Dictionary:
+## `size` scales the drawing (a Boss's cue is drawn larger than an ordinary one).
+func spawn(kind: String, at: Vector2, direction: Vector2 = Vector2.RIGHT, follow: Node2D = null, size: float = 1.0) -> Dictionary:
 	_serial += 1
 	var entry: Dictionary = {"kind": kind, "at": at, "dir": direction.normalized() if not direction.is_zero_approx() else Vector2.RIGHT,
-		"age": 0.0, "life": INF if kind in LOOPS else float(LIFE[kind]), "seed": _serial * 37, "follow": follow, "serial": _serial}
+		"age": 0.0, "life": INF if kind in LOOPS else float(LIFE[kind]), "seed": _serial * 37, "follow": follow, "serial": _serial,
+		"size": size}
 	if follow != null:
 		entry["offset"] = at - follow.global_position
 	entries.append(entry)
@@ -54,6 +60,11 @@ func hold(kind: String, seconds: float) -> bool:
 			entries[i]["hold"] = maxf(float(entries[i].get("hold", 0.0)), seconds)
 			return true
 	return false
+
+## Ends one particular effect (one enemy's wind-up cue among several).
+func stop_entry(entry: Dictionary) -> void:
+	entries.erase(entry)
+	queue_redraw()
 
 func stop(kind: String) -> void:
 	entries = entries.filter(func(entry: Dictionary) -> bool: return entry["kind"] != kind)
@@ -78,7 +89,14 @@ func _process(delta: float) -> void:
 		else:
 			entry["age"] = float(entry["age"]) + delta
 		var follow: Variant = entry["follow"]
-		if follow is Node2D and is_instance_valid(follow) and held <= 0.0:
+		# A freed body still reads as an Object but compares equal to null.
+		if typeof(follow) == TYPE_OBJECT and not is_instance_valid(follow):
+			# The body it followed is gone: a loop (an enemy's wind-up cue) ends
+			# with it; a finite effect stays where it last was and runs out.
+			entry["follow"] = null
+			if is_inf(float(entry["life"])):
+				entry["age"] = INF
+		elif is_instance_valid(follow) and follow is Node2D and held <= 0.0:
 			entry["at"] = (follow as Node2D).global_position + (entry["offset"] as Vector2)
 	entries = entries.filter(func(entry: Dictionary) -> bool: return float(entry["age"]) < float(entry["life"]))
 	queue_redraw()
@@ -97,6 +115,7 @@ func _draw() -> void:
 		record["at"] = entry["at"]
 		record["dir"] = entry["dir"]
 		record["serial"] = entry["serial"]
+		record["size"] = entry["size"]
 		_frame.append(record)
 
 func _summaries() -> Array[Dictionary]:
@@ -334,4 +353,69 @@ func _revive(e: Dictionary, t: float) -> Dictionary:
 	var a: float = _fade(t)
 	_glow(c + Vector2(0, -60), 60.0, DuskStyle.SUN, a)
 	_line(c, c + Vector2(0, -180.0 * t), Color(DuskStyle.PEARL, a), 6.0)
+	return {}
+
+# --- FX-002 ------------------------------------------------------------------
+
+## An enemy is about to strike (G-07, ordinary attack): a pearl ring that
+## pulses quickly around the body and a short warm stroke along the coming blow.
+func _windup(e: Dictionary, _t: float) -> Dictionary:
+	var c: Vector2 = e["at"]
+	var k: float = float(e["size"])
+	var pulse: float = 0.5 + 0.5 * sin(clock * 22.0)
+	_glow(c, 26.0 * k, DuskStyle.SUN, 0.35 + 0.25 * pulse)
+	_ring(c, (30.0 + 6.0 * pulse) * k, Color(DuskStyle.PEARL, 0.55 + 0.35 * pulse), 2.5, e["seed"], 1.5)
+	var dir: Vector2 = e["dir"]
+	_line(c + dir * 34.0 * k, c + dir * 62.0 * k, Color(DuskStyle.SUN, 0.8), 3.0)
+	return {"heavy": false}
+
+## A heavy or strong blow is coming (single-colour strong attack, Tian heavy,
+## both Bosses): vermilion, larger and doubled, with ink specks and a long
+## stroke, so it cannot be mistaken for the ordinary cue.
+func _windup_heavy(e: Dictionary, _t: float) -> Dictionary:
+	var c: Vector2 = e["at"]
+	var k: float = float(e["size"])
+	var pulse: float = 0.5 + 0.5 * sin(clock * 14.0)
+	_glow(c, 40.0 * k, DuskStyle.LIFE, 0.45 + 0.35 * pulse)
+	_ring(c, (42.0 + 10.0 * pulse) * k, Color(DuskStyle.LIFE, 0.8), 4.5, e["seed"], 3.0)
+	_ring(c, (58.0 + 10.0 * pulse) * k, Color(DuskStyle.LIFE, 0.45), 2.5, e["seed"] + 5, 3.0)
+	var dir: Vector2 = e["dir"]
+	_line(c + dir * 48.0 * k, c + dir * 120.0 * k, Color(DuskStyle.LIFE, 0.9), 5.0)
+	for i: int in range(5):
+		var p: Vector2 = c + Vector2.from_angle(TAU * _n(i, e["seed"])) * (50.0 + 14.0 * _n(i, e["seed"] + 1)) * k
+		_dot(p, 3.0 * k, Color(DuskStyle.LIFE, 0.6 + 0.3 * pulse))
+	return {"heavy": true}
+
+## A Boss is defeated: a large warm burst, a vermilion ink ring opening wide
+## and many pearl shards; longer and larger than an ordinary defeat.
+func _boss_death(e: Dictionary, t: float) -> Dictionary:
+	var c: Vector2 = e["at"]
+	var k: float = float(e["size"])
+	var a: float = 1.0 - t
+	_glow(c, 90.0 * k * (1.0 - t * 0.4), DuskStyle.SUN, a)
+	_ring(c, (40.0 + t * 200.0) * k, Color(DuskStyle.LIFE, 0.8 * a), 6.0, e["seed"], 4.0)
+	_ring(c, (20.0 + t * 120.0) * k, Color(DuskStyle.PEARL, 0.6 * a), 3.0, e["seed"] + 3, 2.0)
+	for i: int in range(18):
+		var dir: Vector2 = Vector2.from_angle(TAU * i / 18.0 + _n(i, e["seed"]))
+		var p: Vector2 = c + dir * (20.0 + t * 220.0 * (0.6 + 0.4 * _n(i, e["seed"] + 1))) * k
+		_poly(PackedVector2Array([p, p + dir.rotated(0.5) * 14.0 * k, p + dir * 26.0 * k]), Color(DuskStyle.PEARL, a), 2.5)
+	return {}
+
+## A reinforcement arrives: brush strokes gathering onto the spot and a
+## closing ring; vermilion accents for enemies, possibility teal for allies.
+func _arrival_enemy(e: Dictionary, t: float) -> Dictionary:
+	return _arrival(e, t, DuskStyle.LIFE)
+
+func _arrival_ally(e: Dictionary, t: float) -> Dictionary:
+	return _arrival(e, t, DuskStyle.POSSIBILITY_GLOW)
+
+func _arrival(e: Dictionary, t: float, tint: Color) -> Dictionary:
+	var c: Vector2 = e["at"]
+	var a: float = _fade(t)
+	_glow(c, 36.0, tint, a * 0.7)
+	_ring(c, 70.0 - t * 40.0, Color(DuskStyle.PAPER_DAY, a), 2.5, e["seed"], 2.0)
+	for i: int in range(6):
+		var dir: Vector2 = Vector2.from_angle(TAU * i / 6.0 + _n(i, e["seed"]) * 0.5)
+		var far: float = 90.0 * (1.0 - t)
+		_line(c + dir * (far + 24.0), c + dir * far, Color(tint, a), 3.0)
 	return {}

@@ -22,8 +22,17 @@ var _heal_health: int = 0
 var _bounce_attack: int = -1
 ## The swing (PlayerCombat.attack_id) that has already stopped the player.
 var _stopped_attack: int = -1
+## FX-002: enemies watched for their wind-up, and the cue each one is showing.
+var _watched: Array[WeakRef] = []
+var _cues: Dictionary = {}
+## Bosses are drawn about 2.5 times the player (T6-E); their cues match.
+const BOSS_SIZE: float = 2.5
+const BOSS_CENTER: Vector2 = Vector2(0, -120)
 
 func _ready() -> void:
+	# After the actors' own physics step, so a Boss's wind-up is seen in the
+	# same physics frame it starts (its warning sound is sent in that frame).
+	process_physics_priority = 200
 	player = get_parent() as PlayerController
 	effects = CombatEffects.new()
 	effects.name = "CombatEffects"
@@ -43,8 +52,25 @@ func _bind_player() -> void:
 		_bind_actor(node)
 
 func _added(node: Node) -> void:
-	if _is_enemy(node):
+	var enemy: bool = _is_enemy(node)
+	if not enemy and not node is SurvivorFighter:
+		return
+	# A unit that joins a Room which is already running is a reinforcement or
+	# a new wave; units placed while the Room itself loads are not.
+	var room: Node = node.get_parent()
+	while room != null and not room is WorldRoom:
+		room = room.get_parent()
+	if room != null and room.is_node_ready():
+		node.set_meta(&"fx_arrival", true)
+	if enemy:
 		node.ready.connect(_bind_actor.bind(node), CONNECT_ONE_SHOT)
+	else:
+		node.ready.connect(_arrive.bind(node, "arrival_ally"), CONNECT_ONE_SHOT)
+
+func _arrive(actor: Node, kind: String) -> void:
+	if is_instance_valid(actor) and actor.has_meta(&"fx_arrival"):
+		actor.remove_meta(&"fx_arrival")
+		effects.spawn(kind, _chest(actor))
 
 static func _is_enemy(node: Node) -> bool:
 	return node is ColorlessEntity or node is OverlookBoss or node is ParasiteBoss
@@ -69,12 +95,79 @@ func _bind_actor(actor: Node) -> void:
 	# Ordinary enemies report a reward; the two Bosses report nothing.
 	if actor is ColorlessEntity:
 		(actor as ColorlessEntity).defeated.connect(func(_reward: int) -> void: _defeated(actor))
+		# The cue starts on the very signal the warning sound uses (same frame).
+		(actor as ColorlessEntity).attack_started.connect(func(_ranged: bool) -> void: _cue_start(actor))
 	else:
 		actor.connect("defeated", func() -> void: _defeated(actor))
+	_watched.append(weakref(actor))
+	_arrive(actor, "arrival_enemy")
 
 func _defeated(actor: Node) -> void:
-	if is_instance_valid(actor):
+	if not is_instance_valid(actor):
+		return
+	_cue_stop(actor)
+	if _is_boss(actor):
+		effects.spawn("boss_death", _center(actor), Vector2.RIGHT, null, BOSS_SIZE)
+	else:
 		effects.spawn("enemy_death", _chest(actor))
+
+static func _is_boss(node: Node) -> bool:
+	return node is OverlookBoss or node is ParasiteBoss
+
+static func _center(actor: Node2D) -> Vector2:
+	return actor.global_position + (BOSS_CENTER if _is_boss(actor) else CombatEffects.CHEST)
+
+# --- enemy wind-up cues (FX-002, G-07 visual) --------------------------------
+
+static func _winding(actor: Node) -> bool:
+	if actor is ColorlessEntity: return (actor as ColorlessEntity).state == ColorlessEntity.State.WINDUP
+	if actor is OverlookBoss: return (actor as OverlookBoss).state == OverlookBoss.State.WINDUP
+	if actor is ParasiteBoss: return (actor as ParasiteBoss).state == ParasiteBoss.State.WINDUP
+	return false
+
+## Strong single-colour attacks, Tian heavy blows and every Boss blow use the
+## heavy cue, matching the separate heavy warning sounds of SYS-011.
+static func _heavy(actor: Node) -> bool:
+	if actor is MonochromeEntity: return (actor as MonochromeEntity).strong_attack
+	if actor is TianWarrior: return (actor as TianWarrior).attack_kind == TianWarrior.Attack.HEAVY
+	return _is_boss(actor)
+
+func _cue_start(actor: Node) -> void:
+	if not is_instance_valid(actor) or _cues.has(actor.get_instance_id()):
+		return
+	var boss: bool = _is_boss(actor)
+	var dir: Vector2 = Vector2.DOWN if boss else (actor as ColorlessEntity)._attack_direction
+	var entry: Dictionary = effects.spawn("windup_heavy" if _heavy(actor) else "windup", _center(actor), dir, actor, BOSS_SIZE if boss else 1.0)
+	entry["heavy"] = _heavy(actor)
+	entry["frame"] = Engine.get_physics_frames()
+	_cues[actor.get_instance_id()] = entry
+
+func _cue_stop(actor: Node) -> void:
+	var id: int = actor.get_instance_id()
+	if _cues.has(id):
+		effects.stop_entry(_cues[id])
+		_cues.erase(id)
+
+## The cue an enemy is showing now (tests), or an empty dictionary.
+func cue_for(actor: Node) -> Dictionary:
+	return _cues.get(actor.get_instance_id(), {}) if is_instance_valid(actor) else {}
+
+func _update_cues() -> void:
+	for ref: WeakRef in _watched.duplicate():
+		var actor: Node = ref.get_ref() as Node
+		if actor == null:
+			_watched.erase(ref)
+			continue
+		var winding: bool = _winding(actor)
+		if winding and not _cues.has(actor.get_instance_id()):
+			_cue_start(actor)
+		elif not winding:
+			_cue_stop(actor)
+	# Cues of enemies that are gone.
+	for id: int in _cues.keys():
+		if not is_instance_id_valid(id):
+			effects.stop_entry(_cues[id])
+			_cues.erase(id)
 
 static func _chest(body: Node2D) -> Vector2:
 	return body.global_position + CombatEffects.CHEST
@@ -134,6 +227,7 @@ func _kick(power: float) -> void:
 func _physics_process(_delta: float) -> void:
 	if get_tree().paused or player == null or not player.is_node_ready():
 		return
+	_update_cues()
 	var actions: PlayerPossibility = player.possibility
 	if actions.dodge_serial != _dodge_serial:
 		_dodge_serial = actions.dodge_serial

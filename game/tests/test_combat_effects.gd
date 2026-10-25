@@ -474,8 +474,11 @@ func player_cases() -> void:
 	await frames(3)
 	var drawn_kinds: Array = fx.drawn.map(func(r: Dictionary) -> String: return r["kind"] if int(r["prims"]) > 0 else "")
 	check(CombatEffects.LIFE.keys().all(func(k: String) -> bool: return k in drawn_kinds), "every kind draws real primitives")
-	await frames(60)
-	check(fx.entries.all(func(e: Dictionary) -> bool: return e["kind"] in CombatEffects.LOOPS), "all of them end within one second")
+	# Each ends within its own life (the longest is FX-002's Boss burst, 1.2 s).
+	var longest: float = 0.0
+	for life: float in CombatEffects.LIFE.values(): longest = maxf(longest, life)
+	await frames(ceili(longest * Engine.physics_ticks_per_second) + 6)
+	check(fx.entries.all(func(e: Dictionary) -> bool: return e["kind"] in CombatEffects.LOOPS), "all of them end within their own life (longest %.2f s)" % longest)
 
 ## The day clock (and the final-battle budget, fed from it) keeps running
 ## through a stop: T4 only pauses it for the menu, story and death menu.
