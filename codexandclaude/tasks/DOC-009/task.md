@@ -1,6 +1,6 @@
 # DOC-009：T3 改写为现行版
 
-状态：已批准（2026-10-23 用户批准）｜级别：M｜实现：Claude｜审查：Codex
+状态：已交付，待审查（2026-10-23 用户批准；实现 `4c685be`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；排在 FX-001 之后（同一实现者）
 
 ## 目标
