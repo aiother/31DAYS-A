@@ -228,3 +228,98 @@
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
 复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+
+# FX-002 用户 G4 外观修改复核（第3轮审查）
+
+审查者：Codex｜日期：2026-10-25｜结论：**需修改：R1（P2，动态瞄准的回归缺口）**。未发现当前动态更新实现错误；既有 R1～R3 修复仍保留。用户第2次 G4 通过记录保留，但不替代本项自动回归。未修改 Claude 分支，不合并 master。
+
+## 固定对象与历史保留
+
+- 本轮外观实现：`6f946abd3807ca0b4e28024ae3f1d8ae80c9c980`；记录 `b0279389cdf1eee21eb3451380ce44a6cf2d9041`；固定复核对象 `ccbf3d580b606cf687870ea39521b3fc563698c5`（含用户“这次改的可以了”与入场时序确认）。使用 git switch --detach 固定后检查。
+- 外观提交相对79d2115只改 combat_effect_director.gd、combat_effects.gd、test_enemy_cues.gd 与 combat_effects.md。外观实现到G4记录只改 delivery.md 和任务卡首部，无敌人AI / 音频 / 波次 / 出生逻辑改动。
+- 先在独立 codex/FX-002-g4-review 分支合入固定 `89d2a113bb166d3a104d002034f7010c1915871a`，只恢复此前未并入 Claude 分支的第2轮审查记录，无冲突；本节继续追加，前两轮内容完整保留。该合并不是 master 集成。
+
+## R1（P2）：静止目标用例不能证明“每物理帧按真实瞄准点更新”
+
+位置：`game/tests/test_enemy_cues.gd:267-299`，尤其285行的 aim 采样与299行方位断言；实现对应 `game/effects/combat_effect_director.gd:229`。
+
+本轮修复的核心承诺之一是 Boss 提示从真实出射点指向当前玩家，并每物理帧更新。当前 boss_cases() 让寄生同伴者进入真实前摇，确实逐帧比较了实际绘制点，但玩家没有在前摇中改变目标位置。因此把 `_update_cues()` 中唯一的 `_aim(actor, _cues[actor.get_instance_id()])` 改成 pass、保留 `_cue_start()` 的初次 `_aim()`，**ENEMY_CUES_TESTS 仍56/0**，无 ERROR / WARNING。提示退回“只在前摇开始时瞄准一次”也能通过本轮测试。
+
+独立移动目标探针保留同一个真实 Boss / 同一次前摇，在第10个提示采样后把玩家从 Boss 一侧移到另一侧；移动后给物理与绘制两帧同步，再继续使用现有 boss_aim_ok() 比较实际触须点与当前出射点 / 目标：
+
+| 版本 | 原套件 | 移动目标探针 |
+| --- | --- | --- |
+| 当前固定交付 | 56/0 | 56/0，无错误 / 警告 |
+| 仅删每帧 `_aim()`，保留初次瞄准 | **56/0（存活）** | 56项，1项失败：28个采样中16帧提示方位错误 |
+
+探针初稿未给同步窗口时，基线在移动瞬间读到上一帧绘制而出现1个错误；加入两帧同步后基线通过，变异仍16帧错误。这里不把绘制采样阶段差异误报为当前实现缺陷。
+
+**请求修改**：在正式套件补入前摇中目标移动 / 换侧的确定性用例，明确等待物理与绘制更新，再从实际绘制检查寄生同伴者的出射点与当前瞄准方向。须让“保留初次 `_aim()`、只删除持续更新”的单点变异失败。不要只比较 entry 的 aim_to 与同源计算，也不要仅把误差阈值放宽。当前生产 `_aim()` 逻辑未见错误，不要求为此改AI或时机。
+
+## 外观与其余代码核对
+
+- 用户要求的差异化已落实：无色爪痕 / 投掷点线，单色紫色箭头与朱红强力通道，天人连击 / 重击 / 远程分别走斩痕 / 落地弧线 / 箭线；均通过记录型绘制函数产生实际图元，前摇进度只影响外观。
+- 渴望俯视的真实 impact_x / floor_y 转全局落点；寄生同伴者按原 _fire() 的左右80、上64出射点与玩家胸口瞄准，持续读取发生在原导演物理优先级中。状态、音频触发、强弱判定、入场预警代码未改；当前持续更新实现成立，但其回归仍缺 R1。
+- 敌方墨色竖裂隙与友方青色光柱替代圈状入场；两 Boss 分别走墨色碎片爆散与暗红触须 / 青色逸出，不再直接放大出招预警。实际颜色 / 点 / 范围记录与绘制同源。用户第2次G4认可这些外观，记录明确。
+- Boss 身体上的绝对宽度断言替代原“与普通重提示整体跨度比”，符合本次有远距离瞄准线的设计；击败爆散相对普通击倒的范围、旧寿命上限与入场先后断言仍保留。
+
+## 独立专项与变异
+
+固定交付专项：ENEMY_CUES **56/0**、COMBAT_EFFECTS **50/0**、TEN_RESCUE **59/0**、AUDIO_EVENTS **137/0**。均退出0、无ERROR / WARNING。命令为 Godot `--headless --path game --fixed-fps 60 --script res://tests/<对应套件>.gd`。
+
+本轮额外独立变异10种，9种被断言拦下、1种动态更新缺口存活；不是照抄作者25项结果。临时源文件在每项后按原始字节恢复。结果与日志位于本工作区忽略目录 `codexandclaude/runs/fx002-g4-review-mutations.json`、`fx002-g4-review-mutant-*.txt`；移动探针与结果为 `fx002-g4-review-moving-target.py/json`。
+
+| 单点变异 | ENEMY_CUES 56项中的失败数 |
+| --- | --- |
+| 只删持续 `_aim()` | **0（R1）** |
+| 删眼部闪光绘制 | 1 |
+| 渴望俯视瞄准落点偏300像素 | 1 |
+| 寄生同伴者瞄准点向下偏移 | 1 |
+| 无色提示退回玩家命中外观 | 1 |
+| 所有敌人都走无色提示 | 8 |
+| 敌方入场画成重提示 | 1 |
+| 友方入场画成普通提示 | 2 |
+| Boss 死亡改为重提示绘制 | 3 |
+| 两场Boss统一渴望俯视爆散 | 1 |
+
+前两轮 N1 的冗余清理说明保留，本轮未重复其细帧探针，不把作者存活项等同于本轮新增的 R1。
+
+## 独立 G3 与未完成检查
+
+固定交付 G3 **110/110 + 67/67** 全通过，起止干净、content_stable=True。因已确认阻断回归缺口，本轮停止于专项 / 变异 / G3，**没有独立重跑本轮 full**，不把作者的 G2 99/99 冒充审查方结果。修复后需复审该用例并完成独立 full。审查记录提交后另跑 G3，结果随最终回报。
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`ccbf3d580b606cf687870ea39521b3fc563698c5`；工作区：`D:\31days\codexandclaude\worktrees\codex`。
+工作区状态：**干净**。
+开始：2026-10-25T15:34:37.365555+00:00；结束：2026-10-25T15:34:53.269784+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\codex\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际110 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\cmd\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`b4188b54d3f7dcec62525a903963b9666ea67c78`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`bff0e2ba37981889fe414f90fab9b2145667f134f25eacc711740db9135d2cd2`；工作区范围指纹（原始字节）：`cf75eb60406af75d62b02f54b7a3cc37098bea7282c9efd23d14fe18b684a9c9`。
+全工作区指纹：`89e479694bd5d1d8970b805f230660f7d4ea0be0214185c41a6e6c2a9e56f4ba`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\001.txt`；SHA256=`c5378ce0c2cc82a1befe78b4bb8e69a20ab3e0a292f72387b619facec0d2bede`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.281秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\cmd\\git.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.016秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.156秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\006.txt`；SHA256=`814f2e07e9f87077ccda4db397dc83fb8e94181bccf879e240056b65ef29a0c3`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=11.312秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\codex\codexandclaude\runs\20261025T153437.365555Z\007.txt`；SHA256=`3e49ad8256a129e4209b8e11f521208d298a11bad8d989b269c0d2971ba83cc8`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
