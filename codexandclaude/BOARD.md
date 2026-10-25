@@ -55,7 +55,7 @@
 | PLN-002 | M | 规划刷新（第八、九批收尾） | Claude | Codex | 已批准（第十批） | [tasks/PLN-002](tasks/PLN-002/task.md) |
 | DOC-010 | M | T4 改写为现行版 | Claude | Codex | 已批准（第十批） | [tasks/DOC-010](tasks/DOC-010/task.md) |
 | FX-002 | M | 其余视觉特效（出招提示、Boss 击败、增援、日期与倒计时） | Claude | Codex | 已批准（第十批） | [tasks/FX-002](tasks/FX-002/task.md) |
-| SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已批准（第十批） | [tasks/SYS-012](tasks/SYS-012/task.md) |
+| SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已完成 | [tasks/SYS-012](tasks/SYS-012/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 

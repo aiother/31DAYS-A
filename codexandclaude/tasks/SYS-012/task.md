@@ -1,6 +1,6 @@
 # SYS-012：关键演出流程框架
 
-状态：待审查（2026-10-25，用户于 2026-10-24 批准）｜级别：L｜实现：Codex｜审查：Claude
+状态：已完成（2026-10-25；Claude 复审与用户 G4 通过并获授权合入，集成证据见 [integration.md](integration.md)）｜级别：L｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：d8fb7b9f690fb57b5bb1e73c03b5aabb167a61f6｜依赖：无（不需要正式演出资源）；与 Claude 的 PLN-002、DOC-010、FX-002 并行
 
 ## 目标
