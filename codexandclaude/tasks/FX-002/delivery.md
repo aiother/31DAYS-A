@@ -1,0 +1,127 @@
+# FX-002 交付记录：其余视觉特效
+
+状态：已交付，待审查；待用户 G4｜实现：Claude｜日期：2026-10-25
+
+## 固定对象
+
+- 基线：master `68e8a9993e1327a96720ad506eada8d9184cf33a`（PLN-002 合入后，含 SYS-012）。
+- 实现提交：`2c9d96bd7ca776378cfd4d1006de7293dc5418e3`（分支 `claude/FX-002`）。本记录与任务卡首部状态另行提交，不改实现文件。
+- 没有引用 DOC-010 分支。
+
+## 改动
+
+| 文件 | 改动 |
+| --- | --- |
+| `game/effects/combat_effects.gd` | 新增 5 种特效：`windup`（普通出招提示，循环）、`windup_heavy`（强力 / 重击 / Boss 出招提示，循环）、`boss_death`（1.2 秒）、`arrival_enemy` / `arrival_ally`（0.7 秒）。`spawn()` 增加可选 `size`（整体放大倍数，汇总记录带出）；新增 `stop_entry()`（结束单个循环）；被跟随的节点已释放时不再读它（原先会报 “previously freed instance”），循环特效随之结束 |
+| `game/effects/combat_effect_director.gd` | 出招提示：无色 / 单色 / 天人接 `attack_started`（与 SYS-011 警示音同一信号）开始；每个物理帧核对前摇状态，前摇结束（进入判定、被打断、被击倒、被移除）即收；两场 Boss 没有该信号，由同一核对在进入前摇的那一帧开始。Boss 击败放 `boss_death`；增援入场见下。导演 `process_physics_priority = 200`，在敌人之后核对 |
+| `colorless_visual.gd`、`monochrome_visual.gd`、`tian_visual.gd` | 删去灰盒前摇着色、方向线与强力弧；保留倒地、判定段、格挡、闪烁、冲刺等其余灰盒表现 |
+| `parasite_boss.gd` | 删去前摇红圈（整个 `_draw`，只剩注释）；状态与时机不变 |
+| `game/tests/test_enemy_cues.gd`（新增，首行登记） | 31 项，见“测试” |
+| `game/tests/test_combat_effects.gd` | 只改一条：“全部有限特效 1 秒内结束”改为“在各自寿命（最长者）内结束”，因为 `boss_death` 为 1.2 秒；等待帧数按最长寿命计算，其余不变 |
+| `game/tests/acceptance/fx002_cues.gd`（新增） | G4 验收入口 |
+| `game/docs/combat_effects.md` | 触发表加 4 行；新增“出招提示的时机（FX-002）”与“日期推进、最终倒计时与低生命”两节 |
+
+`overlook_boss.gd` 的落点地面标记保留：它表示“打在哪里”，不是“何时出招”，不属于被替换的前摇警示。
+
+## 逐条对照任务卡要求
+
+1. **敌人出招提示（G-07 视觉）**
+   - 普通提示：暖色光晕 + 珍珠白环 + 沿出招方向的暖色短痕，跟随敌人、脉动。
+   - 重提示：朱红光晕 + 两道朱红环 + 朱红短痕 + 朱红点，不含珍珠白；普通提示不含朱红。颜色差异由绘制记录断言（不由种类标签推断）。
+   - 判定一致：单色看 `strong_attack`，天人看 `attack_kind == HEAVY`，两场 Boss 一律用重提示（Boss 每一击都重，与 SYS-011 中 Boss 统一使用 `enemy.windup` 并不冲突：音频不区分 Boss，视觉用重提示突出分量）。Boss 提示按 2.5 倍画在身体中心。
+   - 时机：与音频同一物理帧开始（测试逐个比对帧号），前摇一结束就收。前摇时长与 AI 未动。
+2. **Boss 击败**：两场 Boss 被击败时放 `boss_death`（2.5 倍、1.2 秒，朱红环 + 珍珠白环 + 18 片碎屑），不再放普通 `enemy_death`。胜利流程与存档未动。
+3. **战场增援入场**：单位加入**已就绪**的战场房间时（新一波、最后一波友军、残留实体等）放入场特效——敌方朱红、友方青色；房间加载时就放好的单位不放。见“解释与取舍 1”。
+4. **日期推进、最终倒计时、低生命**：UI-002 的正式 HUD 已有换日纸签与换日前 3 分钟提示、最终战倒计时（加速与朱红警示）、最后 1 点生命的画面边缘朱红脉动（`game/ui/hud/formal_hud.gd`）。这三项已满足 T6-D1，未重复做，只在 `combat_effects.md` 写明归属。
+5. **文档**：已更新。
+
+## 解释与取舍（审查请重点看）
+
+1. **入场时序（T2 §11）**：T2 §11 写天人“入场特效结束后出现在战场”。本实现**没有改单位出现的时序**：单位在原来的时刻出现，入场特效与它同时开始（0.7 秒）；原有 1 秒波次预警不变。按任务卡要求 3，改时序须先与审查者确认，因此保留现状并在此提出。可选做法：（a）接受现状——预警 1 秒 + 入场特效已足够表达“出现”；（b）后续任务让单位在特效期间不可行动 / 不可被打，或延后 0.7 秒放入。实现者建议（a），T2 §11 的措辞在 BL-025 改写时一并对齐。
+2. **Boss 提示由轮询开始**：两场 Boss 没有 `attack_started` 信号，SYS-011 也是在其状态切换处直接发声。导演在敌人之后核对（优先级 200），因此提示与警示音在同一物理帧，测试已证明；不给 Boss 加信号，避免动 Boss 脚本的状态部分。
+3. **被移除敌人的提示**：两道保险——`CombatEffects` 在跟随对象释放时结束循环，导演也会清掉实例已失效的提示。变异“被移除敌人的提示继续”因此存活，属于等价变异（见下表）。
+
+## 测试
+
+`ENEMY_CUES_TESTS` 31/0，真实场景、真实 AI 或真实动作入口、60 帧物理：
+
+- 无色：普通提示恰在真实前摇期间显示（逐帧比对，零错位），警示音与 `attack_started` 同帧；前摇被打断、前摇中被击倒、前摇中被释放，提示都随之消失、不报错。
+- 单色：强力与普通各出一次招，强力为重提示、普通为普通提示，各自与自己的警示音同帧；重提示不画珍珠白、普通提示不画朱红；图元数量符合。
+- 天人：经 `_start_attack(kind)` 触发轻击与重击，提示种类与 `enemy.windup.tian` / `_heavy` 一致且同帧。
+- 两场 Boss：在会话同样的物理步内 `start_combat`，提示只在前摇期间出现、为重提示、2.5 倍、与警示音同帧；击败放 `boss_death`（比普通击倒更久、含朱红）且不放 `enemy_death`。
+- 入场：真实 `FinalBattlefieldRoom`：加载时不放；`replace_wave()` 放敌方入场；最后一波 `_begin_wave()` 放友方入场。
+- 有限特效全部按时结束，不留残余（FX-001 套件）。
+
+验收入口自检 `FX002_ACCEPTANCE_TESTS` 14/0。
+
+相关已有套件逐个复跑全部通过：combat_effects 49/0、audio_events 137/0、colorless 31/0、monochrome 45/0、tian 43/0、overlook_boss 48/0、parasite_boss 47/0、boss_ordinary 48/0、final_battle 29/0、final_retry 72/0、ten_rescue 58/0、character_animation 100/0、enemy_cards 42/0、cinematics 200/0、campaign 166/0、remnant_possibility 269/0。FX-001、SYS-011 的套件结果不变（FX-001 只有上表那一条按寿命等待的调整）。
+
+### 变异
+
+逐项只改一处，在独立的项目副本中跑本套件（不写工作区），结果 `codexandclaude/runs/fx002-mutations.json`（不入库）。全部语法有效：
+
+| 变异 | 结果 |
+| --- | --- |
+| 强力 / 普通提示画成一样 | 8 项失败 |
+| 提示不随前摇结束消失 | 10 项失败 |
+| 提示比警示音晚一个物理帧开始 | 9 项失败 |
+| Boss 击败只用普通击倒 | 4 项失败 |
+| Boss 不轮询（只靠信号） | 4 项失败 |
+| Boss 提示按普通大小画 | 2 项失败 |
+| 重提示画成珍珠白 | 1 项失败 |
+| 房间加载时的单位也放入场特效 | 1 项失败 |
+| 被移除敌人的提示继续（只删特效层的结束） | 0 项失败（等价：导演另有失效实例清理） |
+
+任务卡要求的 4 项（强 / 普通画成一样、不随前摇结束消失、与音频不同帧、Boss 击败只用普通击倒）都被拦下。开发中曾发现两处检查过松并已收紧：加载时不放入场的检查原先在检查前清了记录；重提示颜色原先只查“含朱红”，现在要求重提示不含珍珠白、普通提示不含朱红。
+
+## 全量检查
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`full`。
+被测SHA：`2c9d96bd7ca776378cfd4d1006de7293dc5418e3`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-25T13:09:35.034470+00:00；结束：2026-10-25T13:21:02.863589+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "full", "--jobs", "4"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G2：实际99 / 预期99；完整=True；通过=True。
+- G3:tests：实际110 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- godot：`4.7.2.stable.official.ed1daf0bf`；`D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`。
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`c0854de1378c16cb2beb5e5ef85abc638341a684`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`0e4665b39e50bbe14dfc8f36d37713045fb70ad54edb793c3b789c823413c8c2`；工作区范围指纹（原始字节）：`b07875ce3492d906f0808d91441b7aef5d36098f0d432c65f23356addbf649e1`。
+全工作区指纹：`1f2739dbb574e0ab1fb7d583613ec75eecbdf960fe7ac081f5d69ce6e164249f`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\001.txt`；SHA256=`1e49081127c484e2eeca4caa48015ef8eae88b0b2f095354e3812e1473e013d7`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--version"]`；退出=0；耗时=0.031秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\003.txt`；SHA256=`bf8803022b574250bb04dea65053a46b7c58570725316c1f7fe2aa6735706498`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.297秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\004.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.032秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\005.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.0秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\006.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\scripts\\verify_game.py", "--godot", "D:\\DMyself\\Godot_v4.7.2-stable_win64.exe\\Godot_v4.7.2-stable_win64_console.exe", "--project", "D:\\31days\\codexandclaude\\worktrees\\claude\\game", "--report", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\runs\\20261025T130935.034470Z\\engine.txt", "--jobs", "4"]`；退出=0；耗时=664.422秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\007.txt`；SHA256=`3ba95e0f974af4c379bb0294ae1c4e84a8a69a57db4e4daeba2402bb79926c23`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.156秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\008.txt`；SHA256=`2686c33d44fb88e071071e9a5276cd4fc375932246002226c9e857fe341e2d1d`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=18.406秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\009.txt`；SHA256=`3533978246f7e3581eef7711df8f7d5040aa848250466b4669b20dbd12446c19`。
+- 报告 `D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261025T130935.034470Z\engine.txt` SHA256=`9c580f6ccc462ef8214965dfbe5cf83763fa784e5479bac6d29e53ad14b0d156`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 用户 G4
+
+入口：`game/tests/acceptance/fx002_cues.gd`（通用 G4 启动器，三个独立临时存档，关闭窗口自动清理）：
+
+- 槽1 第1日第二间：向右遇到无色实体，看普通出招提示；
+- 槽2 中心战场前（已救 10）：进入战场打天人与单色，看重击 / 强力提示与普通提示能否一眼分清；打完一波看下一波敌人的朱红入场与最后一波友军的青色入场；
+- 槽3 寄生同伴者检查点：Boss 战，看 Boss 出招提示与击败爆散。
+
+请看：出招提示是否易读、强弱是否分得清；Boss 击败是否够分量；增援入场是否合适（并请对“解释与取舍 1”的入场时序给出决定）。
