@@ -103,11 +103,13 @@ class PlanningDocumentsTests(unittest.TestCase):
             self.assertIn(rule, t1)
         # Growth: help given before 7's gaze is recorded and settled on the first gaze (T3 rescue revisions).
         self.assertIn("获得注视前完成的有效帮助先记录，首次获得注视时统一结算", t1)
-        # Ten's rescue: cite the current three-condition revision, never the old two-condition section.
-        self.assertIn("2026-10-16追加修订：10一次性救场与协同测试", t1)
+        # Ten's rescue: T2 is a current spec (DOC-008), its rule lives in T2 section 10;
+        # T1 cites that section, never the old revision title or the two-condition wording.
+        rescue = t1.split("### 4.2")[1].split("### 4.3")[0]
+        self.assertIn("见T2第10节", rescue)
         for trigger in ("致命攻击", "两名幸存者均到达后全部倒下", "第二波兜底"):
-            self.assertIn(trigger, t1.split("### 4.2")[1].split("### 4.3")[0])
-        for stale in ("T2第10节", "幸存者死亡达到一半", "幸存者战士损失达到一半"):
+            self.assertIn(trigger, rescue)
+        for stale in ("2026-10-16追加修订：10一次性救场与协同测试", "幸存者死亡达到一半", "幸存者战士损失达到一半"):
             self.assertNotIn(stale, t1)
 
     def test_t2_is_current_spec_with_change_log(self):
@@ -283,12 +285,83 @@ class PlanningDocumentsTests(unittest.TestCase):
             self.assertIn(rule, t3)
 
     def test_t3_unresolved_edges_are_visible(self):
-        section = self.docs["T3"].split("## 12.")[1].split("## 13.")[0]
-        for edge in ("剧情奖励", "透支边界", "连闪计时", "主动中止恢复",
-                     "死亡保留", "重复帮助", "保底实体"):
+        t3 = self.docs["T3"]
+        section = t3.split("\n## 12. ")[1].split("\n## 13. ")[0]
+        # Still open: kept in section 12.
+        for edge in ("保底实体", "资源不足的闪避", "随日期的内容变化"):
             self.assertIn(edge, section)
         self.assertIn("不将存在未决边界等同于已经证明无软锁", section)
-        self.assertIn("游戏运行验收须在实现后完成", self.docs["T3"])
+        self.assertIn("游戏运行验收须在实现后完成", t3)
+        # Settled (B-001 to B-003): written as rules in their sections, no longer open.
+        for settled in ("剧情奖励：", "透支边界", "连闪计时", "主动中止恢复", "死亡保留", "重复帮助"):
+            self.assertNotIn(settled, section)
+
+    def test_t3_is_current_spec_with_change_log(self):
+        t3 = self.docs["T3"]
+        self.assertIn("现行版更新：", t3)
+        self.assertNotRegex(t3, r"【20\d\d-")
+        self.assertNotRegex(t3, r"(?m)^\*\*20\d\d-")
+        self.assertNotRegex(t3, r"(?m)^## 20\d\d")
+        headings = re.findall(r"^## (\d+)\. (.+)$", t3, re.M)
+        # Sections 1-13 keep their numbers and titles (other documents cite "T3 §N").
+        self.assertEqual([title for _, title in headings],
+                         ["系统目标与资源循环", "基础属性与透支额度", "可能性获取与上限", "可能性消耗与连闪",
+                          "恢复系统", "玩家受伤", "玩家输出与敌人生命", "成长系统", "7的注视与任务选择",
+                          "死亡系统与复活保护", "资源防卡死", "实现前需明确的边界", "设计验收与验证重点", "变更记录"])
+        body, log = t3.split("## 14. 变更记录")
+        self.assertIn("| 日期 | 变更 | 来源 |", log)
+        for date in ("2026-10-07", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18",
+                     "2026-10-19", "2026-10-21", "2026-10-24"):
+            self.assertIn(f"| {date} |", log)
+        self.assertIn("DOC-009", log)
+        self.assertIn("修订前的2倍", log)
+        for stale in ("V0.1永久属性成长只开放可能性上限", "V0.1不新增Boss", "不新增正式削韧数值系统或Boss",
+                      "原表数值填写10", "结算口径见第12节", "原表没有明确", "自然日期不会自动判NPC死亡",
+                      "仍待接入", "尚未交付", "尚未实现", "仍未接入", "珍珠仍为持久占位", "实施标记",
+                      "以本轮确认数值为准", "覆盖原表恢复5生命", "本轮明确采用"):
+            with self.subTest(stale=stale):
+                self.assertNotIn(stale, body)
+
+        def section(number):
+            return body.split(f"\n## {number}. ")[1].split(f"\n## {number + 1}. ")[0]
+
+        checks = {
+            2: ("近战攻击范围", "闪避速度", "140%", "10的生命上限成长不正式开放", "从顶部顺时针填充",
+                "只改变显示方式，不改变消耗、透支下限或其他规则"),
+            3: ("每位NPC只发一次", "首次见7的剧情（TY_10001_1_N002）结束后补满可能性，此时不获得注视",
+                "返回7完成注视结算（TY_10001_1_N005）时获得注视，上限10→12", "余额不额外补满",
+                "不另发固定+10，两种奖励不叠加", "单个死亡实例只结算一次"),
+            4: ("1.3秒从上一次实际滑步发动起计算，无效按键不重置计时", "扣费会低于-9时拒绝本次滑步",
+                "到达-9后不能继续滑步", "720→900", "旧存档已有击败记录时自动补发一次", "保存失败不启用"),
+            5: ("提前松键均不退还已扣3可能性", "5.1 应急药包", "每次消耗1个恢复2生命", "满血时不消耗",
+                "不扣可能性、不提供无敌", "携带上限3、初始0，死亡保留", "旧存档不补发", "整体回滚"),
+            7: ("长按跳跃最大高度的50%", "15/17生命", "渴望俯视与寄生同伴者两场Boss战"),
+            8: ("麦秆镇幸存者", "HD_20001_2", "HD_20001_3", "NSZC_10001_1", "各发一次+4、各计一次成长",
+                "同一NPC不能用两种帮助方式各领一次", "先提升上限，再把+4资源按新上限截断",
+                "上限的+1延迟到首次获得注视时统一结算", "余额为零或负数时同样发放", "保存失败整体回滚并可重试"),
+            9: ("返回7完成注视结算（TY_10001_1_N005）时立即永久生效",
+                "首次见7的剧情（TY_10001_1_N002）只补满可能性，不获得注视",
+                "清敌前可确认永久放弃并撤回", "死亡与读档不视为主动放弃", "80像素宽尖刺窄道",
+                "保留本次闪避消耗及连闪计时", "不新增Room或检查点，沿用HD_20003_1_N003",
+                "gate:NSZC_10001_1:spikes_cleared", "进入第3日时过期", "第3日剩余时间归零时过期",
+                "过期的救助不发+4、不提高上限", "已见过、尚未救助且未主动放弃的NPC永久保留一次救助机会"),
+            10: ("Boss未击败时死亡重置该场Boss战，击败后永久保留击败记录", "正常退出后重进保留资源，不执行死亡扣减，也不发放复活无敌",
+                 "恢复本日30分钟", "不补满、不执行死亡扣减", "不赠送30分钟", "3→1、5→2"),
+        }
+        for number, rules in checks.items():
+            text = section(number)
+            for rule in rules:
+                with self.subTest(section=number, rule=rule):
+                    self.assertIn(rule, text)
+        # Save-compatibility rules in both directions (DOC-008 review lesson).
+        # Review R1: the gaze comes at the return to 7 after the rescue, never at the first scene.
+        self.assertNotIn("完成7剧情后立即永久生效", body)
+        for wrong in ("N002）结束后立即获得注视", "N002）结束后获得注视", "N002）结束后即获得注视", "首见即获得注视"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, body)
+        for wrong in ("旧存档补发药包", "药包死亡清空", "过期仍发+4", "注视前帮助立即提高上限"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, body)
 
     def test_t4_clock_and_day_transitions(self):
         t4 = self.docs["T4"]
