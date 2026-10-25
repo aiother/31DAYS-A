@@ -378,12 +378,69 @@ class PlanningDocumentsTests(unittest.TestCase):
                      "允许玩家反复往返场景", "不设一次性奖励上限",
                      "时间可感知", "时间推动剧情", "可扩展性"):
             self.assertIn(rule, t4)
-        section = t4.split("## 9.")[1].split("## 10.")[0]
-        for edge in ("日期推进", "Day2线索BOSS", "临界计时", "超时结算", "刷新额度", "配置与存档"):
+        section = t4.split("\n## 9. ")[1].split("\n## 10. ")[0]
+        # Still open (A-004, A-005): kept in section 9.
+        for edge in ("随日期的敌人构成与地形变体", "世界变化的其他表现"):
             self.assertIn(edge, section)
         self.assertIn("本次不擅自新增制作项", section)
         self.assertIn("T0不做多结局", section)
         self.assertIn("不推定退出游戏后的现实时间继续计时", section)
+        # Settled by B-007..B-010: written as rules, no longer open edges.
+        for settled in ("Day2线索BOSS", "临界计时：", "超时结算：", "刷新额度", "配置与存档："):
+            self.assertNotIn(settled, section)
+
+    def test_t4_is_current_spec_with_change_log(self):
+        t4 = self.docs["T4"]
+        self.assertIn("现行版更新：", t4)
+        self.assertNotRegex(t4, r"【20\d\d-")
+        self.assertNotRegex(t4, r"(?m)^\*\*20\d\d-")
+        self.assertNotRegex(t4, r"(?m)^## 20\d\d")
+        self.assertNotIn("后续配置更新", t4)
+        headings = re.findall(r"^## (\d+)\. (.+)$", t4, re.M)
+        self.assertEqual([title for _, title in headings],
+                         ["时间系统目标", "时间核心与暂停", "V0.1三天结构", "时间压力与资源刷新", "世界变化",
+                          "剧情时间与玩家认知", "31天扩展方向（不纳入V0.1制作）", "T4设计验收",
+                          "实现前需明确的衔接边界", "变更记录"])
+        body, log = t4.split("## 10. 变更记录")
+        self.assertIn("| 日期 | 变更 | 来源 |", log)
+        for date in ("2026-10-08", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17",
+                     "2026-10-18", "2026-10-19", "2026-10-21", "2026-10-25"):
+            self.assertIn(f"| {date} |", log)
+        self.assertIn("DOC-010", log)
+        # B-005: the sentence contradicting the date batch is gone.
+        for stale in ("自然日期不会自动判NPC死亡", "不新增Boss范围存在冲突", "触发10剧情时启动15分钟倒计时",
+                      "具体时间阶段修正未给出数值", "仍需明确", "尚未实现", "待细则落实", "未随本轮扩展",
+                      "同帧归零与击杀超时优先", "仅事件日期"):
+            with self.subTest(stale=stale):
+                self.assertNotIn(stale, body)
+
+        def section(number):
+            return body.split(f"\n## {number}. ")[1].split(f"\n## {number + 1}. ")[0]
+
+        checks = {
+            2: ("剧情进行时暂停时间", "打开菜单时暂停时间", "普通对话、救助放弃确认、死亡动画与死亡菜单期间也停表",
+                "普通战斗与不锁操作的敌人首见介绍卡照常计时", "不计算玩家离线的现实时间",
+                "日期至少为第2日", "日期至少为第3日", "不重复补时，也不倒退", "保存失败整体回滚（含时钟）",
+                "`day_remaining`", "每0.5秒", "这只是画面表现", "不改变计时规则、预算或存档字段"),
+            3: ("寄生同伴者（HD_20003_1）", "最终战正式开战时启动最终战15分钟倒计时",
+                "最终战预算取15分钟与第3日剩余的较小值", "暂停、剧情、死亡菜单期间不扣时",
+                "死亡与正常读档不回补最终战预算", "同帧归零与击杀时胜利优先", "最终胜利保存后永久开放唯一返回路并停止计时",
+                "不自动授予战斗胜利"),
+            4: ("恢复本日30分钟", "不补满、不执行死亡扣减", "继续保持超时状态与0余量", "不重复救场与补满",
+                "原预算为0时只能换槽或新游戏", "不赠送30分钟", "Esc与通用继续入口不能绕过明确的重试确认"),
+            5: ("15/17", "110%/120%", "90%/80%", "跨日不修改已生成单位", "进入第3日立即过期",
+                "外围救助在第3日剩余归零时过期", "已见过、尚未救助且未主动放弃的NPC永久保留一次救助机会"),
+        }
+        for number, rules in checks.items():
+            text = section(number)
+            for rule in rules:
+                with self.subTest(section=number, rule=rule):
+                    self.assertIn(rule, text)
+        # Stage words: the final budget starts at the formal start, not at the 10 scene.
+        self.assertIn("**正式开战**专指最终战开始计算最终战预算的时刻，不是进入逆时战场或触发10剧情的时刻", body)
+        for wrong in ("进入逆时战场时启动", "触发10剧情时启动", "死亡与正常读档回补", "超时优先"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, body)
 
     def test_t4_world_changes_and_full_game_separation(self):
         t4 = self.docs["T4"]
