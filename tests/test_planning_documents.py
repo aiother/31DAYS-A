@@ -325,7 +325,8 @@ class PlanningDocumentsTests(unittest.TestCase):
         checks = {
             2: ("近战攻击范围", "闪避速度", "140%", "10的生命上限成长不正式开放", "从顶部顺时针填充",
                 "只改变显示方式，不改变消耗、透支下限或其他规则"),
-            3: ("每位NPC只发一次", "7剧情（TY_10001_1_N002）结束后补满可能性", "余额不额外补满",
+            3: ("每位NPC只发一次", "首次见7的剧情（TY_10001_1_N002）结束后补满可能性，此时不获得注视",
+                "返回7完成注视结算（TY_10001_1_N005）时获得注视，上限10→12", "余额不额外补满",
                 "不另发固定+10，两种奖励不叠加", "单个死亡实例只结算一次"),
             4: ("1.3秒从上一次实际滑步发动起计算，无效按键不重置计时", "扣费会低于-9时拒绝本次滑步",
                 "到达-9后不能继续滑步", "720→900", "旧存档已有击败记录时自动补发一次", "保存失败不启用"),
@@ -335,7 +336,9 @@ class PlanningDocumentsTests(unittest.TestCase):
             8: ("麦秆镇幸存者", "HD_20001_2", "HD_20001_3", "NSZC_10001_1", "各发一次+4、各计一次成长",
                 "同一NPC不能用两种帮助方式各领一次", "先提升上限，再把+4资源按新上限截断",
                 "上限的+1延迟到首次获得注视时统一结算", "余额为零或负数时同样发放", "保存失败整体回滚并可重试"),
-            9: ("清敌前可确认永久放弃并撤回", "死亡与读档不视为主动放弃", "80像素宽尖刺窄道",
+            9: ("返回7完成注视结算（TY_10001_1_N005）时立即永久生效",
+                "首次见7的剧情（TY_10001_1_N002）只补满可能性，不获得注视",
+                "清敌前可确认永久放弃并撤回", "死亡与读档不视为主动放弃", "80像素宽尖刺窄道",
                 "保留本次闪避消耗及连闪计时", "不新增Room或检查点，沿用HD_20003_1_N003",
                 "gate:NSZC_10001_1:spikes_cleared", "进入第3日时过期", "第3日剩余时间归零时过期",
                 "过期的救助不发+4、不提高上限", "已见过、尚未救助且未主动放弃的NPC永久保留一次救助机会"),
@@ -348,6 +351,11 @@ class PlanningDocumentsTests(unittest.TestCase):
                 with self.subTest(section=number, rule=rule):
                     self.assertIn(rule, text)
         # Save-compatibility rules in both directions (DOC-008 review lesson).
+        # Review R1: the gaze comes at the return to 7 after the rescue, never at the first scene.
+        self.assertNotIn("完成7剧情后立即永久生效", body)
+        for wrong in ("N002）结束后立即获得注视", "N002）结束后获得注视", "N002）结束后即获得注视", "首见即获得注视"):
+            with self.subTest(wrong=wrong):
+                self.assertNotIn(wrong, body)
         for wrong in ("旧存档补发药包", "药包死亡清空", "过期仍发+4", "注视前帮助立即提高上限"):
             with self.subTest(wrong=wrong):
                 self.assertNotIn(wrong, body)
