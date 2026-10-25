@@ -7,6 +7,25 @@ var directories: Array[String] = []
 var directory: String
 var seen: Dictionary = {}
 var serial: int = 910000
+# Independent expectations from the pre-refactor session behaviour, not catalog defaults.
+# Columns: control lock, hidden formal HUD, stopped clocks, story music.
+const EXPECTED_POLICY: Dictionary = {
+	"opening": [true,false,true,true],
+	"boss.overlook": [true,false,true,true],
+	"boss.parasite": [true,false,true,true],
+	"seven.first": [true,true,true,true],
+	"seven.gaze": [true,true,true,true],
+	"ten.rescue": [true,true,true,true],
+	"final.start": [true,false,true,true],
+	"final.win": [false,false,true,false],
+	"final.talk": [true,true,true,true],
+	"ending": [true,true,true,true],
+	"ending.finished": [true,true,true,true],
+	"world.save": [true,false,true,true],
+	"legacy.lock": [true,false,true,true],
+	"ordinary.dialogue": [false,false,true,true],
+}
+var policy_checked: Dictionary = {}
 class PauseProbe:
 	extends Node
 	var flow: CinematicDirector
@@ -83,22 +102,28 @@ func fresh(checkpoint: String = "", events: Dictionary = {}, day: int = 1, balan
 	await frames(2)
 func policy(id: String) -> void:
 	await frames(2)
+	var expected: Array = EXPECTED_POLICY[id]
 	var view: Dictionary = session.cinematic_state()
-	check(view["id"] == id and view["active"], id + " is driven by the common entry")
-	check(session.player.life.scripted_control_locked == view["locks_control"], id + " control lock matches policy query")
-	check((session.ui.get("_hud") as Control).visible == not bool(view["hides_hud"]), id + " formal HUD matches policy query")
+	check((view["id"] == "" and not view["active"] and session.dialogue_ui.active) if id == "ordinary.dialogue" else (view["id"] == id and view["active"]), id + " is reached through its real flow")
+	var locked: bool = session.player.life.scripted_control_locked
+	check(locked == expected[0] and view["locks_control"] == locked, id + " actual control lock and query match the independent expectation")
+	var hidden: bool = not (session.ui.get("_hud") as Control).is_visible_in_tree()
+	check(hidden == expected[1] and view["hides_hud"] == hidden, id + " actual formal HUD and query match the independent expectation")
 	var audio: AudioEventService = root.get_node("AudioEvents") as AudioEventService
-	check((audio.music == "story") == bool(view["story_music"]), id + " actual music context matches policy query")
+	var story: bool = audio.music == "story"
+	check(story == expected[3] and view["story_music"] == story, id + " actual music context and query match the independent expectation")
 	var day: float = DayClock.remaining(session.data)
 	var final: float = float(session.data.get("final_remaining",900.0))
 	await frames(3)
-	check(DayClock.remaining(session.data) == day and float(session.data.get("final_remaining",900.0)) == final, id + " pauses actual day and final clocks")
+	var stopped: bool = DayClock.remaining(session.data) == day and float(session.data.get("final_remaining",900.0)) == final
+	check(stopped == expected[2] and view["pauses_clock"] == stopped, id + " actual day and final clocks and query match the independent expectation")
 	var left: float = session.cinematics.state()["remaining"]
 	check(not session.cinematics.request_skip() and session.cinematics.state()["remaining"] == left, id + " has no new skip operation")
 	var detached: Dictionary = session.cinematic_state()
 	detached["remaining"] = 10000.0
 	(detached["events"] as Array).append("invalid:ui_write")
 	check(session.cinematic_state()["remaining"] != 10000.0 and not "invalid:ui_write" in session.cinematic_state()["events"], id + " query returns detached values")
+	policy_checked[id] = true
 func pause_case(id: String) -> void:
 	var probe := PauseProbe.new()
 	probe.flow = session.cinematics
@@ -197,6 +222,7 @@ func seven_case() -> void:
 	session.player.reset_kinematics()
 	await frames(15)
 	await key(KEY_E)
+	await policy("ordinary.dialogue")
 	await dialogue()
 	check(bool(session.data["events"].get(FieldSession.RESCUE_DONE,false)), "real free rescue dialogue earns the prerequisite")
 	session.room.exit_requested.emit(FieldSession.FIELD_ID)
@@ -331,6 +357,31 @@ func final_case() -> void:
 	await key(KEY_E)
 	check(paused and session.final_ui.mode == "finished" and bool(session.store.load_slot(1)["events"].get(FinalClock.END,false)), "ending retry commits END before the finished sheet")
 	check(session.cinematic_state()["id"] == "ending.finished" and not session.cinematic_state()["can_skip"], "saved ending terminates in a locked outcome, not a replayable clip")
+	await policy("ending.finished")
+func outskirts_case() -> void:
+	var events: Dictionary = {}
+	for name: String in [ParasiteSession.PARASITE_INTRO,ParasiteSession.PARASITE_DEFEATED,ParasiteSession.PARASITE_PASSAGE,ParasiteSession.DODGE_GROWTH]: events[name] = true
+	await fresh(ParasiteSession.PARASITE_CHECKPOINT,events,3,9)
+	session.room.exit_requested.emit(OutskirtsSession.OUTSKIRTS_ID)
+	await frames(4)
+	session.player.position = Vector2(2196,848)
+	session.player.reset_kinematics()
+	session.player.facing = 1
+	await frames(3)
+	var good: String = session.store.directory
+	session.store.directory = good.path_join("slot_1.json")
+	await key(KEY_K)
+	await frames(12)
+	check(session._spike_pending and (session.room as OutskirtsRoom).pending_open, "real upgraded dodge earns the outskirts gate before its save failure")
+	await policy("world.save")
+	session.store.directory = good
+	await key(KEY_E)
+	check(not session.cinematics.active() and bool(session.store.load_slot(1)["events"].get(OutskirtsSession.SPIKES_OPEN,false)), "real E commits the gate and releases its common save lock")
+	# The only entry for this compatibility item is the old public property itself.
+	session.intro_active = true
+	await policy("legacy.lock")
+	session.intro_active = false
+	check(not session.cinematics.active() and not session.player.life.scripted_control_locked, "compatibility property releases its own lock")
 func run() -> void:
 	await opening_case()
 	await boss_case(BossSession.BOSS_CHECKPOINT,"boss.overlook",BossSession.BOSS_INTRO)
@@ -338,9 +389,11 @@ func run() -> void:
 	await seven_case()
 	await gaze_death_case()
 	await final_case()
+	await outskirts_case()
 	await replacement_case()
-	for id: String in ["opening","boss.overlook","boss.parasite","seven.first","seven.gaze","ten.rescue","final.start","final.win","final.talk","ending","ending.finished"]:
-		check(seen.has(id), "real session visited common flow " + id)
+	check(CinematicCatalog.ITEMS.size() == EXPECTED_POLICY.size()-1 and CinematicCatalog.ITEMS.keys().all(func(id: String) -> bool: return EXPECTED_POLICY.has(id)), "every catalog item has independent policy expectations and a required real flow case")
+	for id: String in EXPECTED_POLICY:
+		check(policy_checked.has(id) and (id == "ordinary.dialogue" or seen.has(id)), "real flow inspected all four independent policies for " + id)
 	await close_scene()
 	(root.get_node("AudioEvents") as AudioEventService).stop_all()
 	await process_frame
