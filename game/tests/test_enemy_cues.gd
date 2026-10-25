@@ -282,21 +282,36 @@ func boss_cases() -> void:
 		var wound: Array[int] = [-1]
 		# Each frame of the wind-up: does the drawn cue point where the blow
 		# will really go? (G4 2026-10-25: the Boss cue pointed the wrong way.)
-		var aim: Dictionary = {"frames": 0, "wrong": 0, "body": 0.0}
+		var aim: Dictionary = {"frames": 0, "wrong": 0, "body": 0.0, "moved": -1, "after": 0, "after_wrong": 0}
 		var result: Dictionary = await watch(boss, 600, func() -> bool:
 			if CombatEffectDirector._winding(boss) and wound[0] < 0: wound[0] = Engine.get_physics_frames()
 			if CombatEffectDirector._winding(boss):
 				for r: Dictionary in fx.drawn:
 					if r["kind"] == "windup_heavy":
+						# Skip the frame right after the move: what was drawn then
+						# was laid out before the director's next physics step.
+						if int(aim["moved"]) >= 0 and Engine.get_physics_frames() - int(aim["moved"]) < 2:
+							continue
 						aim["frames"] += 1
-						if not boss_aim_ok(boss, arena, r): aim["wrong"] += 1
+						var ok: bool = boss_aim_ok(boss, arena, r)
+						if not ok: aim["wrong"] += 1
+						if int(aim["moved"]) >= 0:
+							aim["after"] += 1
+							if not ok: aim["after_wrong"] += 1
 						aim["body"] = maxf(float(aim["body"]), body_width(boss, r))
+				# Halfway through the wind-up the player switches to the Boss's
+				# other side (review round 3): the cue has to follow every frame.
+				if int(aim["moved"]) < 0 and int(aim["frames"]) >= 8:
+					aim["moved"] = Engine.get_physics_frames()
+					body.global_position.x = boss.global_position.x - signf(body.global_position.x - boss.global_position.x) * 360.0
+					body.velocity = Vector2.ZERO
 			return wound[0] >= 0 and not CombatEffectDirector._winding(boss))
 		var sound: Dictionary = last_windup_sound()
 		check(wound[0] >= 0 and result["mismatch"] == 0 and result["kinds"].keys() == ["windup_heavy"], path.get_file() + " winds up with the heavy cue only while winding up")
 		check(int(sound.get("physics_frame", -1)) == wound[0] and sound.get("event") == "enemy.windup", path.get_file() + " cue appears in the frame of its warning sound")
 		var rows: Array[Dictionary] = seen("windup_heavy")
 		check(not rows.is_empty() and int(aim["frames"]) > 10 and int(aim["wrong"]) == 0, path.get_file() + " cue points where the blow really goes (%d frames, %d wrong)" % [aim["frames"], aim["wrong"]])
+		check(int(aim["after"]) >= 6 and int(aim["after_wrong"]) == 0, path.get_file() + " cue keeps pointing the right way after the player switches sides mid-wind-up (%d frames after, %d wrong)" % [aim["after"], aim["after_wrong"]])
 		check(float(aim["body"]) >= (120.0 if boss is OverlookBoss else 80.0), path.get_file() + " cue on the Boss itself is drawn at Boss size (%.0f px wide)" % aim["body"])
 		# Defeat: the Boss burst, not the ordinary one.
 		records.clear()
