@@ -97,6 +97,5 @@ func mark_defeated() -> void:
 	hurtbox.accepts_hits = false
 	$VisualRoot.hide()
 
-func _draw() -> void:
-	if state==State.WINDUP:
-		draw_circle(Vector2(0,-72),92,Color(0.8,0.2,0.25,0.25))
+# The wind-up warning is the FX-002 heavy cue drawn by CombatEffectDirector;
+# the Boss itself draws nothing extra.

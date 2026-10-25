@@ -12,11 +12,7 @@ func _draw() -> void:
 		draw_line(Vector2(-entity.facing*70,-40),Vector2(0,-40),Color(0.8,0.55,1,0.5),6)
 	elif entity.motion == MonochromeEntity.Motion.DASH:
 		draw_line(Vector2(-entity.facing*85,-40),Vector2(0,-40),Color(0.8,0.55,1,0.5),4)
-	if entity.state == ColorlessEntity.State.WINDUP:
-		color = Color(1,0.3,0.6) if entity.strong_attack else Color(1,0.8,0.4)
-		draw_line(Vector2(0,-40),Vector2(0,-40)+entity._attack_direction*95,color,4)
-		if entity.strong_attack:
-			draw_arc(Vector2(0,-40),42,0,TAU,24,color,3)
+	# The wind-up warning (ordinary / strong) is the FX-002 cue.
 	draw_colored_polygon(PackedVector2Array([Vector2(0,-86),Vector2(26,-64),Vector2(22,0),Vector2(-22,0),Vector2(-26,-64)]),color)
 	draw_circle(Vector2(entity.facing*12,-60),4,Color(0.15,0.07,0.2))
 	if entity.state == ColorlessEntity.State.ACTIVE and not entity._ranged:

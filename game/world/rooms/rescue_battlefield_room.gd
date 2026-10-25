@@ -92,7 +92,7 @@ func replace_wave() -> void:
 		child.queue_free()
 	for i: int in range(3):
 		var enemy: ColorlessEntity = (WARRIOR if i<2 else MONO).instantiate() as ColorlessEntity
-		enemy.position = Vector2(1050+i*270,896)
+		enemy.position = _wave_position(i)
 		enemy.target = target
 		enemy.coordinator = $AttackCoordinator
 		if enemy is TianWarrior:
@@ -100,6 +100,17 @@ func replace_wave() -> void:
 		$Enemies.add_child(enemy)
 		enemy.set_physics_process(false)
 		hostile_spawned.emit(enemy)
+
+func _wave_position(i: int) -> Vector2:
+	return Vector2(1050+i*270,896)
+
+## FX-002: where the next wave's units will appear (global), so the arrival
+## effect can finish before they do (T2 §11). Same positions as replace_wave().
+func upcoming_arrivals(_index: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for i: int in range(3):
+		out.append({"at": $Enemies.to_global(_wave_position(i)), "ally": false})
+	return out
 
 func start_coop(use_current_wave: bool = false) -> void:
 	rescue_done = true
