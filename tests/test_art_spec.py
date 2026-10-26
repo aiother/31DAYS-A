@@ -74,9 +74,9 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_enemies_keep_their_own_looks(self):
         table = self.style.split("### 6.2 各角色")[1].split("## 7.")[0]
-        for name, mark, sign in (("无色实体", "**没有脸**", "无脸 + 胸口停钟"),
-                                 ("单色实体", "只用**一种**强调色", "过长 + 背上钢筋 + 紫缝"),
-                                 ("天人战士", "**金色面具**", "金色笑面 + 背后刃环"),
+        for name, mark, sign in (("无色实体", "**没有脸**", "无脸 + 全身纯墨的颠倒人体"),
+                                 ("单色实体", "只用**一种**强调色", "过长多肢的拱 + 紫缝"),
+                                 ("天人战士", "**夸张的笑**", "咧到耳根的金色笑面 + 刃环 + 制式光刃"),
                                  ("渴望俯视（Boss）", "**悬空的巨眼**", "人眼皮巨眼 + 窗框"),
                                  ("寄生同伴者（Boss）", "**口与触须**", "裂开的脸 + 背包触须")):
             with self.subTest(enemy=name):
@@ -89,13 +89,17 @@ class ArtSpecTests(unittest.TestCase):
     def test_enemy_principles_are_written_down(self):
         rules = self.style.split("### 6.1 敌人设计原则")[1].split("### 6.2")[0]
         for phrase in ("**依稀可辨的人形**", "**嵌入的异物**", "**恐怖谷**", "**辨识度**",
-                       "**不受暖光**", "**动作抽帧**", "**惊悚、不血腥**", "**读招优先**"):
+                       "**不受暖光**", "**动作抽帧**", "**惊悚、不血腥**", "**读招优先**",
+                       "**不合常理的姿态与移动**", "**手持物（无色、单色实体）**", "**不限定品类、不固定搭配**",
+                       "**整齐划一的制式**"):
             with self.subTest(rule=phrase):
                 self.assertIn(phrase, rules)
         self.assertIn("**敌人不受暖光**", self.style.split("## 4. 光")[1].split("## 5.")[0])
         self.assertIn("**敌人抽帧**", self.spec)
         self.assertIn("`interp = 0`", self.spec)
         self.assertIn("`<对象>_part_embed_<名称>.png`", self.spec)
+        self.assertIn("`<对象>_part_item_<名称>.png`", self.spec)
+        self.assertIn("品类不设上限", self.spec)
 
     def test_enemy_prompts_drop_the_warm_light(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
@@ -106,7 +110,10 @@ class ArtSpecTests(unittest.TestCase):
                 self.assertIn(sentence.rstrip("."), text)
         self.assertNotIn("rim light (#f4b860)", text)
         self.assertIn("completely blank", text)
-        self.assertIn("stopped clock", text)
+        self.assertIn("[OBJECT]", text)
+        self.assertIn("[EMBED]", text)
+        self.assertIn("not meant to be a weapon", text)
+        self.assertIn("**不收束**", text)
 
 
 if __name__ == "__main__":

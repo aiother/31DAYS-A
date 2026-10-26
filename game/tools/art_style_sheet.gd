@@ -141,72 +141,98 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 func pt(feet: Vector2, k: float, x: float, y: float) -> Vector2:
 	return feet + Vector2(x, y) * k
 
-## Colourless: a faceless human with no colour of its own. Blank paper face,
-## over-long clawed arms, one knee bent backwards, melting legs, a stopped
-## clock grown into its chest.
+## Colourless: human parts in an order no human uses. Upside down, it walks
+## on its clawed hands, legs up in the air, the faceless head hanging under
+## the chest. What it carries and what is grown into it vary per individual
+## (here an umbrella hooked on a raised foot and a stopped clock in the chest).
 func colorless(ci: CanvasItem, feet: Vector2) -> void:
 	var k: float = 0.8
 	var ink: Color = Color(DuskStyle.INK, 0.94)
-	var torso: PackedVector2Array = PackedVector2Array([pt(feet, k, -16, -88), pt(feet, k, 10, -90), pt(feet, k, 12, -48), pt(feet, k, -8, -44)])
+	# Legs up in the air, one bent back down; drawn first, behind the torso.
+	stroke(ci, PackedVector2Array([pt(feet, k, -6, -78), pt(feet, k, -20, -96), pt(feet, k, -12, -114)]), ink, 7.0 * k, 202)
+	stroke(ci, PackedVector2Array([pt(feet, k, 8, -78), pt(feet, k, 26, -92), pt(feet, k, 34, -76)]), ink, 7.0 * k, 203)
+	# An umbrella hooked on the raised foot.
+	var tip: Vector2 = pt(feet, k, -30, -140)
+	InkDraw.rough_line(ci, pt(feet, k, -12, -114), tip, Color("4a403a"), 2.0, 204, 0.3)
+	var canopy: PackedVector2Array = PackedVector2Array()
+	for i: int in range(13):
+		var a: float = PI + PI * i / 12.0
+		canopy.append(tip + Vector2(cos(a) * 22, sin(a) * 11 + 6) * k)
+	ci.draw_colored_polygon(canopy, Color("5a4e46"))
+	stroke(ci, canopy + PackedVector2Array([canopy[0]]), DuskStyle.INK, 2.0, 205)
+	# Torso upside down: shoulders at the bottom, hips at the top.
+	var torso: PackedVector2Array = PackedVector2Array([pt(feet, k, -14, -40), pt(feet, k, 12, -42), pt(feet, k, 10, -80), pt(feet, k, -8, -78)])
 	ci.draw_colored_polygon(torso, ink)
 	stroke(ci, torso + PackedVector2Array([torso[0]]), DuskStyle.INK, 2.0, 201)
-	# Legs: the near knee bends the wrong way; both melt into drips.
-	stroke(ci, PackedVector2Array([pt(feet, k, -4, -46), pt(feet, k, -14, -24), pt(feet, k, -8, 0)]), ink, 7.0 * k, 202)
-	stroke(ci, PackedVector2Array([pt(feet, k, 6, -46), pt(feet, k, 18, -22), pt(feet, k, 6, 0)]), ink, 7.0 * k, 203)
-	for i: int in range(5):
-		var x: float = feet.x + (i - 2) * 7.0
-		InkDraw.rough_line(ci, Vector2(x, feet.y - 6), Vector2(x + 1, feet.y + 6 + i * 2), Color(DuskStyle.INK, 0.7), 2.5, 210 + i)
-	# Arms: too long, hanging past the knees, ending in claws.
-	for arm: Array in [[-1.0, 220], [1.0, 230]]:
-		var s: float = arm[0]
-		var hand: Vector2 = pt(feet, k, -30 + 8 * s, -8)
-		stroke(ci, PackedVector2Array([pt(feet, k, -4 + 10 * s, -84), pt(feet, k, -24 + 8 * s, -56), hand]), ink, 4.5 * k, arm[1])
+	# Arms as legs, the near elbow bent the wrong way, claws splayed on the ground.
+	for arm: Array in [[[-12, -42], [-24, -22], [-16, 0], 220], [[10, -42], [22, -24], [14, 0], 230]]:
+		var hand: Vector2 = pt(feet, k, arm[2][0], arm[2][1])
+		stroke(ci, PackedVector2Array([pt(feet, k, arm[0][0], arm[0][1]), pt(feet, k, arm[1][0], arm[1][1]), hand]), ink, 5.0 * k, arm[3])
 		for c: int in range(3):
-			InkDraw.rough_line(ci, hand, hand + Vector2(-6 - c * 2, 4 + c * 3), DuskStyle.INK, 1.8, int(arm[1]) + 5 + c)
-	# Head tilted forward; the face is a blank of paper, no features at all.
-	var head: Vector2 = pt(feet, k, -10, -102)
-	blob(ci, head, Vector2(10, 13) * k, ink, 240, 0.12)
-	blob(ci, head + Vector2(-4, 1) * k, Vector2(6, 10) * k, DuskStyle.PAPER_DAY, 241, 0.08)
-	# The stopped clock, grown into the chest.
-	var clock: Vector2 = pt(feet, k, 0, -72)
-	InkDraw.paper_disc(ci, clock, 7.0 * k, DuskStyle.PEARL, 250)
-	InkDraw.rough_circle(ci, clock, 7.0 * k, DuskStyle.INK, 2.0, 251)
-	InkDraw.rough_line(ci, clock, clock + Vector2(0, -5) * k, DuskStyle.INK, 1.5, 252)
-	InkDraw.rough_line(ci, clock, clock + Vector2(-4, 2) * k, DuskStyle.INK, 1.5, 253)
+			InkDraw.rough_line(ci, hand, hand + Vector2(-8 + c * 5, 2), DuskStyle.INK, 1.8, int(arm[3]) + 5 + c)
+	# The faceless head hangs under the chest, blank paper turned down and forward.
+	stroke(ci, PackedVector2Array([pt(feet, k, 0, -40), pt(feet, k, -2, -30)]), ink, 5.0 * k, 239)
+	var head: Vector2 = pt(feet, k, -3, -22)
+	blob(ci, head, Vector2(10, 12) * k, ink, 240, 0.12)
+	blob(ci, head + Vector2(-4, 3) * k, Vector2(6, 8) * k, DuskStyle.PAPER_DAY, 241, 0.08)
+	# A stopped clock grown into the chest, and ink dripping off the shoulders.
+	var clock: Vector2 = pt(feet, k, 0, -62)
+	InkDraw.paper_disc(ci, clock, 6.0 * k, DuskStyle.PEARL, 250)
+	InkDraw.rough_circle(ci, clock, 6.0 * k, DuskStyle.INK, 2.0, 251)
+	InkDraw.rough_line(ci, clock, clock + Vector2(0, -4) * k, DuskStyle.INK, 1.5, 252)
+	InkDraw.rough_line(ci, clock, clock + Vector2(3, 2) * k, DuskStyle.INK, 1.5, 253)
+	for i: int in range(3):
+		var drip: Vector2 = pt(feet, k, 6 + i * 3, -40)
+		InkDraw.rough_line(ci, drip, drip + Vector2(0, 8 + i * 4) * k, Color(DuskStyle.INK, 0.7), 2.0, 210 + i)
 
-## Single-colour: a stretched human. Limbs and neck too long with an extra
-## joint each, hunched; rebar pierces out of its back like extra legs; one
-## violet slit across the face, the only colour it has.
+## Single-colour: too long and too many. The torso is an arch walking on far
+## more than four over-long limbs; the head hangs upside down under the arch
+## with one violet slit for a face; rebar out of the back; one hand holds up
+## whatever it found (here a coat hanger). Violet is its only colour.
 func monochrome(ci: CanvasItem, feet: Vector2) -> void:
 	var k: float = 0.8
 	var ink: Color = Color(DuskStyle.INK, 0.92)
 	var violet: Color = DuskStyle.DUSK_TOP
-	var torso: PackedVector2Array = PackedVector2Array([pt(feet, k, 2, -62), pt(feet, k, 14, -64), pt(feet, k, 4, -100), pt(feet, k, -10, -96)])
-	ci.draw_colored_polygon(torso, ink)
-	stroke(ci, torso + PackedVector2Array([torso[0]]), violet, 2.5, 300)
-	# Legs and arms with one joint too many.
-	for leg: Array in [[0.0, 301], [10.0, 302]]:
-		var x: float = leg[0]
-		stroke(ci, PackedVector2Array([pt(feet, k, 6 + x, -62), pt(feet, k, 22 + x, -46), pt(feet, k, 4 + x, -26), pt(feet, k, 14 + x, 0)]), ink, 4.0 * k, leg[1])
-	for arm: Array in [[0.0, 305], [8.0, 306]]:
-		var x: float = arm[0]
-		stroke(ci, PackedVector2Array([pt(feet, k, -6 + x, -96), pt(feet, k, -22 + x, -76), pt(feet, k, -14 + x, -48), pt(feet, k, -36 + x, -22), pt(feet, k, -42 + x, -4)]), ink, 3.5 * k, arm[1])
-	# A long neck bent forward, a small head, a violet slit for a smile.
-	var head: Vector2 = pt(feet, k, -30, -108)
-	stroke(ci, PackedVector2Array([pt(feet, k, -4, -98), pt(feet, k, -16, -112), head + Vector2(6, 2) * k]), ink, 4.0 * k, 310)
-	blob(ci, head, Vector2(9, 7) * k, ink, 311, 0.1)
-	InkDraw.rough_line(ci, head + Vector2(-9, 1) * k, head + Vector2(8, 3) * k, violet.lightened(0.25), 2.5, 312)
-	# Rebar out of the back.
+	var arch: PackedVector2Array = PackedVector2Array([pt(feet, k, 40, -8), pt(feet, k, 28, -52), pt(feet, k, 4, -74), pt(feet, k, -22, -62), pt(feet, k, -42, -26)])
+	# Rebar out of the back, behind the arch.
 	for i: int in range(3):
-		var root_at: Vector2 = pt(feet, k, 6 + i * 3, -92 + i * 10)
-		InkDraw.rough_line(ci, root_at, root_at + Vector2(28 + i * 6, -30 + i * 14) * k, Color("4a403a"), 2.5, 320 + i, 0.3)
+		var root_at: Vector2 = arch[1].lerp(arch[2], 0.3 + i * 0.3)
+		InkDraw.rough_line(ci, root_at, root_at + Vector2(18 + i * 8, -34 + i * 6) * k, Color("4a403a"), 2.5, 320 + i, 0.3)
+	# Limbs: seven over-long legs with high knees, like a many-legged thing.
+	for i: int in range(7):
+		var t: float = 0.05 + 0.9 * i / 6.0
+		var seg: int = mini(int(t * 4.0), 3)
+		var root_at: Vector2 = arch[seg].lerp(arch[seg + 1], t * 4.0 - seg)
+		var side: float = -1.0 if i % 2 == 0 else 1.0
+		var knee: Vector2 = root_at + Vector2(side * 14, -18) * k
+		var foot: Vector2 = Vector2(root_at.x + side * 20 * k, feet.y)
+		stroke(ci, PackedVector2Array([root_at, knee, foot]), ink, 3.0 * k, 340 + i * 3)
+	stroke(ci, arch, ink, 11.0 * k, 300)
+	var rim: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in arch:
+		rim.append(p + Vector2(0, -5) * k)
+	stroke(ci, rim, violet, 2.5, 301)
+	# The neck drops from the top of the arch; the head hangs upside down.
+	var head: Vector2 = pt(feet, k, -10, -30)
+	stroke(ci, PackedVector2Array([arch[2], pt(feet, k, -4, -52), head + Vector2(2, -6) * k]), ink, 4.0 * k, 310)
+	blob(ci, head, Vector2(9, 7) * k, ink, 311, 0.1)
+	InkDraw.rough_line(ci, head + Vector2(-9, 2) * k, head + Vector2(8, 0) * k, violet.lightened(0.25), 2.5, 312)
+	# One arm held high with a coat hanger.
+	var hand: Vector2 = pt(feet, k, -34, -104)
+	stroke(ci, PackedVector2Array([arch[3], pt(feet, k, -40, -84), hand]), ink, 3.5 * k, 350)
+	var wire: Color = Color("6a6058")
+	InkDraw.rough_line(ci, hand, hand + Vector2(0, 6) * k, wire, 1.8, 351, 0.2)
+	var hanger: PackedVector2Array = PackedVector2Array([hand + Vector2(0, 6) * k, hand + Vector2(-16, 18) * k, hand + Vector2(16, 18) * k, hand + Vector2(0, 6) * k])
+	for i: int in range(3):
+		InkDraw.rough_line(ci, hanger[i], hanger[i + 1], wire, 1.8, 352 + i, 0.2)
 	# Dash streaks behind it stay violet (FX-002).
 	for i: int in range(3):
-		InkDraw.rough_line(ci, pt(feet, k, 30 + i * 6, -30 - i * 16), pt(feet, k, 66 + i * 12, -30 - i * 16), Color(violet, 0.6), 2.0, 330 + i)
+		InkDraw.rough_line(ci, pt(feet, k, 46 + i * 6, -20 - i * 16), pt(feet, k, 82 + i * 12, -20 - i * 16), Color(violet, 0.6), 2.0, 330 + i)
 
-## Tian warrior: ornate armour that is empty inside. A gold mask with a calm,
-## fixed smile on a tilted head, ink leaking from the joints, a halo of broken
-## blades grown into its back.
+## Tian warrior: ornate armour that is empty inside, every one identical. A gold
+## mask grinning from edge to edge with crescent eyes, ink leaking from the
+## joints, a halo of broken blades grown into its back, and a standard-issue
+## polearm: straight segmented shaft, geometric blade, a pearl light line.
 func tian(ci: CanvasItem, feet: Vector2) -> void:
 	var k: float = 0.8
 	# The halo sits behind the body, so it is drawn first.
@@ -217,27 +243,44 @@ func tian(ci: CanvasItem, feet: Vector2) -> void:
 		InkDraw.rough_line(ci, halo + dir * 16 * k, halo + dir * 34 * k, DuskStyle.GROWTH, 3.0, 405 + i, 0.3)
 	var f: Dictionary = figure(ci, feet, PLAYER_H * k, Color("3a302a"), 400, false)
 	var head: Vector2 = f["head"]
-	# Gold mask, tilted, with a fixed smile and two slit eyes.
-	var tilt: float = -0.35
-	InkDraw.paper_disc(ci, head, 11.0 * k, DuskStyle.GROWTH, 412)
-	InkDraw.rough_circle(ci, head, 11.0 * k, DuskStyle.INK, 2.0, 413)
+	# Gold mask, tilted; a grin from edge to edge with pearl teeth, crescent eyes.
+	var tilt: float = -0.3
+	InkDraw.paper_disc(ci, head, 12.0 * k, DuskStyle.GROWTH, 412)
+	InkDraw.rough_circle(ci, head, 12.0 * k, DuskStyle.INK, 2.0, 413)
+	var grin: PackedVector2Array = PackedVector2Array()
+	for i: int in range(9):
+		var t: float = -1.0 + 2.0 * i / 8.0
+		grin.append(head + Vector2(t * 11, -1.5 + 3.0 * (1.0 - t * t)).rotated(tilt) * k)
+	for i: int in range(9):
+		var t: float = 1.0 - 2.0 * i / 8.0
+		grin.append(head + Vector2(t * 11, -1.5 + 9.0 * (1.0 - t * t)).rotated(tilt) * k)
+	ci.draw_colored_polygon(grin, DuskStyle.INK)
+	for i: int in range(5):
+		var x: float = -6.0 + i * 3.0
+		InkDraw.rough_line(ci, head + Vector2(x, 1.5 + 2.5 * (1.0 - x * x / 121.0)).rotated(tilt) * k, head + Vector2(x, 4.5 + 3.5 * (1.0 - x * x / 121.0)).rotated(tilt) * k, DuskStyle.PEARL, 1.2, 440 + i, 0.1)
 	for e: float in [-1.0, 1.0]:
-		var eye: Vector2 = head + Vector2(e * 4.5 - 1, -2.5).rotated(tilt) * k
-		InkDraw.rough_line(ci, eye - Vector2(2, 0) * k, eye + Vector2(2, 0) * k, DuskStyle.INK, 1.5, 414 + int(e))
-	var smile: PackedVector2Array = PackedVector2Array()
-	for i: int in range(7):
-		var t: float = -1.0 + 2.0 * i / 6.0
-		smile.append(head + Vector2(t * 5 - 1, 3.0 + 2.0 * (1.0 - t * t)).rotated(tilt) * k)
-	for i: int in range(smile.size() - 1):
-		InkDraw.rough_line(ci, smile[i], smile[i + 1], DuskStyle.INK, 1.5, 416 + i, 0.15)
+		var c: Vector2 = Vector2(e * 5.0, -5.0)
+		var arc: PackedVector2Array = PackedVector2Array([head + (c + Vector2(-3, 1.5)).rotated(tilt) * k, head + (c + Vector2(0, -1.5)).rotated(tilt) * k, head + (c + Vector2(3, 1.5)).rotated(tilt) * k])
+		for i: int in range(2):
+			InkDraw.rough_line(ci, arc[i], arc[i + 1], DuskStyle.INK, 1.8, 414 + i + int(e) * 2, 0.1)
 	# Ink leaking from the hip and shoulder joints.
 	var joints: Array = [f["hip"] + Vector2(-9, 0) * k, f["hip"] + Vector2(9, 0) * k, f["neck"] + Vector2(-14, 6) * k]
 	for i: int in range(joints.size()):
 		var j: Vector2 = joints[i]
 		InkDraw.rough_line(ci, j, j + Vector2(1, 10 + i * 3) * k, Color(DuskStyle.INK, 0.8), 2.5, 420 + i)
-	# The long blade.
-	stroke(ci, PackedVector2Array([f["neck"] + Vector2(-16, 42) * k, f["neck"] + Vector2(-30, -40) * k]), DuskStyle.INK, 4.0, 430)
-	InkDraw.rough_line(ci, f["neck"] + Vector2(-28, -30) * k, f["neck"] + Vector2(-31, -44) * k, DuskStyle.GROWTH, 4.0, 431)
+	# Standard-issue polearm: straight, segmented, a pearl light line on the blade.
+	var low: Vector2 = f["neck"] + Vector2(-12, 50) * k
+	var high: Vector2 = f["neck"] + Vector2(-30, -40) * k
+	var d: Vector2 = (high - low).normalized()
+	var n: Vector2 = Vector2(-d.y, d.x)
+	InkDraw.rough_line(ci, low, high, DuskStyle.INK, 4.0, 430, 0.1)
+	for i: int in range(1, 5):
+		var p: Vector2 = low.lerp(high, i / 5.0)
+		InkDraw.rough_line(ci, p - n * 3.0, p + n * 3.0, DuskStyle.GROWTH, 2.0, 432 + i, 0.1)
+	var tip: Vector2 = high + d * 26 * k
+	var blade: PackedVector2Array = PackedVector2Array([high - n * 3.5 * k, high + n * 3.5 * k, tip + n * 1.5 * k, tip + d * 4 * k, tip - n * 1.5 * k])
+	ci.draw_colored_polygon(blade, DuskStyle.INK)
+	InkDraw.rough_line(ci, high + d * 2, tip + d * 2 * k, DuskStyle.PEARL, 1.8, 438, 0.05)
 
 ## Overlook (Boss, 250%): a hovering mass with one eye that has human lids and
 ## lashes, vermilion iris on the player; small eyes scattered over the mass;
@@ -368,8 +411,8 @@ func rules(ci: CanvasItem, at: Vector2) -> void:
 		"光：黄昏暖光从一侧（左）打来；人有暖色边光、暗部偏冷紫，敌人不受暖光。",
 		"明度：角色深、背景远景浅而淡；生命红与可能性青不做大面积底色。",
 		"敌人：依稀人形，肢体器官扭曲、嵌入异物，恐怖谷，动作抽帧；惊悚不血腥。",
-		"　无色＝无脸＋胸口停钟；单色＝过长多节＋背上钢筋＋紫缝；天人＝金色笑面＋刃环；",
-		"　渴望俯视＝人眼皮巨眼嵌在窗框里；寄生同伴者＝像幸存者，脸裂成口器、背包触须。",
+		"　无色＝无脸、颠倒的人体；单色＝过长多肢的拱＋紫缝；手持物取日常办公用品，不限品类；",
+		"　天人＝咧到耳根的金色笑面＋刃环＋制式光刃；渴望俯视＝窗框里的人眼；寄生＝裂开的脸。",
 		"特效沿用 FX-001 / FX-002，不重做；读招提示照常清楚。",
 	]
 	for i: int in range(lines.size()):
