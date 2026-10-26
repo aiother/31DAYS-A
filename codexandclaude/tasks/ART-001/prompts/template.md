@@ -30,6 +30,8 @@ A compressed, colourless remnant of a person: no colour of its own and no rim li
 
 设定图定稿后，所有后续图都附上设定图作为参考图，并加一句：`Match the reference image exactly in silhouette, colours and proportions.`
 
+新的实体（还没有设定图时）附一张已认可的实体图作为**风格参考图**（见 art_style.md 第 6.0 节），并加一句：`Style reference: match the attached reference image exactly in line, flat colouring, muted palette and the way the pale face-plate is drawn; do not copy its shape.`
+
 ## 5. 验收要点（中文，挑图用）
 
 - 轮廓：深墨线、有手绘抖动、外轮廓比内部线粗。

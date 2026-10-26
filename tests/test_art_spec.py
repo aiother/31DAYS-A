@@ -122,6 +122,8 @@ class ArtSpecTests(unittest.TestCase):
         section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
         self.assertIn("**所有人形角色 2.5 头身**", section)
         self.assertIn("**敌人造型语言参照《丝之歌》**", section)
+        self.assertIn("**实体共用一套视觉语言**", section)
+        self.assertIn("**风格参考图**", section)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
         self.assertIn("头高约为显示高度的 40%", self.spec)
@@ -137,7 +139,8 @@ class ArtSpecTests(unittest.TestCase):
                 self.assertIn(phrase, overlook)
         parasite = (PROMPTS / "05_boss_parasite.md").read_text(encoding="utf-8")
         for phrase in ("two FRONT halves joined at the waist", "both heads awake and in control", "pleading", "broken iron shackle",
-                       "#6e1f3a", "ring", "military field canteen", "this parasite end takes no warm light"):
+                       "#6e1f3a", "ring", "military field canteen", "this parasite end takes no warm light",
+                       "NOT as a realistic or anime child", "pale paper face-plate", "not glossy, not fleshy", "Style reference:"):
             with self.subTest(prompt="parasite", phrase=phrase):
                 self.assertIn(phrase, parasite)
         for text in (overlook, parasite):
