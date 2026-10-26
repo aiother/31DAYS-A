@@ -149,6 +149,25 @@ class ArtSpecTests(unittest.TestCase):
         for text in (overlook, parasite):
             self.assertIn("no dark background, no vignette, no glow", text)
 
+    def test_player_is_an_artisan_chief(self):
+        section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
+        self.assertIn("`Words/阶层设定.md`", section)
+        self.assertIn("**面甲是实体的标志**", section)
+        self.assertIn("**玩家是匠首**", section)
+        row = re.search(r"^\| 玩家（匠首） \|(.*)$", self.style, re.M).group(1)
+        for mark in ("**深蓝色连体工装**", "**银白色短斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**"):
+            self.assertIn(mark, row)
+        self.assertNotIn("围巾", row)
+        for name, value in (("匠首深蓝", "2f3a56"), ("匠首银白", "e2e5e9"), ("玫瑰金", "c08a78"), ("紫水晶", "8a5fa8"), ("萤石蓝紫", "7b84c9")):
+            self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
+        self.assertIn("玩家 `cloth_1…3` 斗篷下摆", self.spec)
+        player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
+        for phrase in ("Artisan Chief", "#2f3a56", "#e2e5e9", "black fine-mesh gauze veil", "two small, softly glowing pale eyes",
+                       "#7b84c9", "No scarf, no red anywhere", "do NOT give the character its pale face-plate"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, player)
+        self.assertNotIn("#b8382c", player)
+
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
         light = re.search(r"无色实体把风格块.*?```\n(.*?)```", template, re.S).group(1).strip()

@@ -148,13 +148,40 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 		InkDraw.rough_line(ci, neck + Vector2(-11 * SUN_SIDE, 6) * k, hip + Vector2(-11 * SUN_SIDE, -4) * k, Color(DuskStyle.DUSK_TOP, 0.55), 4.0, seed + 41)
 	return {"head": head, "neck": neck, "hip": hip, "k": k}
 
+## The player, an Artisan Chief: navy coverall, a short silver-white cloak
+## behind, a black mesh veil over the face with two faint eye glints, a
+## rose-gold clasp set with amethyst, blue-violet fluorite, a workshop blade.
 func player(ci: CanvasItem, feet: Vector2) -> void:
-	var f: Dictionary = figure(ci, feet, PLAYER_H, DuskStyle.PAPER_DAY, 100)
-	var k: float = f["k"]
+	var k: float = 1.0
+	var silver: Color = Color("e2e5e9")
+	var cloak: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in [Vector2(-6, -70), Vector2(10, -66), Vector2(-14, -40), Vector2(-20, -26), Vector2(-27, -32), Vector2(-34, -24), Vector2(-36, -44), Vector2(-24, -64)]:
+		cloak.append(feet + p * k)
+	ci.draw_colored_polygon(cloak, silver)
+	stroke(ci, cloak + PackedVector2Array([cloak[0]]), DuskStyle.INK, 2.5, 105)
+	var f: Dictionary = figure(ci, feet, PLAYER_H, Color("2f3a56"), 100)
 	var neck: Vector2 = f["neck"]
-	# A scarf tail and the starter blade: the player's two marks.
-	stroke(ci, PackedVector2Array([neck + Vector2(-12, 0) * k, neck + Vector2(12, 0) * k]), DuskStyle.LIFE, 6.0, 109)
-	stroke(ci, PackedVector2Array([neck + Vector2(-8, 2) * k, neck + Vector2(-24, 8) * k, neck + Vector2(-36, 4) * k]), DuskStyle.LIFE, 6.0, 110)
+	var head: Vector2 = f["head"]
+	# Tool pouch on the belt, a fluorite stud.
+	var pouch: Rect2 = Rect2(feet + Vector2(4, -36) * k, Vector2(9, 8) * k)
+	ci.draw_rect(pouch, Color("4a4038"))
+	InkDraw.rough_rect(ci, pouch, DuskStyle.INK, 1.5, 106, 0.2)
+	ci.draw_circle(pouch.get_center(), 1.6, Color("7b84c9"))
+	# The black mesh veil over the face, two faint eye glints, a cap brim and a little hair.
+	InkDraw.paper_disc(ci, head, 22.0 * k, Color("1d1b22"), 107, 0.4)
+	for i: int in range(5):
+		InkDraw.rough_line(ci, head + Vector2(-16 + i * 8, -12) * k, head + Vector2(-18 + i * 8, 16) * k, Color("3a3842"), 1.0, 112 + i, 0.2)
+	InkDraw.rough_circle(ci, head, 22.0 * k, DuskStyle.INK, 3.0, 108, 0.5)
+	InkDraw.rough_line(ci, head + Vector2(-24, -14) * k, head + Vector2(24, -16) * k, Color("2f3a56"), 5.0, 117, 0.2)
+	InkDraw.rough_line(ci, head + Vector2(-21, -6) * k, head + Vector2(-17, -14) * k, DuskStyle.SUN, 2.5, 118)
+	for e: float in [-1.0, 1.0]:
+		InkDraw.glow(ci, head + Vector2(7 + e * 6, 1) * k, 4.0, DuskStyle.PEARL, 0.5)
+		ci.draw_circle(head + Vector2(7 + e * 6, 1) * k, 1.8, DuskStyle.PEARL)
+	# The rose-gold clasp with its amethyst, fluorite on the edge.
+	var clasp: Vector2 = neck + Vector2(4, 2) * k
+	ci.draw_circle(clasp, 3.6, Color("c08a78"))
+	ci.draw_circle(clasp, 1.8, Color("8a5fa8"))
+	ci.draw_circle(clasp + Vector2(4, 1), 1.2, Color("7b84c9"))
 	var hand: Vector2 = neck + Vector2(15, 28) * k
 	stroke(ci, PackedVector2Array([hand, hand + Vector2(28, -20) * k]), DuskStyle.INK, 4.0, 120)
 	InkDraw.rough_line(ci, hand + Vector2(4, -4) * k, hand + Vector2(26, -19) * k, DuskStyle.PEARL, 1.5, 121)
@@ -537,7 +564,7 @@ func palette(ci: CanvasItem, at: Vector2) -> void:
 	text(ci, at + Vector2(0, 22), "色板（与 DuskStyle 一致）", 24)
 	var colors: Array = [["墨 INK", DuskStyle.INK, "轮廓、暗部"], ["珍珠白", DuskStyle.PEARL, "高光"], ["白日纸色", DuskStyle.PAPER_DAY, "田野底色"],
 		["黄昏纸色", DuskStyle.PAPER_DUSK, "荒地底色"], ["黄昏顶", DuskStyle.DUSK_TOP, "天空上部、冷暗部、单色实体"], ["黄昏底", DuskStyle.DUSK_BOTTOM, "天空下部"],
-		["日光", DuskStyle.SUN, "边光"], ["生命红", DuskStyle.LIFE, "生命，角色上慎用"], ["可能性青", DuskStyle.POSSIBILITY, "只给可能性"], ["成长金", DuskStyle.GROWTH, "成长、天人装饰"]]
+		["日光", DuskStyle.SUN, "边光"], ["生命红", DuskStyle.LIFE, "生命，只给 UI 与特效"], ["可能性青", DuskStyle.POSSIBILITY, "只给可能性"], ["成长金", DuskStyle.GROWTH, "成长、天人装饰"]]
 	for i: int in range(colors.size()):
 		var row: Vector2 = at + Vector2((i % 2) * 300, 44 + (i / 2) * 72)
 		InkDraw.paper(ci, Rect2(row, Vector2(56, 52)), colors[i][1], 600 + i)
