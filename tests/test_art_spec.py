@@ -74,9 +74,9 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_enemies_keep_their_own_looks(self):
         table = self.style.split("### 6.2 各角色")[1].split("## 7.")[0]
-        for name, mark, sign in (("无色实体", "**压缩到最简的人形**", "无脸的墨色剪影 + 灰色的生前物件"),
-                                 ("单色实体", "**只有一种颜色**", "受惊自保的人形 + 唯一的紫"),
-                                 ("天人战士", "**微笑面具**", "微笑面具 + 白色科技护甲 + 末端的墨")):
+        for name, mark, sign in (("无色实体", "**与生前物件压成一体的非人小生物**", "无脸的非人墨团 + 灰色的物件与遗存"),
+                                 ("单色实体", "**被执念重塑的捕食者**", "六足捕食者 + 唯一的紫 + 背上的外套"),
+                                 ("天人战士", "**唯一保持人形**", "微笑面具 + 白色科技护甲 + 末端的墨")):
             with self.subTest(enemy=name):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(name), table, re.M)
                 self.assertIsNotNone(row)
@@ -92,7 +92,8 @@ class ArtSpecTests(unittest.TestCase):
         frame = self.style.split("### 6.1 敌人设计框架")[1].split("### 6.2")[0]
         self.assertIn("`Words/怪物设定.md`", frame)
         for phrase in ("**同化 = 压缩**", "**保留的细节量 = 保留的意识**", "**颜色即身份**", "**生前身份**",
-                       "**姿态说明心智**", "**每个敌人一个清楚的动词**", "**克制**"):
+                       "**姿态说明心智**", "**每个敌人一个清楚的动词**", "**克制**",
+                       "**逐级去人化**", "**人的遗存**", "**生前最重要的那一部分**"):
             with self.subTest(rule=phrase):
                 self.assertIn(phrase, frame)
         tiers = re.findall(r"^\| (无色实体|单色实体|天人战士) \|", frame, re.M)
@@ -100,7 +101,8 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**边光随意识递减**", self.style.split("## 4. 光")[1].split("## 5.")[0])
         self.assertNotIn("后室", self.style.split("## 10. 变更记录")[0])
         self.assertIn("`<对象>_part_item_<名称>.png`", self.spec)
-        self.assertIn("无色、单色、天人）：", self.spec)
+        self.assertIn("幸存者战士、天人）：", self.spec)
+        self.assertIn("`<对象>_part_remnant_<名称>.png`", self.spec)
         for gone in ("interp = 0", "_part_embed_", "face_scorn", "head_parasite"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
@@ -110,7 +112,7 @@ class ArtSpecTests(unittest.TestCase):
         text = (PROMPTS / "03_colorless.md").read_text(encoding="utf-8")
         self.assertIn(light, text)
         self.assertNotIn("rim light (#f4b860)", text)
-        for phrase in ("no face", "[OBJECT]", "[POSE]", "greyed out", "**物件按区域取**"):
+        for phrase in ("no face", "[OBJECT]", "[FORM]", "[REMNANT]", "no longer human in shape", "greyed out", "**按区域填三处**", "**人的遗存**"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, text)
 

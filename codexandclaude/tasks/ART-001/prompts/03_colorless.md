@@ -1,26 +1,33 @@
 # 03 无色实体（GPT Image 2）
 
-用途：验证“同化 = 压缩”是否成立（art_style.md 第 6.1 节）：无色实体是否被压到只剩一团无脸的墨色人形剪影、只靠姿态与手里的生前物件说明它是谁，并与玩家一眼分开。生成 3～4 张，挑一张；放进 `assets_src/inbox/art/colorless/`。
+用途：验证“逐级去人化”与“人的遗存”（art_style.md 第 6.1 节）：无色实体是否已是非人的小生物——人与生前物件被压成一体，只剩**一处**生前最重要的部分，让玩家认出“这曾经是人”；并与玩家一眼分开。生成 3～4 张，挑一张；放进 `assets_src/inbox/art/colorless/<区域>/`。
 
-**物件按区域取**：把 `[OBJECT]` 换成该区域一件生前熟悉的物品，`[POSE]` 换成使用它的劳作姿态。荒地 = 日常与劳作用品（铁锹、锅、扳手、扫帚……），田野 = 农具（锄头、镰刀、草叉……），逆时战场 = 军用与战场物资（工兵铲、枪托、担架杆……）。同类个体可以拿不同的东西。
+**按区域填三处**：`[OBJECT]` 换成该区域一件生前熟悉的物品，`[FORM]` 换成它和人一起被压成的形态，`[REMNANT]` 换成留下的那一处人的部分（一段躯体、一件衣服或饰物，甚至一撮头发，因个体而异）。例：
 
-尺寸建议：竖图 1024×1536 或更大。
+| 区域 | [OBJECT] | [FORM] | [REMNANT] 示例 |
+| --- | --- | --- | --- |
+| 荒地 | a shovel | a low four-legged crawler whose jaw is the shovel blade | a rough human hand that became one foreleg |
+| 田野 | a hoe | a bird-like thing that keeps pecking the ground, its beak the hoe blade | a straw hat stuck to its back |
+| 逆时战场 | a rifle butt | a flat thing that scuttles sideways under the rifle butt like a shell | a tuft of human hair |
+
+尺寸建议：横图 1536×1024 或更大（形态低矮）。
 
 ## 提示词（整段复制，替换方括号）
 
 ```
 Hand-drawn ink illustration for a 2D side-scrolling game. Dark sepia ink (#2b2420) with slight hand-drawn wobble and varying line weight, thicker outer contour, subtle ink bleed and paper texture, no gradients, no painterly rendering, no realistic lighting. A compressed, colourless remnant of a person: no colour of its own and no rim light, darker ink in the shadows instead.
 
-Creature: a "colourless entity" — a person compressed by assimilation until almost nothing is left. One smooth, simplified silhouette of solid ink: no face, no eyes, no features, the head a smooth bowed shape; clothes, folds and hair flattened away; the edges of the silhouette softly bleeding into the paper. Hunched and slow, head down, [POSE]. It holds [OBJECT], something it used every day before it was assimilated, drawn plainly and greyed out (muted grey, desaturated). Calm and empty, no expression, no gore.
+Creature: a "colourless entity" — a person and [OBJECT], the thing they used every day, compressed together into one small creature that is no longer human in shape: [FORM]. The object has grown into its body as a working part, not held. Mostly one simple mass of solid ink with softly bleeding edges, no face, no eyes, very little detail. The only human thing left is [REMNANT], drawn a little more carefully than the rest so it reads at once as having belonged to a person. The object and the remnant are greyed out (muted grey, desaturated). It moves mechanically, repeating the motion of its old work; empty, no expression, no gore.
 
-Full body, strict side view facing LEFT (toward the player), whole figure visible with margin, arms and the object kept clear of the body where possible, transparent background (or plain flat #ffffff background if transparency is unavailable). Single figure, no text, no frame. No colours other than ink, paper and the greyed object; no teal or cyan.
+Full body, strict side view facing LEFT (toward the player), whole creature visible with margin, legs kept apart where possible, transparent background (or plain flat #ffffff background if transparency is unavailable). Single creature, no text, no frame. No colours other than ink, paper and the greyed object and remnant; no teal or cyan.
 ```
 
 ## 验收要点
 
-- **压缩**：一团简洁的墨色人形剪影，没有五官、衣褶、头发等细节，轮廓边缘略微晕开；剪影本身清楚好读。
-- **生前身份**：一眼看得出它生前在做什么（姿态 + 物件）；物件是该区域的日常或劳作用品，**褪成灰色**。
+- **非人**：一眼看去是一只小生物，不是人形；剪影低矮、简洁、好读。
+- **物件长进身体**：生前物件成为它的颚、喙、壳或肢，看得出原来是什么物件。
+- **人的遗存**：只有一处，画得比其余部分具体，让人心里一沉——“这曾经是个人”。
 - **配色**：只有墨、纸色与灰；**没有边光**，没有其他颜色。
-- **心智**：低头、迟缓、麻木，没有表情，不张牙舞爪，不血腥。
+- **心智**：机械地重复劳作的动作，没有脸、没有表情，不血腥。
 - 与 01 的玩家并排时，剪影、配色、光完全不同。
 - 朝左（面向玩家）、全身完整、背景干净。
