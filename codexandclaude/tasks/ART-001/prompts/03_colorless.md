@@ -6,7 +6,7 @@
 
 | 区域 | [OBJECT] | [FORM] | [REMNANT] 示例 |
 | --- | --- | --- | --- |
-| 荒地 | a shovel | a low four-legged crawler whose jaw is the shovel blade | a rough human hand that became one foreleg |
+| 荒地 | a shovel | a little shelled crawler on spindly legs; the shovel blade juts out under its face-plate as a jaw and the shaft is set into its back | a rough human hand that became one foreleg |
 | 田野 | a hoe | a bird-like thing that keeps pecking the ground, its beak the hoe blade | a straw hat stuck to its back |
 | 逆时战场 | a rifle butt | a flat thing that scuttles sideways under the rifle butt like a shell | a tuft of human hair |
 
@@ -17,7 +17,7 @@
 ```
 Hand-drawn ink illustration for a 2D side-scrolling game. Dark sepia ink (#2b2420) with slight hand-drawn wobble and varying line weight, thicker outer contour, subtle ink bleed and paper texture, no gradients, no painterly rendering, no realistic lighting. A compressed, colourless remnant of a person: no colour of its own and no rim light, darker ink in the shadows instead.
 
-Creature: a "colourless entity" — a person and [OBJECT], the thing they used every day, compressed together into one small creature that is no longer human in shape: [FORM]. The object has grown into its body as a working part, not held. Mostly one simple mass of solid ink with softly bleeding edges, no face, no eyes, very little detail. The only human thing left is [REMNANT], drawn a little more carefully than the rest so it reads at once as having belonged to a person. The object and the remnant are greyed out (muted grey, desaturated). It moves mechanically, repeating the motion of its old work; empty, no expression, no gore.
+Creature: a "colourless entity" — a person and [OBJECT], the thing they used every day, compressed together into one small creature that is no longer human in shape: [FORM]. The object has grown into its body as a working part, not held. Drawn in the style of Silksong's creatures: a smooth, rounded carapace of solid ink with one or two pale sheen arcs, a blank pale paper face-plate: no face, no eyes, no features at all, thin spindly legs tapering to sharp points, a clean readable silhouette with dark body and pale details, cute rounded proportions. Very little detail on the body. The only human thing left is [REMNANT], drawn a little more carefully than the rest so it reads at once as having belonged to a person. The object and the remnant are greyed out (muted grey, desaturated). It moves mechanically, repeating the motion of its old work; empty, no expression, no gore.
 
 Full body, strict side view facing LEFT (toward the player), whole creature visible with margin, legs kept apart where possible, transparent background (or plain flat #ffffff background if transparency is unavailable). Single creature, no text, no frame. No colours other than ink, paper and the greyed object and remnant; no teal or cyan.
 ```
@@ -25,6 +25,7 @@ Full body, strict side view facing LEFT (toward the player), whole creature visi
 ## 验收要点
 
 - **非人**：一眼看去是一只小生物，不是人形；剪影低矮、简洁、好读。
+- **丝之歌式造型**：圆润光滑的墨色硬壳、空白的纸色面甲（没有眼）、细长尖腿；深色身体、浅色细节；圆润可爱。
 - **物件长进身体**：生前物件成为它的颚、喙、壳或肢，看得出原来是什么物件。
 - **人的遗存**：只有一处，画得比其余部分具体，让人心里一沉——“这曾经是个人”。
 - **配色**：只有墨、纸色与灰；**没有边光**，没有其他颜色。

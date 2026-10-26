@@ -74,9 +74,9 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_enemies_keep_their_own_looks(self):
         table = self.style.split("### 6.2 各角色")[1].split("## 7.")[0]
-        for name, mark, sign in (("无色实体", "**与生前物件压成一体的非人小生物**", "无脸的非人墨团 + 灰色的物件与遗存"),
-                                 ("单色实体", "**被执念重塑的捕食者**", "六足捕食者 + 唯一的紫 + 背上的外套"),
-                                 ("天人战士", "**唯一保持人形**", "微笑面具 + 白色科技护甲 + 末端的墨")):
+        for name, mark, sign in (("无色实体", "**空白的纸色面甲**", "空白面甲的墨壳 + 灰色的物件与遗存"),
+                                 ("单色实体", "**只有一种颜色**", "弯角面甲 + 披着外套的壳 + 唯一的紫"),
+                                 ("天人战士", "**唯一保持人形**", "微笑面具 + 尖顶白盔与披风 + 末端的墨")):
             with self.subTest(enemy=name):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(name), table, re.M)
                 self.assertIsNotNone(row)
@@ -107,7 +107,11 @@ class ArtSpecTests(unittest.TestCase):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
     def test_characters_are_two_and_a_half_heads(self):
-        self.assertIn("**所有人形角色 2.5 头身**", self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0])
+        section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
+        self.assertIn("**所有人形角色 2.5 头身**", section)
+        self.assertIn("**敌人造型语言参照《丝之歌》**", section)
+        for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
+            self.assertIn(word, section)
         self.assertIn("头高约为显示高度的 40%", self.spec)
         player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
         self.assertIn("exactly 2.5 heads tall", player)
@@ -119,7 +123,7 @@ class ArtSpecTests(unittest.TestCase):
         text = (PROMPTS / "03_colorless.md").read_text(encoding="utf-8")
         self.assertIn(light, text)
         self.assertNotIn("rim light (#f4b860)", text)
-        for phrase in ("no face", "[OBJECT]", "[FORM]", "[REMNANT]", "no longer human in shape", "greyed out", "**按区域填三处**", "**人的遗存**"):
+        for phrase in ("no face", "[OBJECT]", "[FORM]", "[REMNANT]", "no longer human in shape", "in the style of Silksong's creatures", "greyed out", "**按区域填三处**", "**人的遗存**"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, text)
 
