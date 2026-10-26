@@ -101,11 +101,12 @@ func scene(ci: CanvasItem) -> void:
 	colorless(ci, Vector2(500, FLOOR))
 	monochrome(ci, Vector2(650, FLOOR))
 	tian(ci, Vector2(800, FLOOR))
-	overlook(ci, Vector2(960, 270))
-	parasite(ci, Vector2(1200, FLOOR))
+	overlook(ci, Vector2(880, 300))
+	overlook_faces(ci, Vector2(420, 80))
+	parasite(ci, Vector2(1180, FLOOR))
 	InkDraw.rough_rect(ci, box, DuskStyle.INK, 2.5, 7, 1.0)
 	text(ci, Vector2(36, 54), "样张：荒地 · 黄昏（人是暖的，有暖色边光；敌人依稀人形、扭曲、嵌入异物、不受暖光）", 22, DuskStyle.PEARL)
-	for pair: Array in [[300, "玩家"], [500, "无色实体"], [650, "单色实体"], [800, "天人战士"], [960, "渴望俯视"], [1160, "寄生同伴者"]]:
+	for pair: Array in [[300, "玩家"], [500, "无色实体"], [650, "单色实体"], [800, "天人战士"], [930, "渴望俯视"], [1150, "寄生同伴者"]]:
 		text(ci, Vector2(float(pair[0]) - 30, FLOOR + 46), String(pair[1]), 20)
 
 ## A human figure in ink: head, torso, limbs; paper fill. Only people get the
@@ -282,84 +283,148 @@ func tian(ci: CanvasItem, feet: Vector2) -> void:
 	ci.draw_colored_polygon(blade, DuskStyle.INK)
 	InkDraw.rough_line(ci, high + d * 2, tip + d * 2 * k, DuskStyle.PEARL, 1.8, 438, 0.05)
 
-## Overlook (Boss, 250%): a hovering mass with one eye that has human lids and
-## lashes, vermilion iris on the player; small eyes scattered over the mass;
-## the eye sits in a broken window frame; ink threads hang it from above.
+## Overlook (Boss, 250%): a single-colour entity, hunched, flying without
+## wings, carrying a huge polished leather shoe on its back. Its face changes
+## with height: scornful above the player (as here), fawning below.
 func overlook(ci: CanvasItem, c: Vector2) -> void:
-	var w: float = PLAYER_H * 2.5 * 0.5
-	for i: int in range(5):
-		var x: float = c.x - w * 0.7 + i * w * 0.35
-		InkDraw.rough_line(ci, Vector2(x + 10 * InkDraw.noise(i, 6), 22), Vector2(x, c.y - w * 0.4), Color(DuskStyle.INK, 0.55), 2.0, 505 + i)
-	var pts: PackedVector2Array = blob(ci, c, Vector2(w, w * 0.6), Color(DuskStyle.INK, 0.94), 500, 0.12)
-	stroke(ci, pts + PackedVector2Array([pts[0]]), DuskStyle.INK, 3.0, 501)
-	# Broken window frame the eye is grown into.
-	var frame: Rect2 = Rect2(c - Vector2(w * 0.74, w * 0.4), Vector2(w * 1.48, w * 0.8))
-	var wood: Color = Color("6a5a4c")
-	InkDraw.rough_line(ci, frame.position, frame.position + Vector2(frame.size.x * 0.7, 0), wood, 5.0, 520)
-	InkDraw.rough_line(ci, frame.position, frame.position + Vector2(0, frame.size.y), wood, 5.0, 521)
-	InkDraw.rough_line(ci, frame.end, frame.end - Vector2(frame.size.x, 0), wood, 5.0, 522)
-	InkDraw.rough_line(ci, frame.end, frame.end - Vector2(0, frame.size.y * 0.55), wood, 5.0, 523)
-	InkDraw.rough_line(ci, frame.position + Vector2(frame.size.x * 0.5, 0), frame.position + Vector2(frame.size.x * 0.5, frame.size.y * 0.25), wood, 4.0, 524)
-	# The eye: human lids, a crease and lashes.
-	var upper: PackedVector2Array = PackedVector2Array()
-	for i: int in range(17):
-		var a: float = PI + PI * i / 16.0
-		upper.append(c + Vector2(cos(a) * w * 0.6, sin(a) * w * 0.28))
-	var lid: PackedVector2Array = upper.duplicate()
-	for i: int in range(17):
-		var a: float = PI * i / 16.0
-		lid.append(c + Vector2(cos(a) * w * 0.6, sin(a) * w * 0.2))
-	ci.draw_colored_polygon(lid, DuskStyle.PAPER_DAY)
-	ci.draw_circle(c + Vector2(-14, 6), w * 0.16, DuskStyle.LIFE)
-	ci.draw_circle(c + Vector2(-16, 8), w * 0.07, DuskStyle.INK)
-	stroke(ci, upper, DuskStyle.INK, 3.5, 530)
-	var crease: PackedVector2Array = PackedVector2Array()
-	for i: int in range(13):
-		var a: float = PI + PI * (2 + i) / 16.0
-		crease.append(c + Vector2(cos(a) * w * 0.56, sin(a) * w * 0.38))
-	stroke(ci, crease, Color(DuskStyle.PAPER_DAY, 0.5), 2.0, 531)
-	for i: int in range(2, 15):
-		var p: Vector2 = upper[i]
-		InkDraw.rough_line(ci, p, p + (p - c).normalized() * 12, DuskStyle.INK, 2.0, 540 + i)
-	# Small eyes scattered over the mass.
-	for e: Vector2 in [Vector2(-0.86, -0.1), Vector2(0.82, 0.15), Vector2(0.3, 0.46), Vector2(-0.45, 0.44)]:
-		var p: Vector2 = c + Vector2(e.x * w, e.y * w * 0.6)
-		blob(ci, p, Vector2(8, 4), DuskStyle.PAPER_DAY, 550 + int(e.x * 10), 0.05)
-		ci.draw_circle(p + Vector2(-2, 0), 2.5, DuskStyle.LIFE)
-	for i: int in range(5):
-		var x: float = c.x - w * 0.6 + i * w * 0.3
-		InkDraw.rough_line(ci, Vector2(x, c.y + w * 0.52), Vector2(x + 4, c.y + w * 0.52 + 30 + 20 * InkDraw.noise(i, 5)), Color(DuskStyle.INK, 0.8), 4.0, 510 + i)
+	var k: float = 2.1
+	var ink: Color = Color(DuskStyle.INK, 0.94)
+	var violet: Color = DuskStyle.DUSK_TOP
+	# Over-long limbs hanging below it, an extra joint each.
+	# Arms reach down and forward toward the player; legs trail behind and below.
+	for limb: Array in [[[-16, -8], [-34, 14], [-30, 38], [-44, 52], 560], [[-6, 0], [-20, 24], [-12, 46], [-24, 62], 564],
+			[[28, 6], [40, 26], [48, 48], [62, 60], 568], [[34, 2], [52, 18], [60, 40], [76, 50], 572]]:
+		var pts: PackedVector2Array = PackedVector2Array()
+		for j: int in range(4):
+			pts.append(c + Vector2(limb[j][0], limb[j][1]) * k)
+		stroke(ci, pts, ink, 3.5 * k, limb[4])
+	# Hunched torso, edged in violet.
+	var torso: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in [Vector2(36, 2), Vector2(30, -16), Vector2(12, -26), Vector2(-10, -22), Vector2(-24, -8), Vector2(-16, 8), Vector2(8, 12), Vector2(30, 10)]:
+		torso.append(c + p * k)
+	ci.draw_colored_polygon(torso, ink)
+	stroke(ci, torso + PackedVector2Array([torso[0]]), violet, 3.0, 501)
+	# The polished shoe pressing on its back, flesh straps grown into the body.
+	var shoe: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in [Vector2(-20, -26), Vector2(-14, -36), Vector2(0, -41), Vector2(14, -46), Vector2(26, -55), Vector2(40, -57), Vector2(45, -47), Vector2(45, -32), Vector2(36, -28), Vector2(-14, -24)]:
+		shoe.append(c + p * k)
+	ci.draw_colored_polygon(shoe, Color("1c1714"))
+	stroke(ci, shoe + PackedVector2Array([shoe[0]]), DuskStyle.INK, 3.0, 580)
+	InkDraw.rough_line(ci, c + Vector2(-16, -26) * k, c + Vector2(44, -30) * k, Color("6a5a4c"), 4.0, 581, 0.2)
+	InkDraw.rough_line(ci, c + Vector2(-14, -33) * k, c + Vector2(-2, -38) * k, DuskStyle.PEARL, 2.5, 582, 0.1)
+	InkDraw.rough_line(ci, c + Vector2(30, -53) * k, c + Vector2(41, -54) * k, DuskStyle.PEARL, 2.5, 583, 0.1)
+	for i: int in range(4):
+		var lace: Vector2 = c + Vector2(4 + i * 4, -42 - i * 2.5) * k
+		InkDraw.rough_line(ci, lace + Vector2(-3, -2) * k, lace + Vector2(3, 2) * k, DuskStyle.PEARL, 1.5, 584 + i, 0.1)
+		InkDraw.rough_line(ci, lace + Vector2(-3, 2) * k, lace + Vector2(3, -2) * k, DuskStyle.PEARL, 1.5, 588 + i, 0.1)
+	for strap: Array in [[Vector2(-6, -26), Vector2(-12, -6)], [Vector2(28, -28), Vector2(24, 8)]]:
+		InkDraw.rough_line(ci, c + strap[0] * k, c + strap[1] * k, Color(violet, 0.85), 5.0, 590)
+	# A long neck thrust forward; the scornful face looks down at the player.
+	stroke(ci, PackedVector2Array([c + Vector2(-20, -14) * k, c + Vector2(-28, -6) * k, c + Vector2(-32, 2) * k]), ink, 8.0 * k, 595)
+	overlook_face(ci, c + Vector2(-34, 8) * k, 11.0 * k, true)
 
-## Parasite companion (Boss, 250%): looks like a survivor with a pack until the
-## face splits open top to bottom into a mouth; tentacles come out of the mouth
-## and out of the pack, which has grown into its back.
+## One of Overlook's two faces. Scorn (above the player): brows crushed down,
+## slanted eyes, a gaping mouth of crooked teeth. Fawn (below the player):
+## eyes curved shut, pleading brows, a wide ingratiating grin, a bead of sweat.
+func overlook_face(ci: CanvasItem, c: Vector2, r: float, scorn: bool) -> void:
+	var violet: Color = DuskStyle.DUSK_TOP.lightened(0.15)
+	var pts: PackedVector2Array = blob(ci, c, Vector2(r, r * 1.1), Color(DuskStyle.INK, 0.96), 596, 0.08)
+	stroke(ci, pts + PackedVector2Array([pts[0]]), DuskStyle.DUSK_TOP, 2.5, 597)
+	var w: float = maxf(r * 0.09, 1.5)
+	for e: float in [-1.0, 1.0]:
+		if scorn:
+			InkDraw.rough_line(ci, c + Vector2(e * 0.62, -0.5) * r, c + Vector2(e * 0.1, -0.2) * r, violet, w * 1.4, 600 + int(e), 0.1)
+			InkDraw.rough_line(ci, c + Vector2(e * 0.56, -0.28) * r, c + Vector2(e * 0.18, -0.12) * r, DuskStyle.PEARL, w, 602 + int(e), 0.1)
+		else:
+			InkDraw.rough_line(ci, c + Vector2(e * 0.58, -0.3) * r, c + Vector2(e * 0.14, -0.46) * r, violet, w * 1.2, 604 + int(e), 0.1)
+			var eye: Vector2 = c + Vector2(e * 0.36, -0.12) * r
+			InkDraw.rough_line(ci, eye + Vector2(-0.16, 0.04) * r, eye + Vector2(0, -0.08) * r, DuskStyle.PEARL, w, 606 + int(e), 0.1)
+			InkDraw.rough_line(ci, eye + Vector2(0, -0.08) * r, eye + Vector2(0.16, 0.04) * r, DuskStyle.PEARL, w, 608 + int(e), 0.1)
+	if scorn:
+		var mouth: PackedVector2Array = PackedVector2Array([c + Vector2(-0.55, 0.12) * r, c + Vector2(0.5, 0.18) * r, c + Vector2(0.36, 0.72) * r, c + Vector2(-0.3, 0.66) * r])
+		ci.draw_colored_polygon(mouth, Color("4a2a55"))
+		for row: Array in [[mouth[0], mouth[1], 1.0], [mouth[3], mouth[2], -1.0]]:
+			for i: int in range(6):
+				var a: Vector2 = (row[0] as Vector2).lerp(row[1], i / 6.0)
+				var b: Vector2 = (row[0] as Vector2).lerp(row[1], (i + 1) / 6.0)
+				var spike: Vector2 = a.lerp(b, 0.5) + Vector2(0, 0.14 * r * float(row[2]) * (0.6 + 0.4 * InkDraw.noise(i, 610)))
+				ci.draw_colored_polygon(PackedVector2Array([a, spike, b]), DuskStyle.PEARL)
+		for i: int in range(3):
+			InkDraw.rough_line(ci, c + Vector2(-0.12 + i * 0.1, -0.06) * r, c + Vector2(-0.08 + i * 0.1, 0.06) * r, violet, w * 0.8, 612 + i, 0.1)
+	else:
+		var grin: PackedVector2Array = PackedVector2Array()
+		for i: int in range(9):
+			var t: float = -1.0 + 2.0 * i / 8.0
+			grin.append(c + Vector2(t * 0.62, 0.06 + 0.12 * (1.0 - t * t)) * r)
+		for i: int in range(9):
+			var t: float = 1.0 - 2.0 * i / 8.0
+			grin.append(c + Vector2(t * 0.62, 0.06 + 0.5 * (1.0 - t * t)) * r)
+		ci.draw_colored_polygon(grin, DuskStyle.PEARL)
+		for i: int in range(8):
+			var t: float = -1.0 + 2.0 * i / 7.0
+			InkDraw.rough_line(ci, c + Vector2(t * 0.62, 0.06 + 0.3 * (1.0 - t * t)) * r, c + Vector2((t + 2.0 / 7.0) * 0.62, 0.06 + 0.3 * (1.0 - pow(t + 2.0 / 7.0, 2))) * r, DuskStyle.INK, w * 0.7, 614 + i, 0.05)
+		blob(ci, c + Vector2(0.78, -0.4) * r, Vector2(0.08, 0.13) * r, DuskStyle.PEARL, 620, 0.05)
+		for e: float in [-1.0, 1.0]:
+			InkDraw.rough_line(ci, c + Vector2(e * 0.66, 0.0) * r, c + Vector2(e * 0.74, 0.2) * r, violet, w * 0.8, 622 + int(e), 0.1)
+
+## The two faces side by side, enlarged, in the empty sky.
+func overlook_faces(ci: CanvasItem, at: Vector2) -> void:
+	var box: Rect2 = Rect2(at, Vector2(330, 200))
+	InkDraw.paper(ci, box, Color(DuskStyle.PAPER_DAY, 0.92), 630)
+	InkDraw.rough_rect(ci, box, DuskStyle.INK, 1.5, 631)
+	text(ci, at + Vector2(14, 28), "渴望俯视的两张脸", 18)
+	overlook_face(ci, at + Vector2(90, 104), 40.0, true)
+	overlook_face(ci, at + Vector2(240, 104), 40.0, false)
+	text(ci, at + Vector2(26, 186), "高于玩家：狰狞", 16)
+	text(ci, at + Vector2(176, 186), "低于玩家：谄媚", 16)
+
+## Parasite companion (Boss, 250%): a deserter half eaten by a parasite, with
+## two heads. The human half is thin and pleading, a broken shackle on each
+## wrist, and keeps a little warm rim light; the parasite half grows out of
+## its back, segmented, its eyeless head nothing but a ring of teeth. Flesh
+## tubes run over everything.
 func parasite(ci: CanvasItem, feet: Vector2) -> void:
 	var red: Color = Color("6e1f3a")
 	var k: float = 2.5
 	var neck: Vector2 = pt(feet, k, 0, -86)
-	var pack: Rect2 = Rect2(neck + Vector2(8, 2) * k, Vector2(14, 30) * k)
-	# Tentacles out of the pack sit behind it.
-	for i: int in range(2):
-		var start: Vector2 = pack.position + Vector2(10, 2 + i * 10) * k
-		stroke(ci, PackedVector2Array([start, start + Vector2(30, -26 - i * 10), start + Vector2(16, -60 - i * 6), start + Vector2(30, -84)]), red, 4.0, 650 + i * 4)
-	InkDraw.paper(ci, pack, Color("6e5e50"), 610)
-	InkDraw.rough_rect(ci, pack, DuskStyle.INK, 2.5, 611)
-	var f: Dictionary = figure(ci, feet, PLAYER_H * k, Color("8a7a6a"), 600, false)
-	# Flesh growing over the strap where the pack meets the back.
-	InkDraw.rough_line(ci, pack.position + Vector2(0, 4) * k, pack.position + Vector2(0, 26) * k, red, 6.0, 612)
-	# The face split top to bottom.
+	# The parasite body rises out of the back and arches toward the player.
+	var spine: PackedVector2Array = PackedVector2Array([neck + Vector2(10, 10) * k, neck + Vector2(24, -12) * k, neck + Vector2(22, -38) * k, neck + Vector2(8, -54) * k, neck + Vector2(-12, -56) * k, neck + Vector2(-26, -46) * k])
+	for i: int in range(spine.size() - 1):
+		for j: int in range(3):
+			var p: Vector2 = spine[i].lerp(spine[i + 1], j / 3.0)
+			var rad: float = (9.0 - i * 0.8) * k
+			InkDraw.paper_disc(ci, p, rad, red, 640 + i * 3 + j)
+			InkDraw.rough_circle(ci, p, rad, Color(DuskStyle.INK, 0.8), 2.0, 660 + i * 3 + j)
+	# The parasite head: no eyes, a round mouth ringed with teeth.
+	var mouth: Vector2 = spine[spine.size() - 1] + Vector2(-6, 6) * k
+	InkDraw.paper_disc(ci, mouth, 11.0 * k, red, 680)
+	InkDraw.rough_circle(ci, mouth, 11.0 * k, DuskStyle.INK, 3.0, 681)
+	ci.draw_circle(mouth + Vector2(-2, 2) * k, 7.0 * k, Color("2a0e18"))
+	for i: int in range(12):
+		var a: float = TAU * i / 12.0
+		var o: Vector2 = Vector2(cos(a), sin(a))
+		var base: Vector2 = mouth + Vector2(-2, 2) * k + o * 7.0 * k
+		ci.draw_colored_polygon(PackedVector2Array([base + o.orthogonal() * 2.0 * k, base - o.orthogonal() * 2.0 * k, base - o * 4.0 * k]), DuskStyle.PEARL)
+	# The human half: thin, hunched a little, warm rim light still on it.
+	var f: Dictionary = figure(ci, feet, PLAYER_H * k, Color("8a7a6a"), 600, true)
+	for s: float in [-1.0, 1.0]:
+		var wrist: Vector2 = f["neck"] + Vector2(16 * s, 36) * k
+		InkDraw.rough_rect(ci, Rect2(wrist - Vector2(4, 3) * k, Vector2(8, 6) * k), Color("6a6058"), 3.0, 690 + int(s))
+		InkDraw.rough_line(ci, wrist + Vector2(0, 3) * k, wrist + Vector2(2 * s, 12) * k, Color("6a6058"), 2.0, 692 + int(s), 0.4)
+	# Flesh tubes over the limbs and torso, running into the parasite body.
+	for tube: Array in [[Vector2(10, 10), Vector2(4, 22), Vector2(-8, 30), Vector2(-12, 40)], [Vector2(12, 12), Vector2(10, 30), Vector2(6, 50), Vector2(10, 70)],
+			[Vector2(14, 8), Vector2(20, 24), Vector2(18, 38)], [Vector2(8, 6), Vector2(-4, 4), Vector2(-14, 12), Vector2(-18, 30)]]:
+		var pts: PackedVector2Array = PackedVector2Array()
+		for p: Vector2 in tube:
+			pts.append(neck + p * k)
+		stroke(ci, pts, red, 5.0, 700 + pts.size())
+	# The human head: tilted, brows up, eyes wet, mouth open in a plea.
 	var head: Vector2 = f["head"]
-	var mouth: PackedVector2Array = PackedVector2Array([head + Vector2(-2, -10) * k, head + Vector2(-7, 0) * k, head + Vector2(-2, 11) * k, head + Vector2(3, 0) * k])
-	ci.draw_colored_polygon(mouth, red)
-	stroke(ci, mouth + PackedVector2Array([mouth[0]]), DuskStyle.INK, 2.0, 615)
-	for i: int in range(4):
-		var y: float = -6 + i * 4
-		InkDraw.rough_line(ci, head + Vector2(-5, y) * k, head + Vector2(-2, y + 1) * k, DuskStyle.PEARL, 1.5, 620 + i)
-	# Tentacles from the mouth reach toward the player.
-	for i: int in range(3):
-		var start: Vector2 = head + Vector2(-5, -2 + i * 4) * k
-		var reach: PackedVector2Array = PackedVector2Array([start, start + Vector2(-30, -10 + i * 14), start + Vector2(-58, 6 + i * 10), start + Vector2(-76, -6 + i * 18)])
-		stroke(ci, reach, red, 4.5 - i * 0.6, 630 + i * 4)
+	for e: float in [-1.0, 1.0]:
+		InkDraw.rough_line(ci, head + Vector2(e * 6.5, -4) * k, head + Vector2(e * 2, -6.5) * k, DuskStyle.INK, 2.0, 710 + int(e), 0.1)
+		ci.draw_circle(head + Vector2(e * 4.5 - 1, -1.5) * k, 1.4 * k, DuskStyle.INK)
+	blob(ci, head + Vector2(-6.5, 2) * k, Vector2(0.8, 1.6) * k, DuskStyle.PEARL, 714, 0.05)
+	blob(ci, head + Vector2(-1, 5.5) * k, Vector2(2.2, 2.8) * k, DuskStyle.INK, 715, 0.1)
 
 # --- the side panels ---------------------------------------------------------
 
@@ -412,7 +477,8 @@ func rules(ci: CanvasItem, at: Vector2) -> void:
 		"明度：角色深、背景远景浅而淡；生命红与可能性青不做大面积底色。",
 		"敌人：依稀人形，肢体器官扭曲、嵌入异物，恐怖谷，动作抽帧；惊悚不血腥。",
 		"　无色＝无脸、颠倒的人体；单色＝过长多肢的拱＋紫缝；手持物取日常办公用品，不限品类；",
-		"　天人＝咧到耳根的金色笑面＋刃环＋制式光刃；渴望俯视＝窗框里的人眼；寄生＝裂开的脸。",
+		"　天人＝咧到耳根的金色笑面＋刃环＋制式光刃；渴望俯视＝背皮鞋的佝偻飞人，高狰狞低谄媚；",
+		"　寄生同伴者＝双头：哀求的人头＋只有口器的虫头，浑身肉管。",
 		"特效沿用 FX-001 / FX-002，不重做；读招提示照常清楚。",
 	]
 	for i: int in range(lines.size()):

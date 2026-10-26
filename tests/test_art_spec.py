@@ -77,8 +77,8 @@ class ArtSpecTests(unittest.TestCase):
         for name, mark, sign in (("无色实体", "**没有脸**", "无脸 + 全身纯墨的颠倒人体"),
                                  ("单色实体", "只用**一种**强调色", "过长多肢的拱 + 紫缝"),
                                  ("天人战士", "**夸张的笑**", "咧到耳根的金色笑面 + 刃环 + 制式光刃"),
-                                 ("渴望俯视（Boss）", "**悬空的巨眼**", "人眼皮巨眼 + 窗框"),
-                                 ("寄生同伴者（Boss）", "**口与触须**", "裂开的脸 + 背包触须")):
+                                 ("渴望俯视（Boss）", "**表情随高度变**", "背负精致皮鞋的佝偻飞人 + 随高低变脸"),
+                                 ("寄生同伴者（Boss）", "**半人半寄生虫，双头**", "双头：哀求的人头 + 口器虫头，浑身肉管")):
             with self.subTest(enemy=name):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(name), table, re.M)
                 self.assertIsNotNone(row)
@@ -100,6 +100,9 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("`<对象>_part_embed_<名称>.png`", self.spec)
         self.assertIn("`<对象>_part_item_<名称>.png`", self.spec)
         self.assertIn("品类不设上限", self.spec)
+        for part in ("`boss_overlook_part_face_scorn.png`", "`boss_overlook_part_face_fawn.png`", "`head_human`", "`head_parasite`", "`tube_<两位序号>`"):
+            self.assertIn(part, self.spec)
+        self.assertIn("**一个单色实体**", self.style)
 
     def test_enemy_prompts_drop_the_warm_light(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
