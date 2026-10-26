@@ -65,7 +65,8 @@ class ArtSpecTests(unittest.TestCase):
         block = re.search(r"## 1\. 风格块.*?```\n(.*?)```", template, re.S).group(1).strip()
         first_sentence = block.split(". ")[0]
         prompts = sorted(PROMPTS.glob("0*.md"))
-        self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md"])
+        self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
+                                                 "04_boss_overlook.md", "05_boss_parasite.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -127,6 +128,20 @@ class ArtSpecTests(unittest.TestCase):
         player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
         self.assertIn("exactly 2.5 heads tall", player)
         self.assertNotIn("6.5", player)
+
+    def test_boss_prompts_follow_the_designs(self):
+        overlook = (PROMPTS / "04_boss_overlook.md").read_text(encoding="utf-8")
+        for phrase in ("polished leather dress shoe", "sole facing DOWN", "muted gold (#d9a03a) on the shoe's lace eyelets",
+                       "staff ID badge", "[FACE]", "contemptuous slits", "fawning crescents", "faint, half-width warm rim light"):
+            with self.subTest(prompt="overlook", phrase=phrase):
+                self.assertIn(phrase, overlook)
+        parasite = (PROMPTS / "05_boss_parasite.md").read_text(encoding="utf-8")
+        for phrase in ("two FRONT halves joined at the waist", "both heads awake and in control", "pleading", "broken iron shackle",
+                       "#6e1f3a", "ring", "military field canteen", "this parasite end takes no warm light"):
+            with self.subTest(prompt="parasite", phrase=phrase):
+                self.assertIn(phrase, parasite)
+        for text in (overlook, parasite):
+            self.assertIn("no dark background, no vignette, no glow", text)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
