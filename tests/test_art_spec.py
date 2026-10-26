@@ -53,6 +53,8 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_spec_keeps_the_inbox_out_and_points_to_credits(self):
         self.assertIn("**整个 `assets_src/` 不入库**", self.spec)
+        ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("/assets_src/", [line.strip() for line in ignored])
         credits = (GAME / "assets" / "CREDITS.md").read_text(encoding="utf-8")
         for column in ("文件", "来源", "授权", "作者 / 署名", "日期", "改动", "备注"):
             self.assertIn("| %s |" % column, credits)

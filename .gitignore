@@ -5,3 +5,6 @@ work/
 outputs/
 *.tmp
 *.log
+
+# Raw art/audio inbox (asset_spec.md section 7): never committed
+/assets_src/
