@@ -106,6 +106,13 @@ class ArtSpecTests(unittest.TestCase):
         for gone in ("interp = 0", "_part_embed_", "face_scorn", "head_parasite"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
+    def test_characters_are_two_and_a_half_heads(self):
+        self.assertIn("**所有人形角色 2.5 头身**", self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0])
+        self.assertIn("头高约为显示高度的 40%", self.spec)
+        player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
+        self.assertIn("exactly 2.5 heads tall", player)
+        self.assertNotIn("6.5", player)
+
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
         light = re.search(r"无色实体把风格块.*?```\n(.*?)```", template, re.S).group(1).strip()
