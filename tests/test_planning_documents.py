@@ -461,6 +461,20 @@ class PlanningDocumentsTests(unittest.TestCase):
             with self.subTest(wrong=wrong):
                 self.assertNotIn(wrong, body)
 
+    def test_t6_asset_source_decisions_are_recorded(self):
+        # PLN-003: the user's M3 asset decisions (2026-10-25) live in Words/.
+        doc = (WORDS / "T6_素材来源与规格决定.md").read_text(encoding="utf-8")
+        self.assertNotIn("�", doc)
+        self.assertIn("决定日期：2026-10-25", doc)
+        headings = re.findall(r"^## (\d+)\.", doc, re.M)
+        self.assertEqual(list(map(int, headings)), list(range(1, len(headings) + 1)))
+        for rule in ("**允许直接作为成品**", "只用用户已有订阅 + 免费资源", "GPT Image 2",
+                     "**Godot 自带 Skeleton2D**（不用 Spine）", "不用 NC（禁止商用）与 ND（禁止改编）素材",
+                     "CC-BY 素材可以用，但必须登记署名信息", "**Claude 按人物口吻要点起草，用户改定**",
+                     "| 墨 INK | `#2b2420` |", "没有“暂缓”的类别"):
+            with self.subTest(rule=rule):
+                self.assertIn(rule, doc)
+
     def test_t4_world_changes_and_full_game_separation(self):
         t4 = self.docs["T4"]
         for rule in ("单色实体增多，无色实体减少", "更多空缺与陷阱",
