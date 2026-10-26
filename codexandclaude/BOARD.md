@@ -2,7 +2,7 @@
 
 每个任务的权威状态写在各自 `tasks/<ID>/task.md` 的首部；本表只是汇总，由规划维护者（默认 Claude）在任务关闭后串行刷新，并注明汇总基线。规则见 [协作规范](collaboration.md) 第 4、5 节。
 
-更新：2026-10-25（第十一批起草：PLN-003、ART-001、ENV-008、ART-002 待用户批准，起草时核对 master@3200dcf；第十批已完成；全面规划刷新由 PLN-003 完成，汇总基线仍为 master@d8fb7b9）
+更新：2026-10-25（第十一批起草：PLN-003、ART-001、ENV-008、ART-002 已由用户批准，起草时核对 master@3200dcf；第十批已完成；全面规划刷新由 PLN-003 完成，汇总基线仍为 master@d8fb7b9）
 
 | ID | 级别 | 标题 | 实现 | 审查 | 状态 | 位置 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -56,10 +56,10 @@
 | DOC-010 | M | T4 改写为现行版 | Claude | Codex | 已完成 | [tasks/DOC-010](tasks/DOC-010/task.md) |
 | FX-002 | M | 其余视觉特效（出招提示、Boss 击败、增援、日期与倒计时） | Claude | Codex | 已完成 | [tasks/FX-002](tasks/FX-002/task.md) |
 | SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已完成 | [tasks/SYS-012](tasks/SYS-012/task.md) |
-| PLN-003 | M | 规划刷新（第十批收尾）与 M3 素材决定入库 | Claude | Codex | 待批准（第十一批） | [tasks/PLN-003](tasks/PLN-003/task.md) |
-| ART-001 | M | 风格说明与素材规格 | Claude | Codex | 待批准（第十一批） | [tasks/ART-001](tasks/ART-001/task.md) |
-| ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 待批准（第十一批） | [tasks/ENV-008](tasks/ENV-008/task.md) |
-| ART-002 | L | 玩家素材流程试做 | Claude | Codex | 待批准（第十一批） | [tasks/ART-002](tasks/ART-002/task.md) |
+| PLN-003 | M | 规划刷新（第十批收尾）与 M3 素材决定入库 | Claude | Codex | 已批准（第十一批） | [tasks/PLN-003](tasks/PLN-003/task.md) |
+| ART-001 | M | 风格说明与素材规格 | Claude | Codex | 已批准（第十一批） | [tasks/ART-001](tasks/ART-001/task.md) |
+| ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 已批准（第十一批） | [tasks/ENV-008](tasks/ENV-008/task.md) |
+| ART-002 | L | 玩家素材流程试做 | Claude | Codex | 已批准（第十一批） | [tasks/ART-002](tasks/ART-002/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 
@@ -69,6 +69,6 @@
 
 第十批（2026-10-24 用户批准）：PLN-002、DOC-010、FX-002、SYS-012。PLN-002 先做（规划刷新与新事项登记）；Claude 的三张按 PLN-002 → DOC-010 → FX-002 依次进行，SYS-012 由 Codex 并行。四张任务卡均已完成（2026-10-25）；FX-002 用户第2次 G4 通过，第4轮复审与 master 联合 full 通过，证据见 [FX-002 集成记录](tasks/FX-002/integration.md)。后续路线图与待办状态由规划维护者统一刷新。
 
-第十一批（2026-10-25 起草，待用户批准）：PLN-003、ART-001、ENV-008、ART-002。PLN-003 先做（规划刷新，M3 素材决定入库）；Claude 按 PLN-003 → ART-001 → ART-002 依次进行，ENV-008 由 Codex 与 ART-001 并行；ART-002 需要用户用 GPT Image 2 生成玩家图片。
+第十一批（2026-10-25 用户批准）：PLN-003、ART-001、ENV-008、ART-002。PLN-003 先做（规划刷新，M3 素材决定入库）；Claude 按 PLN-003 → ART-001 → ART-002 依次进行，ENV-008 由 Codex 与 ART-001 并行；ART-002 需要用户用 GPT Image 2 生成玩家图片。
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
