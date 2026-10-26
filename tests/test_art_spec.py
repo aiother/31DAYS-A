@@ -140,7 +140,8 @@ class ArtSpecTests(unittest.TestCase):
         parasite = (PROMPTS / "05_boss_parasite.md").read_text(encoding="utf-8")
         for phrase in ("two FRONT halves joined at the waist", "both heads awake and in control", "pleading", "broken iron shackle",
                        "#6e1f3a", "ring", "military field canteen", "this parasite end takes no warm light",
-                       "NOT as a realistic or anime child", "pale paper face-plate", "not glossy, not fleshy", "Style reference:"):
+                       "NOT as a realistic or anime child", "pale paper face-plate", "not glossy, not fleshy", "Style reference:",
+                       "never bright, pink or magenta", "Exactly two thin dark red flesh tubes"):
             with self.subTest(prompt="parasite", phrase=phrase):
                 self.assertIn(phrase, parasite)
         for text in (overlook, parasite):
