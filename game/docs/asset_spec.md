@@ -50,7 +50,7 @@ root
   └ leg_upper_far  ─ leg_lower_far  ─ foot_far
 ```
 
-- 附加骨骼只在风格说明列出时使用（玩家 `cloth_1…3` 斗篷下摆，10 `cloth_1…2` 衣摆）。
+- 附加骨骼只在风格说明列出时使用（玩家 `cloth_1…3` 长斗篷下摆与 `hood` 兜帽，10 `cloth_1…2` 衣摆）。
 - 无色、单色实体是非人形态（art_style.md 第 6.1 节），按造型自定骨骼，命名用小写英文与 `_near` / `_far`，同类部位加序号（如 `leg_1_near…`、`jaw`、`tail_1…n`）：
   - 长进身体的生前物件单独成图，命名 `<对象>_part_item_<名称>.png`（如 `colorless_part_item_shovel.png`），挂在它所成为的那个部位的骨骼下；
   - 人的遗存单独成图，命名 `<对象>_part_remnant_<名称>.png`（如 `colorless_part_remnant_hand.png`、`monochrome_part_remnant_coat.png`），挂在它所在部位的骨骼下；
@@ -106,3 +106,4 @@ root
 | 2026-10-25 | 补 2.5 头身对应的头高 | art_style.md 第 6.0 节（用户 2026-10-25） |
 | 2026-10-25 | 两场 Boss 的部件与骨骼命名（渴望俯视的皮鞋、两张面甲、工牌、翅；寄生同伴者的两端根骨、两头、虫身、肉管、水壶） | art_style.md 第 6.2 节（用户 2026-10-25 定 Boss 方向） |
 | 2026-10-26 | 玩家附加骨骼由围巾尾改为斗篷下摆 | art_style.md 第 6.2 节（玩家改为匠首） |
+| 2026-10-26 | 玩家附加骨骼加 `hood`（连帽长斗篷） | art_style.md 第 6.2 节 |

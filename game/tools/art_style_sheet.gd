@@ -148,43 +148,58 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 		InkDraw.rough_line(ci, neck + Vector2(-11 * SUN_SIDE, 6) * k, hip + Vector2(-11 * SUN_SIDE, -4) * k, Color(DuskStyle.DUSK_TOP, 0.55), 4.0, seed + 41)
 	return {"head": head, "neck": neck, "hip": hip, "k": k}
 
-## The player, an Artisan Chief: navy coverall, a short silver-white cloak
-## behind, a black mesh veil over the face with two faint eye glints, a
-## rose-gold clasp set with amethyst, blue-violet fluorite, a workshop blade.
+## The player, an Artisan Chief, wrapped in a floor-length silver-white
+## hooded cape (hood up, a soft teardrop silhouette); the navy coverall shows
+## at the front opening, boots peek below the hem; a black mesh veil hangs from
+## the hood with two faint eye glints; a rose-gold clasp set with amethyst,
+## blue-violet fluorite; a workshop blade in the hand out of the opening.
 func player(ci: CanvasItem, feet: Vector2) -> void:
-	var k: float = 1.0
 	var silver: Color = Color("e2e5e9")
-	var cloak: PackedVector2Array = PackedVector2Array()
-	for p: Vector2 in [Vector2(-6, -70), Vector2(10, -66), Vector2(-14, -40), Vector2(-20, -26), Vector2(-27, -32), Vector2(-34, -24), Vector2(-36, -44), Vector2(-24, -64)]:
-		cloak.append(feet + p * k)
-	ci.draw_colored_polygon(cloak, silver)
-	stroke(ci, cloak + PackedVector2Array([cloak[0]]), DuskStyle.INK, 2.5, 105)
-	var f: Dictionary = figure(ci, feet, PLAYER_H, Color("2f3a56"), 100)
-	var neck: Vector2 = f["neck"]
-	var head: Vector2 = f["head"]
-	# Tool pouch on the belt, a fluorite stud.
-	var pouch: Rect2 = Rect2(feet + Vector2(4, -36) * k, Vector2(9, 8) * k)
+	var navy: Color = Color("2f3a56")
+	var head: Vector2 = feet + Vector2(2, -86)
+	# Boots peeking out under the hem.
+	for x: float in [-5.0, 7.0]:
+		blob(ci, feet + Vector2(x, -2), Vector2(6, 3), DuskStyle.INK, 101 + int(x), 0.05)
+	# The cape: a rounded bell from the shoulders almost to the ankles.
+	var cape: PackedVector2Array = PackedVector2Array()
+	for q: Vector2 in [Vector2(-12, -70), Vector2(14, -70), Vector2(18, -50), Vector2(22, -6), Vector2(14, -9), Vector2(6, -5), Vector2(-2, -8), Vector2(-10, -4), Vector2(-18, -8), Vector2(-24, -6), Vector2(-21, -44)]:
+		cape.append(feet + q)
+	ci.draw_colored_polygon(cape, silver)
+	# The front opening shows the navy coverall and the tool pouch.
+	var opening: PackedVector2Array = PackedVector2Array([feet + Vector2(8, -66), feet + Vector2(14, -66), feet + Vector2(20, -8), feet + Vector2(10, -6)])
+	ci.draw_colored_polygon(opening, navy)
+	var pouch: Rect2 = Rect2(feet + Vector2(11, -36), Vector2(7, 7))
 	ci.draw_rect(pouch, Color("4a4038"))
-	InkDraw.rough_rect(ci, pouch, DuskStyle.INK, 1.5, 106, 0.2)
-	ci.draw_circle(pouch.get_center(), 1.6, Color("7b84c9"))
-	# The black mesh veil over the face, two faint eye glints, a cap brim and a little hair.
-	InkDraw.paper_disc(ci, head, 22.0 * k, Color("1d1b22"), 107, 0.4)
-	for i: int in range(5):
-		InkDraw.rough_line(ci, head + Vector2(-16 + i * 8, -12) * k, head + Vector2(-18 + i * 8, 16) * k, Color("3a3842"), 1.0, 112 + i, 0.2)
-	InkDraw.rough_circle(ci, head, 22.0 * k, DuskStyle.INK, 3.0, 108, 0.5)
-	InkDraw.rough_line(ci, head + Vector2(-24, -14) * k, head + Vector2(24, -16) * k, Color("2f3a56"), 5.0, 117, 0.2)
-	InkDraw.rough_line(ci, head + Vector2(-21, -6) * k, head + Vector2(-17, -14) * k, DuskStyle.SUN, 2.5, 118)
+	ci.draw_circle(pouch.get_center(), 1.4, Color("7b84c9"))
+	stroke(ci, cape + PackedVector2Array([cape[0]]), DuskStyle.INK, 2.5, 103)
+	InkDraw.rough_line(ci, feet + Vector2(9, -66), feet + Vector2(11, -6), Color(DuskStyle.INK, 0.8), 1.8, 104, 0.3)
+	# Sun on the left edge, violet shade on the right fold.
+	InkDraw.rough_line(ci, feet + Vector2(-13, -66), feet + Vector2(-22, -10), DuskStyle.SUN, 2.5, 105)
+	InkDraw.rough_line(ci, feet + Vector2(17, -50), feet + Vector2(20, -12), Color(DuskStyle.DUSK_TOP, 0.5), 3.5, 106)
+	# The hood around the head.
+	InkDraw.paper_disc(ci, head + Vector2(-2, -2), 26.0, silver, 107, 0.4)
+	InkDraw.rough_circle(ci, head + Vector2(-2, -2), 26.0, DuskStyle.INK, 2.5, 108, 0.5)
+	InkDraw.rough_line(ci, head + Vector2(-27, -6), head + Vector2(-22, -18), DuskStyle.SUN, 2.5, 109)
+	# The black mesh veil hanging from the hood's edge, two faint eye glints.
+	InkDraw.paper_disc(ci, head + Vector2(3, 2), 18.0, Color("1d1b22"), 110, 0.3)
+	for i: int in range(4):
+		InkDraw.rough_line(ci, head + Vector2(-9 + i * 7, -12), head + Vector2(-10 + i * 7, 16), Color("3a3842"), 1.0, 111 + i, 0.2)
+	InkDraw.rough_circle(ci, head + Vector2(3, 2), 18.0, DuskStyle.INK, 2.0, 115, 0.3)
 	for e: float in [-1.0, 1.0]:
-		InkDraw.glow(ci, head + Vector2(7 + e * 6, 1) * k, 4.0, DuskStyle.PEARL, 0.5)
-		ci.draw_circle(head + Vector2(7 + e * 6, 1) * k, 1.8, DuskStyle.PEARL)
+		var eye: Vector2 = head + Vector2(9 + e * 5, 2)
+		InkDraw.glow(ci, eye, 4.0, DuskStyle.PEARL, 0.5)
+		ci.draw_circle(eye, 1.8, DuskStyle.PEARL)
 	# The rose-gold clasp with its amethyst, fluorite on the edge.
-	var clasp: Vector2 = neck + Vector2(4, 2) * k
+	var clasp: Vector2 = feet + Vector2(8, -67)
 	ci.draw_circle(clasp, 3.6, Color("c08a78"))
 	ci.draw_circle(clasp, 1.8, Color("8a5fa8"))
 	ci.draw_circle(clasp + Vector2(4, 1), 1.2, Color("7b84c9"))
-	var hand: Vector2 = neck + Vector2(15, 28) * k
-	stroke(ci, PackedVector2Array([hand, hand + Vector2(28, -20) * k]), DuskStyle.INK, 4.0, 120)
-	InkDraw.rough_line(ci, hand + Vector2(4, -4) * k, hand + Vector2(26, -19) * k, DuskStyle.PEARL, 1.5, 121)
+	# The near arm out of the opening, gloved, with the workshop blade.
+	var hand: Vector2 = feet + Vector2(22, -38)
+	stroke(ci, PackedVector2Array([feet + Vector2(14, -56), feet + Vector2(21, -48), hand]), navy, 6.0, 116)
+	blob(ci, hand, Vector2(3.5, 3.5), DuskStyle.INK, 117, 0.05)
+	stroke(ci, PackedVector2Array([hand, hand + Vector2(28, -20)]), DuskStyle.INK, 4.0, 120)
+	InkDraw.rough_line(ci, hand + Vector2(4, -4), hand + Vector2(26, -19), DuskStyle.PEARL, 1.5, 121)
 
 ## A point given in player units from the feet (enemies face left, toward the player).
 func pt(feet: Vector2, k: float, x: float, y: float) -> Vector2:
