@@ -8,6 +8,7 @@ extends SceneTree
 
 const OUT: String = "res://../codexandclaude/tasks/ART-001/style_sheet.png"
 const OUT_CLOSE_UP: String = "res://../codexandclaude/tasks/ART-001/style_sheet_close_up.png"
+const OUT_BOSSES: String = "res://../codexandclaude/tasks/ART-001/style_sheet_bosses.png"
 const CLOSE_UP_ORIGIN: Vector2 = Vector2(240, 410)
 const CLOSE_UP_SCALE: float = 3.0
 const FLOOR: float = 640.0
@@ -15,6 +16,7 @@ const PLAYER_H: float = 112.0
 ## Rim light comes from the left (the low sun), shadows lean cool violet.
 const SUN_SIDE: float = -1.0
 var font: Font
+var boss_mode: bool = false
 
 class Sheet extends Node2D:
 	var owner_tree: SceneTree
@@ -41,6 +43,14 @@ func run() -> void:
 	for i: int in range(4): await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png(OUT_CLOSE_UP)
+	# Both bosses at their real display size, on a sheet of their own.
+	boss_mode = true
+	sheet.scale = Vector2.ONE
+	sheet.position = Vector2.ZERO
+	sheet.queue_redraw()
+	for i: int in range(4): await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(OUT_BOSSES)
 	quit()
 
 func text(ci: CanvasItem, at: Vector2, s: String, size: int = 22, color: Color = DuskStyle.INK) -> void:
@@ -61,6 +71,9 @@ func blob(ci: CanvasItem, center: Vector2, radius: Vector2, color: Color, seed: 
 
 func paint(ci: CanvasItem) -> void:
 	ci.draw_rect(Rect2(0, 0, 1920, 1080), DuskStyle.PAPER_DAY)
+	if boss_mode:
+		boss_sheet(ci)
+		return
 	scene(ci)
 	palette(ci, Vector2(1300, 40))
 	regions(ci, Vector2(1300, 470))
@@ -348,6 +361,176 @@ func compression_panel(ci: CanvasItem, at: Vector2) -> void:
 		if i < steps.size() - 1:
 			text(ci, foot + Vector2(78, -80), "→", 26, Color(DuskStyle.INK, 0.6))
 
+# --- the boss sheet ----------------------------------------------------------
+
+## Both bosses at their real display size (250 %), with the player for scale
+## and Overlook's two faces enlarged.
+func boss_sheet(ci: CanvasItem) -> void:
+	var ground: float = 820.0
+	InkDraw.wash(ci, Rect2(0, 0, 1920, ground), DuskStyle.DUSK_TOP, DuskStyle.DUSK_BOTTOM)
+	InkDraw.glow(ci, Vector2(160, 640), 110.0, DuskStyle.SUN, 0.9)
+	ci.draw_rect(Rect2(0, ground, 1920, 260), DuskStyle.PAPER_DUSK)
+	for i: int in range(30):
+		InkDraw.rough_line(ci, Vector2(i * 64, ground), Vector2(i * 64 + 64, ground), DuskStyle.INK, 3.0, 900 + i, 1.0)
+	text(ci, Vector2(40, 50), "Boss 样张（按 1080p 实际显示大小：玩家 112 px，Boss 250% = 280 px）", 24, DuskStyle.PEARL)
+	player(ci, Vector2(220, ground))
+	overlook(ci, Vector2(820, 470))
+	overlook_faces(ci, Vector2(40, 90))
+	parasite(ci, Vector2(1440, ground))
+	for pair: Array in [[190, "玩家"], [740, "渴望俯视"], [1380, "寄生同伴者"]]:
+		text(ci, Vector2(float(pair[0]), ground + 50), String(pair[1]), 24)
+	var notes: Array[String] = [
+		"渴望俯视：住在精致皮鞋里的飞虫；皮鞋是壳，鞋底朝下，落击就是一脚踩下；金色只在鞋扣、鞋带孔；遗存：胸前的旧工牌。",
+		"寄生同伴者：人与虫两个前半身在腰部拼接，两头都有主导意识；军用水壶成了胃囊；人的一端有边光，虫的一端没有。",
+	]
+	for i: int in range(notes.size()):
+		text(ci, Vector2(40, ground + 110 + i * 40), notes[i], 20)
+
+## Overlook (Boss, 250 %): a single-colour entity living in a polished leather
+## shoe, the kind that once stood on its head. The shoe is its shell, sole
+## down; a paper face-plate looks out of the opening; thin wings rise from the
+## collar; spindly legs hang below. Its one colour, gold (the colour of the top
+## it craves), only on the eyelets. A worn staff badge hangs on its chest.
+func overlook(ci: CanvasItem, c: Vector2) -> void:
+	var k: float = 2.5
+	var gold: Color = DuskStyle.GROWTH
+	# Wings behind the shoe.
+	for w: Array in [[Vector2(10, 6), 0.5, 520], [Vector2(0, 0), 0.8, 524]]:
+		var wing: PackedVector2Array = PackedVector2Array()
+		for p: Vector2 in [Vector2(28, -16), Vector2(36, -48), Vector2(54, -62), Vector2(62, -50), Vector2(48, -24)]:
+			wing.append(c + (p + w[0]) * k)
+		ci.draw_colored_polygon(wing, Color(DuskStyle.PAPER_DAY, float(w[1])))
+		stroke(ci, wing + PackedVector2Array([wing[0]]), Color(DuskStyle.INK, 0.8), 2.0, int(w[2]))
+		InkDraw.rough_line(ci, wing[0], wing[2], Color(DuskStyle.INK, 0.5), 1.5, int(w[2]) + 2, 0.3)
+	# Spindly legs under the sole.
+	for x: float in [-30.0, -12.0, 8.0, 26.0]:
+		spike_leg(ci, PackedVector2Array([c + Vector2(x, 13) * k, c + Vector2(x - 4, 26) * k, c + Vector2(x - 9, 40) * k]), DuskStyle.INK, 3.0 * k, 530 + int(x))
+	# The shoe: polished upper, a paler sole and heel, sheen arcs.
+	var shoe: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in [Vector2(-48, 8), Vector2(-46, 0), Vector2(-36, -6), Vector2(-20, -11), Vector2(4, -15), Vector2(20, -13), Vector2(42, -17), Vector2(46, -8), Vector2(44, 8), Vector2(40, 12), Vector2(-44, 12)]:
+		shoe.append(c + p * k)
+	ci.draw_colored_polygon(shoe, Color("1f1a17"))
+	for i: int in range(shoe.size()):
+		InkDraw.rough_line(ci, shoe[i], shoe[(i + 1) % shoe.size()], DuskStyle.INK, 2.5, 540 + i, 0.15)
+	ci.draw_rect(Rect2(c + Vector2(-44, 11) * k, Vector2(84, 4) * k), Color("5a4a40"))
+	ci.draw_rect(Rect2(c + Vector2(30, 8) * k, Vector2(12, 7) * k), Color("4a3e36"))
+	for arc: Array in [[Vector2(-40, 0), Vector2(-24, -8)], [Vector2(20, -8), Vector2(38, -12)]]:
+		InkDraw.rough_line(ci, c + arc[0] * k, c + arc[1] * k, Color(DuskStyle.PEARL, 0.7), 3.0, 552, 0.1)
+	# Gold eyelets and pearl laces: the only colour it has.
+	for i: int in range(4):
+		var e: Vector2 = c + Vector2(-12 + i * 4.5, -11.5 - i * 0.8) * k
+		ci.draw_circle(e, 2.2 * k * 0.6, gold)
+		if i < 3:
+			InkDraw.rough_line(ci, e, e + Vector2(4.5, 4) * k, Color(DuskStyle.PEARL, 0.9), 1.5, 556 + i, 0.1)
+	# The face-plate rising from the opening (scornful: it is above the player).
+	overlook_face(ci, c + Vector2(24, -27) * k, 11.0 * k, true)
+	# The remnant: a worn staff badge on a lanyard.
+	var clip: Vector2 = c + Vector2(16, -16) * k
+	InkDraw.rough_line(ci, c + Vector2(20, -18) * k, clip, DuskStyle.INK, 1.5, 560, 0.2)
+	var card: Rect2 = Rect2(clip + Vector2(-5, 0) * k, Vector2(10, 12) * k)
+	ci.draw_rect(card, Color("d8d2c4"))
+	InkDraw.rough_rect(ci, card, DuskStyle.INK, 1.5, 561, 0.2)
+	ci.draw_rect(Rect2(card.position + Vector2(2, 2) * k, Vector2(4, 4) * k), Color("8f8a84"))
+	for i: int in range(2):
+		InkDraw.rough_line(ci, card.position + Vector2(2, 8 + i * 2) * k, card.position + Vector2(8, 8 + i * 2) * k, Color(DuskStyle.INK, 0.6), 1.2, 562 + i, 0.1)
+	InkDraw.rough_line(ci, c + Vector2(-47, 2) * k, c + Vector2(-38, -5) * k, Color(DuskStyle.SUN, 0.45), 2.0, 565)
+
+## Overlook's face-plate. Scorn (above the player): tilted up, the hollow eyes
+## narrowed to two slits. Fawn (below the player): bowed, the eyes turned up
+## into two curves, a bead of sweat.
+func overlook_face(ci: CanvasItem, c: Vector2, r: float, scorn: bool) -> void:
+	blob(ci, c, Vector2(r, r * 1.15), DuskStyle.PAPER_DAY, 570, 0.04)
+	InkDraw.rough_circle(ci, c, r * 1.05, DuskStyle.INK, maxf(r * 0.07, 1.8), 571, 0.2)
+	var w: float = maxf(r * 0.1, 2.0)
+	for e: float in [-1.0, 1.0]:
+		var eye: Vector2 = c + Vector2(e * 0.36 - 0.12, -0.28 if scorn else 0.0) * r
+		if scorn:
+			InkDraw.rough_line(ci, eye + Vector2(-0.18, -0.04 * e) * r, eye + Vector2(0.18, 0.06 * e) * r, DuskStyle.INK, w, 572 + int(e), 0.05)
+		else:
+			InkDraw.rough_line(ci, eye + Vector2(-0.16, 0.06) * r, eye + Vector2(0, -0.1) * r, DuskStyle.INK, w, 574 + int(e), 0.05)
+			InkDraw.rough_line(ci, eye + Vector2(0, -0.1) * r, eye + Vector2(0.16, 0.06) * r, DuskStyle.INK, w, 576 + int(e), 0.05)
+	if not scorn:
+		blob(ci, c + Vector2(0.72, -0.5) * r, Vector2(0.09, 0.15) * r, DuskStyle.PEARL, 578, 0.05)
+		InkDraw.rough_circle(ci, c + Vector2(0.72, -0.48) * r, 0.12 * r, DuskStyle.INK, 1.2, 579, 0.1)
+
+## The two faces side by side, enlarged.
+func overlook_faces(ci: CanvasItem, at: Vector2) -> void:
+	var box: Rect2 = Rect2(at, Vector2(420, 250))
+	InkDraw.paper(ci, box, Color(DuskStyle.PAPER_DAY, 0.93), 580)
+	InkDraw.rough_rect(ci, box, DuskStyle.INK, 1.5, 581)
+	text(ci, at + Vector2(16, 30), "渴望俯视的两张面甲", 20)
+	overlook_face(ci, at + Vector2(110, 130), 60.0, true)
+	overlook_face(ci, at + Vector2(310, 130), 60.0, false)
+	text(ci, at + Vector2(46, 232), "高于玩家：蔑视", 18)
+	text(ci, at + Vector2(246, 232), "低于玩家：谄媚", 18)
+
+## Parasite companion (Boss, 250 %): two front halves joined at the waist,
+## each with a head and a will of its own. Left: a thin little deserter, 2.5
+## heads tall, crawling on its arms, pleading, a broken shackle on each wrist,
+## still in the warm light. Right: a Silksong-style parasite, segmented dark
+## red, spindly legs, an eyeless head that is only a ring of teeth. A field
+## canteen grown in at the waist is its stomach; flesh tubes bind the halves.
+func parasite(ci: CanvasItem, feet: Vector2) -> void:
+	var k: float = 2.5
+	var red: Color = Color("6e1f3a")
+	var waist: Vector2 = pt(feet, k, 0, -36)
+	# The parasite half: segments rising to the right, spindly legs below.
+	var spine: PackedVector2Array = PackedVector2Array([pt(feet, k, 8, -38), pt(feet, k, 20, -44), pt(feet, k, 31, -54), pt(feet, k, 39, -68), pt(feet, k, 44, -82)])
+	for i: int in range(3):
+		var root_at: Vector2 = spine[i]
+		spike_leg(ci, PackedVector2Array([root_at, root_at + Vector2(10, 10 + i * 4) * k, Vector2(root_at.x + 16 * k, feet.y)]), DuskStyle.INK, 3.0 * k, 640 + i * 3)
+	for i: int in range(spine.size()):
+		var rad: float = (12.0 - i * 0.8) * k
+		InkDraw.paper_disc(ci, spine[i], rad, red, 650 + i, 0.2)
+		InkDraw.rough_circle(ci, spine[i], rad, DuskStyle.INK, 2.0, 655 + i, 0.2)
+		InkDraw.rough_line(ci, spine[i] + Vector2(-rad * 0.6, -rad * 0.6), spine[i] + Vector2(-rad * 0.2, -rad * 0.9), Color("a04a62"), 2.0, 660 + i, 0.1)
+	var head: Vector2 = pt(feet, k, 52, -90)
+	InkDraw.paper_disc(ci, head, 13.0 * k, red, 665, 0.2)
+	InkDraw.rough_circle(ci, head, 13.0 * k, DuskStyle.INK, 2.5, 666, 0.2)
+	var mouth: Vector2 = head + Vector2(5, 0) * k
+	ci.draw_circle(mouth, 8.0 * k, Color("2a0e18"))
+	for i: int in range(12):
+		var a: float = TAU * i / 12.0
+		var o: Vector2 = Vector2(cos(a), sin(a))
+		var base: Vector2 = mouth + o * 8.0 * k
+		ci.draw_colored_polygon(PackedVector2Array([base + o.orthogonal() * 2.0 * k, base - o.orthogonal() * 2.0 * k, base - o * 4.0 * k]), DuskStyle.PEARL)
+	# The human half: a thin deserter crawling on its arms toward the player.
+	var shoulder: Vector2 = pt(feet, k, -32, -46)
+	var coat: Color = Color("7a7058")
+	for arm: Array in [[Vector2(2, 4), Vector2(-36, -18), Vector2(-36, 0), 670], [Vector2(-4, 6), Vector2(-44, -20), Vector2(-46, 0), 674]]:
+		var hand: Vector2 = pt(feet, k, arm[2].x, arm[2].y)
+		stroke(ci, PackedVector2Array([shoulder + arm[0] * k, pt(feet, k, arm[1].x, arm[1].y), hand]), coat.darkened(0.3), 7.0 * k, arm[3])
+		InkDraw.rough_rect(ci, Rect2(hand + Vector2(-4, -9) * k, Vector2(8, 5) * k), Color("6a6058"), 3.0, int(arm[3]) + 2)
+		InkDraw.rough_line(ci, hand + Vector2(2, -9) * k, hand + Vector2(6, -14) * k, Color("6a6058"), 2.0, int(arm[3]) + 3, 0.4)
+	var torso: PackedVector2Array = PackedVector2Array([waist + Vector2(0, -10) * k, shoulder + Vector2(0, -12) * k, shoulder + Vector2(-2, 10) * k, waist + Vector2(0, 8) * k])
+	ci.draw_colored_polygon(torso, coat)
+	stroke(ci, torso + PackedVector2Array([torso[0]]), DuskStyle.INK, 2.5, 678)
+	InkDraw.rough_line(ci, shoulder + Vector2(-1, -11) * k, waist + Vector2(0, -9) * k, DuskStyle.SUN, 2.5, 679)
+	# The pleading human head: big hollow eyes, brows up, a tear.
+	var face: Vector2 = shoulder + Vector2(-14, -14) * k
+	InkDraw.paper_disc(ci, face, 22.0 * k, DuskStyle.PAPER_DAY, 680, 0.4)
+	InkDraw.rough_circle(ci, face, 22.0 * k, DuskStyle.INK, 3.0, 681, 0.5)
+	InkDraw.rough_line(ci, face + Vector2(-21, -6) * k, face + Vector2(-16, -15) * k, DuskStyle.SUN, 2.5, 682)
+	for e: float in [-1.0, 1.0]:
+		var eye: Vector2 = face + Vector2(-6 + e * 7, 0) * k
+		blob(ci, eye, Vector2(3.2, 4.4) * k, DuskStyle.INK, 683 + int(e), 0.05)
+		InkDraw.rough_line(ci, eye + Vector2(-4 * e, -11) * k, eye + Vector2(3 * e, -7.5) * k, DuskStyle.INK, 2.0, 685 + int(e), 0.1)
+	blob(ci, face + Vector2(-15, 7) * k, Vector2(1.4, 2.4) * k, DuskStyle.PEARL, 687, 0.05)
+	blob(ci, face + Vector2(-6, 10) * k, Vector2(2.0, 2.6) * k, DuskStyle.INK, 688, 0.1)
+	# The canteen at the waist, its stomach, greyed out.
+	var can: Vector2 = waist + Vector2(2, 2) * k
+	blob(ci, can, Vector2(9, 11) * k, Color("8f8a7e"), 690, 0.05)
+	InkDraw.rough_circle(ci, can, 10.0 * k, DuskStyle.INK, 2.0, 691, 0.2)
+	ci.draw_rect(Rect2(can + Vector2(-2.5, -15) * k, Vector2(5, 5) * k), Color("6a665c"))
+	InkDraw.rough_line(ci, can + Vector2(-9, -4) * k, can + Vector2(9, -4) * k, Color("6a665c"), 3.0, 692, 0.2)
+	# Flesh tubes binding the halves.
+	for tube: Array in [[Vector2(-4, -44), Vector2(-14, -50), Vector2(-26, -48)], [Vector2(6, -30), Vector2(-10, -26), Vector2(-28, -36)],
+			[Vector2(8, -46), Vector2(16, -56), Vector2(28, -60)], [Vector2(6, -28), Vector2(18, -30), Vector2(26, -44)]]:
+		var pts: PackedVector2Array = PackedVector2Array()
+		for p: Vector2 in tube:
+			pts.append(pt(feet, k, p.x, p.y))
+		stroke(ci, pts, red, 6.0, 694 + pts.size())
+
 # --- the side panels ---------------------------------------------------------
 
 func palette(ci: CanvasItem, at: Vector2) -> void:
@@ -400,7 +583,7 @@ func rules(ci: CanvasItem, at: Vector2) -> void:
 		"比例：人形 2.5 头身，圆润可爱；敌人造型参照丝之歌：壳、面甲、细尖的腿、角、披布。",
 		"敌人：同化＝压缩，细节越少意识越少；颜色即身份；手里的物件说明生前是谁。",
 		"　逐级去人化：无色＝与生前物件压成一体的非人墨团；单色＝六足捕食者＋唯一的紫；",
-		"　天人＝唯一的人形。无色、单色各留生前最重要的一处（样张：人手、外套）。Boss 重做中。",
+		"　天人＝唯一的人形。无色、单色各留生前最重要的一处（样张：人手、外套）。Boss 另见 Boss 样张。",
 		"特效沿用 FX-001 / FX-002，不重做；读招提示照常清楚。",
 	]
 	for i: int in range(lines.size()):

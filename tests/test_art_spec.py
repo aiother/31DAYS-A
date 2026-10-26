@@ -85,10 +85,17 @@ class ArtSpecTests(unittest.TestCase):
                 cells = [c.strip() for c in row.group(1).split("|")]
                 self.assertIn(mark, cells[0])
                 self.assertEqual(cells[1], sign)
-        for boss in ("渴望俯视（Boss）", "寄生同伴者（Boss）"):
+        for boss, mark, sign in (("渴望俯视（Boss）", "**住在一只精致皮鞋里的飞虫**", "皮鞋壳 + 金鞋扣 + 随高低变脸"),
+                                 ("寄生同伴者（Boss）", "**两个头都有主导意识**", "双前半身：哀求的人头 + 口器虫头")):
             with self.subTest(boss=boss):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(boss), table, re.M)
-                self.assertIn("按第 6.1 节框架重新设计", row.group(1))
+                cells = [c.strip() for c in row.group(1).split("|")]
+                self.assertIn(mark, cells[0])
+                self.assertEqual(cells[1], sign)
+        for part in ("`boss_overlook_part_item_shoe.png`", "`boss_overlook_part_face_scorn.png`", "`boss_overlook_part_face_fawn.png`",
+                     "`boss_overlook_part_remnant_badge.png`", "`head_human`", "`head_parasite`", "`boss_parasite_part_item_canteen.png`"):
+            with self.subTest(part=part):
+                self.assertIn(part, self.spec)
 
     def test_enemy_framework_is_written_down(self):
         frame = self.style.split("### 6.1 敌人设计框架")[1].split("### 6.2")[0]
@@ -107,7 +114,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("`<对象>_part_remnant_<名称>.png`", self.spec)
         self.assertIn("**物件要考究**", frame)
         self.assertIn("**细节密度**", frame)
-        for gone in ("interp = 0", "_part_embed_", "face_scorn", "head_parasite"):
+        for gone in ("interp = 0", "_part_embed_"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
     def test_characters_are_two_and_a_half_heads(self):

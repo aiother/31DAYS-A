@@ -56,7 +56,9 @@ root
   - 人的遗存单独成图，命名 `<对象>_part_remnant_<名称>.png`（如 `colorless_part_remnant_hand.png`、`monochrome_part_remnant_coat.png`），挂在它所在部位的骨骼下；
   - 无色实体的形态随区域物件而变：每个区域的无色各有一套骨骼与部件，同一区域内个体可换物件与遗存图；怎样给个体配图由接入任务定，只换图，不改玩法。
 - 天人战士身上的“墨从末端侵蚀”画在手、脚、小臂、小腿的部件图里，不另设骨骼。
-- 两场 Boss 同样按造型自定骨骼，命名仍用小写英文与 `_near` / `_far`（Boss 形象待按风格说明第 6.1 节重新设计后补充）。
+- 两场 Boss 同样按造型自定骨骼，命名仍用小写英文与 `_near` / `_far`：
+  - 渴望俯视：皮鞋壳 `boss_overlook_part_item_shoe.png`；两张面甲 `boss_overlook_part_face_scorn.png`（高于玩家）与 `boss_overlook_part_face_fawn.png`（低于玩家），挂在 `head` 骨骼下，按与玩家的高度差切换可见，由接入任务在视觉层实现；工牌 `boss_overlook_part_remnant_badge.png`；翅 `wing_near` / `wing_far`。
+  - 寄生同伴者：两端分别以 `human_root` 与 `parasite_root` 为根，头为 `head_human` 与 `head_parasite`；虫身按节 `parasite_1…n`；肉管 `tube_<两位序号>`；水壶 `boss_parasite_part_item_canteen.png` 挂在接合处的 `waist` 骨骼下。哪一端朝向玩家由接入任务按动作安排，只换朝向与图，不改玩法。
 - 关键逐帧只覆盖对应肢体或阶段；切换时显式设置可见性，避免双重轮廓（SYS-010 约定）。
 
 ## 4. 场景素材
@@ -102,3 +104,4 @@ root
 | 2026-10-25 | 随风格说明推翻上述敌人设计：无色、单色回到人形标准骨骼；去掉嵌入物、按造型自定骨骼、Boss 部件命名与敌人抽帧；手持物改挂 `weapon` 骨骼、按区域换图；天人末端侵蚀画在部件图里 | art_style.md 第 6.1 节（用户 2026-10-25 推翻并重建敌人框架） |
 | 2026-10-25 | 无色、单色改为非人形态、按造型自定骨骼；长进身体的物件与人的遗存（`_part_remnant_`）部件命名；无色每区域一套骨骼 | art_style.md 第 6.1 节“逐级去人化”“人的遗存”（用户 2026-10-25） |
 | 2026-10-25 | 补 2.5 头身对应的头高 | art_style.md 第 6.0 节（用户 2026-10-25） |
+| 2026-10-25 | 两场 Boss 的部件与骨骼命名（渴望俯视的皮鞋、两张面甲、工牌、翅；寄生同伴者的两端根骨、两头、虫身、肉管、水壶） | art_style.md 第 6.2 节（用户 2026-10-25 定 Boss 方向） |
