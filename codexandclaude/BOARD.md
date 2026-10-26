@@ -56,7 +56,7 @@
 | DOC-010 | M | T4 改写为现行版 | Claude | Codex | 已完成 | [tasks/DOC-010](tasks/DOC-010/task.md) |
 | FX-002 | M | 其余视觉特效（出招提示、Boss 击败、增援、日期与倒计时） | Claude | Codex | 已完成 | [tasks/FX-002](tasks/FX-002/task.md) |
 | SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已完成 | [tasks/SYS-012](tasks/SYS-012/task.md) |
-| PLN-003 | M | 规划刷新（第十批收尾）与 M3 素材决定入库 | Claude | Codex | 已批准（第十一批） | [tasks/PLN-003](tasks/PLN-003/task.md) |
+| PLN-003 | M | 规划刷新（第十批收尾）与 M3 素材决定入库 | Claude | Codex | 已完成 | [tasks/PLN-003](tasks/PLN-003/task.md) |
 | ART-001 | M | 风格说明与素材规格 | Claude | Codex | 已批准（第十一批） | [tasks/ART-001](tasks/ART-001/task.md) |
 | ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 已批准（第十一批） | [tasks/ENV-008](tasks/ENV-008/task.md) |
 | ART-002 | L | 玩家素材流程试做 | Claude | Codex | 已批准（第十一批） | [tasks/ART-002](tasks/ART-002/task.md) |

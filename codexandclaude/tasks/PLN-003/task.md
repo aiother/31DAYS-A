@@ -1,6 +1,6 @@
 # PLN-003：规划刷新（第十批收尾）与 M3 素材决定入库
 
-状态：已交付，待审查（2026-10-25 用户批准；实现 `a86edcc`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-25；审查通过并获用户授权合入，集成证据见 [integration.md](integration.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；第十一批中最先做
 
 ## 目标
