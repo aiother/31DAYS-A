@@ -1,7 +1,8 @@
 extends SceneTree
 ## ART-001: draws the style sheet the user signs the art style off against
 ## (`codexandclaude/tasks/ART-001/style_sheet.png`). A tool, not part of the
-## game: run with the windowed Godot and `--path game -s res://tools/art_style_sheet.gd`.
+## game: run this script with the windowed Godot, `--path game -s` and its
+## resource path (tools folder).
 ## Silhouettes only show line, colour, light and proportion; the real figures
 ## come from the generated art (ART-002 onward).
 
