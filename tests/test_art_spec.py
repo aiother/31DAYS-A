@@ -106,6 +106,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("幸存者战士、天人）：", self.spec)
         self.assertIn("`<对象>_part_remnant_<名称>.png`", self.spec)
         self.assertIn("**物件要考究**", frame)
+        self.assertIn("**细节密度**", frame)
         for gone in ("interp = 0", "_part_embed_", "face_scorn", "head_parasite"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
@@ -126,7 +127,7 @@ class ArtSpecTests(unittest.TestCase):
         text = (PROMPTS / "03_colorless.md").read_text(encoding="utf-8")
         self.assertIn(light, text)
         self.assertNotIn("rim light (#f4b860)", text)
-        for phrase in ("no face", "[OBJECT]", "[FORM]", "[REMNANT]", "no longer human in shape", "in the style of Silksong's creatures", "greyed out", "intact and true to life", "no dark background, no vignette, no glow", "**按区域填三处**", "**人的遗存**"):
+        for phrase in ("no face", "[OBJECT]", "[FORM]", "[REMNANT]", "no longer human in shape", "in the style of Silksong's creatures", "greyed out", "intact and true to life", "no dark background, no vignette, no glow", "three to five bold key features", "**按区域填三处**", "**人的遗存**"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, text)
 
