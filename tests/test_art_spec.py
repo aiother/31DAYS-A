@@ -74,50 +74,45 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_enemies_keep_their_own_looks(self):
         table = self.style.split("### 6.2 各角色")[1].split("## 7.")[0]
-        for name, mark, sign in (("无色实体", "**没有脸**", "无脸 + 全身纯墨的颠倒人体"),
-                                 ("单色实体", "只用**一种**强调色", "过长多肢的拱 + 紫缝"),
-                                 ("天人战士", "**夸张的笑**", "咧到耳根的金色笑面 + 刃环 + 制式光刃"),
-                                 ("渴望俯视（Boss）", "**表情随高度变**", "背负精致皮鞋的佝偻飞人 + 随高低变脸"),
-                                 ("寄生同伴者（Boss）", "**半人半寄生虫，双头**", "双头：哀求的人头 + 口器虫头，浑身肉管")):
+        for name, mark, sign in (("无色实体", "**压缩到最简的人形**", "无脸的墨色剪影 + 灰色的生前物件"),
+                                 ("单色实体", "**只有一种颜色**", "受惊自保的人形 + 唯一的紫"),
+                                 ("天人战士", "**微笑面具**", "微笑面具 + 白色科技护甲 + 末端的墨")):
             with self.subTest(enemy=name):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(name), table, re.M)
                 self.assertIsNotNone(row)
                 cells = [c.strip() for c in row.group(1).split("|")]
                 self.assertIn(mark, cells[0])
                 self.assertEqual(cells[1], sign)
+        for boss in ("渴望俯视（Boss）", "寄生同伴者（Boss）"):
+            with self.subTest(boss=boss):
+                row = re.search(r"^\| %s \|(.*)$" % re.escape(boss), table, re.M)
+                self.assertIn("按第 6.1 节框架重新设计", row.group(1))
 
-    def test_enemy_principles_are_written_down(self):
-        rules = self.style.split("### 6.1 敌人设计原则")[1].split("### 6.2")[0]
-        for phrase in ("**依稀可辨的人形**", "**嵌入的异物**", "**恐怖谷**", "**辨识度**",
-                       "**不受暖光**", "**动作抽帧**", "**惊悚、不血腥**", "**读招优先**",
-                       "**不合常理的姿态与移动**", "**手持物（无色、单色实体）**", "**不限定品类、不固定搭配**",
-                       "**整齐划一的制式**"):
+    def test_enemy_framework_is_written_down(self):
+        frame = self.style.split("### 6.1 敌人设计框架")[1].split("### 6.2")[0]
+        self.assertIn("`Words/怪物设定.md`", frame)
+        for phrase in ("**同化 = 压缩**", "**保留的细节量 = 保留的意识**", "**颜色即身份**", "**生前身份**",
+                       "**姿态说明心智**", "**每个敌人一个清楚的动词**", "**克制**"):
             with self.subTest(rule=phrase):
-                self.assertIn(phrase, rules)
-        self.assertIn("**敌人不受暖光**", self.style.split("## 4. 光")[1].split("## 5.")[0])
-        self.assertIn("**敌人抽帧**", self.spec)
-        self.assertIn("`interp = 0`", self.spec)
-        self.assertIn("`<对象>_part_embed_<名称>.png`", self.spec)
+                self.assertIn(phrase, frame)
+        tiers = re.findall(r"^\| (无色实体|单色实体|天人战士) \|", frame, re.M)
+        self.assertEqual(tiers, ["无色实体", "单色实体", "天人战士"])
+        self.assertIn("**边光随意识递减**", self.style.split("## 4. 光")[1].split("## 5.")[0])
+        self.assertNotIn("后室", self.style.split("## 10. 变更记录")[0])
         self.assertIn("`<对象>_part_item_<名称>.png`", self.spec)
-        self.assertIn("品类不设上限", self.spec)
-        for part in ("`boss_overlook_part_face_scorn.png`", "`boss_overlook_part_face_fawn.png`", "`head_human`", "`head_parasite`", "`tube_<两位序号>`"):
-            self.assertIn(part, self.spec)
-        self.assertIn("**一个单色实体**", self.style)
+        self.assertIn("无色、单色、天人）：", self.spec)
+        for gone in ("interp = 0", "_part_embed_", "face_scorn", "head_parasite"):
+            self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
-    def test_enemy_prompts_drop_the_warm_light(self):
+    def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
-        enemy_light = re.search(r"敌人把风格块.*?```\n(.*?)```", template, re.S).group(1).strip()
+        light = re.search(r"无色实体把风格块.*?```\n(.*?)```", template, re.S).group(1).strip()
         text = (PROMPTS / "03_colorless.md").read_text(encoding="utf-8")
-        for sentence in enemy_light.split(". "):
-            with self.subTest(sentence=sentence):
-                self.assertIn(sentence.rstrip("."), text)
+        self.assertIn(light, text)
         self.assertNotIn("rim light (#f4b860)", text)
-        self.assertIn("completely blank", text)
-        self.assertIn("[OBJECT]", text)
-        self.assertIn("[EMBED]", text)
-        self.assertIn("not meant to be a weapon", text)
-        self.assertIn("**不收束**", text)
-
+        for phrase in ("no face", "[OBJECT]", "[POSE]", "greyed out", "**物件按区域取**"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, text)
 
 if __name__ == "__main__":
     unittest.main()

@@ -8,15 +8,17 @@
 Hand-drawn ink illustration for a 2D side-scrolling game. Dark sepia ink outlines (#2b2420) with slight hand-drawn wobble and varying line weight, thicker outer contour. Flat colour fills with at most one light and one shadow tone, subtle ink bleed and paper texture, no gradients, no painterly rendering, no realistic lighting. Low warm dusk sunlight from the LEFT: a thin warm rim light (#f4b860) on the left edges, shadows tinted cool violet (#7d4a8c). Muted, low-saturation palette: ink #2b2420, paper #efe4cc, dusk paper #f0cfb6, pearl #fbf6ec.
 ```
 
-敌人把风格块里 `Low warm dusk sunlight` 起到 `cool violet (#7d4a8c).` 止的那句光换成下面这句（敌人不受暖光，art_style.md 第 4、6.1 节）：
+无色实体把风格块里 `Low warm dusk sunlight` 起到 `cool violet (#7d4a8c).` 止的那句光换成下面这句（边光随意识递减，art_style.md 第 4、6.1 节）：
 
 ```
-Unsettling, uncanny liminal-horror mood, eerie rather than gory: no blood, no gore. It takes no warm light: no rim light at all, darker ink in the shadows instead.
+A compressed, colourless remnant of a person: no colour of its own and no rim light, darker ink in the shadows instead.
 ```
+
+单色实体保留那句光，但把 `a thin warm rim light` 改成 `a faint, half-width warm rim light`；天人战士照原样。
 
 ## 2. 对象块
 
-写清对象是谁、形象要点、识别标志与标志色（取自 `game/docs/art_style.md` 第 6 节），以及**不要**什么颜色。敌人还要写清：哪里像人、哪里扭曲（比例 / 方向 / 缺失 / 多余）、嵌入的异物“长进身体、边缘与墨线融合”、表情固定。无色、单色实体的姿态写成“不合人体常理”的开放描述，手持物与嵌入物用 `[OBJECT]` / `[EMBED]` 占位、每次生成换一件日常或办公用品，不限品类；天人战士反过来，面具与制式武器每张都完全一致。
+写清对象是谁、形象要点、识别标志与标志色（取自 `game/docs/art_style.md` 第 6 节），以及**不要**什么颜色。敌人还要写清：同化程度对应的细节量（无色压到只剩剪影、单色保留部分生前特征、天人完整）、唯一的颜色出现在哪、姿态说明的心智。无色、单色实体的手持物用 `[OBJECT]` 占位，按区域换一件生前物件；天人战士的面具与制式武器每张都完全一致。
 
 ## 3. 构图块
 
@@ -32,8 +34,8 @@ Unsettling, uncanny liminal-horror mood, eerie rather than gory: no blood, no go
 
 - 轮廓：深墨线、有手绘抖动、外轮廓比内部线粗。
 - 上色：平涂，无渐变高光，无写实光影。
-- 光：人有左侧暖色边光、暗部偏紫；敌人没有边光。
+- 光：人与天人有左侧暖色边光、暗部偏紫；单色只有弱边光；无色没有边光。
 - 配色：只出现该对象应有的颜色；无可能性青、无大面积生命红（玩家围巾除外）。
 - 构图：正侧面朝右（敌人朝左，面向玩家）、全身完整、背景干净可去除。
-- 敌人另查：依稀人形、扭曲到位、嵌入物与识别标志清楚、无暖色边光、不血腥（art_style.md 第 6.1 节）。
+- 敌人另查：细节量符合同化程度、颜色只在该在的地方、物件说明生前身份、姿态说明心智、剪影清楚、不血腥（art_style.md 第 6.1 节）。
 - 一致性（第二张起）：轮廓、配色、比例与设定图一致。
