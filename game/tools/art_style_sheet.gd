@@ -148,14 +148,15 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 		InkDraw.rough_line(ci, neck + Vector2(-11 * SUN_SIDE, 6) * k, hip + Vector2(-11 * SUN_SIDE, -4) * k, Color(DuskStyle.DUSK_TOP, 0.55), 4.0, seed + 41)
 	return {"head": head, "neck": neck, "hip": hip, "k": k}
 
-## The player, an Artisan Chief, wrapped in a floor-length silver-white
-## hooded cape (hood up, a soft teardrop silhouette); the navy coverall shows
-## at the front opening, boots peek below the hem; a black mesh veil hangs from
-## the hood with two faint eye glints; a rose-gold clasp set with amethyst,
-## blue-violet fluorite; a workshop blade in the hand out of the opening.
+## The player, an Artisan Chief, wrapped in a floor-length deep-silver
+## hooded cape (hood up, a soft teardrop silhouette); the near-black navy
+## coverall shows at the front opening, boots peek below the hem; a black mesh
+## veil hangs from the hood with two faint eye glints; one rose-gold clasp,
+## nothing else worn. Its mark: a glowing fluorite bracelet on the blade wrist
+## that leaves a trail of light.
 func player(ci: CanvasItem, feet: Vector2) -> void:
-	var silver: Color = Color("e2e5e9")
-	var navy: Color = Color("2f3a56")
+	var silver: Color = Color("b4bac4")
+	var navy: Color = Color("1f2740")
 	var head: Vector2 = feet + Vector2(2, -86)
 	# Boots peeking out under the hem.
 	for x: float in [-5.0, 7.0]:
@@ -165,12 +166,9 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	for q: Vector2 in [Vector2(-12, -70), Vector2(14, -70), Vector2(18, -50), Vector2(22, -6), Vector2(14, -9), Vector2(6, -5), Vector2(-2, -8), Vector2(-10, -4), Vector2(-18, -8), Vector2(-24, -6), Vector2(-21, -44)]:
 		cape.append(feet + q)
 	ci.draw_colored_polygon(cape, silver)
-	# The front opening shows the navy coverall and the tool pouch.
+	# The front opening shows the dark coverall.
 	var opening: PackedVector2Array = PackedVector2Array([feet + Vector2(8, -66), feet + Vector2(14, -66), feet + Vector2(20, -8), feet + Vector2(10, -6)])
 	ci.draw_colored_polygon(opening, navy)
-	var pouch: Rect2 = Rect2(feet + Vector2(11, -36), Vector2(7, 7))
-	ci.draw_rect(pouch, Color("4a4038"))
-	ci.draw_circle(pouch.get_center(), 1.4, Color("7b84c9"))
 	stroke(ci, cape + PackedVector2Array([cape[0]]), DuskStyle.INK, 2.5, 103)
 	InkDraw.rough_line(ci, feet + Vector2(9, -66), feet + Vector2(11, -6), Color(DuskStyle.INK, 0.8), 1.8, 104, 0.3)
 	# Sun on the left edge, violet shade on the right fold.
@@ -189,17 +187,25 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 		var eye: Vector2 = head + Vector2(9 + e * 5, 2)
 		InkDraw.glow(ci, eye, 4.0, DuskStyle.PEARL, 0.5)
 		ci.draw_circle(eye, 1.8, DuskStyle.PEARL)
-	# The rose-gold clasp with its amethyst, fluorite on the edge.
+	# The rose-gold clasp with its amethyst: the only ornament.
 	var clasp: Vector2 = feet + Vector2(8, -67)
 	ci.draw_circle(clasp, 3.6, Color("c08a78"))
 	ci.draw_circle(clasp, 1.8, Color("8a5fa8"))
-	ci.draw_circle(clasp + Vector2(4, 1), 1.2, Color("7b84c9"))
 	# The near arm out of the opening, gloved, with the workshop blade.
 	var hand: Vector2 = feet + Vector2(22, -38)
 	stroke(ci, PackedVector2Array([feet + Vector2(14, -56), feet + Vector2(21, -48), hand]), navy, 6.0, 116)
 	blob(ci, hand, Vector2(3.5, 3.5), DuskStyle.INK, 117, 0.05)
 	stroke(ci, PackedVector2Array([hand, hand + Vector2(28, -20)]), DuskStyle.INK, 4.0, 120)
 	InkDraw.rough_line(ci, hand + Vector2(4, -4), hand + Vector2(26, -19), DuskStyle.PEARL, 1.5, 121)
+	# The fluorite bracelet glowing on the wrist, its trail of light behind the hand.
+	var glow: Color = Color("b9c0ff")
+	for i: int in range(7):
+		var t: float = float(i) / 6.0
+		var at: Vector2 = hand + Vector2(4 + 24 * t, 6 + 18 * t - 6 * t * t)
+		ci.draw_circle(at, 4.0 * (1.0 - t * 0.6), Color(glow, 0.9 * (1.0 - t * 0.85)))
+	InkDraw.glow(ci, hand + Vector2(-3, 2), 7.0, glow, 0.8)
+	for b: int in range(4):
+		ci.draw_circle(hand + Vector2(-5 + b * 1.6, 1 + b * 0.8), 1.3, Color("7b84c9"))
 
 ## A point given in player units from the feet (enemies face left, toward the player).
 func pt(feet: Vector2, k: float, x: float, y: float) -> Vector2:

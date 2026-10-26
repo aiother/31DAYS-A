@@ -13,17 +13,17 @@ Hand-drawn ink illustration for a 2D side-scrolling game. Dark sepia ink outline
 
 Style reference: match the attached reference image in line and flat colouring only; do not copy its shape, and do NOT give the character its pale face-plate.
 
-Character: a young "Artisan Chief" (a front-line industrial technician of this world), the player character, in cute chibi proportions: exactly 2.5 heads tall, a big round head about 40% of the total height, a short body and short rounded limbs, soft rounded shapes with few sharp corners. The whole figure is wrapped in a floor-length hooded cape in silver-white (#e2e5e9), like Little Red Riding Hood's long cape: the hood is up and frames the head, the cape falls almost to the ankles and wraps the body into a soft, rounded teardrop silhouette, very cute; it opens at the front, showing a practical deep navy-blue work coverall (#2f3a56) underneath with a small tool pouch on the belt; the hands come out through the front opening in dark work gloves, the toes of sturdy dark boots peek out below the hem. The cape is fastened at the collar by a small rose-gold clasp (#c08a78) set with an amethyst (#8a5fa8); a few tiny blue-violet fluorite stones (#7b84c9) on the clasp edge and the pouch. A black fine-mesh gauze veil hangs from the edge of the hood and covers the whole face; through the veil only two small, softly glowing pale eyes show, calm and determined; no other facial features visible, a little dark hair at the sides. Holds a short single-edged workshop cutting blade in the near hand, blade pointing forward and down. No scarf, no red anywhere.
+Character: a young "Artisan Chief" (a front-line industrial technician of this world), the player character, in cute chibi proportions: exactly 2.5 heads tall, a big round head about 40% of the total height, a short body and short rounded limbs, soft rounded shapes with few sharp corners. The whole figure is wrapped in a floor-length hooded cape in a deeper muted silver (#b4bac4), like Little Red Riding Hood's long cape: the hood is up and frames the head, the cape falls almost to the ankles and wraps the body into a soft, rounded teardrop silhouette, very cute; it opens at the front, showing a plain, very dark navy work coverall (#1f2740) underneath; the hands come out through the front opening in dark work gloves, the toes of sturdy dark boots peek out below the hem. Very few accessories: no bags, no pouches, no belts, no straps; the only ornament is a small rose-gold clasp (#c08a78) set with an amethyst (#8a5fa8) at the collar. Its signature: on the wrist of the blade hand, a bracelet of small blue-violet fluorite beads (#7b84c9) that glows softly (#b9c0ff) and leaves a short trail of light behind the moving hand. A black fine-mesh gauze veil hangs from the edge of the hood and covers the whole face; through the veil only two small, softly glowing pale eyes show, calm and determined; no other facial features visible, a little dark hair at the sides. Holds a short single-edged workshop cutting blade in the near hand, blade pointing forward and down. No scarf, no red anywhere.
 
 Full body, strict side view facing RIGHT, standing pose, the near arm slightly out of the cape opening, whole figure visible with margin, transparent background (or plain flat pure white #ffffff background if transparency is unavailable); no dark background, no vignette, no glow or halo around the character. Single character, no text, no frame. No teal or cyan anywhere.
 ```
 
 ## 验收要点
 
-- **连帽长斗篷**：银白斗篷罩住全身，兜帽戴着，垂到脚踝，剪影像一颗圆圆的水滴，可爱；前襟开口露出深蓝工装和腰间小工具包，手从开口伸出，靴尖露出下摆。
-- **匠首**：一眼看出是实干的一线技术人员（深蓝工装、工具包、工作手套）。
+- **识别锚点**：持刀手腕上一串发光的蓝紫萤石手链，手后拖出一小段光的拖尾；光偏蓝，不是紫、不是青。
+- **连帽长斗篷**：深银色（比上一轮暗）斗篷罩住全身，兜帽戴着，垂到脚踝，剪影像一颗圆圆的水滴，可爱；前襟开口露出近黑的深蓝工装，手从开口伸出，靴尖露出下摆。
+- **配饰从简**：没有包、腰带、带子；只有领口一枚玫瑰金扣（镶紫水晶）。
 - **面纱**：黑纱从兜帽边垂下，遮住整张脸，只透出两点微弱的眼光；**不是**实体那样的纸色面甲。
-- **饰物**：领口玫瑰金扣镶紫水晶，萤石是蓝紫色的小点缀；都只占很小面积。
 - **没有红色、没有青色**（红围巾已去掉；萤石不能画成绿青色）。
 - **2.5 头身**：头约占身高 40%，身体短、四肢短而圆，形体圆润可爱；仍能想象跑、跳、闪避的动作。
 - 深墨轮廓带手绘抖动，平涂，无渐变高光与写实光影；左侧暖色边光，暗部偏紫。
