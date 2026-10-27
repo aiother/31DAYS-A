@@ -154,8 +154,8 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 ## veil hangs from the snug hood (a soft floppy tip on top); the cape is lined
 ## in dark navy and edged with a rose-gold band; one rose-gold clasp, nothing
 ## else worn. Its mark is fluorite light: the eyes behind the veil and the
-## firefly ring glow the same; here the ring's shards are out as the Crystal
-## String, a segmented blade of crystal and light.
+## firefly ring glow the same; here the ring's thirteen broken fragments are
+## fitted into the Crystal String, a straight sword of fragments and light.
 func player(ci: CanvasItem, feet: Vector2) -> void:
 	var silver: Color = Color("b4bac4")
 	var navy: Color = Color("1f2740")
@@ -201,22 +201,32 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	var clasp: Vector2 = feet + Vector2(8, -67)
 	ci.draw_circle(clasp, 3.6, Color("c08a78"))
 	ci.draw_circle(clasp, 1.8, Color("8a5fa8"))
-	# The near arm out of the opening, gloved, mid-slash: the Crystal String is
-	# out, five fluorite shards in a straight line held by taut light.
+	# The near arm out of the opening, gloved, mid-slash: the thirteen broken
+	# fluorite fragments have fitted into one straight sword in the fist, their
+	# jagged edges matching with thin gaps that let the light through.
 	var hand: Vector2 = feet + Vector2(22, -38)
 	stroke(ci, PackedVector2Array([feet + Vector2(14, -56), feet + Vector2(21, -48), hand]), navy, 6.0, 116)
-	blob(ci, hand, Vector2(3.5, 3.5), DuskStyle.INK, 117, 0.05)
 	var glow: Color = Color("b9c0ff")
 	var dir: Vector2 = Vector2(1.0, -0.42).normalized()
 	var n: Vector2 = Vector2(-dir.y, dir.x)
-	InkDraw.rough_line(ci, hand + dir * 4, hand + dir * 64, Color(glow, 0.85), 3.0, 122, 0.1)
-	InkDraw.glow(ci, hand + dir * 34, 26.0, glow, 0.35)
-	for i: int in range(5):
-		var c: Vector2 = hand + dir * (12 + i * 12)
-		var shard: PackedVector2Array = PackedVector2Array([c - dir * 5, c + n * 2.2, c + dir * 5, c - n * 2.2])
+	InkDraw.rough_line(ci, hand - dir * 5, hand + dir * 64, glow, 4.5, 122, 0.05)
+	InkDraw.glow(ci, hand + dir * 32, 24.0, glow, 0.3)
+	var along: float = -5.0
+	for i: int in range(13):
+		var length: float = 4.0 if i < 2 else (6.0 if i < 12 else 8.0)
+		var width: float = 2.0 if i < 2 else lerpf(3.4, 2.2, float(i - 2) / 10.0)
+		var a0: Vector2 = hand + dir * (along + 0.6)
+		var a1: Vector2 = hand + dir * (along + length - 0.6)
+		var j: float = (InkDraw.noise(i, 140) - 0.5) * 1.6
+		var shard: PackedVector2Array
+		if i == 12:
+			shard = PackedVector2Array([a0 + n * width, a1, a0 - n * width])
+		else:
+			shard = PackedVector2Array([a0 + n * width, a1 + n * (width + j * 0.4), a1 + dir * j - n * (width - 0.5), a0 - n * (width + j * 0.3)])
 		ci.draw_colored_polygon(shard, Color("7b84c9"))
-		stroke(ci, shard + PackedVector2Array([shard[0]]), DuskStyle.INK, 1.2, 123 + i)
-		ci.draw_circle(c, 1.0, Color("d8dcff"))
+		stroke(ci, shard + PackedVector2Array([shard[0]]), DuskStyle.INK, 1.0, 123 + i)
+		along += length
+	blob(ci, hand, Vector2(3.5, 3.5), DuskStyle.INK, 117, 0.05)
 	# The trail of light the slash leaves behind.
 	for i: int in range(9):
 		var t: float = float(i) / 8.0
