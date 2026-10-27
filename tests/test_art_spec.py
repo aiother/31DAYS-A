@@ -66,7 +66,7 @@ class ArtSpecTests(unittest.TestCase):
         first_sentence = block.split(". ")[0]
         prompts = sorted(PROMPTS.glob("0*.md"))
         self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
-                                                 "04_boss_overlook.md", "05_boss_parasite.md"])
+                                                 "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -155,18 +155,28 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**面甲是实体的标志**", section)
         self.assertIn("**玩家是匠首**", section)
         row = re.search(r"^\| 玩家（匠首） \|(.*)$", self.style, re.M).group(1)
-        for mark in ("**深色的连体工装**", "**深银色连帽长斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**", "**识别锚点：持刀手腕上一串发光的萤石手链**", "**兜帽贴着大圆头，帽顶一个软软垂下的尖角**", "**同一种萤石光**", "**内衬近黑的深蓝**", "**玫瑰金几何边纹**"):
+        for mark in ("**深色的连体工装**", "**深银色连帽长斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**", "**识别锚点：萤环与晶弦**", "**兜帽贴着大圆头，帽顶一个软软垂下的尖角**", "**同一种萤石光**", "**内衬近黑的深蓝**", "**玫瑰金几何边纹**"):
             self.assertIn(mark, row)
         self.assertNotIn("围巾", row)
         for name, value in (("匠首深蓝", "1f2740"), ("匠首深银", "b4bac4"), ("玫瑰金", "c08a78"), ("紫水晶", "8a5fa8"), ("萤石蓝紫", "7b84c9"), ("萤石光", "b9c0ff")):
             self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
         self.assertIn("玩家 `cloth_1…3` 长斗篷下摆与 `hood` 兜帽", self.spec)
         player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
-        for phrase in ("Artisan Chief", "#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "long ribbon-like trail", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
+        for phrase in ("#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "NOT a bracelet of beads and NOT a chain", "floating in a loose ring around the wrist", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
                        "#7b84c9", "No scarf, no red anywhere", "floor-length hooded cape", "hangs from the edge of the hood", "do NOT give the character its pale face-plate"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, player)
         self.assertNotIn("#b8382c", player)
+        rig = self.style.split("**萤环与晶弦**")[1].split("- 可选附加骨骼")[0]
+        for mark in ("**萤环**", "**悬浮着绕腕缓缓转动**", "**晶弦**", "**由碎晶与光组成的分节直刃**", "**只改外观，不改玩法**"):
+            self.assertIn(mark, rig)
+        moves = re.findall(r"^\| (待机|普通攻击 1 段|普通攻击 2 段|向上攻击|向下攻击（弹起）|弹反|奔跑、闪避|恢复|攻击范围成长) \|", rig, re.M)
+        self.assertEqual(len(moves), 9)
+        self.assertIn("`weapon_starter_part_shard_<两位序号>.png`", self.spec)
+        weapon = (PROMPTS / "06_weapon_crystal_string.md").read_text(encoding="utf-8")
+        for phrase in ("IDLE", "STRAIGHT SLASH", "CURVED SLASH", "DOWNWARD SPIKE", "NOT a soft silk whip or rope", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
+            with self.subTest(weapon=phrase):
+                self.assertIn(phrase, weapon)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")

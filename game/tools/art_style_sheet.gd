@@ -154,7 +154,8 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 ## veil hangs from the snug hood (a soft floppy tip on top); the cape is lined
 ## in dark navy and edged with a rose-gold band; one rose-gold clasp, nothing
 ## else worn. Its mark is fluorite light: the eyes behind the veil and the
-## bracelet on the blade wrist glow the same, the bracelet trailing a ribbon.
+## firefly ring glow the same; here the ring's shards are out as the Crystal
+## String, a segmented blade of crystal and light.
 func player(ci: CanvasItem, feet: Vector2) -> void:
 	var silver: Color = Color("b4bac4")
 	var navy: Color = Color("1f2740")
@@ -200,21 +201,27 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	var clasp: Vector2 = feet + Vector2(8, -67)
 	ci.draw_circle(clasp, 3.6, Color("c08a78"))
 	ci.draw_circle(clasp, 1.8, Color("8a5fa8"))
-	# The near arm out of the opening, gloved, with the workshop blade.
+	# The near arm out of the opening, gloved, mid-slash: the Crystal String is
+	# out, five fluorite shards in a straight line held by taut light.
 	var hand: Vector2 = feet + Vector2(22, -38)
 	stroke(ci, PackedVector2Array([feet + Vector2(14, -56), feet + Vector2(21, -48), hand]), navy, 6.0, 116)
 	blob(ci, hand, Vector2(3.5, 3.5), DuskStyle.INK, 117, 0.05)
-	stroke(ci, PackedVector2Array([hand, hand + Vector2(28, -20)]), DuskStyle.INK, 4.0, 120)
-	InkDraw.rough_line(ci, hand + Vector2(4, -4), hand + Vector2(26, -19), DuskStyle.PEARL, 1.5, 121)
-	# The fluorite bracelet glowing on the wrist, its trail of light behind the hand.
 	var glow: Color = Color("b9c0ff")
-	for i: int in range(11):
-		var t: float = float(i) / 10.0
-		var at: Vector2 = hand + Vector2(4 + 36 * t, 6 + 24 * t - 8 * t * t)
-		ci.draw_circle(at, 4.5 * (1.0 - t * 0.6), Color(glow, 0.9 * (1.0 - t * 0.85)))
-	InkDraw.glow(ci, hand + Vector2(-3, 2), 8.0, glow, 0.9)
-	for b: int in range(4):
-		ci.draw_circle(hand + Vector2(-5 + b * 2.0, 1 + b * 1.0), 1.8, Color("7b84c9"))
+	var dir: Vector2 = Vector2(1.0, -0.42).normalized()
+	var n: Vector2 = Vector2(-dir.y, dir.x)
+	InkDraw.rough_line(ci, hand + dir * 4, hand + dir * 64, Color(glow, 0.85), 3.0, 122, 0.1)
+	InkDraw.glow(ci, hand + dir * 34, 26.0, glow, 0.35)
+	for i: int in range(5):
+		var c: Vector2 = hand + dir * (12 + i * 12)
+		var shard: PackedVector2Array = PackedVector2Array([c - dir * 5, c + n * 2.2, c + dir * 5, c - n * 2.2])
+		ci.draw_colored_polygon(shard, Color("7b84c9"))
+		stroke(ci, shard + PackedVector2Array([shard[0]]), DuskStyle.INK, 1.2, 123 + i)
+		ci.draw_circle(c, 1.0, Color("d8dcff"))
+	# The trail of light the slash leaves behind.
+	for i: int in range(9):
+		var t: float = float(i) / 8.0
+		var at: Vector2 = hand + dir.rotated(0.5 + 0.6 * t) * (40.0 + 20.0 * (1.0 - t))
+		ci.draw_circle(at, 3.0 * (1.0 - t * 0.6), Color(glow, 0.55 * (1.0 - t)))
 
 ## A point given in player units from the feet (enemies face left, toward the player).
 func pt(feet: Vector2, k: float, x: float, y: float) -> Vector2:

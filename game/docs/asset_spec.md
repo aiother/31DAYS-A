@@ -55,6 +55,7 @@ root
   - 长进身体的生前物件单独成图，命名 `<对象>_part_item_<名称>.png`（如 `colorless_part_item_shovel.png`），挂在它所成为的那个部位的骨骼下；
   - 人的遗存单独成图，命名 `<对象>_part_remnant_<名称>.png`（如 `colorless_part_remnant_hand.png`、`monochrome_part_remnant_coat.png`），挂在它所在部位的骨骼下；
   - 无色实体的形态随区域物件而变：每个区域的无色各有一套骨骼与部件，同一区域内个体可换物件与遗存图；怎样给个体配图由接入任务定，只换图，不改玩法。
+- 玩家的萤环与晶弦（art_style.md 第 6.2 节）：对象编号沿用 `weapon_starter`；碎晶单独成图 `weapon_starter_part_shard_<两位序号>.png`（五片，可同形不同大小），萤环的位置挂在 `hand_near` 下的 `ring` 骨骼；碎晶绕转、射出排列、光丝、光刃与拖尾由代码与特效实现，不做逐帧图。
 - 天人战士身上的“墨从末端侵蚀”画在手、脚、小臂、小腿的部件图里，不另设骨骼。
 - 两场 Boss 同样按造型自定骨骼，命名仍用小写英文与 `_near` / `_far`：
   - 渴望俯视：皮鞋壳 `boss_overlook_part_item_shoe.png`；两张面甲 `boss_overlook_part_face_scorn.png`（高于玩家）与 `boss_overlook_part_face_fawn.png`（低于玩家），挂在 `head` 骨骼下，按与玩家的高度差切换可见，由接入任务在视觉层实现；工牌 `boss_overlook_part_remnant_badge.png`；翅 `wing_near` / `wing_far`。
@@ -107,3 +108,4 @@ root
 | 2026-10-25 | 两场 Boss 的部件与骨骼命名（渴望俯视的皮鞋、两张面甲、工牌、翅；寄生同伴者的两端根骨、两头、虫身、肉管、水壶） | art_style.md 第 6.2 节（用户 2026-10-25 定 Boss 方向） |
 | 2026-10-26 | 玩家附加骨骼由围巾尾改为斗篷下摆 | art_style.md 第 6.2 节（玩家改为匠首） |
 | 2026-10-26 | 玩家附加骨骼加 `hood`（连帽长斗篷） | art_style.md 第 6.2 节 |
+| 2026-10-26 | 玩家萤环与晶弦的部件命名与做法（碎晶成图、`ring` 骨骼、光丝与光刃由代码特效实现） | art_style.md 第 6.2 节（用户 2026-10-26 定初始武器） |
