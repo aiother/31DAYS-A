@@ -330,76 +330,84 @@ func monochrome(ci: CanvasItem, feet: Vector2) -> void:
 		blob(ci, head + Vector2(-2 + e * 3.5, -1) * k, Vector2(2.2, 3.4) * k, DuskStyle.INK, 390 + int(e), 0.05)
 	InkDraw.rough_line(ci, head + Vector2(-10, -2) * k, head + Vector2(-8, -8) * k, Color(DuskStyle.SUN, 0.45), 1.5, 393)
 
-## Tian warrior: being assimilated, still human inside, 2.5 heads tall. Top
-## of the outside world, drawn like Silksong's elite: a rounded pearl-white
-## shell of armour, a helmet with a pointed crest, a knee-length white cloak
-## edged in gold, glowing seams; the issued smile mask; a needle-thin
-## standard-issue polearm; all identical, upright. Ink climbs up from the
-## thin, clawed hands and feet. Full rim light.
+## Tian warrior: the top of the world, driven mad and made to smile. 2.5 heads
+## tall, made to look tall by a crown, a high collar and a floor-length black
+## robe with gold circuit-like trim and obsidian plates. The issued smile mask
+## is a stabiliser: gold, obsidian eye slits, a ruby core on the brow (it lights
+## vermilion in the heavy wind-up, done in FX). The robe's hem and cuffs have
+## already turned to ink; ink climbs from the clawed hands and feet.
 func tian(ci: CanvasItem, feet: Vector2) -> void:
 	var k: float = 0.8
-	var shell_c: Color = DuskStyle.PEARL
+	var robe: Color = Color("221c22")
 	var gold: Color = DuskStyle.GROWTH
+	var obsidian: Color = Color("1a1620")
 	var neck: Vector2 = pt(feet, k, 0, -66)
-	# The cloak hangs behind everything.
-	var cloak: PackedVector2Array = PackedVector2Array()
-	for p: Vector2 in [Vector2(-10, -64), Vector2(12, -64), Vector2(22, -14), Vector2(16, -18), Vector2(12, -10), Vector2(6, -16), Vector2(2, -12)]:
-		cloak.append(pt(feet, k, p.x, p.y))
-	ci.draw_colored_polygon(cloak, Color("e6dac4"))
-	stroke(ci, PackedVector2Array([cloak[1], cloak[2], cloak[3], cloak[4], cloak[5], cloak[6]]), gold, 2.0, 468)
-	# Thin legs: ink up from clawed feet.
-	for leg: float in [-1.0, 1.0]:
-		var top: Vector2 = pt(feet, k, 5 * leg, -30)
-		var knee: Vector2 = pt(feet, k, 6 * leg, -16)
-		var foot: Vector2 = pt(feet, k, 6 * leg, -1)
-		InkDraw.rough_line(ci, top, knee, DuskStyle.INK, 7.0 * k, 470 + int(leg))
-		InkDraw.rough_line(ci, top, knee, shell_c, 4.0 * k, 472 + int(leg), 0.2)
-		spike_leg(ci, PackedVector2Array([knee, foot]), DuskStyle.INK, 6.0 * k, 474 + int(leg))
+	# Clawed feet under the hem.
+	for x: float in [-6.0, 6.0]:
+		var foot: Vector2 = pt(feet, k, x, -1)
 		for c: int in range(2):
-			InkDraw.rough_line(ci, foot, foot + Vector2(-5 - c * 2, 1) * k, DuskStyle.INK, 1.4, 500 + c + int(leg) * 3, 0.1)
-	# Arms: armoured upper arms, thin ink forearms, clawed hands.
+			InkDraw.rough_line(ci, foot, foot + Vector2(-5 - c * 2, 1) * k, DuskStyle.INK, 1.4, 500 + c + int(x), 0.1)
+	# The floor-length robe, flaring to a hem that dissolves into ink drips.
+	var gown: PackedVector2Array = PackedVector2Array()
+	for p: Vector2 in [Vector2(-12, -66), Vector2(12, -66), Vector2(16, -40), Vector2(20, -6), Vector2(-20, -6), Vector2(-16, -40)]:
+		gown.append(pt(feet, k, p.x, p.y))
+	ci.draw_colored_polygon(gown, robe)
+	stroke(ci, gown + PackedVector2Array([gown[0]]), DuskStyle.INK, 2.5, 470)
+	for i: int in range(7):
+		var x: float = -18.0 + i * 6.0
+		blob(ci, pt(feet, k, x, -5 + 2 * InkDraw.noise(i, 471)), Vector2(2.6, 3.6) * k, Color(DuskStyle.INK, 0.9), 472 + i, 0.2)
+		InkDraw.rough_line(ci, pt(feet, k, x, -4), pt(feet, k, x + 0.5, 1 + 3 * InkDraw.noise(i, 473)), Color(DuskStyle.INK, 0.8), 2.0, 480 + i)
+	# Gold trim: right-angled, circuit-like lines down the front and along the hem.
+	var trim: PackedVector2Array = PackedVector2Array([pt(feet, k, 2, -62), pt(feet, k, 2, -46), pt(feet, k, 6, -46), pt(feet, k, 6, -30), pt(feet, k, 3, -30), pt(feet, k, 3, -12)])
+	var hem: PackedVector2Array = PackedVector2Array([pt(feet, k, -17, -12), pt(feet, k, -8, -12), pt(feet, k, -8, -15), pt(feet, k, 8, -15), pt(feet, k, 8, -12), pt(feet, k, 17, -12)])
+	for line: PackedVector2Array in [trim, hem]:
+		for i: int in range(line.size() - 1):
+			InkDraw.rough_line(ci, line[i], line[i + 1], gold, 1.6, 485 + i, 0.05)
+	InkDraw.rough_line(ci, pt(feet, k, -12, -64), pt(feet, k, -17, -12), DuskStyle.SUN, 2.5, 487)
+	# Sleeves with inked cuffs and clawed hands.
 	for arm: float in [-1.0, 1.0]:
 		var shoulder: Vector2 = neck + Vector2(12 * arm, 4) * k
-		var elbow: Vector2 = neck + Vector2(16 * arm, 16) * k
-		var hand: Vector2 = neck + Vector2(14 * arm, 28) * k
-		InkDraw.rough_line(ci, shoulder, elbow, DuskStyle.INK, 7.0 * k, 482 + int(arm))
-		InkDraw.rough_line(ci, shoulder, elbow, shell_c, 4.0 * k, 484 + int(arm), 0.2)
-		spike_leg(ci, PackedVector2Array([elbow, hand]), DuskStyle.INK, 5.0 * k, 486 + int(arm))
+		var elbow: Vector2 = neck + Vector2(17 * arm, 16) * k
+		var hand: Vector2 = neck + Vector2(15 * arm, 28) * k
+		InkDraw.rough_line(ci, shoulder, elbow, robe, 9.0 * k, 488 + int(arm))
+		InkDraw.rough_line(ci, elbow, hand, DuskStyle.INK, 7.0 * k, 490 + int(arm))
+		blob(ci, elbow + Vector2(0, 3) * k, Vector2(3, 4) * k, Color(DuskStyle.INK, 0.9), 492 + int(arm), 0.2)
 		for c: int in range(3):
-			InkDraw.rough_line(ci, hand, hand + Vector2(-2 + c * 2, 5) * k, DuskStyle.INK, 1.4, 506 + c + int(arm) * 4, 0.1)
-	# Torso: a rounded shell of armour, gold trim, a glowing seam, warm rim.
-	var torso: PackedVector2Array = PackedVector2Array()
-	for p: Vector2 in [Vector2(-11, -66), Vector2(11, -66), Vector2(15, -50), Vector2(10, -30), Vector2(-10, -30), Vector2(-15, -50)]:
-		torso.append(pt(feet, k, p.x, p.y))
-	ci.draw_colored_polygon(torso, shell_c)
-	stroke(ci, torso + PackedVector2Array([torso[0]]), DuskStyle.INK, 2.5, 478)
-	InkDraw.rough_line(ci, pt(feet, k, -14, -48), pt(feet, k, 14, -48), gold, 2.5, 479, 0.2)
-	InkDraw.rough_line(ci, pt(feet, k, 0, -64), pt(feet, k, 0, -52), Color("fff2c0"), 2.0, 480, 0.1)
-	InkDraw.rough_line(ci, pt(feet, k, -13, -64), pt(feet, k, -12, -34), DuskStyle.SUN, 2.5, 481)
+			InkDraw.rough_line(ci, hand, hand + Vector2(-2 + c * 2, 5) * k, DuskStyle.INK, 1.5, 494 + c + int(arm) * 4, 0.1)
+	# Obsidian shoulder plates and a high collar, each with a pale sheen.
 	for arm: float in [-1.0, 1.0]:
-		InkDraw.paper_disc(ci, neck + Vector2(12 * arm, 4) * k, 6.0 * k, gold, 488 + int(arm))
-	# A round helmet with a pointed crest, and the issued smile mask.
+		var plate: PackedVector2Array = PackedVector2Array([neck + Vector2(4 * arm, -2) * k, neck + Vector2(17 * arm, 0) * k, neck + Vector2(15 * arm, 8) * k, neck + Vector2(5 * arm, 6) * k])
+		ci.draw_colored_polygon(plate, obsidian)
+		stroke(ci, plate + PackedVector2Array([plate[0]]), DuskStyle.INK, 1.5, 500 + int(arm))
+		InkDraw.rough_line(ci, plate[0] + Vector2(2 * arm, 1) * k, plate[1] + Vector2(-3 * arm, 2) * k, Color(DuskStyle.PEARL, 0.5), 1.2, 503 + int(arm), 0.1)
+	var collar: PackedVector2Array = PackedVector2Array([pt(feet, k, -9, -64), pt(feet, k, -11, -76), pt(feet, k, 11, -76), pt(feet, k, 9, -64)])
+	ci.draw_colored_polygon(collar, obsidian)
+	stroke(ci, collar + PackedVector2Array([collar[0]]), DuskStyle.INK, 1.5, 506)
+	# Head under a tall gold crown.
 	var head: Vector2 = pt(feet, k, 0, -88)
-	var crest: PackedVector2Array = PackedVector2Array([head + Vector2(-5, -18) * k, head + Vector2(4, -40) * k, head + Vector2(9, -16) * k])
-	ci.draw_colored_polygon(crest, shell_c)
-	stroke(ci, crest, DuskStyle.INK, 2.0, 487)
-	InkDraw.paper_disc(ci, head, 22.0 * k, shell_c, 490, 0.4)
-	InkDraw.rough_circle(ci, head, 22.0 * k, DuskStyle.INK, 2.5, 491, 0.5)
-	InkDraw.rough_line(ci, head + Vector2(-21, -6) * k, head + Vector2(-17, -14) * k, DuskStyle.SUN, 2.5, 489)
+	var crown: PackedVector2Array = PackedVector2Array([head + Vector2(-14, -16) * k, head + Vector2(-10, -38) * k, head + Vector2(-4, -24) * k, head + Vector2(0, -44) * k, head + Vector2(4, -24) * k, head + Vector2(10, -38) * k, head + Vector2(14, -16) * k])
+	ci.draw_colored_polygon(crown, gold)
+	stroke(ci, crown + PackedVector2Array([crown[0]]), DuskStyle.INK, 2.0, 507)
+	InkDraw.paper_disc(ci, head, 22.0 * k, robe, 508, 0.4)
+	InkDraw.rough_circle(ci, head, 22.0 * k, DuskStyle.INK, 2.5, 509, 0.5)
+	InkDraw.rough_line(ci, head + Vector2(-21, -6) * k, head + Vector2(-17, -14) * k, DuskStyle.SUN, 2.5, 510)
+	# The issued smile mask: gold, obsidian crescent eye slits, a fixed smile, a ruby core.
 	var mask: Vector2 = head + Vector2(-4, 2) * k
-	InkDraw.paper_disc(ci, mask, 16.0 * k, gold, 492, 0.3)
-	InkDraw.rough_circle(ci, mask, 16.0 * k, DuskStyle.INK, 1.5, 493, 0.3)
+	InkDraw.paper_disc(ci, mask, 16.0 * k, gold, 511, 0.3)
+	InkDraw.rough_circle(ci, mask, 16.0 * k, DuskStyle.INK, 1.5, 512, 0.3)
 	for e: float in [-1.0, 1.0]:
-		var c: Vector2 = mask + Vector2(e * 6, -3) * k
-		InkDraw.rough_line(ci, c + Vector2(-3, 1.5) * k, c + Vector2(0, -1.5) * k, DuskStyle.INK, 1.8, 494 + int(e), 0.1)
-		InkDraw.rough_line(ci, c + Vector2(0, -1.5) * k, c + Vector2(3, 1.5) * k, DuskStyle.INK, 1.8, 496 + int(e), 0.1)
+		var c: Vector2 = mask + Vector2(e * 6, -2) * k
+		InkDraw.rough_line(ci, c + Vector2(-3.5, 1.5) * k, c + Vector2(0, -2) * k, obsidian, 2.6, 513 + int(e), 0.1)
+		InkDraw.rough_line(ci, c + Vector2(0, -2) * k, c + Vector2(3.5, 1.5) * k, obsidian, 2.6, 515 + int(e), 0.1)
 	var smile: PackedVector2Array = PackedVector2Array()
 	for i: int in range(7):
 		var t: float = -1.0 + 2.0 * i / 6.0
-		smile.append(mask + Vector2(t * 8, 4.0 + 4.0 * (1.0 - t * t)) * k)
+		smile.append(mask + Vector2(t * 8, 5.0 + 4.0 * (1.0 - t * t)) * k)
 	for i: int in range(smile.size() - 1):
-		InkDraw.rough_line(ci, smile[i], smile[i + 1], DuskStyle.INK, 1.8, 498 + i, 0.1)
-	# Standard-issue polearm: needle-thin, segmented, a pearl light line on the blade.
+		InkDraw.rough_line(ci, smile[i], smile[i + 1], obsidian, 2.0, 517 + i, 0.1)
+	ci.draw_circle(mask + Vector2(0, -10) * k, 2.6 * k, Color("8e1c2e"))
+	InkDraw.rough_circle(ci, mask + Vector2(0, -10) * k, 2.6 * k, DuskStyle.INK, 1.0, 524, 0.1)
+	# Standard-issue polearm: straight, segmented, a gold light line on the blade.
 	var low: Vector2 = pt(feet, k, -14, -12)
 	var high: Vector2 = pt(feet, k, -30, -100)
 	var d: Vector2 = (high - low).normalized()
@@ -411,7 +419,7 @@ func tian(ci: CanvasItem, feet: Vector2) -> void:
 	var tip: Vector2 = high + d * 30 * k
 	var blade: PackedVector2Array = PackedVector2Array([high - n * 2.5 * k, high + n * 2.5 * k, tip + d * 2 * k])
 	ci.draw_colored_polygon(blade, DuskStyle.INK)
-	InkDraw.rough_line(ci, high + d * 2, tip, DuskStyle.PEARL, 1.5, 438, 0.05)
+	InkDraw.rough_line(ci, high + d * 2, tip, gold, 1.5, 438, 0.05)
 
 ## Assimilation is compression: the less detail left, the less of the person.
 ## A survivor, a Tian warrior, a single-colour and a colourless side by side.
@@ -657,7 +665,7 @@ func rules(ci: CanvasItem, at: Vector2) -> void:
 		"比例：人形 2.5 头身，圆润可爱；敌人造型参照丝之歌：壳、面甲、细尖的腿、角、披布。",
 		"敌人：同化＝压缩，细节越少意识越少；颜色即身份；手里的物件说明生前是谁。",
 		"　逐级去人化：无色＝与生前物件压成一体的非人墨团；单色＝六足捕食者＋唯一的紫；",
-		"　天人＝唯一的人形。无色、单色各留生前最重要的一处（样张：人手、外套）。Boss 另见 Boss 样张。",
+		"　天人＝唯一的人形：高冠、黑袍化墨、微笑面具额心红宝石。无色、单色各留一处人的遗存。",
 		"特效沿用 FX-001 / FX-002，不重做；读招提示照常清楚。",
 	]
 	for i: int in range(lines.size()):

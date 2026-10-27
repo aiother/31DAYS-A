@@ -67,7 +67,7 @@ class ArtSpecTests(unittest.TestCase):
         prompts = sorted(PROMPTS.glob("0*.md"))
         self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
                                                  "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md",
-                                                 "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md"])
+                                                 "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md", "08_tian_warrior.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -80,7 +80,7 @@ class ArtSpecTests(unittest.TestCase):
         table = self.style.split("### 6.2 各角色")[1].split("## 7.")[0]
         for name, mark, sign in (("无色实体", "**空白的纸色面甲**", "空白面甲的墨壳 + 灰色的物件与遗存"),
                                  ("单色实体", "**只有一种颜色**", "弯角面甲 + 披着外套的壳 + 唯一的紫"),
-                                 ("天人战士", "**唯一保持人形**", "微笑面具 + 尖顶白盔与披风 + 末端的墨")):
+                                 ("天人战士", "**微笑面具是总指挥下发的稳定器**", "高冠 + 微笑面具与额心红宝石 + 化墨的黑袍下摆")):
             with self.subTest(enemy=name):
                 row = re.search(r"^\| %s \|(.*)$" % re.escape(name), table, re.M)
                 self.assertIsNotNone(row)
@@ -200,6 +200,23 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**工具沿参差的折线切成十三片**", self.style)
         self.assertIn("**已认可的切割原图**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", self.spec)
         self.assertIn("**已认可**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", blade)
+
+    def test_tian_warrior_follows_the_class_design(self):
+        row = re.search(r"^\| 天人战士 \| \*\*世界最上层的人(.*)$", self.style, re.M).group(1)
+        for mark in ("**高冠、高立领与及地黑袍**", "**电路般的直角几何纹**", "**红宝石核心**", "**重击前摇时红宝石亮起朱红**",
+                     "**黑袍与墨分不清**", "**低血量时面具裂开一道缝，缝里是墨、没有脸**", "**唯一保持人形**"):
+            with self.subTest(mark=mark):
+                self.assertIn(mark, row)
+        self.assertNotIn("白色科技护甲", row)
+        for name, value in (("红宝石", "8e1c2e"), ("黑曜石", "1a1620")):
+            self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
+        for part in ("`tian_part_mask.png`", "`tian_part_mask_cracked.png`", "`tian_part_crown.png`"):
+            self.assertIn(part, self.spec)
+        tian = (PROMPTS / "08_tian_warrior.md").read_text(encoding="utf-8")
+        for phrase in ("exactly 2.5 heads tall", "tall pointed gold crown", "right-angled geometric lines like a circuit pattern", "NOT lightning",
+                       "dissolved into dripping ink", "[MASK]", "NOT glowing", "only black ink and darkness, no face behind it", "do NOT give this character a pale face-plate"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, tian)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
