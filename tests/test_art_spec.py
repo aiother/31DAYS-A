@@ -198,6 +198,8 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("由切割工具把整刃沿参差的折线切成**十三片**", self.spec)
         self.assertIn("`weapon_starter_part_shard_01.png`～`_13.png`", self.spec)
         self.assertIn("**工具沿参差的折线切成十三片**", self.style)
+        self.assertIn("**已认可的切割原图**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", self.spec)
+        self.assertIn("**已认可**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", blade)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
