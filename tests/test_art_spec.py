@@ -188,15 +188,16 @@ class ArtSpecTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, study)
 
-    def test_shard_parts_prompt_draws_parts_only(self):
-        parts = (PROMPTS / "07_weapon_shard_parts.md").read_text(encoding="utf-8")
-        for phrase in ("thirteen fragments in total", "two small fragments", "ten fragments", "one long fragment forming the sharp tip",
-                       "NO glow, NO light inside or around the fragments", "NO cracks drawn across their surfaces", "the gaps are plain background, not lit",
-                       "same shape, size and orientation", "about eight times as long as it is wide", "weapon_player_03.png", "**不要**附"):
+    def test_blade_prompt_draws_one_whole_blade_for_the_cutter(self):
+        blade = (PROMPTS / "07_weapon_shard_parts.md").read_text(encoding="utf-8")
+        for phrase in ("ONE complete, unbroken sword blade", "about eight times as long as it is wide", "chipped flint blade",
+                       "NO gaps, NO separate fragments, NO seams", "NO glow, NO light inside or around it", "weapon_player_03.png",
+                       "**不要**附", "shard_parts_01"):
             with self.subTest(phrase=phrase):
-                self.assertIn(phrase, parts)
-        self.assertIn("`07_weapon_shard_parts.md`", self.spec)
-        self.assertIn("**分工**", self.style)
+                self.assertIn(phrase, blade)
+        self.assertIn("由切割工具把整刃沿参差的折线切成**十三片**", self.spec)
+        self.assertIn("`weapon_starter_part_shard_01.png`～`_13.png`", self.spec)
+        self.assertIn("**工具沿参差的折线切成十三片**", self.style)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
