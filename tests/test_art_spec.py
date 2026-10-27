@@ -124,7 +124,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**敌人造型语言参照《丝之歌》**", section)
         self.assertIn("**实体共用一套视觉语言**", section)
         self.assertIn("**风格参考图**", section)
-        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2"):
+        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "player_01_3"):
             self.assertIn(approved, section)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
@@ -162,7 +162,7 @@ class ArtSpecTests(unittest.TestCase):
             self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
         self.assertIn("玩家 `cloth_1…3` 长斗篷下摆与 `hood` 兜帽", self.spec)
         player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
-        for phrase in ("#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "NOT a bracelet of beads and NOT a chain", "floating in a loose ring around the wrist", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
+        for phrase in ("#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "NOT a bracelet of beads and NOT a chain", "floating in a loose ring around the WRIST (not around the palm or fingers)", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
                        "#7b84c9", "No scarf, no red anywhere", "floor-length hooded cape", "hangs from the edge of the hood", "do NOT give the character its pale face-plate"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, player)
@@ -174,7 +174,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertEqual(len(moves), 9)
         self.assertIn("`weapon_starter_part_shard_<两位序号>.png`", self.spec)
         weapon = (PROMPTS / "06_weapon_crystal_string.md").read_text(encoding="utf-8")
-        for phrase in ("IDLE", "STRAIGHT SLASH", "CURVED SLASH", "DOWNWARD SPIKE", "NOT a soft silk whip or rope", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
+        for phrase in ("IDLE", "STRAIGHT SLASH", "CURVED SLASH", "DOWNWARD SPIKE", "NOT a soft silk whip, rope, chain or string of beads", "NO visible gaps of bare thread", "ONE short, solid, tapered spike", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
             with self.subTest(weapon=phrase):
                 self.assertIn(phrase, weapon)
 
