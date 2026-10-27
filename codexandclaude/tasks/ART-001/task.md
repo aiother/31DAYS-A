@@ -1,6 +1,6 @@
 # ART-001：风格说明与素材规格
 
-状态：第1轮审查 R1 已修复，待复审（2026-10-25 用户批准；2026-10-27 用户定稿风格；实现 `eed3d2f`，修复 `aba620b`，见 [delivery.md](delivery.md)）｜级别：M｜实现：Claude｜审查：Codex
+状态：已完成（2026-10-27 用户授权合入 master；复审 `f8e1c55` 通过；合并后 G3 通过，见 [integration.md](integration.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：PLN-003（素材决定文件入库）；与 ENV-008 并行
 
 ## 目标
