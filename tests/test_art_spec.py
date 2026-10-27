@@ -20,6 +20,13 @@ class ArtSpecTests(unittest.TestCase):
         self.style = STYLE.read_text(encoding="utf-8")
         self.spec = SPEC.read_text(encoding="utf-8")
 
+    def test_style_is_signed_off(self):
+        self.assertIn("状态：**已定稿（2026-10-27，用户确认）**", self.style)
+        body = self.style.split("## 10. 变更记录")[0]
+        for leftover in ("待用户定稿", "待讨论", "进行中", "待定"):
+            with self.subTest(leftover=leftover):
+                self.assertNotIn(leftover, body)
+
     def test_palette_matches_dusk_style(self):
         colours = dusk_constants()
         rows = {"墨 INK": "INK", "珍珠白 PEARL": "PEARL", "白日纸色": "PAPER_DAY", "黄昏纸色": "PAPER_DUSK",
