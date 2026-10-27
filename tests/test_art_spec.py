@@ -74,7 +74,8 @@ class ArtSpecTests(unittest.TestCase):
         prompts = sorted(PROMPTS.glob("0*.md"))
         self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
                                                  "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md",
-                                                 "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md", "08_tian_warrior.md"])
+                                                 "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md", "08_tian_warrior.md",
+                                                 "09_player_parts.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -186,6 +187,51 @@ class ArtSpecTests(unittest.TestCase):
         for phrase in ("IDLE", "FORMING", "SLASH", "HIT FLASH", "SCATTER", "DOWNWARD STAB", "ONLY in those gaps along the fragment borders", "NO branching lightning patterns", "weapon_player_03.png", "weapon_player_04.png", "NOT a soft silk whip, rope, chain or string of beads", "exactly THIRTEEN fluorite fragments", "NOT whole crystals", "match each other like pieces of a puzzle, yet keep thin even gaps", "perfectly STRAIGHT and rigid", "around the WRIST", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
             with self.subTest(weapon=phrase):
                 self.assertIn(phrase, weapon)
+
+    def test_player_parts_list_is_complete(self):
+        # ART-001 review R1: every player part has a file, contents, bone, layer,
+        # source and overlap note, and the bones are those of asset_spec.md.
+        parts = (PROMPTS / "09_player_parts.md").read_text(encoding="utf-8")
+        self.assertIn("`09_player_parts.md`", (PROMPTS / "01_player_full.md").read_text(encoding="utf-8"))
+        self.assertIn("player_01_3.png", parts)
+        self.assertIn("**15% 重叠区**", parts)
+        rows = re.findall(r"^\| `(player_part_\w+\.png)` \| ([^|]+) \| `(\w+)` \| (\d+) \| ([^|]+) \| ([^|]+) \|$", parts, re.M)
+        names = [r[0] for r in rows]
+        expected = {"cape_back": "chest", "cape_lining": "chest", "cape_front": "chest", "hood": "hood", "hood_rim": "hood",
+                    "veil": "head", "head": "head", "chest": "chest", "hip": "hip",
+                    "cloth_1": "cloth_1", "cloth_2": "cloth_2", "cloth_3": "cloth_3"}
+        for side in ("near", "far"):
+            for limb in ("arm_upper", "arm_lower", "hand", "leg_upper", "leg_lower", "foot"):
+                expected["%s_%s" % (limb, side)] = "%s_%s" % (limb, side)
+        self.assertEqual(sorted(names), sorted("player_part_%s.png" % k for k in expected))
+        tree = self.spec.split("人形标准骨骼")[1].split("```")[1]
+        bones = set(re.findall(r"[a-z_]+", tree)) | {"hood", "cloth_1", "cloth_2", "cloth_3"}
+        layers = [int(r[3]) for r in rows]
+        self.assertEqual(layers, list(range(1, len(rows) + 1)))
+        by_name = {r[0]: r for r in rows}
+        for key, bone in expected.items():
+            row = by_name["player_part_%s.png" % key]
+            with self.subTest(part=key):
+                self.assertEqual(row[2], bone)
+                self.assertIn(bone, bones)
+                self.assertIn(row[4].strip(), ("切图", "补画", "切图 + 补画"))
+                self.assertIn("15%", row[5])
+        # Hidden parts are painted, far limbs lie behind the body and near ones in front.
+        for side_part in ("arm_upper_far", "arm_lower_far", "hand_far", "leg_upper_far", "leg_lower_far", "foot_far", "head", "hip", "cape_back", "cape_lining"):
+            self.assertEqual(by_name["player_part_%s.png" % side_part][4].strip(), "补画", side_part)
+        layer = {k: int(by_name["player_part_%s.png" % k][3]) for k in expected}
+        self.assertLess(layer["arm_upper_far"], layer["chest"])
+        self.assertLess(layer["leg_upper_far"], layer["hip"])
+        self.assertLess(layer["hood"], layer["head"])
+        self.assertLess(layer["head"], layer["veil"])
+        self.assertLess(layer["veil"], layer["hood_rim"])
+        self.assertLess(layer["cape_back"], layer["chest"])
+        self.assertLess(layer["chest"], layer["cape_front"])
+        self.assertLess(layer["cape_front"], layer["arm_lower_near"])
+        self.assertIn("`cloth_1` 挂 `hip`、`cloth_2` 挂 `cloth_1`、`cloth_3` 挂 `cloth_2`", parts)
+        self.assertIn("This is the far-side limb", parts)
+        self.assertIn("Draw the whole part, including what the cape hides", parts)
+        self.assertIn("萤环不画在手上", parts)
 
     def test_kintsugi_scatter_study_is_marked_and_complete(self):
         study = (PROMPTS / "06b_weapon_kintsugi_scatter.md").read_text(encoding="utf-8")
