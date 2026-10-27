@@ -59,7 +59,7 @@ root
   - AI 只出**一把完整的刃**（提示词 `07_weapon_shard_parts.md`）：宽而笔直、菱形柄头与菱形护手、燧石般的切面质感、纯平涂、不画光、不画缝；**已认可的切割原图**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`（用户 2026-10-26；连成一体，刃长约为宽的 11 倍）；
   - 由切割工具把整刃沿参差的折线切成**十三片**（握柄两片、刃身十片、刃尖一片），在切口两侧补约 1.5 px（交付尺寸 3 px）的深墨线，输出 `weapon_starter_part_shard_01.png`～`_13.png` 与每片在整刃中的位置表；
   - 切线由工具生成、可调（片数、每片长度、折线起伏），保证每片严丝合缝；拼合时的缝宽由代码控制，不画在图里。
-- 天人战士（art_style.md 第 6.2 节）：“墨从末端侵蚀”与化墨的黑袍下摆、袖口画在对应部件图里，不另设骨骼；面具两张图——`tian_part_mask.png`（完好）与 `tian_part_mask_cracked.png`（裂开露墨），挂在 `head` 骨骼下，按生命比例切换，由接入任务在视觉层实现；额心红宝石的朱红发光由特效实现（与 FX-002 重击前摇同步），图里只画不发光的红宝石；高冠为 `tian_part_crown.png`。
+- 天人战士（art_style.md 第 6.2 节）：“墨从末端侵蚀”与化墨的黑袍下摆、袖口画在对应部件图里，不另设骨骼；面具两张图——`tian_part_mask.png`（完好）与 `tian_part_mask_cracked.png`（崩掉一角、露出黑洞、裂口渗墨），挂在 `head` 骨骼下，按生命比例切换，由接入任务在视觉层实现；额心红宝石的朱红发光由特效实现（与 FX-002 重击前摇同步），图里只画不发光的红宝石；高冠为 `tian_part_crown.png`。
 - 两场 Boss 同样按造型自定骨骼，命名仍用小写英文与 `_near` / `_far`：
   - 渴望俯视：皮鞋壳 `boss_overlook_part_item_shoe.png`；两张面甲 `boss_overlook_part_face_scorn.png`（高于玩家）与 `boss_overlook_part_face_fawn.png`（低于玩家），挂在 `head` 骨骼下，按与玩家的高度差切换可见，由接入任务在视觉层实现；工牌 `boss_overlook_part_remnant_badge.png`；翅 `wing_near` / `wing_far`。
   - 寄生同伴者：两端分别以 `human_root` 与 `parasite_root` 为根，头为 `head_human` 与 `head_parasite`；虫身按节 `parasite_1…n`；肉管 `tube_<两位序号>`；水壶 `boss_parasite_part_item_canteen.png` 挂在接合处的 `waist` 骨骼下。哪一端朝向玩家由接入任务按动作安排，只换朝向与图，不改玩法。
@@ -117,3 +117,4 @@ root
 | 2026-10-26 | 晶弦碎片改为“AI 整刃 + 工具切十三片”，补切口墨线与位置表 | art_style.md 第 6.2 节（用户 2026-10-26） |
 | 2026-10-26 | 晶弦切割原图定为 `blade_whole_02` | 用户：“blade_whole_02 通过，记为晶弦的切割原图。” |
 | 2026-10-26 | 天人战士部件：完好 / 裂开两张面具、高冠，红宝石发光与面具切换由代码实现 | art_style.md 第 6.2 节（用户 2026-10-26 定天人） |
+| 2026-10-27 | 天人低血量面具改为崩角露洞渗墨 | art_style.md 第 6.2 节（用户 2026-10-27） |

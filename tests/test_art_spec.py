@@ -204,7 +204,7 @@ class ArtSpecTests(unittest.TestCase):
     def test_tian_warrior_follows_the_class_design(self):
         row = re.search(r"^\| 天人战士 \| \*\*世界最上层的人(.*)$", self.style, re.M).group(1)
         for mark in ("**高冠、高立领与及地黑袍**", "**电路般的直角几何纹**", "**红宝石核心**", "**重击前摇时红宝石亮起朱红**",
-                     "**黑袍与墨分不清**", "**低血量时面具裂开一道缝，缝里是墨、没有脸**", "**唯一保持人形**"):
+                     "**黑袍与墨分不清**", "**低血量时面具崩掉一角，缺口里是黑洞、没有脸，裂口渗出墨**", "**唯一保持人形**"):
             with self.subTest(mark=mark):
                 self.assertIn(mark, row)
         self.assertNotIn("白色科技护甲", row)
@@ -214,7 +214,7 @@ class ArtSpecTests(unittest.TestCase):
             self.assertIn(part, self.spec)
         tian = (PROMPTS / "08_tian_warrior.md").read_text(encoding="utf-8")
         for phrase in ("exactly 2.5 heads tall", "tall pointed gold crown", "right-angled geometric lines like a circuit pattern", "NOT lightning",
-                       "dissolved into dripping ink", "[MASK]", "NOT glowing", "only black ink and darkness, no face behind it", "do NOT give this character a pale face-plate",
+                       "dissolved into dripping ink", "[MASK]", "NOT glowing", "has chipped off and is gone", "only flat pure black void, no face", "streaks of ink seep from the broken edge", "tian_02_broken.png", "do NOT give this character a pale face-plate",
                        "tian_01.png", "change ONLY the face", "clearly GOLD mask", "NOT a black face and NOT a black helmet", "clearly visible deep red ruby"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, tian)

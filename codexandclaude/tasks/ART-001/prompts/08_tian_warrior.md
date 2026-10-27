@@ -1,6 +1,6 @@
 # 08 天人战士设定图（GPT Image 2）
 
-**已认可**：完好版 `assets_src/inbox/art/tian/tian_02.png`（用户 2026-10-26）。生成裂开版时附它作参考图，`[MASK]` 用“裂开”那句，文件名 `tian_02_cracked.png`。
+**已认可**：完好版 `assets_src/inbox/art/tian/tian_02.png`（用户 2026-10-26）。生成裂开版时附它作参考图，`[MASK]` 用“裂开”那句，文件名 `tian_02_cracked.png`。第一版裂开图 `tian_02_cracked` 只是一道细裂纹，缩到游戏大小看不见；本版改为崩掉一角露出黑洞并渗墨，文件名 `tian_02_broken.png`。
 
 用途：定天人战士的形象（art_style.md 第 6.0 节阶层、第 6.2 节天人战士）：世界最上层的人，被逼疯后戴上了总指挥下发的微笑面具；正在被同化，黑袍下摆已化成墨。生成 3～4 张，挑一张；放进 `assets_src/inbox/art/tian/`。
 
@@ -31,7 +31,7 @@ Full body, strict side view facing LEFT (toward the player), standing pose, the 
 `[MASK]` 两种填法（一次只用一种）：
 
 - 完好（先生成这个）：`Its face is completely covered by the issued smile mask: a separate, clearly GOLD mask (#d9a03a), polished, its round edge visible against the dark head and hood, NOT a black face and NOT a black helmet; on the gold mask, two narrow obsidian eye slits curved upward like closed happy eyes and one fixed, calm, slightly too wide crescent smile, both carved as dark obsidian lines into the gold; a small but clearly visible deep red ruby (#8e1c2e) set in the middle of the forehead of the mask, NOT glowing. The gold mask is the brightest, most noticeable part of the head.`
-- 裂开（低血量版，用完好版作参考图）：`Its face is covered by the same issued smile mask, but a jagged crack now runs through the mask from the brow down past the smile, and through the crack there is only black ink and darkness, no face behind it; the small deep red ruby (#8e1c2e) still sits on the forehead, NOT glowing. Match the reference image exactly in silhouette, colours and proportions; change only the mask.`
+- 裂开（低血量版，用完好版 `tian_02` 作参考图）：`Its face is the same gold smile mask, but the mask has broken: one whole corner of it — the part with the right eye slit and half of the smile — has chipped off and is gone, leaving a jagged hole in the mask; inside the hole there is only flat pure black void, no face, no eye, no features at all; two or three thin streaks of ink seep from the broken edge and run down over the remaining gold, matching the ink dripping from the robe. The remaining half of the mask is unchanged and still smiling with its crescent eye; the small deep red ruby (#8e1c2e) stays on the intact half of the forehead, NOT glowing. Match the reference image exactly in silhouette, colours and proportions; change only the mask.`
 
 ## 验收要点
 
@@ -40,7 +40,7 @@ Full body, strict side view facing LEFT (toward the player), standing pose, the 
 - **化墨**：袍子下摆与袖口化成滴落的墨，分不清袍与墨；手脚是墨色的小爪。
 - **微笑面具**：**整张脸是一块金色面具**，边缘在深色的头上清楚可见，是头部最亮最显眼的部分；**不是**黑脸、不是黑头盔；金面上刻着黑曜石的弯月眼缝与过于平静的弯笑；额心一颗**清楚可见、不发光**的深红红宝石（发光由特效实现）；**没有**纸色面甲。
 - **其余不变**：高冠、立领、黑袍、直角金纹、化墨下摆与袖口、爪子、黑曜石肩甲、长柄与站姿都与 `tian_01` 一致。
-- **裂开版**：只有面具多了一道裂缝，缝里只有墨、没有脸；其余与完好版完全一致。
+- **裂开版**：面具**崩掉一角**（带一只眼与半边笑的那一块），缺口里是纯黑的空洞、没有脸；裂口边缘有两三道墨往下渗、流过金面；剩下半张面具仍在笑；红宝石留在完好的半边；其余与 `tian_02` 完全一致。缩到游戏大小也一眼看得出“缺了一角”。
 - **武器**：分段长柄、细长直刃、刃上一道金色光线。
 - 配色只有黑、金、黑曜石、深红红宝石与墨；红宝石只占很小面积；没有青色。
 - 正侧面朝左（面向玩家）、全身完整；背景透明或纯白，没有深色背景、暗角或光晕。
