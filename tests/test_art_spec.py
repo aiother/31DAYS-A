@@ -66,7 +66,8 @@ class ArtSpecTests(unittest.TestCase):
         first_sentence = block.split(". ")[0]
         prompts = sorted(PROMPTS.glob("0*.md"))
         self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
-                                                 "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md"])
+                                                 "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md",
+                                                 "06b_weapon_kintsugi_scatter.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -177,6 +178,14 @@ class ArtSpecTests(unittest.TestCase):
         for phrase in ("IDLE", "SLASH", "SWEEP", "DOWNWARD STAB", "NOT a soft silk whip, rope, chain or string of beads", "exactly THIRTEEN fluorite fragments", "NOT whole crystals", "match each other like pieces of a puzzle, yet keep thin even gaps", "perfectly STRAIGHT and rigid", "around the WRIST", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
             with self.subTest(weapon=phrase):
                 self.assertIn(phrase, weapon)
+
+    def test_kintsugi_scatter_study_is_marked_and_complete(self):
+        study = (PROMPTS / "06b_weapon_kintsugi_scatter.md").read_text(encoding="utf-8")
+        self.assertIn("**探索稿，未定稿**", study)
+        for phrase in ("kintsugi", "exactly THIRTEEN", "FORMING", "SLASH", "SCATTER", "DOWNWARD STAB", "perfectly STRAIGHT and rigid",
+                       "around the WRIST", "no gold", "**只改外观，不改玩法**"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, study)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
