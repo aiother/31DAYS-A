@@ -169,19 +169,20 @@ class ArtSpecTests(unittest.TestCase):
                 self.assertIn(phrase, player)
         self.assertNotIn("#b8382c", player)
         rig = self.style.split("**萤环与晶弦**")[1].split("- 可选附加骨骼")[0]
-        for mark in ("**萤环**", "**十三枚破碎的萤石碎片**", "**悬浮着环绕手腕缓缓转动**", "**晶弦**", "**拼成一把刀剑**", "**互相契合、又留着细缝**", "**由碎片与光组成的分节直刃**", "**硬的**", "**只改外观，不改玩法**"):
+        for mark in ("**萤环**", "**十三枚破碎的萤石碎片**", "**悬浮着环绕手腕缓缓转动**", "**晶弦**", "**散开再聚合**", "**光缝**", "**命中与弹反的一瞬间所有光缝一起闪亮**", "**拼成一把刀剑**", "**互相契合、又留着细缝**", "**由碎片与光组成的分节直刃**", "**硬的**", "**只改外观，不改玩法**"):
             self.assertIn(mark, rig)
         moves = re.findall(r"^\| (待机|普通攻击 1 段|普通攻击 2 段|向上攻击|向下攻击（弹起）|弹反|奔跑、闪避|恢复|攻击范围成长) \|", rig, re.M)
         self.assertEqual(len(moves), 9)
         self.assertIn("`weapon_starter_part_shard_<两位序号>.png`", self.spec)
         weapon = (PROMPTS / "06_weapon_crystal_string.md").read_text(encoding="utf-8")
-        for phrase in ("IDLE", "SLASH", "SWEEP", "DOWNWARD STAB", "NOT a soft silk whip, rope, chain or string of beads", "exactly THIRTEEN fluorite fragments", "NOT whole crystals", "match each other like pieces of a puzzle, yet keep thin even gaps", "perfectly STRAIGHT and rigid", "around the WRIST", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
+        for phrase in ("IDLE", "FORMING", "SLASH", "HIT FLASH", "SCATTER", "DOWNWARD STAB", "ONLY in those gaps along the fragment borders", "NO branching lightning patterns", "weapon_player_03.png", "weapon_player_04.png", "NOT a soft silk whip, rope, chain or string of beads", "exactly THIRTEEN fluorite fragments", "NOT whole crystals", "match each other like pieces of a puzzle, yet keep thin even gaps", "perfectly STRAIGHT and rigid", "around the WRIST", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
             with self.subTest(weapon=phrase):
                 self.assertIn(phrase, weapon)
 
     def test_kintsugi_scatter_study_is_marked_and_complete(self):
         study = (PROMPTS / "06b_weapon_kintsugi_scatter.md").read_text(encoding="utf-8")
-        self.assertIn("**探索稿，未定稿**", study)
+        self.assertIn("**探索稿，已收尾**", study)
+        self.assertIn("**不采纳**", study)
         for phrase in ("kintsugi", "exactly THIRTEEN", "FORMING", "SLASH", "SCATTER", "DOWNWARD STAB", "perfectly STRAIGHT and rigid",
                        "around the WRIST", "no gold", "**只改外观，不改玩法**"):
             with self.subTest(phrase=phrase):
