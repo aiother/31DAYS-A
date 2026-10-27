@@ -1,6 +1,6 @@
 # ART-001 交付记录：风格说明与素材规格
 
-状态：已交付，待审查｜实现：Claude｜日期：2026-10-27
+状态：第1轮审查 R1 已修复（`aba620b`），待复审｜实现：Claude｜日期：2026-10-27
 
 ## 固定对象
 
@@ -111,6 +111,65 @@
 - `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.578秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T075553.659338Z\008.txt`；SHA256=`6cb00c35a02cfbe9eba85592cdd6611f435fe57acf3e238686d1046fe7e0362f`。
 - `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=18.75秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T075553.659338Z\009.txt`；SHA256=`103cb5744f82bcc56a49361dbd136a82a40c10a384d91b1760c2578475be012f`。
 - 报告 `D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T075553.659338Z\engine.txt` SHA256=`a4fab0372b2e80d594bafc92247c2f37edbfd4cd5dedcd2b92f79bbfd0fe6bb6`。
+
+失败清单：无。
+失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
+复用限制：只比较内容不替代审查/授权；须成功完整且干净、运行前后稳定、范围相同的来源；只改记录时G2可复用，G3必须重跑；另核对工具、命令和外部依赖。
+
+## 第1轮审查修复（2026-10-27）
+
+审查记录 [review.md](review.md)（Codex，`703a78b`，被审 `e2978c2`，已快进并入本分支）。R1 成立：任务卡要求的“部件拆分清单”没有交付。修复提交 `aba620b76b4af77c7ba2d2461f2207cece1454da`，只改提示词与测试，已定稿的风格与规格未动。
+
+| 编号 | 问题 | 修复 | 回归 |
+| --- | --- | --- | --- |
+| R1 | 只有全身设定图提示词与通用骨骼树，没写清玩家的具体部件：斗篷与内衬怎样分图、面纱与头、兜帽与三段下摆对应哪些文件、哪些远侧肢体要补画 | 新增 `prompts/09_player_parts.md`，01 指向它：24 个部件逐行写**文件名、画面内容、挂接骨骼、层序、来源（从已认可设定图 `player_01_3` 切图 / 补画 / 两者）、遮挡与 15% 重叠**；斗篷分后片、内衬、前片与 `cloth_1…3` 下摆，兜帽分后半（挂 `hood`，在头后）与帽口（在面纱前），面纱单独成图挂 `head`（只画两点眼光，发光由特效做）；远侧六段肢体全部补画、同形压暗一档；不出图的骨骼（`root`、`spine`、`neck`、`weapon`、`ring`）写明原因；附补画用的部件提示词（含远侧说明句） | `test_player_parts_list_is_complete`：24 个文件名一个不多一个不少；每行骨骼正确且在 `asset_spec.md` 的骨骼树或附加骨骼内；层序连续，关键遮挡关系（远侧在身体后、兜帽在头后、头 < 面纱 < 帽口、后片 < 躯干 < 前片 < 近侧前臂）成立；来源只能是三种之一，被遮挡的部件必须补画；每行都有 15% 重叠说明；下摆骨骼链、远侧说明句、“萤环不画在手上”都在 |
+
+编写测试时它先抓到清单本身的缺口：7 行写的是“同上”或没写重叠，已逐行写明。
+
+变异（各改一处，在项目副本中跑本套件，结果 `codexandclaude/runs/art001-r1-mutations.json`，不入库）：
+
+| 变异 | 结果 |
+| --- | --- |
+| 清单漏掉远侧手 | 失败 |
+| 斗篷前片放到躯干后面 | 失败 |
+| 面纱挂到 `hood` 骨骼 | 失败 |
+| 远侧上臂标为切图 | 失败 |
+| 近侧手去掉重叠说明 | 失败 |
+| 01 不再指向清单 | 失败 |
+| `hip` 改名为 `pelvis` | 失败 |
+
+`tests/test_art_spec.py` 16 → **17/0**。修复只改 Markdown 与 Python 测试，按检查矩阵跑 G3（修复提交上）：
+
+<!-- run_checks evidence v1 -->
+总结果：**通过**；模式：`focused`。
+被测SHA：`aba620b76b4af77c7ba2d2461f2207cece1454da`；工作区：`D:\31days\codexandclaude\worktrees\claude`。
+工作区状态：**干净**。
+开始：2026-10-27T08:35:24.857973+00:00；结束：2026-10-27T08:35:49.468455+00:00。
+
+入口命令（JSON参数数组）：`["C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", "D:\\31days\\codexandclaude\\worktrees\\claude\\codexandclaude\\tools\\run_checks.py", "focused", "--python-all"]`。
+检查（缺项均不通过；env只代表环境探测，不代表G2/G3）：
+- G3:tests：实际129 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+- G3:codexandclaude/tests：实际67 / 预期unittest发现数（未独立枚举）；完整=True；通过=True。
+
+工具版本：
+- python：`3.12.14 / openpyxl=3.1.5`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`。
+- git：`git version 2.56.0.windows.2`；`C:\Program Files\Git\ucrt64\bin\git.exe`。
+- node：`v24.22.1`；`C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+
+提交树：`8c1b31a2f5a94c3cf2c2969a1ef50058d1e461a8`；指纹范围：`['exclude codexandclaude/runs/**', 'exclude codexandclaude/tasks/<ID>/{delivery,review,integration,acceptance}.md']`。
+已提交范围指纹：`2210d83f5896c0a223dd87138770829ca659165bba470876830988e002bda5ac`；工作区范围指纹（原始字节）：`3971afef0b037ae4ee46f7889bf471b65fe3354d9696f3f7bcc9fba558443120`。
+全工作区指纹：`4860a442fcff0c505a6dd5e5353c91ce1af7982e6c4217db32b5e77e2c6fb04f`；运行前后内容稳定：`True`。
+内容身份说明：起止快照不一致时，检查结果照实保留，但该运行不可作为复用来源；不是对运行期间每次瞬时写入的监控。
+已跟踪总diff SHA256：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`；未暂存diff：`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+
+实际命令与日志（参数为JSON数组）：
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "rev-parse", "HEAD"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\001.txt`；SHA256=`847d01735cf149784cc311ed5f35b85a5ee5427ef349103a4f944d2935b13396`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "status", "--porcelain", "--untracked-files=all"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\002.txt`；SHA256=`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-c", "import sys,openpyxl; print(sys.version.split()[0]); print(\"openpyxl=\"+openpyxl.__version__)"]`；退出=0；耗时=0.359秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\003.txt`；SHA256=`6d8032bb36596789957df461b308076a9002b5585e5b4d43f8a62b51f0ac622b`。
+- `["C:\\Program Files\\Git\\ucrt64\\bin\\git.exe", "--version"]`；退出=0；耗时=0.047秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\004.txt`；SHA256=`dc0a995f896e73e8fc394cc5dc4d8cabfea65b5eb2db4a40d134dc21c4feb3c0`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe", "--version"]`；退出=0；耗时=0.032秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\005.txt`；SHA256=`b8a527ca60b496131eccd1fcbeccf289ebc0a7e63be57e4b4c6f8f67648bcc07`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "tests", "-v"]`；退出=0；耗时=3.343秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\006.txt`；SHA256=`23f36350090003ba72875eae20a4fed586136abf4777442042ae574eadfe7a2a`。
+- `["C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe", "-m", "unittest", "discover", "-s", "codexandclaude/tests", "-v"]`；退出=0；耗时=19.078秒；超时=False；日志=`D:\31days\codexandclaude\worktrees\claude\codexandclaude\runs\20261027T083524.856973Z\007.txt`；SHA256=`597642d2d5aa3c3c76a54c5b3ed23a624d4889d422bd95d8cd2d5f9b0aee4739`。
 
 失败清单：无。
 失败归因：未提供基线失败证据，不自动区分旧失败与新失败。
