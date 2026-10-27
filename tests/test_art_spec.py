@@ -67,7 +67,7 @@ class ArtSpecTests(unittest.TestCase):
         prompts = sorted(PROMPTS.glob("0*.md"))
         self.assertEqual([p.name for p in prompts], ["01_player_full.md", "02_hd_background.md", "03_colorless.md",
                                                  "04_boss_overlook.md", "05_boss_parasite.md", "06_weapon_crystal_string.md",
-                                                 "06b_weapon_kintsugi_scatter.md"])
+                                                 "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md"])
         for path in prompts:
             text = path.read_text(encoding="utf-8")
             with self.subTest(prompt=path.name):
@@ -187,6 +187,16 @@ class ArtSpecTests(unittest.TestCase):
                        "around the WRIST", "no gold", "**只改外观，不改玩法**"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, study)
+
+    def test_shard_parts_prompt_draws_parts_only(self):
+        parts = (PROMPTS / "07_weapon_shard_parts.md").read_text(encoding="utf-8")
+        for phrase in ("thirteen fragments in total", "two small fragments", "ten fragments", "one long fragment forming the sharp tip",
+                       "NO glow, NO light inside or around the fragments", "NO cracks drawn across their surfaces", "the gaps are plain background, not lit",
+                       "same shape, size and orientation", "about eight times as long as it is wide", "weapon_player_03.png", "**不要**附"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, parts)
+        self.assertIn("`07_weapon_shard_parts.md`", self.spec)
+        self.assertIn("**分工**", self.style)
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
