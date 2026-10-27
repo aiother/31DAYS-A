@@ -214,7 +214,8 @@ class ArtSpecTests(unittest.TestCase):
             self.assertIn(part, self.spec)
         tian = (PROMPTS / "08_tian_warrior.md").read_text(encoding="utf-8")
         for phrase in ("exactly 2.5 heads tall", "tall pointed gold crown", "right-angled geometric lines like a circuit pattern", "NOT lightning",
-                       "dissolved into dripping ink", "[MASK]", "NOT glowing", "only black ink and darkness, no face behind it", "do NOT give this character a pale face-plate"):
+                       "dissolved into dripping ink", "[MASK]", "NOT glowing", "only black ink and darkness, no face behind it", "do NOT give this character a pale face-plate",
+                       "tian_01.png", "change ONLY the face", "clearly GOLD mask", "NOT a black face and NOT a black helmet", "clearly visible deep red ruby"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, tian)
 
