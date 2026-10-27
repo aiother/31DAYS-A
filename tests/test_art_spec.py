@@ -190,8 +190,8 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_blade_prompt_draws_one_whole_blade_for_the_cutter(self):
         blade = (PROMPTS / "07_weapon_shard_parts.md").read_text(encoding="utf-8")
-        for phrase in ("ONE complete, unbroken sword blade", "about eight times as long as it is wide", "chipped flint blade",
-                       "NO gaps, NO separate fragments, NO seams", "NO glow, NO light inside or around it", "weapon_player_03.png",
+        for phrase in ("ONE complete, unbroken sword blade", "only about EIGHT times as long as it is wide", "NOT a thin rapier, NOT a needle", "diamond-shaped faceted pommel", "diamond-shaped faceted crossguard", "chipped flint blade",
+                       "NO gaps, NO separate fragments, NO seams", "NO glow, NO light inside or around it", "blade_whole_01.png", "NOT its thin blade proportions",
                        "**不要**附", "shard_parts_01"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, blade)
