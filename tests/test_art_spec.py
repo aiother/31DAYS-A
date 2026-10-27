@@ -125,7 +125,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**敌人造型语言参照《丝之歌》**", section)
         self.assertIn("**实体共用一套视觉语言**", section)
         self.assertIn("**风格参考图**", section)
-        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "player_01_3"):
+        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "player_01_3", "tian_02"):
             self.assertIn(approved, section)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
