@@ -1,6 +1,6 @@
 # 08 天人战士设定图（GPT Image 2）
 
-**已认可**：完好版 `assets_src/inbox/art/tian/tian_02.png`（用户 2026-10-26）。生成裂开版时附它作参考图，`[MASK]` 用“裂开”那句，文件名 `tian_02_cracked.png`。第一版裂开图 `tian_02_cracked` 只是一道细裂纹，缩到游戏大小看不见；本版改为崩掉一角露出黑洞并渗墨，文件名 `tian_02_broken.png`。
+**已认可**：完好版 `assets_src/inbox/art/tian/tian_02.png`（用户 2026-10-26）。生成裂开版时附它作参考图，`[MASK]` 用“裂开”那句，文件名 `tian_02_cracked.png`。第一版裂开图 `tian_02_cracked` 只是一道细裂纹，缩到游戏大小看不见；本版改为崩掉一角露出黑洞并渗墨，文件名 `tian_02_broken.png`。**已认可**：低血量版 `assets_src/inbox/art/tian/tian_02_broken.png`（用户 2026-10-27）。
 
 用途：定天人战士的形象（art_style.md 第 6.0 节阶层、第 6.2 节天人战士）：世界最上层的人，被逼疯后戴上了总指挥下发的微笑面具；正在被同化，黑袍下摆已化成墨。生成 3～4 张，挑一张；放进 `assets_src/inbox/art/tian/`。
 

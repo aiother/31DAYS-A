@@ -127,6 +127,7 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**风格参考图**", section)
         for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "player_01_3", "tian_02"):
             self.assertIn(approved, section)
+        self.assertIn("`assets_src/inbox/art/tian/tian_02_broken`", self.style)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
         self.assertIn("头高约为显示高度的 40%", self.spec)
