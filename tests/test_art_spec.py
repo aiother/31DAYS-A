@@ -155,14 +155,14 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("**面甲是实体的标志**", section)
         self.assertIn("**玩家是匠首**", section)
         row = re.search(r"^\| 玩家（匠首） \|(.*)$", self.style, re.M).group(1)
-        for mark in ("**深色的连体工装**", "**深银色连帽长斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**", "**识别锚点：持刀手腕上一串发光的萤石手链**"):
+        for mark in ("**深色的连体工装**", "**深银色连帽长斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**", "**识别锚点：持刀手腕上一串发光的萤石手链**", "**兜帽贴着大圆头，帽顶一个软软垂下的尖角**", "**同一种萤石光**", "**内衬近黑的深蓝**", "**玫瑰金几何边纹**"):
             self.assertIn(mark, row)
         self.assertNotIn("围巾", row)
         for name, value in (("匠首深蓝", "1f2740"), ("匠首深银", "b4bac4"), ("玫瑰金", "c08a78"), ("紫水晶", "8a5fa8"), ("萤石蓝紫", "7b84c9"), ("萤石光", "b9c0ff")):
             self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
         self.assertIn("玩家 `cloth_1…3` 长斗篷下摆与 `hood` 兜帽", self.spec)
         player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
-        for phrase in ("Artisan Chief", "#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "leaves a short trail of light", "#b9c0ff", "black fine-mesh gauze veil", "two small, softly glowing pale eyes",
+        for phrase in ("Artisan Chief", "#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "long ribbon-like trail", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
                        "#7b84c9", "No scarf, no red anywhere", "floor-length hooded cape", "hangs from the edge of the hood", "do NOT give the character its pale face-plate"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, player)

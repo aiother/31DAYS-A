@@ -151,9 +151,10 @@ func figure(ci: CanvasItem, feet: Vector2, h: float, fill: Color, seed: int, rim
 ## The player, an Artisan Chief, wrapped in a floor-length deep-silver
 ## hooded cape (hood up, a soft teardrop silhouette); the near-black navy
 ## coverall shows at the front opening, boots peek below the hem; a black mesh
-## veil hangs from the hood with two faint eye glints; one rose-gold clasp,
-## nothing else worn. Its mark: a glowing fluorite bracelet on the blade wrist
-## that leaves a trail of light.
+## veil hangs from the snug hood (a soft floppy tip on top); the cape is lined
+## in dark navy and edged with a rose-gold band; one rose-gold clasp, nothing
+## else worn. Its mark is fluorite light: the eyes behind the veil and the
+## bracelet on the blade wrist glow the same, the bracelet trailing a ribbon.
 func player(ci: CanvasItem, feet: Vector2) -> void:
 	var silver: Color = Color("b4bac4")
 	var navy: Color = Color("1f2740")
@@ -166,6 +167,11 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	for q: Vector2 in [Vector2(-12, -70), Vector2(14, -70), Vector2(18, -50), Vector2(22, -6), Vector2(14, -9), Vector2(6, -5), Vector2(-2, -8), Vector2(-10, -4), Vector2(-18, -8), Vector2(-24, -6), Vector2(-21, -44)]:
 		cape.append(feet + q)
 	ci.draw_colored_polygon(cape, silver)
+	# The dark lining shows where the hem flips at the back, a rose-gold band along the hem.
+	ci.draw_colored_polygon(PackedVector2Array([feet + Vector2(-24, -6), feet + Vector2(-21, -20), feet + Vector2(-16, -9)]), navy)
+	for i: int in range(cape.size() - 1):
+		if i >= 3 and i <= 8:
+			InkDraw.rough_line(ci, cape[i] + Vector2(0, -3), cape[i + 1] + Vector2(0, -3), Color("c08a78"), 1.6, 130 + i, 0.2)
 	# The front opening shows the dark coverall.
 	var opening: PackedVector2Array = PackedVector2Array([feet + Vector2(8, -66), feet + Vector2(14, -66), feet + Vector2(20, -8), feet + Vector2(10, -6)])
 	ci.draw_colored_polygon(opening, navy)
@@ -174,9 +180,12 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	# Sun on the left edge, violet shade on the right fold.
 	InkDraw.rough_line(ci, feet + Vector2(-13, -66), feet + Vector2(-22, -10), DuskStyle.SUN, 2.5, 105)
 	InkDraw.rough_line(ci, feet + Vector2(17, -50), feet + Vector2(20, -12), Color(DuskStyle.DUSK_TOP, 0.5), 3.5, 106)
-	# The hood around the head.
-	InkDraw.paper_disc(ci, head + Vector2(-2, -2), 26.0, silver, 107, 0.4)
-	InkDraw.rough_circle(ci, head + Vector2(-2, -2), 26.0, DuskStyle.INK, 2.5, 108, 0.5)
+	# The snug hood around the head, its soft tip drooping back.
+	var tip: PackedVector2Array = PackedVector2Array([head + Vector2(-14, -18), head + Vector2(-4, -26), head + Vector2(-22, -34), head + Vector2(-34, -24)])
+	ci.draw_colored_polygon(tip, silver)
+	stroke(ci, tip, DuskStyle.INK, 2.5, 119)
+	InkDraw.paper_disc(ci, head + Vector2(-1, -1), 24.0, silver, 107, 0.4)
+	InkDraw.rough_circle(ci, head + Vector2(-1, -1), 24.0, DuskStyle.INK, 2.5, 108, 0.5)
 	InkDraw.rough_line(ci, head + Vector2(-27, -6), head + Vector2(-22, -18), DuskStyle.SUN, 2.5, 109)
 	# The black mesh veil hanging from the hood's edge, two faint eye glints.
 	InkDraw.paper_disc(ci, head + Vector2(3, 2), 18.0, Color("1d1b22"), 110, 0.3)
@@ -185,8 +194,8 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	InkDraw.rough_circle(ci, head + Vector2(3, 2), 18.0, DuskStyle.INK, 2.0, 115, 0.3)
 	for e: float in [-1.0, 1.0]:
 		var eye: Vector2 = head + Vector2(9 + e * 5, 2)
-		InkDraw.glow(ci, eye, 4.0, DuskStyle.PEARL, 0.5)
-		ci.draw_circle(eye, 1.8, DuskStyle.PEARL)
+		InkDraw.glow(ci, eye, 5.0, Color("b9c0ff"), 0.7)
+		ci.draw_circle(eye, 1.9, Color("d8dcff"))
 	# The rose-gold clasp with its amethyst: the only ornament.
 	var clasp: Vector2 = feet + Vector2(8, -67)
 	ci.draw_circle(clasp, 3.6, Color("c08a78"))
@@ -199,13 +208,13 @@ func player(ci: CanvasItem, feet: Vector2) -> void:
 	InkDraw.rough_line(ci, hand + Vector2(4, -4), hand + Vector2(26, -19), DuskStyle.PEARL, 1.5, 121)
 	# The fluorite bracelet glowing on the wrist, its trail of light behind the hand.
 	var glow: Color = Color("b9c0ff")
-	for i: int in range(7):
-		var t: float = float(i) / 6.0
-		var at: Vector2 = hand + Vector2(4 + 24 * t, 6 + 18 * t - 6 * t * t)
-		ci.draw_circle(at, 4.0 * (1.0 - t * 0.6), Color(glow, 0.9 * (1.0 - t * 0.85)))
-	InkDraw.glow(ci, hand + Vector2(-3, 2), 7.0, glow, 0.8)
+	for i: int in range(11):
+		var t: float = float(i) / 10.0
+		var at: Vector2 = hand + Vector2(4 + 36 * t, 6 + 24 * t - 8 * t * t)
+		ci.draw_circle(at, 4.5 * (1.0 - t * 0.6), Color(glow, 0.9 * (1.0 - t * 0.85)))
+	InkDraw.glow(ci, hand + Vector2(-3, 2), 8.0, glow, 0.9)
 	for b: int in range(4):
-		ci.draw_circle(hand + Vector2(-5 + b * 1.6, 1 + b * 0.8), 1.3, Color("7b84c9"))
+		ci.draw_circle(hand + Vector2(-5 + b * 2.0, 1 + b * 1.0), 1.8, Color("7b84c9"))
 
 ## A point given in player units from the feet (enemies face left, toward the player).
 func pt(feet: Vector2, k: float, x: float, y: float) -> Vector2:
