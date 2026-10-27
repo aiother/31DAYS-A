@@ -220,6 +220,18 @@ class ArtSpecTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, tian)
 
+    def test_regions_carry_dark_room_traces_and_day_fade(self):
+        scene = self.style.split("## 7. 场景")[1].split("## 8.")[0]
+        rows = re.findall(r"^\| (荒地 HD|田野 TY|逆时战场 NSZC) \|", scene, re.M)
+        self.assertEqual(rows, ["荒地 HD", "田野 TY", "逆时战场 NSZC"])
+        for mark in ("**天空顶端有墨往下渗**", "**夕阳是一张扁平的纸剪太阳**", "**时间倒着走**", "**灰暗的暖灰**",
+                     "**世界随日子褪色（D）**", "**只作用于背景层**", "**不画三套背景**", "**可读性**"):
+            with self.subTest(mark=mark):
+                self.assertIn(mark, scene)
+        self.assertNotIn("淡蓝 → 白日纸色", scene)
+        hd = (PROMPTS / "02_hd_background.md").read_text(encoding="utf-8")
+        self.assertIn("dark ink (#2b2420) seeps down into the picture", hd)
+
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
         light = re.search(r"无色实体把风格块.*?```\n(.*?)```", template, re.S).group(1).strip()

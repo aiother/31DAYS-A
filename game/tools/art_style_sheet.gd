@@ -627,19 +627,56 @@ func palette(ci: CanvasItem, at: Vector2) -> void:
 		text(ci, row + Vector2(66, 22), "%s  #%s" % [colors[i][0], (colors[i][1] as Color).to_html(false)], 18)
 		text(ci, row + Vector2(66, 46), String(colors[i][2]), 16, Color(DuskStyle.INK, 0.7))
 
+## The three regions: sky, ground and far layer, each with its trace of the
+## Dark Room (ink seeping from the top, a flat paper sun, time running
+## backwards), and the day fade: backgrounds lose saturation day by day.
 func regions(ci: CanvasItem, at: Vector2) -> void:
-	text(ci, at + Vector2(0, 22), "三个区域主色调", 24)
+	text(ci, at + Vector2(0, 22), "三个区域主色调与暗室的痕迹（右：第 1/2/3 日褪色）", 20)
 	var bands: Array = [["荒地 HD", DuskStyle.DUSK_TOP, DuskStyle.DUSK_BOTTOM, DuskStyle.PAPER_DUSK, Color("8a7566")],
-		["田野 TY", Color("9fc0d8"), DuskStyle.PAPER_DAY, DuskStyle.PAPER_DAY, Color("d8b25a")],
-		["逆时战场 NSZC", Color("5a3a3a"), Color("c0703a"), Color("9a7e6e"), Color("6e5e58")]]
+		["田野 TY", Color("7d7670"), Color("e8c98a"), DuskStyle.PAPER_DAY, Color("d8b25a")],
+		["逆时战场 NSZC", Color("5a3a3a"), Color("d8cdbf"), Color("a8988a"), Color("6e5e58")]]
 	for i: int in range(bands.size()):
-		var r: Rect2 = Rect2(at + Vector2(0, 44 + i * 74), Vector2(580, 62))
-		InkDraw.wash(ci, Rect2(r.position, Vector2(r.size.x, 36)), bands[i][1], bands[i][2])
-		ci.draw_rect(Rect2(r.position + Vector2(0, 36), Vector2(r.size.x, 26)), bands[i][3])
-		for j: int in range(7):
-			ci.draw_rect(Rect2(r.position + Vector2(40 + j * 76, 22 - InkDraw.noise(j, i) * 14), Vector2(30, 14 + InkDraw.noise(j, i) * 14)), Color(bands[i][4], 0.8))
-		InkDraw.rough_rect(ci, r, DuskStyle.INK, 1.5, 700 + i)
+		var r: Rect2 = Rect2(at + Vector2(0, 44 + i * 74), Vector2(470, 62))
+		region_band(ci, r, bands[i], i, 1.0)
 		text(ci, r.position + Vector2(8, 58), String(bands[i][0]), 18, DuskStyle.INK)
+		for d: int in range(3):
+			var mini: Rect2 = Rect2(r.position + Vector2(480 + d * 34, 0), Vector2(30, 62))
+			region_band(ci, mini, bands[i], i, [1.0, 0.6, 0.25][d])
+
+func region_band(ci: CanvasItem, r: Rect2, band: Array, i: int, saturation: float) -> void:
+	var c: Array = []
+	for k: int in range(1, 5):
+		var col: Color = band[k]
+		var grey: float = col.get_luminance()
+		c.append(Color(grey, grey, grey).lerp(col, saturation))
+	var sky_h: float = r.size.y * 0.58
+	InkDraw.wash(ci, Rect2(r.position, Vector2(r.size.x, sky_h)), c[0], c[1])
+	ci.draw_rect(Rect2(r.position + Vector2(0, sky_h), Vector2(r.size.x, r.size.y - sky_h)), c[2])
+	var count: int = maxi(1, int(r.size.x / 76.0))
+	for j: int in range(count):
+		var w: float = minf(30.0, r.size.x * 0.4)
+		ci.draw_rect(Rect2(r.position + Vector2(8 + j * 76 + (r.size.x - 16 - w) * (0.5 if count == 1 else 0.0), sky_h - 14 - InkDraw.noise(j, i) * 14), Vector2(w, 14 + InkDraw.noise(j, i) * 14)), Color(c[3], 0.8))
+	if r.size.x > 100:
+		match i:
+			0:
+				# Ink seeping down from the top edge of the sky.
+				ci.draw_rect(Rect2(r.position, Vector2(r.size.x, 5)), DuskStyle.INK)
+				for j: int in range(9):
+					var x: float = r.position.x + 20 + j * 50
+					InkDraw.rough_line(ci, Vector2(x, r.position.y + 4), Vector2(x, r.position.y + 6 + InkDraw.noise(j, 760) * 14), DuskStyle.INK, 3.0, 761 + j, 0.4)
+			1:
+				# A flat paper sun on the horizon, its cut edge visible.
+				var sun: Vector2 = r.position + Vector2(r.size.x * 0.7, sky_h - 4)
+				InkDraw.paper_disc(ci, sun, 13.0, Color("f0d9a0"), 770, 0.2)
+				InkDraw.rough_circle(ci, sun, 13.0, DuskStyle.INK, 1.5, 771, 0.2)
+			2:
+				# Time running backwards: debris hanging and rising, embers falling.
+				for j: int in range(6):
+					var x: float = r.position.x + 60 + j * 66
+					ci.draw_rect(Rect2(x, r.position.y + 8 + InkDraw.noise(j, 780) * 14, 5, 4), Color("4a403a"))
+					InkDraw.rough_line(ci, Vector2(x + 2, r.position.y + 16 + InkDraw.noise(j, 780) * 14), Vector2(x + 2, r.position.y + 22 + InkDraw.noise(j, 780) * 14), Color(DuskStyle.INK, 0.4), 1.0, 781 + j, 0.2)
+					ci.draw_circle(Vector2(x + 30, r.position.y + 28 + InkDraw.noise(j, 790) * 6), 1.6, Color("e07a3a"))
+	InkDraw.rough_rect(ci, r, DuskStyle.INK, 1.5, 700 + i)
 
 ## Display heights (T6-E): player 112 px; ordinary NPC and enemy 80 %%; key NPC and elite 200 %%; Boss 250 %%.
 func scale_ruler(ci: CanvasItem, at: Vector2) -> void:
