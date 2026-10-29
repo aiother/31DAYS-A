@@ -49,6 +49,8 @@ Animation 轨道路径以 **VisualRoot** 为根；允许视觉子树中 Node2D �
 
 ## 骨骼与关键逐帧约定
 
+**人体步行姿势基准（2026-10-29，用户确认）**：以 [`human_walk_approved_v1.png`](../../codexandclaude/tasks/ART-001/references/human_walk_approved_v1.png) 的朝左、01–10 十姿势为准。用户原话：“这版才对，记住了，这版才是正确的人体步行姿势”。后续步行腿部提取、角色适配须保留该图的姿势顺序与双腿关系；此前程序生成的 `human_walk_16_v2`、`player_walk_16_rig_v1` 仅作历史探索，不作为已认可的人体步行标准。原图确认不等于已完成游戏运行时动作验收。
+
 正式资源放在 VisualRoot 内独立的 `Art` 子树，保留 Animator 与现有 GameplayRoot 路径。可在 Art 下放 Skeleton2D / Bone2D / Polygon2D 绑定，在关键爆发帧放 Sprite2D，通过同一个 Animation 的骨骼节点 position / rotation / scale 和 Sprite2D frame / texture / visible 轨道混用。约定关键逐帧只覆盖对应肢体或阶段，骨骼继续负责其余姿态；切换时显式设置双方 visible，避免双重轮廓。可在资源接入任务中新增 Art 节点并隐藏旧占位 Sprite；不需要修改玩法脚本。
 
 **朝向与根变换约定（审查 N1）**：本驱动不自动镜像角色。现有玩家朝向由 PlaceholderSprite.flip_h 处理，敌人由绘制代码读取 facing。切换状态或片段时，驱动会将 VisualRoot.transform 还原为 ready 时的初始值；不要在 VisualRoot.scale.x 上保存朝向。正式资源接入时在 VisualRoot 下设置专用 `Facing` 子节点，其下再放 Art，由视觉接入层读取查询的 facing 并更新 Facing.scale.x。动画轨道只写 Facing 下的 Art / 骨骼 / 逐帧节点，不写 Facing 的镜像变换；这样片段恢复和根变换重置均不会冲掉朝向。此约定不要求更改玩法朝向或转身计时。
