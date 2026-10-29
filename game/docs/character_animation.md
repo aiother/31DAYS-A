@@ -49,6 +49,8 @@ Animation 轨道路径以 **VisualRoot** 为根；允许视觉子树中 Node2D �
 
 ## 骨骼与关键逐帧约定
 
+**步行参考左右标识（2026-10-29，用户指定）**：右腿＝虚线、左腿＝实线；左右按角色自身，不按画面左右。标注版见 [`human_walk_leg_labels_v1.png`](../../codexandclaude/tasks/ART-001/references/human_walk_leg_labels_v1.png)。该约定用于本套已确认步行参考，不因腿向前/向后摆而交换标签。
+
 **人体步行姿势基准（2026-10-29，用户确认）**：以 [`human_walk_approved_v1.png`](../../codexandclaude/tasks/ART-001/references/human_walk_approved_v1.png) 的朝左、01–10 十姿势为准。用户原话：“这版才对，记住了，这版才是正确的人体步行姿势”。后续步行腿部提取、角色适配须保留该图的姿势顺序与双腿关系；此前程序生成的 `human_walk_16_v2`、`player_walk_16_rig_v1` 仅作历史探索，不作为已认可的人体步行标准。原图确认不等于已完成游戏运行时动作验收。
 
 正式资源放在 VisualRoot 内独立的 `Art` 子树，保留 Animator 与现有 GameplayRoot 路径。可在 Art 下放 Skeleton2D / Bone2D / Polygon2D 绑定，在关键爆发帧放 Sprite2D，通过同一个 Animation 的骨骼节点 position / rotation / scale 和 Sprite2D frame / texture / visible 轨道混用。约定关键逐帧只覆盖对应肢体或阶段，骨骼继续负责其余姿态；切换时显式设置双方 visible，避免双重轮廓。可在资源接入任务中新增 Art 节点并隐藏旧占位 Sprite；不需要修改玩法脚本。
