@@ -1,0 +1,83 @@
+{
+  "tool": "image_gen",
+  "generation_mode": "built-in",
+  "date": "2026-10-30",
+  "reference_sha256": "ac67b32000ae735089c0f0010740b533917425ef25f7db7aef90836dac0a2841",
+  "status": "selected_direction_production_reference",
+  "processing": "Final original generated PNGs copied unchanged; no programmatic redraw.",
+  "images": [
+    {
+      "role": "turnaround",
+      "file": "player_a_turnaround_v1.png",
+      "source_file": "exec-c3cb0689-b2bf-4608-9d31-300cfc20a444.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "a32debf9dbf6fd7148e7f6f7a0ef9fe7748682162d167a1b63bff2eaddf84ba6",
+      "view_regions": [
+        {
+          "name": "front",
+          "box": [
+            0.035,
+            0.08,
+            0.355,
+            0.89
+          ]
+        },
+        {
+          "name": "right",
+          "box": [
+            0.38,
+            0.08,
+            0.61,
+            0.89
+          ]
+        },
+        {
+          "name": "back",
+          "box": [
+            0.64,
+            0.08,
+            0.96,
+            0.89
+          ]
+        }
+      ]
+    },
+    {
+      "role": "parts",
+      "file": "player_a_parts_breakdown_v1.png",
+      "source_file": "exec-ac9c6f00-691e-446a-82e3-73a8ac56798d.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "40cff2c840e48d00a89f6bad6c0ae35c5aababdaf4826c5de949e2cc803f2eb2",
+      "grid": {
+        "columns": 6,
+        "rows": 4,
+        "first_id": "01",
+        "last_id": "24"
+      }
+    }
+  ],
+  "generation_history": [
+    {
+      "purpose": "turnaround draft",
+      "file": "exec-4186eccc-de88-46bd-b5ee-533e9b64b9a8.png"
+    },
+    {
+      "purpose": "turnaround side-direction correction",
+      "file": "exec-c3cb0689-b2bf-4608-9d31-300cfc20a444.png"
+    },
+    {
+      "purpose": "parts draft",
+      "file": "exec-dd0f8af2-785b-42bf-ae74-93070f2d0d76.png"
+    },
+    {
+      "purpose": "remove duplicated forelock from hair pieces",
+      "file": "exec-ac9c6f00-691e-446a-82e3-73a8ac56798d.png"
+    }
+  ]
+}

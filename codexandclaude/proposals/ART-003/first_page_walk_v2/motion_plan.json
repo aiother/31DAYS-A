@@ -1,0 +1,494 @@
+{
+  "frame_count": 8,
+  "columns": 4,
+  "rows": 2,
+  "cell_size": [
+    384,
+    512
+  ],
+  "fps": 8,
+  "duration_ms": 125,
+  "ground_y": 450,
+  "direction": "right",
+  "near_left": "white with orange dot on boot cuff",
+  "far_right": "neutral light gray with blue double bar on boot cuff",
+  "leg_lengths": {
+    "thigh": 80.0,
+    "shin": 84.0
+  },
+  "note": "Motion control coordinates are guidance, not measured artwork joints.",
+  "frames": [
+    {
+      "frame": 1,
+      "phase": "toe_off",
+      "stance": "far_right",
+      "hip": [
+        192,
+        262
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            262
+          ],
+          "knee": [
+            192.89888369768246,
+            341.99494989121524
+          ],
+          "ankle": [
+            145,
+            411
+          ],
+          "heel": [
+            138,
+            429
+          ],
+          "toe": [
+            172,
+            450
+          ],
+          "phase": "toe_off",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            262
+          ],
+          "knee": [
+            219.92652507646793,
+            336.96738755721327
+          ],
+          "ankle": [
+            238,
+            419
+          ],
+          "heel": [
+            225,
+            450
+          ],
+          "toe": [
+            270,
+            444
+          ],
+          "phase": "heel_contact",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 2,
+      "phase": "early_swing",
+      "stance": "far_right",
+      "hip": [
+        192,
+        263
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            263
+          ],
+          "knee": [
+            216.08167642292432,
+            339.2894020206055
+          ],
+          "ankle": [
+            157,
+            399
+          ],
+          "heel": [
+            148,
+            421
+          ],
+          "toe": [
+            180,
+            440
+          ],
+          "phase": "early_swing",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            263
+          ],
+          "knee": [
+            216.9631843423167,
+            339.0055223486525
+          ],
+          "ankle": [
+            216,
+            423
+          ],
+          "heel": [
+            202,
+            450
+          ],
+          "toe": [
+            249,
+            450
+          ],
+          "phase": "weight_acceptance",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 3,
+      "phase": "swing_passing",
+      "stance": "far_right",
+      "hip": [
+        192,
+        260
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            260
+          ],
+          "knee": [
+            235.305652162051,
+            327.26529930669636
+          ],
+          "ankle": [
+            190,
+            398
+          ],
+          "heel": [
+            178,
+            423
+          ],
+          "toe": [
+            220,
+            428
+          ],
+          "phase": "swing_passing",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            260
+          ],
+          "knee": [
+            201.0388478078793,
+            339.4877300613497
+          ],
+          "ankle": [
+            192,
+            423
+          ],
+          "heel": [
+            178,
+            450
+          ],
+          "toe": [
+            224,
+            450
+          ],
+          "phase": "midstance",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 4,
+      "phase": "terminal_swing",
+      "stance": "far_right",
+      "hip": [
+        192,
+        253
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            253
+          ],
+          "knee": [
+            228.7066067261945,
+            324.0818192131328
+          ],
+          "ankle": [
+            225,
+            408
+          ],
+          "heel": [
+            212,
+            437
+          ],
+          "toe": [
+            258,
+            435
+          ],
+          "phase": "terminal_swing",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            253
+          ],
+          "knee": [
+            184.60406388339283,
+            332.6573921802557
+          ],
+          "ankle": [
+            168,
+            415
+          ],
+          "heel": [
+            157,
+            436
+          ],
+          "toe": [
+            196,
+            450
+          ],
+          "phase": "terminal_stance",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 5,
+      "phase": "heel_contact",
+      "stance": "near_left",
+      "hip": [
+        192,
+        262
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            262
+          ],
+          "knee": [
+            219.92652507646793,
+            336.96738755721327
+          ],
+          "ankle": [
+            238,
+            419
+          ],
+          "heel": [
+            225,
+            450
+          ],
+          "toe": [
+            270,
+            444
+          ],
+          "phase": "heel_contact",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            262
+          ],
+          "knee": [
+            192.89888369768246,
+            341.99494989121524
+          ],
+          "ankle": [
+            145,
+            411
+          ],
+          "heel": [
+            138,
+            429
+          ],
+          "toe": [
+            172,
+            450
+          ],
+          "phase": "toe_off",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 6,
+      "phase": "weight_acceptance",
+      "stance": "near_left",
+      "hip": [
+        192,
+        263
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            263
+          ],
+          "knee": [
+            216.9631843423167,
+            339.0055223486525
+          ],
+          "ankle": [
+            216,
+            423
+          ],
+          "heel": [
+            202,
+            450
+          ],
+          "toe": [
+            249,
+            450
+          ],
+          "phase": "weight_acceptance",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            263
+          ],
+          "knee": [
+            216.08167642292432,
+            339.2894020206055
+          ],
+          "ankle": [
+            157,
+            399
+          ],
+          "heel": [
+            148,
+            421
+          ],
+          "toe": [
+            180,
+            440
+          ],
+          "phase": "early_swing",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 7,
+      "phase": "midstance",
+      "stance": "near_left",
+      "hip": [
+        192,
+        260
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            260
+          ],
+          "knee": [
+            201.0388478078793,
+            339.4877300613497
+          ],
+          "ankle": [
+            192,
+            423
+          ],
+          "heel": [
+            178,
+            450
+          ],
+          "toe": [
+            224,
+            450
+          ],
+          "phase": "midstance",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            260
+          ],
+          "knee": [
+            235.305652162051,
+            327.26529930669636
+          ],
+          "ankle": [
+            190,
+            398
+          ],
+          "heel": [
+            178,
+            423
+          ],
+          "toe": [
+            220,
+            428
+          ],
+          "phase": "swing_passing",
+          "marker": "blue_double_bar"
+        }
+      }
+    },
+    {
+      "frame": 8,
+      "phase": "terminal_stance",
+      "stance": "near_left",
+      "hip": [
+        192,
+        253
+      ],
+      "legs": {
+        "near_left": {
+          "hip": [
+            192,
+            253
+          ],
+          "knee": [
+            184.60406388339283,
+            332.6573921802557
+          ],
+          "ankle": [
+            168,
+            415
+          ],
+          "heel": [
+            157,
+            436
+          ],
+          "toe": [
+            196,
+            450
+          ],
+          "phase": "terminal_stance",
+          "marker": "orange_dot"
+        },
+        "far_right": {
+          "hip": [
+            192,
+            253
+          ],
+          "knee": [
+            228.7066067261945,
+            324.0818192131328
+          ],
+          "ankle": [
+            225,
+            408
+          ],
+          "heel": [
+            212,
+            437
+          ],
+          "toe": [
+            258,
+            435
+          ],
+          "phase": "terminal_swing",
+          "marker": "blue_double_bar"
+        }
+      }
+    }
+  ]
+}

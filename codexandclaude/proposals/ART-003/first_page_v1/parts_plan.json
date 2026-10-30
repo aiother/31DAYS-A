@@ -1,0 +1,240 @@
+{
+  "character": "player_first_page",
+  "version": 1,
+  "stage": "production_reference",
+  "deliverable_type": "numbered_parts_breakdown_sheet",
+  "facing": "right",
+  "display_height_px": 112,
+  "future_asset_height_px": 224,
+  "overlap_ratio": 0.15,
+  "near_far_rule": "near/far are relative to camera, never world left/right.",
+  "initial_palette": "White fills, neutral gray structure and facial marks only.",
+  "separate_effects": [
+    "outer_glow",
+    "companion_color_masks"
+  ],
+  "note": "This is a reference sheet and drafting plan. Planned filenames below are not individual PNG deliverables. The assembled game rig is a later implementation.",
+  "bones": {
+    "root": null,
+    "hip": "root",
+    "spine": "hip",
+    "chest": "spine",
+    "neck": "chest",
+    "head": "neck",
+    "arm_upper_near": "chest",
+    "arm_lower_near": "arm_upper_near",
+    "hand_near": "arm_lower_near",
+    "weapon": "hand_near",
+    "arm_upper_far": "chest",
+    "arm_lower_far": "arm_upper_far",
+    "hand_far": "arm_lower_far",
+    "leg_upper_near": "hip",
+    "leg_lower_near": "leg_upper_near",
+    "foot_near": "leg_lower_near",
+    "leg_upper_far": "hip",
+    "leg_lower_far": "leg_upper_far",
+    "foot_far": "leg_lower_far",
+    "hair_back": "head",
+    "hair_front": "head",
+    "forelock": "head",
+    "collar": "chest",
+    "clasp": "chest",
+    "cape_back": "chest",
+    "cape_front_far": "chest",
+    "cape_front_near": "chest"
+  },
+  "parts": [
+    {
+      "id": "01",
+      "name": "head",
+      "planned_filename": "player_part_head.png",
+      "bone": "head",
+      "default_z": 50,
+      "description": "头部与耳朵，含浅灰五官，不含头发"
+    },
+    {
+      "id": "02",
+      "name": "hair_back",
+      "planned_filename": "player_part_hair_back.png",
+      "bone": "hair_back",
+      "default_z": 25,
+      "description": "后发片，补齐头部遮住的区域"
+    },
+    {
+      "id": "03",
+      "name": "hair_front",
+      "planned_filename": "player_part_hair_front.png",
+      "bone": "hair_front",
+      "default_z": 80,
+      "description": "前额刘海片，保留方案 A 的发束走向"
+    },
+    {
+      "id": "04",
+      "name": "forelock",
+      "planned_filename": "player_part_forelock.png",
+      "bone": "forelock",
+      "default_z": 81,
+      "description": "头顶翻起的一小束发，可轻微滞后摆动"
+    },
+    {
+      "id": "05",
+      "name": "neck",
+      "planned_filename": "player_part_neck.png",
+      "bone": "neck",
+      "default_z": 46,
+      "description": "颈部，头端与胸端留遮挡余量"
+    },
+    {
+      "id": "06",
+      "name": "collar",
+      "planned_filename": "player_part_collar.png",
+      "bone": "collar",
+      "default_z": 70,
+      "description": "翻折立领，围住颈部但低于下巴"
+    },
+    {
+      "id": "07",
+      "name": "chest",
+      "planned_filename": "player_part_chest.png",
+      "bone": "chest",
+      "default_z": 48,
+      "description": "独立白色短上衣躯干，画满披衣遮住的肩胸"
+    },
+    {
+      "id": "08",
+      "name": "hip",
+      "planned_filename": "player_part_hip.png",
+      "bone": "hip",
+      "default_z": 45,
+      "description": "腰胯与白色短裤，画满两侧髋接合区"
+    },
+    {
+      "id": "09",
+      "name": "cape_back",
+      "planned_filename": "player_part_cape_back.png",
+      "bone": "cape_back",
+      "default_z": 0,
+      "description": "短披衣后片，完整补足背部与肩根"
+    },
+    {
+      "id": "10",
+      "name": "cape_front_far",
+      "planned_filename": "player_part_cape_front_far.png",
+      "bone": "cape_front_far",
+      "default_z": 60,
+      "description": "短披衣远侧前片，软折角与内侧留白"
+    },
+    {
+      "id": "11",
+      "name": "cape_front_near",
+      "planned_filename": "player_part_cape_front_near.png",
+      "bone": "cape_front_near",
+      "default_z": 61,
+      "description": "短披衣近侧前片，独立承接后续局部染色"
+    },
+    {
+      "id": "12",
+      "name": "clasp",
+      "planned_filename": "player_part_clasp.png",
+      "bone": "clasp",
+      "default_z": 72,
+      "description": "领口白色菱形扣，保持小面积"
+    },
+    {
+      "id": "13",
+      "name": "arm_upper_far",
+      "planned_filename": "player_part_arm_upper_far.png",
+      "bone": "arm_upper_far",
+      "default_z": 10,
+      "description": "远侧上臂与上半袖，肩肘端补足"
+    },
+    {
+      "id": "14",
+      "name": "arm_lower_far",
+      "planned_filename": "player_part_arm_lower_far.png",
+      "bone": "arm_lower_far",
+      "default_z": 11,
+      "description": "远侧前臂与袖口，肘腕端补足"
+    },
+    {
+      "id": "15",
+      "name": "hand_far",
+      "planned_filename": "player_part_hand_far.png",
+      "bone": "hand_far",
+      "default_z": 12,
+      "description": "远侧自然放松手，腕端补足"
+    },
+    {
+      "id": "16",
+      "name": "arm_upper_near",
+      "planned_filename": "player_part_arm_upper_near.png",
+      "bone": "arm_upper_near",
+      "default_z": 55,
+      "description": "近侧上臂与上半袖，肩肘端补足"
+    },
+    {
+      "id": "17",
+      "name": "arm_lower_near",
+      "planned_filename": "player_part_arm_lower_near.png",
+      "bone": "arm_lower_near",
+      "default_z": 56,
+      "description": "近侧前臂与袖口，肘腕端补足"
+    },
+    {
+      "id": "18",
+      "name": "hand_near",
+      "planned_filename": "player_part_hand_near.png",
+      "bone": "hand_near",
+      "default_z": 75,
+      "description": "近侧自然放松手，腕端补足"
+    },
+    {
+      "id": "19",
+      "name": "leg_upper_far",
+      "planned_filename": "player_part_leg_upper_far.png",
+      "bone": "leg_upper_far",
+      "default_z": 20,
+      "description": "远侧大腿，髋膝端补足"
+    },
+    {
+      "id": "20",
+      "name": "leg_lower_far",
+      "planned_filename": "player_part_leg_lower_far.png",
+      "bone": "leg_lower_far",
+      "default_z": 21,
+      "description": "远侧小腿，膝踝端补足"
+    },
+    {
+      "id": "21",
+      "name": "foot_far",
+      "planned_filename": "player_part_foot_far.png",
+      "bone": "foot_far",
+      "default_z": 22,
+      "description": "远侧翻折靴口短靴，鞋尖朝右"
+    },
+    {
+      "id": "22",
+      "name": "leg_upper_near",
+      "planned_filename": "player_part_leg_upper_near.png",
+      "bone": "leg_upper_near",
+      "default_z": 40,
+      "description": "近侧大腿，髋膝端补足"
+    },
+    {
+      "id": "23",
+      "name": "leg_lower_near",
+      "planned_filename": "player_part_leg_lower_near.png",
+      "bone": "leg_lower_near",
+      "default_z": 41,
+      "description": "近侧小腿，膝踝端补足"
+    },
+    {
+      "id": "24",
+      "name": "foot_near",
+      "planned_filename": "player_part_foot_near.png",
+      "bone": "foot_near",
+      "default_z": 42,
+      "description": "近侧翻折靴口短靴，鞋尖朝右"
+    }
+  ]
+}

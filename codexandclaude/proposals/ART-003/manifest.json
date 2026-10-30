@@ -1,0 +1,60 @@
+{
+  "tool": "image_gen",
+  "generation_mode": "built-in",
+  "date": "2026-10-30",
+  "status": "exploration",
+  "processing": "Original generated PNGs copied unchanged into the workspace.",
+  "images": [
+    {
+      "id": "A",
+      "title": "初页",
+      "file": "a_first_page.png",
+      "source_file": "exec-88c90dac-7c2e-4be2-852f-4d2ef1d3a43e.png",
+      "initial_hero_region": [
+        0.05,
+        0.1,
+        0.335,
+        0.62
+      ],
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "ac67b32000ae735089c0f0010740b533917425ef25f7db7aef90836dac0a2841"
+    },
+    {
+      "id": "B",
+      "title": "余曝",
+      "file": "b_after_exposure.png",
+      "source_file": "exec-93e5c994-1c7e-4bd0-a99e-39c9d79a8d5c.png",
+      "initial_hero_region": [
+        0.05,
+        0.1,
+        0.335,
+        0.62
+      ],
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "134ba236b1d18daa3d424d1100acb130f3543d71ad30895ab3130ace9d42b2a2"
+    },
+    {
+      "id": "C",
+      "title": "缝明",
+      "file": "c_mended_dawn.png",
+      "source_file": "exec-4d70b122-b794-49be-a9c6-c76d73ed09fc.png",
+      "initial_hero_region": [
+        0.05,
+        0.1,
+        0.335,
+        0.62
+      ],
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "7578ce96aa8fa93e67f1cfe264dba522f67ec7e221e6484c6b7850d893d3ddf4"
+    }
+  ]
+}
