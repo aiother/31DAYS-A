@@ -1,0 +1,128 @@
+{
+  "task": "ART-003",
+  "item": "player_scale_v1",
+  "decision": {
+    "camera_zoom": 1.875,
+    "ground_screen_y": 950,
+    "player_screen_height_1080p": 210,
+    "player_world_display_height": 112
+  },
+  "images": [
+    {
+      "file": "captures/slot1_zoom1.00_no_player.png",
+      "sha256": "85264e78b0ffcb94c3478b489dc506722f884520d3566418ac1274e03df6b4a6"
+    },
+    {
+      "file": "captures/slot1_zoom1.00_with_placeholder.png",
+      "sha256": "cff2911b0792fcf55119b62cf2c728a7f5a1f39b470d0bffef4b92dfd06f013b"
+    },
+    {
+      "file": "captures/slot1_zoom1.50_no_player.png",
+      "sha256": "12a0a8cba94d5ea8e0d498b6ea830de43f9cc8acd99745b923db10ebc351fa74"
+    },
+    {
+      "file": "captures/slot1_zoom1.50_with_placeholder.png",
+      "sha256": "b80fffdaa415bb82d671d65add55f333aaac2e3f3aadb53db6a6029719cfbdf8"
+    },
+    {
+      "file": "captures/slot2_zoom1.00_no_player.png",
+      "sha256": "1e003e603adde4ab44b11844a4d58cef8d66380fbaf80c6e345d3705ac3dd7ce"
+    },
+    {
+      "file": "captures/slot2_zoom1.00_with_placeholder.png",
+      "sha256": "bd37af9a592eefaec44e107e8fa4687085b3370737994649a18dc29bafbd7295"
+    },
+    {
+      "file": "captures/slot2_zoom1.50_no_player.png",
+      "sha256": "efc515c27aaf1bd6375b220487264f23633dcd4419c7ad66fa68a9b1e91dfba1"
+    },
+    {
+      "file": "captures/slot2_zoom1.50_with_placeholder.png",
+      "sha256": "edd82ff88810acd239edc0ae5ca454d9bf7a3261d1b23f69d958f0bdc0374338"
+    },
+    {
+      "file": "captures_ref/slot1_zoom1.88_no_player.png",
+      "sha256": "47c9f6bab9499394d78600cd37be78e483859fc4c8b727d388d9d30f1bbfd976"
+    },
+    {
+      "file": "captures_ref/slot1_zoom1.88_with_placeholder.png",
+      "sha256": "2886956bd3a1fa06c8a63cade32f69ddbf26346eb5c56fd7c33b476b82846511"
+    },
+    {
+      "file": "captures_ref/slot2_zoom1.88_no_player.png",
+      "sha256": "85e18139a4c256efa18622b78ae30e2640647decebfb8527a954ff3f546c3a7b"
+    },
+    {
+      "file": "captures_ref/slot2_zoom1.88_with_placeholder.png",
+      "sha256": "2e2a423f9876edc1898df84eb9afcd37ec483e4513289cb8f41e8237c62102f1"
+    },
+    {
+      "file": "compare/slot1_0_基准.png",
+      "sha256": "38dfbb7df0f4f6b6a3707bbe367322baa27fc5c262e7f4a186325fe244360d98"
+    },
+    {
+      "file": "compare/slot1_A_镜头1.5.png",
+      "sha256": "b49dcc2e08c68166a2cdd6957da64286ecc7ba3ffd85461d4b36107327570f17"
+    },
+    {
+      "file": "compare/slot1_B_玩家1.5.png",
+      "sha256": "8991a92346561e86fe9153e87e5da31eedf35c904bcb085094d50e93b31decc5"
+    },
+    {
+      "file": "compare/slot1_参考对照.png",
+      "sha256": "75deeba3a5c14080753992dc8c5e4829a36f26c0566a0701ec86af54448cee5a"
+    },
+    {
+      "file": "compare/slot1_参考比例_镜头1.875.png",
+      "sha256": "e338489325e7cc92a131562445ae861e964647faf1c08e2978dad42a5e768f05"
+    },
+    {
+      "file": "compare/slot1_对比.png",
+      "sha256": "88bb0ee0b511b8d988b2a908b3da266a00c692db6637ca7709f96d0f9281a05f"
+    },
+    {
+      "file": "compare/slot2_0_基准.png",
+      "sha256": "917ead22acc519ee2d225a6959a71aa1d8e2e2a69682ac649eac64798c59522b"
+    },
+    {
+      "file": "compare/slot2_A_镜头1.5.png",
+      "sha256": "5982fceaf55437971dd14ec599ab5bd131e3c63a255cbbfe5b7b00535cbd449c"
+    },
+    {
+      "file": "compare/slot2_B_玩家1.5.png",
+      "sha256": "c2b0c0e21e2c7ba776e1075587705a4edec78fdc965c88718b0df9c792e5fef2"
+    },
+    {
+      "file": "compare/slot2_参考对照.png",
+      "sha256": "713865da1f971b3091071b140a8fbf2b5f6dbc8160e43a0919000a9b93c7ff95"
+    },
+    {
+      "file": "compare/slot2_参考比例_镜头1.875.png",
+      "sha256": "a8a478fd221bf916b36e8f33f28c5192f305473a70e1fee10bac188844864292"
+    },
+    {
+      "file": "compare/slot2_对比.png",
+      "sha256": "725ca7f3677f84bd10697c67edac72fcbf62d067587dfefc94c85280bf9ef509"
+    },
+    {
+      "file": "compare/slot2_角色特写.png",
+      "sha256": "9c23e0ac718bcacf2c84823ad29c4cd53440038d4724c4f3be5aec8f7335cec6"
+    },
+    {
+      "file": "compare/sprite_frame3.png",
+      "sha256": "4b8a8775aaa27200f96bbc8a291db7308c402e0235c4c78084e3fc4298b76ab3"
+    },
+    {
+      "file": "reference/reference_gameplay.webp",
+      "sha256": "adce7c7c16095d317dbf32f7a37ce3e2d14bb78745ff4ed45f71c1d3d6e20836"
+    },
+    {
+      "file": "walk_review/frames_1357.png",
+      "sha256": "16abe3f958a84b71e7d9a8ff136cf466d2adc0417d8d3192799267317aa30e80"
+    },
+    {
+      "file": "walk_review/legs_strip.png",
+      "sha256": "562ec40157a3146ea1807b8944c8adb5ee5aae34b0f2198087ac14bc1e720155"
+    }
+  ]
+}
