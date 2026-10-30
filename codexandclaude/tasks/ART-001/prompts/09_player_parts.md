@@ -1,5 +1,7 @@
 # 09 玩家部件拆分清单（GPT Image 2 + Claude 切图）
 
+> **已废弃，永不采用（用户 2026-10-29）**：本文件属于原玩家方案（匠首连帽长斗篷、黑纱两点眼、2.5 头身、萤环与晶弦），只作历史记录，不作为任何形象的参考、基础或标准。见 `game/docs/art_style.md` 第 6.3 节。
+
 用途：ART-002 据此为玩家生成、拆层与绑骨。参考图一律用已认可的设定图 `assets_src/inbox/art/player/player_01_3.png`（萤环绕在**手腕**上，光再偏蓝一点）。规格见 `game/docs/asset_spec.md` 第 1、3 节：交付高度 224 px（显示 112 px，`Art` 缩放 0.5），关节处多画约 **15% 重叠区**，近侧 `near` / 远侧 `far`，不分左右。部件放进 `assets_src/inbox/art/player/parts/`，处理后的成品为 `game/assets/characters/player/parts/<文件名>`。
 
 ## 来源分两种

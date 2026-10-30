@@ -8,6 +8,7 @@ GAME = ROOT / "game"
 STYLE = GAME / "docs" / "art_style.md"
 SPEC = GAME / "docs" / "asset_spec.md"
 PROMPTS = ROOT / "codexandclaude" / "tasks" / "ART-001" / "prompts"
+DEPRECATED = "> **已废弃，永不采用（用户 2026-10-29）**"
 
 
 def dusk_constants():
@@ -132,21 +133,23 @@ class ArtSpecTests(unittest.TestCase):
         for gone in ("interp = 0", "_part_embed_"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
-    def test_characters_are_two_and_a_half_heads(self):
+    def test_humanoid_proportions_are_pending(self):
+        # 用户 2026-10-29：原玩家方案废弃，2.5 头身不再是统一要求；敌人造型语言不变。
         section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
-        self.assertIn("**所有人形角色 2.5 头身**", section)
+        self.assertIn("**人形角色比例：暂无方案**", section)
+        self.assertIn("2.5 头身不再是统一要求", section)
+        self.assertNotIn("**所有人形角色 2.5 头身**", section)
         self.assertIn("**敌人造型语言参照《丝之歌》**", section)
         self.assertIn("**实体共用一套视觉语言**", section)
         self.assertIn("**风格参考图**", section)
-        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "player_01_3", "tian_02"):
+        for approved in ("WSST_05", "BOSS_01", "BOSS_02_2", "tian_02"):
             self.assertIn(approved, section)
+        self.assertIn("随原方案废弃，不再作为任何参考", section)
         self.assertIn("`assets_src/inbox/art/tian/tian_02_broken`", self.style)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
-        self.assertIn("头高约为显示高度的 40%", self.spec)
-        player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
-        self.assertIn("exactly 2.5 heads tall", player)
-        self.assertNotIn("6.5", player)
+        self.assertIn("人形角色比例：暂无方案", self.spec)
+        self.assertNotIn("头高约为显示高度的 40%", self.spec)
 
     def test_boss_prompts_follow_the_designs(self):
         overlook = (PROMPTS / "04_boss_overlook.md").read_text(encoding="utf-8")
@@ -164,34 +167,38 @@ class ArtSpecTests(unittest.TestCase):
         for text in (overlook, parasite):
             self.assertIn("no dark background, no vignette, no glow", text)
 
-    def test_player_is_an_artisan_chief(self):
+    def test_old_player_design_is_abandoned(self):
+        # 用户 2026-10-29：“把现在的方案定为废弃，永不采用，并把其他文件中声明这份方案为地基、基础、标准的内容改为暂无方案”。
         section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
         self.assertIn("`Words/阶层设定.md`", section)
         self.assertIn("**面甲是实体的标志**", section)
-        self.assertIn("**玩家是匠首**", section)
-        row = re.search(r"^\| 玩家（匠首） \|(.*)$", self.style, re.M).group(1)
-        for mark in ("**深色的连体工装**", "**深银色连帽长斗篷**", "**黑色纱网覆面**", "**两点微弱的眼光**", "**识别锚点：萤环与晶弦**", "**兜帽贴着大圆头，帽顶一个软软垂下的尖角**", "**同一种萤石光**", "**内衬近黑的深蓝**", "**玫瑰金几何边纹**"):
-            self.assertIn(mark, row)
-        self.assertNotIn("围巾", row)
+        self.assertIn("玩家属于哪个阶层：暂无方案", section)
+        self.assertNotIn("**玩家是匠首**", self.style)
+        self.assertIsNone(re.search(r"^\| 玩家（匠首） \|", self.style, re.M))
+        self.assertIsNotNone(re.search(r"^\| 玩家 \| \*\*暂无方案\*\*", self.style, re.M))
+        self.assertIn("**玩家武器**：暂无方案", self.style)
+        self.assertNotIn("**萤环与晶弦**（玩家的初始武器", self.style)
+        self.assertIn("可选附加骨骼：玩家暂无方案", self.style)
+        dead = self.style.split("### 6.3 已废弃的玩家方案")[1].split("## 7.")[0]
+        for phrase in ("永不采用", "罩住全身的深银连帽长斗篷", "黑纱覆面透两点眼光", "萤环与晶弦", "`player_01_3`", "四套重设计草稿",
+                       "不再作为参考、基础或标准", "reference_video"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, dead)
+        # 阶层服色仍在（世界观保留），但不再是玩家专属
         for name, value in (("匠首深蓝", "1f2740"), ("匠首深银", "b4bac4"), ("玫瑰金", "c08a78"), ("紫水晶", "8a5fa8"), ("萤石蓝紫", "7b84c9"), ("萤石光", "b9c0ff")):
             self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
-        self.assertIn("玩家 `cloth_1…3` 长斗篷下摆与 `hood` 兜帽", self.spec)
-        player = (PROMPTS / "01_player_full.md").read_text(encoding="utf-8")
-        for phrase in ("#1f2740", "#b4bac4", "no bags, no pouches, no belts, no straps", "NOT a bracelet of beads and NOT a chain", "floating in a loose ring around the WRIST (not around the palm or fingers)", "exactly thirteen small broken blue-violet fluorite fragments", "soft, floppy pointed tip", "lined inside with very dark navy", "same soft bluish fluorite light", "#b9c0ff", "black fine-mesh gauze veil", "two small eyes show, glowing the same soft bluish fluorite light",
-                       "#7b84c9", "No scarf, no red anywhere", "floor-length hooded cape", "hangs from the edge of the hood", "do NOT give the character its pale face-plate"):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, player)
-        self.assertNotIn("#b8382c", player)
-        rig = self.style.split("**萤环与晶弦**")[1].split("- 可选附加骨骼")[0]
-        for mark in ("**萤环**", "**十三枚破碎的萤石碎片**", "**悬浮着环绕手腕缓缓转动**", "**晶弦**", "**散开再聚合**", "**光缝**", "**命中与弹反的一瞬间所有光缝一起闪亮**", "**拼成一把刀剑**", "**互相契合、又留着细缝**", "**由碎片与光组成的分节直刃**", "**硬的**", "**只改外观，不改玩法**"):
-            self.assertIn(mark, rig)
-        moves = re.findall(r"^\| (待机|普通攻击 1 段|普通攻击 2 段|向上攻击|向下攻击（弹起）|弹反|奔跑、闪避|恢复|攻击范围成长) \|", rig, re.M)
-        self.assertEqual(len(moves), 9)
-        self.assertIn("`weapon_starter_part_shard_<两位序号>.png`", self.spec)
-        weapon = (PROMPTS / "06_weapon_crystal_string.md").read_text(encoding="utf-8")
-        for phrase in ("IDLE", "FORMING", "SLASH", "HIT FLASH", "SCATTER", "DOWNWARD STAB", "ONLY in those gaps along the fragment borders", "NO branching lightning patterns", "weapon_player_03.png", "weapon_player_04.png", "NOT a soft silk whip, rope, chain or string of beads", "exactly THIRTEEN fluorite fragments", "NOT whole crystals", "match each other like pieces of a puzzle, yet keep thin even gaps", "perfectly STRAIGHT and rigid", "around the WRIST", "player_01_3.png", "#7b84c9", "#b9c0ff", "assets_src/inbox/art/weapon_starter/"):
-            with self.subTest(weapon=phrase):
-                self.assertIn(phrase, weapon)
+        self.assertIn("玩家身份色暂无方案", self.style)
+        self.assertIn("玩家：暂无方案", self.spec)
+        self.assertIn("玩家武器：暂无方案", self.spec)
+        self.assertNotIn("`hood` 兜帽", self.spec)
+        self.assertNotIn("weapon_starter_part_shard_01.png", self.spec)
+        for name in ("01_player_full.md", "06_weapon_crystal_string.md", "06b_weapon_kintsugi_scatter.md", "07_weapon_shard_parts.md", "09_player_parts.md"):
+            with self.subTest(prompt=name):
+                self.assertIn(DEPRECATED, (PROMPTS / name).read_text(encoding="utf-8").splitlines()[2])
+        refs = ROOT / "codexandclaude" / "tasks" / "ART-001" / "references"
+        for name in ("player_body_rig_v1.md", "player_cape_sheet_v1.md", "player_run_sheet_v1.md", "player_run_sheet_v2.md"):
+            with self.subTest(reference=name):
+                self.assertIn(DEPRECATED, (refs / name).read_text(encoding="utf-8"))
 
     def test_player_parts_list_is_complete(self):
         # ART-001 review R1: every player part has a file, contents, bone, layer,
@@ -247,18 +254,12 @@ class ArtSpecTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, study)
 
-    def test_blade_prompt_draws_one_whole_blade_for_the_cutter(self):
+    def test_blade_prompt_is_kept_only_as_history(self):
         blade = (PROMPTS / "07_weapon_shard_parts.md").read_text(encoding="utf-8")
-        for phrase in ("ONE complete, unbroken sword blade", "only about EIGHT times as long as it is wide", "NOT a thin rapier, NOT a needle", "diamond-shaped faceted pommel", "diamond-shaped faceted crossguard", "chipped flint blade",
-                       "NO gaps, NO separate fragments, NO seams", "NO glow, NO light inside or around it", "blade_whole_01.png", "NOT its thin blade proportions",
-                       "**不要**附", "shard_parts_01"):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, blade)
-        self.assertIn("由切割工具把整刃沿参差的折线切成**十三片**", self.spec)
-        self.assertIn("`weapon_starter_part_shard_01.png`～`_13.png`", self.spec)
-        self.assertIn("**工具沿参差的折线切成十三片**", self.style)
-        self.assertIn("**已认可的切割原图**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", self.spec)
-        self.assertIn("**已认可**：`assets_src/inbox/art/weapon_starter/blade_whole_02.png`", blade)
+        self.assertIn(DEPRECATED, blade)
+        self.assertIn("ONE complete, unbroken sword blade", blade)  # 历史内容原样保留
+        self.assertNotIn("**工具沿参差的折线切成十三片**", self.style)
+        self.assertNotIn("由切割工具把整刃沿参差的折线切成**十三片**", self.spec)
 
     def test_tian_warrior_follows_the_class_design(self):
         row = re.search(r"^\| 天人战士 \| \*\*世界最上层的人(.*)$", self.style, re.M).group(1)
