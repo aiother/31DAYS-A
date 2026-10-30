@@ -112,6 +112,7 @@ ENV-004只迁移73个原有套件的头部注释，未改测试逻辑；报告�
 
 ## Git 与提交（V2.3）
 
+- **远程**：`origin` = `https://github.com/aiother/31DAYS-A.git`（私有，2026-10-30 建立），只跟踪 `master`。凭据由 Git 自带的 Git Credential Manager 保存，首次推送弹出 GitHub 授权窗口，由用户确认。推送 `git -c safe.directory=D:/31days push origin master`，LFS 图片随推送上传；核对用 `git ls-remote origin` 与 `git lfs push --dry-run origin master`（无输出即无遗漏）。规则见 [collaboration.md](collaboration.md) 第 9 节。
 - **仓库所有权**：`.git` 属于 Codex 的沙盒用户。Claude 侧每次 Git 调用都临时放行，例如 `git -c safe.directory=D:/31days -c safe.directory=D:/31days/codexandclaude/worktrees/claude ...`；不修改全局配置。
 - **提交说明**：多行、含英文引号或特殊字符的说明，写入 UTF-8 文本文件后用 `git commit -F <文件>`。Windows PowerShell 5.1 把含英文双引号的字符串作为参数传给 git 时会拆坏参数，导致提交失败或说明错乱。说明文件放在系统临时目录等不会被误暂存的位置；简单单行说明仍可用 `-m`。暂存始终使用显式路径。
 - **换行符**：工作区检出为 CRLF。用脚本按多行文本替换时，先确认换行符一致，否则替换会静默失败；多行替换优先用编辑工具。

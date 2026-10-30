@@ -254,7 +254,7 @@ class CollaborationTests(unittest.TestCase):
                    "规格优先于代码", "冻结范围", "git switch --detach", "git revert",
                    "暂停后续所有集成", "不记录自身所在提交的哈希", "立即停止并报告",
                    "不能审查自己的实现后直接集成", "不重新触发 G2", "交付 SHA", "审查 SHA",
-                   "不合并可移动的分支名", "不用 `git add -A`", "不推送远程",
+                   "不合并可移动的分支名", "不用 `git add -A`", "只推送 master", "不强推",
                    "审查通过后、合并前", "主目录 `D:\\31days` 属于用户")
         added = ("方案探讨", "探索型任务", "变异检查", "优化建议", "批量合入",
                  "验收入口在任务卡阶段就要规划", "git commit -F",
@@ -265,8 +265,12 @@ class CollaborationTests(unittest.TestCase):
         for level in ("| S 小 |", "| M 中 |", "| L 大 |"):
             self.assertIn(level, protocol)
         env = (COLLAB / "env.md").read_text(encoding="utf-8")
-        for detail in ("safe.directory", "git commit -F", "CRLF", ".svg.import"):
+        for detail in ("safe.directory", "git commit -F", "CRLF", ".svg.import",
+                       "https://github.com/aiother/31DAYS-A.git", "git lfs push --dry-run"):
             self.assertIn(detail, env)
+        # V2.4: the only remote push is the master backup; no general "never push" rule remains.
+        self.assertNotIn("不推送远程", protocol)
+        self.assertNotIn("推送远程、发布", protocol)
 
     def section(self, text, number):
         return re.split(r"^## \d+\. ", text, flags=re.M)[number]
@@ -306,7 +310,7 @@ class CollaborationTests(unittest.TestCase):
         protocol = (COLLAB / "collaboration.md").read_text(encoding="utf-8")
         for boundary in ("现有未提交变更必须保留", "未提交内容不会自动进入新 worktree",
                          "每次改动必须编写或更新相关测试", "创建对应 Git commit",
-                         "只读审查没有文件改动", "当前仅人工触发", "不自动合并或推送"):
+                         "只读审查没有文件改动", "当前仅人工触发", "不自动合并", "推送仅限第 9 节的 master 备份"):
             self.assertIn(boundary, protocol)
 
 
