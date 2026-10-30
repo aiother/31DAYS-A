@@ -406,7 +406,8 @@ func reaction_cases() -> void:
 	var shook: float = 0.0
 	for i: int in range(180):
 		await frames(1)
-		shook = maxf(shook, camera.offset.length())
+		# Shake power is in screen pixels: the world offset times the zoom.
+		shook = maxf(shook, camera.offset.length() * camera.zoom.x)
 		if not seen("hurt").is_empty() and director.shake_left == 0.0: break
 	check(not seen("hurt").is_empty(), "a real enemy hit draws the hurt effect")
 	check(director.last_shake.get("power", 0.0) == 5.0 and shook > 0.0 and shook <= 5.01, "being hurt shakes the screen lightly (peak %.2f px)" % shook)

@@ -71,8 +71,10 @@ func run() -> void:
 	check(absf(session.player.position.x - 160) < 2 and not session.player.combat.is_attacking(), "forced opening ignores movement and attacks")
 	await ticks(120)
 	check(session.dialogue_ui.active and session.dialogue_ui.speaker.text.contains("临时台词"), "automatic first dialogue explicitly marks temporary script")
-	var view_center: Vector2 = (session.player.get_node("Camera2D") as Camera2D).get_screen_center_position()
-	check(view_center.x - 960 >= -1 and view_center.x + 960 <= session.room.config.bounds.end.x + 1, "first cinematic camera stays inside Room bounds")
+	var view_camera: Camera2D = session.player.get_node("Camera2D") as Camera2D
+	var view_center: Vector2 = view_camera.get_screen_center_position()
+	var half_width: float = view_camera.get_viewport_rect().size.x * 0.5 / view_camera.zoom.x
+	check(view_center.x - half_width >= -1 and view_center.x + half_width <= session.room.config.bounds.end.x + 1, "first cinematic camera stays inside Room bounds")
 	var visible_before: int = session.dialogue_ui.text.visible_characters
 	await ticks(3)
 	check(session.dialogue_ui.text.visible_characters > visible_before, "dialogue reveals text over time")

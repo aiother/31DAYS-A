@@ -117,6 +117,14 @@
       "sha256": "adce7c7c16095d317dbf32f7a37ce3e2d14bb78745ff4ed45f71c1d3d6e20836"
     },
     {
+      "file": "verify/slot1_game_camera.png",
+      "sha256": "bbfa1449ed93f48af54f56874ff34df18dd4e892a9c75623ec21c3c508b8e267"
+    },
+    {
+      "file": "verify/slot2_game_camera.png",
+      "sha256": "222feeca4a65b849a0b8e801f7b9481f495fa7c65c1fee8545c031b3e5015a27"
+    },
+    {
       "file": "walk_review/frames_1357.png",
       "sha256": "16abe3f958a84b71e7d9a8ff136cf466d2adc0417d8d3192799267317aa30e80"
     },

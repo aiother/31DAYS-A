@@ -1,6 +1,6 @@
 # ART-003 · 玩家显示比例与镜头 v1
 
-日期：2026-10-30。状态：**用户已决定**按参考实机画面调整玩家角色与镜头（采用方案 A 的镜头放大路线）；场景美术、光照与 HUD 尺寸等美术方案出来后另行调整。
+日期：2026-10-30。状态：**用户已决定并已实现**（`game/world/gameplay_camera.gd`，规格见 `game/docs/asset_spec.md` 第 1 节）。用户按参考实机画面调整玩家角色与镜头（采用方案 A 的镜头放大路线）；场景美术、光照与 HUD 尺寸等美术方案出来后另行调整。
 
 ## 结论
 
@@ -19,6 +19,7 @@
 | `captures/` | Godot 实机截图：镜头 1.0 与 1.5，堑壕第二间（slot2）与无顶深谷起始区（slot1），含占位方块版与隐藏玩家版，`.json` 记录脚底画面坐标与镜头倍率 |
 | `captures_ref/` | 按参考比例的实机截图：镜头 1.875，脚底压到 y=950 |
 | `compare/` | 合成对比图：基准 / A / B 三联、角色特写、参考对照、单张全图；`sprite_frame3.png` 为抠出的步行第 3 帧 |
+| `verify/` | 实现后的验证截图：不覆盖倍率，直接使用游戏镜头 `game/world/gameplay_camera.gd` |
 | `walk_review/` | 审阅步行 8 帧时的腿部条带与 1/3/5/7 帧拼图 |
 | `tools/` | 截图与合成脚本 |
 | `manifest.json` | 全部图像的 SHA-256 |
@@ -34,6 +35,7 @@ $T = (Resolve-Path codexandclaude/proposals/ART-003/player_scale_v1/tools).Path 
 $G = "D:\DMyself\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe"
 foreach ($slot in 1,2) { & $G --path game -s res://tests/acceptance/run_acceptance.gd -- --adapter=$T/scale_capture.gd --no-panel --slot=$slot }
 foreach ($slot in 1,2) { & $G --path game -s res://tests/acceptance/run_acceptance.gd -- --adapter=$T/ref_capture.gd --no-panel --slot=$slot }
+foreach ($slot in 1,2) { & $G --path game -s res://tests/acceptance/run_acceptance.gd -- --adapter=$T/verify_capture.gd --no-panel --slot=$slot }
 python codexandclaude/proposals/ART-003/player_scale_v1/tools/compose.py codexandclaude/proposals/ART-003/player_scale_v1 phf/步行逐帧图2.png
 python codexandclaude/proposals/ART-003/player_scale_v1/tools/compose_reference.py codexandclaude/proposals/ART-003/player_scale_v1
 python -m unittest codexandclaude.tests.test_player_scale_proposal -v

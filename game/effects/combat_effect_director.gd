@@ -360,8 +360,9 @@ func _process(delta: float) -> void:
 		if is_instance_valid(_camera):
 			var k: float = shake_power * shake_left / config.shake_seconds
 			# A turning direction scaled by what is left: never beyond the power,
-			# and exactly back at rest on the last frame.
-			_camera.offset = _camera_rest + Vector2.from_angle(effects.clock * 83.0) * k
+			# and exactly back at rest on the last frame. Power is in screen
+			# pixels; the offset is in world units, so it is divided by the zoom.
+			_camera.offset = _camera_rest + Vector2.from_angle(effects.clock * 83.0) * k / _camera.zoom.x
 
 func _exit_tree() -> void:
 	for entry: Dictionary in _struck:

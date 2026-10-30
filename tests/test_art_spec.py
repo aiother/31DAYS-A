@@ -42,11 +42,16 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_heights_follow_t6e_and_double_delivery(self):
         player = 112
-        rows = re.findall(r"^\| [^|]+ \| (\d+)% \| (\d+) px \| (\d+) px \|$", self.spec, re.M)
+        zoom = float(re.search(r"const ZOOM: float = ([\d.]+)",
+                               (GAME / "world" / "gameplay_camera.gd").read_text(encoding="utf-8")).group(1))
+        self.assertEqual(zoom, 1.875)
+        self.assertIn("**游戏镜头 ×1.875**", self.spec)
+        rows = re.findall(r"^\| [^|]+ \| (\d+)% \| (\d+) px \| (\d+) px[^|]*\| (\d+) px \|$", self.spec, re.M)
         self.assertEqual([int(r[0]) for r in rows], [100, 80, 200, 250])
-        for percent, shown, delivered in rows:
+        for percent, shown, on_screen, delivered in rows:
             with self.subTest(percent=percent):
                 self.assertEqual(int(shown), round(player * int(percent) / 100))
+                self.assertEqual(int(on_screen), round(int(shown) * zoom))
                 self.assertEqual(int(delivered), 2 * int(shown))
         self.assertIn("`Art` 节点缩放 0.5", self.spec)
 

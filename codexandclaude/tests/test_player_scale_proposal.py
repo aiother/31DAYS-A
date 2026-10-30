@@ -47,8 +47,19 @@ class PlayerScaleProposalTests(unittest.TestCase):
                     self.assertEqual(info["zoom"], 1.875)
                     self.assertAlmostEqual(info["feet_canvas"][1], 950, delta=1)
 
+    def test_verify_captures_use_the_shipped_camera(self):
+        captures = sorted((BUNDLE / "verify").glob("*.json"))
+        self.assertEqual(len(captures), 2)
+        for path in captures:
+            with self.subTest(capture=path.name):
+                info = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(info["camera_script"], "res://world/gameplay_camera.gd")
+                self.assertEqual(info["zoom"], self.manifest["decision"]["camera_zoom"])
+                self.assertTrue(info["on_floor"])
+                self.assertAlmostEqual(info["feet_canvas"][1], 0.88 * 1080, delta=1)
+
     def test_tools_write_inside_the_project(self):
-        for name in ("scale_capture.gd", "ref_capture.gd"):
+        for name in ("scale_capture.gd", "ref_capture.gd", "verify_capture.gd"):
             text = (BUNDLE / "tools" / name).read_text(encoding="utf-8")
             with self.subTest(tool=name):
                 self.assertIn('"res://../codexandclaude/proposals/ART-003/player_scale_v1/', text)
