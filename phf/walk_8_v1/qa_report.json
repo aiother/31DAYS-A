@@ -5,7 +5,7 @@
   "tests": [
     {
       "command": "python -m unittest discover -s tests -v",
-      "passed": 154,
+      "passed": 155,
       "failures": 0,
       "errors": 0,
       "skipped": 0

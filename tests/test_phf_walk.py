@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -183,6 +184,18 @@ class PhfWalkTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256((ROOT / item["file"]).read_bytes()).hexdigest(), item["sha256"])
         for item in self.manifest["files"]:
             self.assertEqual(hashlib.sha256((ART / item["file"]).read_bytes()).hexdigest(), item["sha256"])
+
+    def test_manifest_text_hashes_are_stable_on_windows_checkout(self):
+        paths = ["phf/walk_8_v1/"+item["file"] for item in self.manifest["files"]
+                 if Path(item["file"]).suffix in (".md", ".html", ".json")]
+        result = subprocess.run(["git", "check-attr", "-z", "eol", "--", *paths],
+                                cwd=ROOT, capture_output=True, check=True)
+        fields = result.stdout.decode("utf-8").split("\0")[:-1]
+        actual = {fields[i]: fields[i+2] for i in range(0, len(fields), 3)}
+        self.assertEqual(set(actual), set(paths))
+        self.assertTrue(all(value == "lf" for value in actual.values()))
+        for path in paths + ["phf/walk_8_v1/manifest.json", "phf/walk_8_v1/qa_report.json"]:
+            self.assertNotIn(b"\r\n", (ROOT / path).read_bytes())
 
 
 if __name__ == "__main__":

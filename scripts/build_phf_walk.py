@@ -97,7 +97,7 @@ def guide():
         draw.text((ox+12, oy+470), "L: " + frame["legs"]["left"]["phase"], fill="#c25a14")
         draw.text((ox+12, oy+487), "R: " + frame["legs"]["right"]["phase"], fill="#2577bf")
     canvas.save(ART / "pose_control.png")
-    (ART / "motion_plan.json").write_text(json.dumps(plan, indent=2)+"\n", encoding="utf-8")
+    (ART / "motion_plan.json").write_text(json.dumps(plan, indent=2)+"\n", encoding="utf-8", newline="\n")
 
 
 def sha256(path):
@@ -156,7 +156,7 @@ def package():
                               "Naturalness and fidelity additionally require visual review.",
         "rig_frames": len(rig["frames"]),
     }
-    (ART / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False)+"\n", encoding="utf-8")
+    (ART / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False)+"\n", encoding="utf-8", newline="\n")
     bounds = [frame.getchannel("A").point(lambda v: 255 if v > 32 else 0).getbbox() for frame in frames]
     print(json.dumps({"frames": 8, "size": [768, 1024], "bounds": bounds, "files": len(files)}))
 

@@ -120,7 +120,7 @@
     },
     {
       "file": "motion_plan.json",
-      "sha256": "dbc7c67e5926edf12c61fa83f6fb37733dee2411a0a21451f38989da647e4bd1"
+      "sha256": "0f58b3f11a624a06397720739ef02b50d56eaf6bc7b60872714ec92ceca19368"
     },
     {
       "file": "pose_control.png",
@@ -132,7 +132,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "15b9b983f66639594964ed409557a485083ad0fc596c0155dedcb1ff0977e7e3"
+      "sha256": "d8397b2b53d5a8705109324152640f1276c0542b1812a73e72a621081e9ca7bc"
     },
     {
       "file": "rig.json",
