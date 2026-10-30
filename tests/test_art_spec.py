@@ -133,10 +133,11 @@ class ArtSpecTests(unittest.TestCase):
         for gone in ("interp = 0", "_part_embed_"):
             self.assertNotIn(gone, self.spec.split("## 9. 变更记录")[0])
 
-    def test_humanoid_proportions_are_pending(self):
-        # 用户 2026-10-29：原玩家方案废弃，2.5 头身不再是统一要求；敌人造型语言不变。
+    def test_humanoid_proportions_follow_the_player_only(self):
+        # 用户 2026-10-29：2.5 头身不再是统一要求；2026-10-30：玩家「初页」约 5 头身，其他人形暂无方案。
         section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
-        self.assertIn("**人形角色比例：暂无方案**", section)
+        self.assertIn("**人形角色比例**：玩家「初页」约 5 头身", section)
+        self.assertIn("天人战士的比例**暂无方案**", section)
         self.assertIn("2.5 头身不再是统一要求", section)
         self.assertNotIn("**所有人形角色 2.5 头身**", section)
         self.assertIn("**敌人造型语言参照《丝之歌》**", section)
@@ -148,7 +149,8 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("`assets_src/inbox/art/tian/tian_02_broken`", self.style)
         for word in ("**壳**", "**面甲**", "**细尖的腿**", "**角与触须**", "**披布**"):
             self.assertIn(word, section)
-        self.assertIn("人形角色比例：暂无方案", self.spec)
+        self.assertIn("人形角色比例：玩家约 5 头身", self.spec)
+        self.assertIn("其他人形角色暂无方案", self.spec)
         self.assertNotIn("头高约为显示高度的 40%", self.spec)
 
     def test_boss_prompts_follow_the_designs(self):
@@ -172,13 +174,13 @@ class ArtSpecTests(unittest.TestCase):
         section = self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0]
         self.assertIn("`Words/阶层设定.md`", section)
         self.assertIn("**面甲是实体的标志**", section)
-        self.assertIn("玩家属于哪个阶层：暂无方案", section)
+        self.assertIn("玩家在背景故事里仍是匠首，但形象不再按阶层服饰绘制", section)
         self.assertNotIn("**玩家是匠首**", self.style)
         self.assertIsNone(re.search(r"^\| 玩家（匠首） \|", self.style, re.M))
-        self.assertIsNotNone(re.search(r"^\| 玩家 \| \*\*暂无方案\*\*", self.style, re.M))
+        self.assertIsNone(re.search(r"^\| 玩家 \| \*\*暂无方案\*\*", self.style, re.M))
         self.assertIn("**玩家武器**：暂无方案", self.style)
         self.assertNotIn("**萤环与晶弦**（玩家的初始武器", self.style)
-        self.assertIn("可选附加骨骼：玩家暂无方案", self.style)
+        self.assertNotIn("可选附加骨骼：玩家暂无方案", self.style)
         dead = self.style.split("### 6.3 已废弃的玩家方案")[1].split("## 7.")[0]
         for phrase in ("永不采用", "罩住全身的深银连帽长斗篷", "黑纱覆面透两点眼光", "萤环与晶弦", "`player_01_3`", "四套重设计草稿",
                        "不再作为参考、基础或标准", "reference_video"):
@@ -187,8 +189,8 @@ class ArtSpecTests(unittest.TestCase):
         # 阶层服色仍在（世界观保留），但不再是玩家专属
         for name, value in (("匠首深蓝", "1f2740"), ("匠首深银", "b4bac4"), ("玫瑰金", "c08a78"), ("紫水晶", "8a5fa8"), ("萤石蓝紫", "7b84c9"), ("萤石光", "b9c0ff")):
             self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
-        self.assertIn("玩家身份色暂无方案", self.style)
-        self.assertIn("玩家：暂无方案", self.spec)
+        self.assertIn("玩家不再有固定身份色", self.style)
+        self.assertNotIn("玩家：暂无方案", self.spec)
         self.assertIn("玩家武器：暂无方案", self.spec)
         self.assertNotIn("`hood` 兜帽", self.spec)
         self.assertNotIn("weapon_starter_part_shard_01.png", self.spec)
@@ -199,6 +201,39 @@ class ArtSpecTests(unittest.TestCase):
         for name in ("player_body_rig_v1.md", "player_cape_sheet_v1.md", "player_run_sheet_v1.md", "player_run_sheet_v2.md"):
             with self.subTest(reference=name):
                 self.assertIn(DEPRECATED, (refs / name).read_text(encoding="utf-8"))
+
+    def test_player_is_first_page(self):
+        # 用户 2026-10-30：玩家形象定为 ART-003 方案 A「初页」；身份仍是匠首，只作背景设定；武器待设计。
+        row = re.search(r"^\| 玩家（初页） \|(.*)$", self.style, re.M).group(1)
+        for mark in ("**初页：承接颜色的人**", "约 **5 头身**", "**白色蓬松短发**", "**翻起的呆毛**", "**翻折的高立领**",
+                     "**白色菱形扣**", "**三片式短三角披衣**", "**翻折靴口的短靴**", "**全身近乎纯白**", "**身份**：背景故事里仍是匠首",
+                     "`phf/原案v0.1.png`", "`phf/步行逐帧图2.png`"):
+            with self.subTest(mark=mark):
+                self.assertIn(mark, row)
+        for gone in ("斗篷", "连帽", "黑纱", "萤"):
+            self.assertNotIn(gone, row)
+        for name, value in (("初页白", "f9f7f4"), ("初页灰", "ddd6d3"), ("初页线", "3c393a")):
+            self.assertIsNotNone(re.search(r"^\| %s \| `#%s` \|" % (name, value), self.style, re.M), name)
+        tint = self.style.split("**初页的染色**")[1].split("- 可选附加骨骼")[0]
+        for rule in ("**与同伴建立关系**", "**始终留白**", "脸与胸前不染", "独立颜色遮罩"):
+            self.assertIn(rule, tint)
+        bones = ("forelock", "hair_front", "hair_back", "collar", "clasp", "cape_back", "cape_front_near", "cape_front_far")
+        extra = re.search(r"^- 可选附加骨骼：玩家用 (.*)$", self.style, re.M).group(1)
+        for bone in bones:
+            with self.subTest(bone=bone):
+                self.assertIn("`%s`" % bone, extra)
+                self.assertIn("`%s`" % bone, self.spec)
+        parts = (ROOT / "codexandclaude" / "proposals" / "ART-003" / "first_page_v1" / "README.md").read_text(encoding="utf-8")
+        for bone in bones:
+            self.assertIn("| `%s` | `%s` |" % (bone, bone), parts)
+        for path in ("原案v0.1.png", "三视图_1.png", "部件_1.png", "步行逐帧图2.png"):
+            self.assertTrue((ROOT / "phf" / path).is_file(), path)
+        self.assertIn("两只手腕都留武器挂点", self.style)
+        self.assertIn("`player_tint_<骨骼名>_<两位序号>.png`", self.spec)
+        self.assertIn("现行玩家形象为第 6.2 节的「初页」", self.style.split("### 6.3 已废弃的玩家方案")[1])
+        self.assertIn("A-021", self.style.split("## 2.")[0])
+        register = (ROOT / "Words" / "待决事项总表.md").read_text(encoding="utf-8")
+        self.assertRegex(register, r"(?m)^\| A-021 \| 白色玩家「初页」与已定稿世界风格如何统一 \|.*\| 待裁决 \|$")
 
     def test_player_parts_list_is_complete(self):
         # ART-001 review R1: every player part has a file, contents, bone, layer,
