@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-30",
+  "result": "passed",
+  "definition": {
+    "right": "orange dot; bright outer leg",
+    "left": "blue double dash; dark inner leg"
+  },
+  "edited_frames": [
+    1,
+    7,
+    8
+  ],
+  "canvas": [
+    1536,
+    1024
+  ],
+  "pixel_checks": {
+    "unchanged_frames": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "unchanged_frames_pixel_exact": true,
+    "all_original_alpha_pixel_exact": true,
+    "all_marker_pixels_unchanged": true,
+    "original_dark_ink_unchanged": true,
+    "all_upper_body_crops_pixel_exact": true,
+    "all_changes_inside_leg_masks": true,
+    "changed_pixels": {
+      "1": 10341,
+      "7": 8791,
+      "8": 9836
+    },
+    "brightness": "Right/orange skin and boots exceed paired left/blue probes by over 25 grayscale levels in each corrected frame.",
+    "direction": "Previously dark orange skin brightens; previously bright blue skin darkens."
+  },
+  "tests": [
+    {
+      "command": "python -m unittest discover -s tests -q",
+      "passed": 163,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m unittest discover -s codexandclaude/tests -q",
+      "passed": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node --check scripts/package_phf_shading.cjs",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/test_phf_preview.cjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check (scoped to this edit)",
+      "result": "required before commit"
+    }
+  ],
+  "visual_review": {
+    "image": "walk_sheet_corrected.png",
+    "result": "Frame1 orange rear leg ivory and blue forward leg gray including boot; frame7 blue bent thigh/knee/calf/boot gray and orange support leg ivory; frame8 orange angled leg consistently ivory and blue forward leg gray. Original poses and all non-target pixels retained."
+  },
+  "generation": {
+    "tool": "image_gen",
+    "mode": "built-in",
+    "prompts": "prompts.json"
+  },
+  "scope": "Selective sheet correction only. Existing walk_8_v1 assets and game runtime were not changed."
+}

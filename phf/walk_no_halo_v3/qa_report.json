@@ -1,0 +1,34 @@
+{
+  "result": "passed",
+  "source": "approved_source.png",
+  "output": "walk_sheet_no_halo.png",
+  "canvas": [
+    1536,
+    1024
+  ],
+  "edit": "Remove background light halos; retain approved figures and leg values",
+  "tool": "image_gen",
+  "mode": "built-in",
+  "tests": [
+    {
+      "command": "python -m unittest discover -s tests -q",
+      "passed": 169,
+      "failed": 0
+    },
+    {
+      "command": "python -m unittest discover -s codexandclaude/tests -q",
+      "passed": 78,
+      "failed": 0
+    }
+  ],
+  "checks": [
+    "Eight same-sized cells",
+    "Background sample means within 120..130 RGB with less than 3 gray levels of spread",
+    "All 16 colored boot-marker centroids within 2 pixels of source",
+    "Approved leg/boot value probes remain within 18 gray levels of source",
+    "Original white hair and faceted costume highlights retained",
+    "PNG source/output SHA-256 verified"
+  ],
+  "visual_review": "No radial background glow; all eight approved figures and marker identities retained.",
+  "scope": "Only new walk_no_halo_v3 deliverables; earlier uncommitted shading edit is excluded."
+}

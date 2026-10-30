@@ -1,0 +1,48 @@
+{
+  "tool": "image_gen",
+  "mode": "built-in",
+  "source": "User attached sheet; no pose regeneration in final composition",
+  "sheet_size": [
+    1536,
+    1024
+  ],
+  "frame_size": [
+    384,
+    512
+  ],
+  "edited_frames": [
+    1,
+    7,
+    8
+  ],
+  "identity": {
+    "right": "orange dot, bright outer leg",
+    "left": "blue double dash, dark inner leg"
+  },
+  "files": [
+    {
+      "file": "source/original.png",
+      "sha256": "d35152b778012dec09a7886b922584e5c8931cd41c5d43cbb59eca0541b16838"
+    },
+    {
+      "file": "source/edit_1_8.png",
+      "sha256": "894bbdd5f21e66c94a3cce20918c2ae2419bef629965bc766a8c3adace26ef54"
+    },
+    {
+      "file": "source/edit_frame7.png",
+      "sha256": "baece26b8af275d0579fd9417e78c8202dd08ee74045e5649d1fd32305019c9f"
+    },
+    {
+      "file": "source/frame7_reference.png",
+      "sha256": "d317d8b7cc8880ea63f2282f7070d1014bcfcf99ec3176a6d69f4081314c5fe2"
+    },
+    {
+      "file": "edit_mask.png",
+      "sha256": "1f7a8f41375675656ec071d4abb2ad4ae1b60adc50109e3c2b1e5bbdedd7628f"
+    },
+    {
+      "file": "walk_sheet_corrected.png",
+      "sha256": "67d5b5b7f8b7246f0710bf2871027bae6ebac4080327d5ebec0a242101d32118"
+    }
+  ]
+}

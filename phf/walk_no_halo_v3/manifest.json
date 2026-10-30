@@ -1,0 +1,19 @@
+{
+  "tool": "image_gen",
+  "mode": "built-in",
+  "canvas": [
+    1536,
+    1024
+  ],
+  "edit": "Remove background halos only; retain approved poses, marker identity and leg shading",
+  "files": [
+    {
+      "file": "approved_source.png",
+      "sha256": "78293eeb91d5227b8333158bcc8e47c141844ceb542d7e270df289095a245f45"
+    },
+    {
+      "file": "walk_sheet_no_halo.png",
+      "sha256": "187969eb6eaead931bd122792b83c9d7943c7b9ba94ca71eff9badde360099b8"
+    }
+  ]
+}
