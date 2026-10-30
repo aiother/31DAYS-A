@@ -1,0 +1,2650 @@
+{
+  "frame_count": 8,
+  "cell_size": [
+    768,
+    1024
+  ],
+  "logical_cell_size": [
+    384,
+    512
+  ],
+  "render_scale": 2,
+  "fps": 8,
+  "grid": [
+    4,
+    2
+  ],
+  "bone_lengths": [
+    84,
+    86
+  ],
+  "animation_method": "Rigid cutout skeleton; image_gen raster parts; fixed per-part scale.",
+  "left": "near, always above right",
+  "right": "far, always behind left",
+  "frames": [
+    {
+      "frame": 1,
+      "hip": [
+        192,
+        262
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 4,
+          "phase": "toe_off",
+          "depth": "far",
+          "hip": [
+            192,
+            262
+          ],
+          "ankle": [
+            164.4382250367034,
+            406.4645861007896
+          ],
+          "knee": [
+            220.30963841716567,
+            341.085803863205
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            172,
+            450
+          ],
+          "boot_angle": 40,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "blue_R",
+          "marker_position": [
+            167.93498963339815,
+            402.29730433022235
+          ]
+        },
+        "left": {
+          "phase_index": 0,
+          "phase": "heel_contact",
+          "depth": "near",
+          "hip": [
+            192,
+            262
+          ],
+          "ankle": [
+            232.13602396786095,
+            418.12808615910524
+          ],
+          "knee": [
+            237.9402861790555,
+            332.32417867125423
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            225,
+            450
+          ],
+          "boot_angle": -8,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "orange_L",
+          "marker_position": [
+            231.3789222986382,
+            412.74102786515107
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -4.427050983124842,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -5.1797117626563685,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            183
+          ],
+          "rotation": -69.12759170251172,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            226.99353089275084,
+            254.41663917972903
+          ],
+          "rotation": 28,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            220.30963841716567,
+            341.085803863205
+          ],
+          "rotation": 26.845237700329125,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            262
+          ],
+          "rotation": -15.3245928435207,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            164.4382250367034,
+            406.4645861007896
+          ],
+          "rotation": 40,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            237.9402861790555,
+            332.32417867125423
+          ],
+          "rotation": 15.179847824818921,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            262
+          ],
+          "rotation": -35.72439892529856,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            232.13602396786095,
+            418.12808615910524
+          ],
+          "rotation": -8,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            251
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            184
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            186
+          ],
+          "rotation": 70.9061411137705,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            167.0064691072492,
+            257.41663917972903
+          ],
+          "rotation": 68,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            190
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -0.5629933356561159,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "left"
+    },
+    {
+      "frame": 2,
+      "hip": [
+        192,
+        265
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 5,
+          "phase": "early_swing",
+          "depth": "far",
+          "hip": [
+            192,
+            265
+          ],
+          "ankle": [
+            173.9189405548785,
+            397.4658641086374
+          ],
+          "knee": [
+            235.14533174046483,
+            337.07274345413276
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            180,
+            440
+          ],
+          "boot_angle": 42,
+          "sole_y": 441.2255989515611,
+          "grounded": false,
+          "marker": "blue_R",
+          "marker_position": [
+            177.5590110534707,
+            393.42315625804036
+          ]
+        },
+        "left": {
+          "phase_index": 1,
+          "phase": "load_down",
+          "depth": "near",
+          "hip": [
+            192,
+            265
+          ],
+          "ankle": [
+            213.4191113706243,
+            417.0068433477047
+          ],
+          "knee": [
+            238.7157348321443,
+            334.8114612301789
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            202,
+            450
+          ],
+          "boot_angle": 0.4,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "orange_L",
+          "marker_position": [
+            213.4570894266452,
+            411.5669759166674
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": -0.2366442431225806,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": -8.322516817658064,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            186
+          ],
+          "rotation": -63.26972732624267,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            219.56894281471932,
+            259.69663739102134
+          ],
+          "rotation": 33.85786437626905,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            235.14533174046483,
+            337.07274345413276
+          ],
+          "rotation": 31.72124614208305,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            265
+          ],
+          "rotation": -26.535456455116037,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            173.9189405548785,
+            397.4658641086374
+          ],
+          "rotation": 42,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            238.7157348321443,
+            334.8114612301789
+          ],
+          "rotation": 28.416314365815953,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            265
+          ],
+          "rotation": -36.35849146029212,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            213.4191113706243,
+            417.0068433477047
+          ],
+          "rotation": 0.4,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            187
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            189
+          ],
+          "rotation": 65.04827673750147,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            174.43105718528068,
+            262.69663739102134
+          ],
+          "rotation": 62.14213562373095,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            193
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": 2.9988523933458064,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "left"
+    },
+    {
+      "frame": 3,
+      "hip": [
+        192,
+        260
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 6,
+          "phase": "swing_passing",
+          "depth": "far",
+          "hip": [
+            192,
+            260
+          ],
+          "ankle": [
+            192.30331111860463,
+            395.1514775825884
+          ],
+          "knee": [
+            243.70366724075063,
+            326.2021962917978
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            220,
+            428
+          ],
+          "boot_angle": 10,
+          "sole_y": 430.4041089943122,
+          "grounded": false,
+          "marker": "blue_R",
+          "marker_position": [
+            193.24795720511273,
+            389.794123406202
+          ]
+        },
+        "left": {
+          "phase_index": 2,
+          "phase": "support_passing",
+          "depth": "near",
+          "hip": [
+            192,
+            260
+          ],
+          "ankle": [
+            189.4191113706243,
+            417.0068433477047
+          ],
+          "knee": [
+            223.28635801592628,
+            337.95616590173796
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            178,
+            450
+          ],
+          "boot_angle": 0.4,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "orange_L",
+          "marker_position": [
+            189.4570894266452,
+            411.5669759166674
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": 0.42705098312484235,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": -8.820288237343632,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            181
+          ],
+          "rotation": -49.12759170251172,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            201,
+            257
+          ],
+          "rotation": 48,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            243.70366724075063,
+            326.2021962917978
+          ],
+          "rotation": 23.03250988527389,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            260
+          ],
+          "rotation": -33.618906056347704,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            192.30331111860463,
+            395.1514775825884
+          ],
+          "rotation": 10,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            223.28635801592628,
+            337.95616590173796
+          ],
+          "rotation": 34.50141033135521,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            260
+          ],
+          "rotation": -24.43644584306268,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            189.4191113706243,
+            417.0068433477047
+          ],
+          "rotation": 0.4,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            249
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            182
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            184
+          ],
+          "rotation": 50.9061411137705,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            193,
+            260
+          ],
+          "rotation": 48,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            188
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": 3.562993335656116,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "left"
+    },
+    {
+      "frame": 4,
+      "hip": [
+        192,
+        254
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 7,
+          "phase": "terminal_swing",
+          "depth": "far",
+          "hip": [
+            192,
+            254
+          ],
+          "ankle": [
+            219.36484948022456,
+            406.236505527921
+          ],
+          "knee": [
+            240.19635097224818,
+            322.79761444236175
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            212,
+            437
+          ],
+          "boot_angle": -12,
+          "sole_y": 438.19934063231227,
+          "grounded": false,
+          "marker": "blue_R",
+          "marker_position": [
+            218.23380988217596,
+            400.9153825799291
+          ]
+        },
+        "left": {
+          "phase_index": 3,
+          "phase": "toe_support_up",
+          "depth": "near",
+          "hip": [
+            192,
+            254
+          ],
+          "ankle": [
+            174.03037611115184,
+            406.95359234424336
+          ],
+          "knee": [
+            218.88917714523814,
+            333.5799733127123
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            196,
+            450
+          ],
+          "boot_angle": 25,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "orange_L",
+          "marker_position": [
+            176.32941945502125,
+            402.023277982764
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": -3.763355756877419,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": -5.677483182341936,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            175
+          ],
+          "rotation": -34.98545607878076,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            182.43105718528068,
+            248.69663739102134
+          ],
+          "rotation": 62.14213562373095,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            240.19635097224818,
+            322.79761444236175
+          ],
+          "rotation": 0.34669584924577185,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": -30.642468916568063,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            219.36484948022456,
+            406.236505527921
+          ],
+          "rotation": -12,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            218.88917714523814,
+            333.5799733127123
+          ],
+          "rotation": 42.75050798204582,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": -21.238773113231204,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            174.03037611115184,
+            406.95359234424336
+          ],
+          "rotation": 25,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            243
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            176
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            178
+          ],
+          "rotation": 36.764005490039544,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            211.56894281471932,
+            251.69663739102134
+          ],
+          "rotation": 33.85786437626905,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            182
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": 0.001147606654193778,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "left"
+    },
+    {
+      "frame": 5,
+      "hip": [
+        192,
+        262
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 0,
+          "phase": "heel_contact",
+          "depth": "far",
+          "hip": [
+            192,
+            262
+          ],
+          "ankle": [
+            234.49286197146589,
+            418.5703333373046
+          ],
+          "knee": [
+            237.48073717096645,
+            332.6222524873391
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            225,
+            450
+          ],
+          "boot_angle": -8,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "blue_R",
+          "marker_position": [
+            233.73576030224314,
+            413.1832750433504
+          ]
+        },
+        "left": {
+          "phase_index": 4,
+          "phase": "toe_off",
+          "depth": "near",
+          "hip": [
+            192,
+            262
+          ],
+          "ankle": [
+            161.48940417270435,
+            403.0187399979201
+          ],
+          "knee": [
+            220.9253134695642,
+            340.86270500488456
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            172,
+            450
+          ],
+          "boot_angle": 40,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "orange_L",
+          "marker_position": [
+            164.98616876939911,
+            398.85145822735285
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -4.427050983124843,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -5.179711762656368,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            183
+          ],
+          "rotation": -29.12759170251172,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            175.0064691072492,
+            254.41663917972903
+          ],
+          "rotation": 68,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            237.48073717096645,
+            332.6222524873391
+          ],
+          "rotation": -11.680294373355673,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            262
+          ],
+          "rotation": -28.410741966422684,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            234.49286197146589,
+            418.5703333373046
+          ],
+          "rotation": -8,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            220.9253134695642,
+            340.86270500488456
+          ],
+          "rotation": 55.02838597250202,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            262
+          ],
+          "rotation": -22.711300561826018,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            161.48940417270435,
+            403.0187399979201
+          ],
+          "rotation": 40,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            251
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            184
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            186
+          ],
+          "rotation": 30.906141113770495,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            218.99353089275084,
+            257.41663917972903
+          ],
+          "rotation": 28,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            190
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            183
+          ],
+          "rotation": -0.5629933356561163,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "right"
+    },
+    {
+      "frame": 6,
+      "hip": [
+        192,
+        265
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 1,
+          "phase": "load_down",
+          "depth": "far",
+          "hip": [
+            192,
+            265
+          ],
+          "ankle": [
+            215.79905337170317,
+            418.0576756615412
+          ],
+          "knee": [
+            238.33696141962523,
+            335.0634427244063
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            202,
+            450
+          ],
+          "boot_angle": 0.4,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "blue_R",
+          "marker_position": [
+            215.83703142772407,
+            412.6178082305039
+          ]
+        },
+        "left": {
+          "phase_index": 5,
+          "phase": "early_swing",
+          "depth": "near",
+          "hip": [
+            192,
+            265
+          ],
+          "ankle": [
+            171.08924923859243,
+            394.00296834720666
+          ],
+          "knee": [
+            235.40822754737724,
+            336.91471185505173
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            180,
+            440
+          ],
+          "boot_angle": 42,
+          "sole_y": 441.27592862056173,
+          "grounded": false,
+          "marker": "orange_L",
+          "marker_position": [
+            174.72931973718462,
+            389.96026049660964
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": -0.23664424312257926,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": -8.322516817658066,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            186
+          ],
+          "rotation": -34.98545607878076,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            182.43105718528068,
+            259.69663739102134
+          ],
+          "rotation": 62.14213562373095,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            238.33696141962523,
+            335.0634427244063
+          ],
+          "rotation": 1.5215397238459378,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            265
+          ],
+          "rotation": -29.108146631416957,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            215.79905337170317,
+            418.0576756615412
+          ],
+          "rotation": 0.4,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            235.40822754737724,
+            336.91471185505173
+          ],
+          "rotation": 59.71830463694412,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            265
+          ],
+          "rotation": -33.68471834336548,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            171.08924923859243,
+            394.00296834720666
+          ],
+          "rotation": 42,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            187
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            189
+          ],
+          "rotation": 36.764005490039544,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            211.56894281471932,
+            262.69663739102134
+          ],
+          "rotation": 33.85786437626905,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            193
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            186
+          ],
+          "rotation": 2.9988523933458078,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "right"
+    },
+    {
+      "frame": 7,
+      "hip": [
+        192,
+        260
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 2,
+          "phase": "support_passing",
+          "depth": "far",
+          "hip": [
+            192,
+            260
+          ],
+          "ankle": [
+            191.79905337170317,
+            418.0576756615412
+          ],
+          "knee": [
+            223.19425270037033,
+            337.9930676308186
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            178,
+            450
+          ],
+          "boot_angle": 0.4,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "blue_R",
+          "marker_position": [
+            191.83703142772407,
+            412.6178082305039
+          ]
+        },
+        "left": {
+          "phase_index": 6,
+          "phase": "swing_passing",
+          "depth": "near",
+          "hip": [
+            192,
+            260
+          ],
+          "ankle": [
+            188.0685416111042,
+            393.7142833652523
+          ],
+          "knee": [
+            242.49554244598403,
+            327.1282369281797
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            220,
+            428
+          ],
+          "boot_angle": 10,
+          "sole_y": 430.73894363033634,
+          "grounded": false,
+          "marker": "orange_L",
+          "marker_position": [
+            189.0131876976123,
+            388.3569291888659
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": 0.4270509831248428,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": -8.820288237343632,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            181
+          ],
+          "rotation": -49.12759170251172,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            201,
+            257
+          ],
+          "rotation": 48,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            223.19425270037033,
+            337.9930676308186
+          ],
+          "rotation": 7.73999626428202,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            260
+          ],
+          "rotation": -17.42872877025418,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            191.79905337170317,
+            418.0576756615412
+          ],
+          "rotation": 0.4,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            242.49554244598403,
+            327.1282369281797
+          ],
+          "rotation": 50.57227285065889,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            260
+          ],
+          "rotation": -39.52064316752234,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            188.0685416111042,
+            393.7142833652523
+          ],
+          "rotation": 10,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            249
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            182
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            184
+          ],
+          "rotation": 50.9061411137705,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            193,
+            260
+          ],
+          "rotation": 48,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            188
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            181
+          ],
+          "rotation": 3.5629933356561163,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "right"
+    },
+    {
+      "frame": 8,
+      "hip": [
+        192,
+        254
+      ],
+      "legs": {
+        "right": {
+          "phase_index": 3,
+          "phase": "toe_support_up",
+          "depth": "far",
+          "hip": [
+            192,
+            254
+          ],
+          "ankle": [
+            177.74887611187015,
+            409.7667632335234
+          ],
+          "knee": [
+            218.12500064836712,
+            333.8341051250831
+          ],
+          "foot_anchor": "toe",
+          "contact": [
+            196,
+            450
+          ],
+          "boot_angle": 25,
+          "sole_y": 450,
+          "grounded": true,
+          "marker": "blue_R",
+          "marker_position": [
+            180.04791945573956,
+            404.83644887204406
+          ]
+        },
+        "left": {
+          "phase_index": 7,
+          "phase": "terminal_swing",
+          "depth": "near",
+          "hip": [
+            192,
+            254
+          ],
+          "ankle": [
+            217.03685819047809,
+            406.7313353520673
+          ],
+          "knee": [
+            239.03962891069293,
+            323.59362982302554
+          ],
+          "foot_anchor": "heel",
+          "contact": [
+            212,
+            437
+          ],
+          "boot_angle": -12,
+          "sole_y": 438.8644810008113,
+          "grounded": false,
+          "marker": "orange_L",
+          "marker_position": [
+            215.90581859242948,
+            401.41021240407537
+          ]
+        }
+      },
+      "transforms": [
+        {
+          "name": "cape_rear",
+          "asset": 9,
+          "source_anchor": [
+            170,
+            -12
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": -3.7633557568774183,
+          "scale": 0.58,
+          "shade": 1,
+          "order": 0
+        },
+        {
+          "name": "cape_far",
+          "asset": 11,
+          "source_anchor": [
+            67,
+            -13
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": -5.677483182341936,
+          "scale": 0.43,
+          "shade": 0.96,
+          "order": 1
+        },
+        {
+          "name": "right_sleeve",
+          "asset": 16,
+          "source_anchor": [
+            147,
+            33
+          ],
+          "destination": [
+            201,
+            175
+          ],
+          "rotation": -63.26972732624267,
+          "scale": 0.5525848064151063,
+          "shade": 0.9,
+          "order": 2
+        },
+        {
+          "name": "right_hand",
+          "asset": 18,
+          "source_anchor": [
+            30,
+            30
+          ],
+          "destination": [
+            219.56894281471932,
+            248.69663739102134
+          ],
+          "rotation": 33.85786437626905,
+          "scale": 0.43,
+          "shade": 0.9,
+          "order": 3
+        },
+        {
+          "name": "right_shin",
+          "asset": 23,
+          "source_anchor": [
+            74,
+            40
+          ],
+          "destination": [
+            218.12500064836712,
+            333.8341051250831
+          ],
+          "rotation": 14.329877624480648,
+          "scale": 0.564617661296807,
+          "shade": 0.86,
+          "order": 4
+        },
+        {
+          "name": "right_thigh",
+          "asset": 22,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": -13.749426573343229,
+          "scale": 0.5334758276415649,
+          "shade": 0.86,
+          "order": 5
+        },
+        {
+          "name": "right_boot",
+          "asset": 24,
+          "source_anchor": [
+            68,
+            45
+          ],
+          "destination": [
+            177.74887611187015,
+            409.7667632335234
+          ],
+          "rotation": 25,
+          "scale": 0.34,
+          "shade": 0.86,
+          "order": 6
+        },
+        {
+          "name": "left_shin",
+          "asset": 20,
+          "source_anchor": [
+            38,
+            40
+          ],
+          "destination": [
+            239.03962891069293,
+            323.59362982302554
+          ],
+          "rotation": 26.133663017134893,
+          "scale": 0.5815857800649594,
+          "shade": 1,
+          "order": 7
+        },
+        {
+          "name": "left_thigh",
+          "asset": 19,
+          "source_anchor": [
+            50,
+            31
+          ],
+          "destination": [
+            192,
+            254
+          ],
+          "rotation": -36.62473324783652,
+          "scale": 0.5379202654814031,
+          "shade": 1,
+          "order": 8
+        },
+        {
+          "name": "left_boot",
+          "asset": 21,
+          "source_anchor": [
+            63,
+            44
+          ],
+          "destination": [
+            217.03685819047809,
+            406.7313353520673
+          ],
+          "rotation": -12,
+          "scale": 0.34,
+          "shade": 1,
+          "order": 9
+        },
+        {
+          "name": "shorts",
+          "asset": 8,
+          "source_anchor": [
+            107,
+            24
+          ],
+          "destination": [
+            192,
+            243
+          ],
+          "rotation": 0,
+          "scale": 0.4,
+          "shade": 1,
+          "order": 10
+        },
+        {
+          "name": "tunic",
+          "asset": 7,
+          "source_anchor": [
+            91,
+            39
+          ],
+          "destination": [
+            194,
+            176
+          ],
+          "rotation": -0.8,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 11
+        },
+        {
+          "name": "left_sleeve",
+          "asset": 13,
+          "source_anchor": [
+            31,
+            33
+          ],
+          "destination": [
+            193,
+            178
+          ],
+          "rotation": 65.04827673750147,
+          "scale": 0.5266487857931801,
+          "shade": 1,
+          "order": 12
+        },
+        {
+          "name": "left_hand",
+          "asset": 15,
+          "source_anchor": [
+            32,
+            28
+          ],
+          "destination": [
+            174.43105718528068,
+            251.69663739102134
+          ],
+          "rotation": 62.14213562373095,
+          "scale": 0.43,
+          "shade": 1,
+          "order": 13
+        },
+        {
+          "name": "head_neck_collar_clasp",
+          "asset": "head",
+          "source_anchor": [
+            117,
+            174
+          ],
+          "destination": [
+            222,
+            182
+          ],
+          "rotation": 0,
+          "scale": 0.75,
+          "shade": 1,
+          "order": 14
+        },
+        {
+          "name": "cape_near",
+          "asset": 10,
+          "source_anchor": [
+            139,
+            -13
+          ],
+          "destination": [
+            195,
+            175
+          ],
+          "rotation": 0.001147606654194444,
+          "scale": 0.59,
+          "shade": 1,
+          "order": 15
+        }
+      ],
+      "support": "right"
+    }
+  ]
+}

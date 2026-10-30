@@ -1,0 +1,276 @@
+{
+  "frame_count": 8,
+  "cell_size": [
+    768,
+    1024
+  ],
+  "grid": [
+    4,
+    2
+  ],
+  "fps": 8,
+  "cycle_ms": 1000,
+  "apng_frame_ms": 125,
+  "gif_frame_ms": [
+    120,
+    130,
+    120,
+    130,
+    120,
+    130,
+    120,
+    130
+  ],
+  "slow_frame_ms": 250,
+  "tool": "image_gen",
+  "generation_mode": "built-in",
+  "animation": "Fixed image_gen raster parts; rigid skeleton; no per-frame scale changes.",
+  "left": "anatomical left; near; orange L in audit only",
+  "right": "anatomical right; far; blue R in audit only",
+  "references": [
+    {
+      "file": "phf/原案v0.1.png",
+      "sha256": "ac67b32000ae735089c0f0010740b533917425ef25f7db7aef90836dac0a2841"
+    },
+    {
+      "file": "phf/三视图_1.png",
+      "sha256": "adf2936b4f88cb0f74c3d0fa4ee2fa7195836c7ecb555c482ad66ab43469eaa8"
+    },
+    {
+      "file": "phf/三视图_2.png",
+      "sha256": "a32debf9dbf6fd7148e7f6f7a0ef9fe7748682162d167a1b63bff2eaddf84ba6"
+    },
+    {
+      "file": "phf/部件_1.png",
+      "sha256": "50e34c04a088895fa4259238c7e24498bd1a91f8fe96b840d9716d52c1bb1b86"
+    },
+    {
+      "file": "phf/步行骨骼图.png",
+      "sha256": "8796e9da28216258c8b8b73e1978aa6265cccd166d50730a1310ffc9c57895bd"
+    }
+  ],
+  "files": [
+    {
+      "file": "audit_frames/walk_01.png",
+      "sha256": "a4f668fd467e96045d0139ff8c3fab06347c190ac74945c40b34ddc3c7995f7d"
+    },
+    {
+      "file": "audit_frames/walk_02.png",
+      "sha256": "9d976de1698a7c775d2ae0b572a4edc17f281c4c7171a5a19e2fd02e20e22d9d"
+    },
+    {
+      "file": "audit_frames/walk_03.png",
+      "sha256": "334a9f92cd864d11f2e071fbea39629ef3a8f154c9dc71cd6df519bc743d7b33"
+    },
+    {
+      "file": "audit_frames/walk_04.png",
+      "sha256": "18a1d747a91e0f982427de0fdc6132207e573f0e73f8044dbd4f1505a30f29fd"
+    },
+    {
+      "file": "audit_frames/walk_05.png",
+      "sha256": "ac1e5dd13ebc0a09fc062fcb4cd2f0a52570e45e0ee4f9b2522fd51274e1b15a"
+    },
+    {
+      "file": "audit_frames/walk_06.png",
+      "sha256": "6fa52b4c0493394e42475e1b67b4f4bb1b4e1a3669565fdaf89e8671955a9030"
+    },
+    {
+      "file": "audit_frames/walk_07.png",
+      "sha256": "12a88234020a898e6df51162b65b39b5373c397dc338f96896c763a31904ecbb"
+    },
+    {
+      "file": "audit_frames/walk_08.png",
+      "sha256": "2b46a4569fa3268c01dbeecd7750b0f015979ee7d3f2433354f3bdd56cb2625c"
+    },
+    {
+      "file": "frames/walk_01.png",
+      "sha256": "6208cc480bf4c8f36664b9d6340a792e34a636e0cf62ef45330095232b1ed516"
+    },
+    {
+      "file": "frames/walk_02.png",
+      "sha256": "880e6a57929acecc998c96601517399f7a9abd542cb55554d3ef5e1e234dce91"
+    },
+    {
+      "file": "frames/walk_03.png",
+      "sha256": "ec702da9d27352dc1eaa1c4339a1dc3eedcc0acc6cb586690581265fcd0554d6"
+    },
+    {
+      "file": "frames/walk_04.png",
+      "sha256": "497c0139d2ac89980940ca650b6817d5a71afd701ccbe76d6da902133dbb4089"
+    },
+    {
+      "file": "frames/walk_05.png",
+      "sha256": "50f0218d210a5b19575d3f38dbd2a4c9b2e104b0d5b9aac2556a1545aa2e8744"
+    },
+    {
+      "file": "frames/walk_06.png",
+      "sha256": "c465835d19bc16e6eadab445b4441b3c7cff622cea92755c6c53dac431625d7f"
+    },
+    {
+      "file": "frames/walk_07.png",
+      "sha256": "39afdc8469bc9154ecae090bdde69b389b1608b213e6d1d06d61dec408cf2d7c"
+    },
+    {
+      "file": "frames/walk_08.png",
+      "sha256": "a2622e7bf66d7966d30169f9beaad27beb3db1009d22ff41675d9e3f0819bbd5"
+    },
+    {
+      "file": "index.html",
+      "sha256": "d437bfa3ca75dc176bcc444e9ae163e8f333f23593e4b0c3d7598d207bfff675"
+    },
+    {
+      "file": "motion_plan.json",
+      "sha256": "dbc7c67e5926edf12c61fa83f6fb37733dee2411a0a21451f38989da647e4bd1"
+    },
+    {
+      "file": "pose_control.png",
+      "sha256": "fa9cc3f1db465fd8ab74220512099827e61bc8e12c67ca61103f5fe445c3ac6b"
+    },
+    {
+      "file": "prompts.json",
+      "sha256": "0c8abf91e7f718a143866d815efd6d0020b5942255a9f4197ff76b0751bf2dbd"
+    },
+    {
+      "file": "README.md",
+      "sha256": "15b9b983f66639594964ed409557a485083ad0fc596c0155dedcb1ff0977e7e3"
+    },
+    {
+      "file": "rig.json",
+      "sha256": "3a8c594158c33f895b78b734b7ee000ecb3c100b5a29ab9969b105cd09636a39"
+    },
+    {
+      "file": "source/head.png",
+      "sha256": "1741dfb008af9a02cb1c4f3d8690ebc5b4355c765e05e2ec7d3d553dcf803cf5"
+    },
+    {
+      "file": "source/head_source.png",
+      "sha256": "d900dd4ae296c93cc0208fa94c3a3a8426706bc512c48d9afe99954fca52421b"
+    },
+    {
+      "file": "source/parts/01.png",
+      "sha256": "86fce994027b097e89d84cd79ef59e1125724551976b0bfcce813741baab11c7"
+    },
+    {
+      "file": "source/parts/02.png",
+      "sha256": "81b9df09978389870aacdc508c34fafed66ac4ea341435f874c8a368ba241c93"
+    },
+    {
+      "file": "source/parts/03.png",
+      "sha256": "f8dbdf6c0eb5e77642665b70d3f9b5142422085b83b173f7b2132ac4c7a7c9a9"
+    },
+    {
+      "file": "source/parts/04.png",
+      "sha256": "50dec542d986bf5b1e1bff6cb983f15232746a782b34d0d369aa77c272d14d15"
+    },
+    {
+      "file": "source/parts/05.png",
+      "sha256": "5888f94e17db5b9eeccd2ff8f650c24623770a0e2ddbe9fa135d1adf40736e46"
+    },
+    {
+      "file": "source/parts/06.png",
+      "sha256": "25e68921674738a08131f943f9e50abbdde9940852eccd01cf1106344ba7016c"
+    },
+    {
+      "file": "source/parts/07.png",
+      "sha256": "c1637d08e525ef6cc915c391d1578ce9dae0f28e30a8f1906e0a10ea6129a10a"
+    },
+    {
+      "file": "source/parts/08.png",
+      "sha256": "6e546f2156d0f5cf5b33c5e27844449bc09e38f90379b556bad534e87e1d7d43"
+    },
+    {
+      "file": "source/parts/09.png",
+      "sha256": "4d2f19f5ef6bf0b6c84779b810aced2f0a4723babd7fd43c95942220c8c73a20"
+    },
+    {
+      "file": "source/parts/10.png",
+      "sha256": "e8f0e891da99225287643ec898ae786b7b471efe4db75ab3153dfd482eb359c2"
+    },
+    {
+      "file": "source/parts/11.png",
+      "sha256": "442b00071d32f3d3c899666e08656a3d93ba59b23a5d620dd36bd20c21ae308d"
+    },
+    {
+      "file": "source/parts/12.png",
+      "sha256": "9da02c09dbdcd12ee581b88ad5e973f55d777e840c3bfa30a94bef9b50ff33d5"
+    },
+    {
+      "file": "source/parts/13.png",
+      "sha256": "188123328c4243938ce951efa840cf31215d25b54382531a40314f2bac6229ea"
+    },
+    {
+      "file": "source/parts/14.png",
+      "sha256": "f6d15500b3b2a19dbdece539e108f78245b8d622bd7df8d9893c0c9abda3951c"
+    },
+    {
+      "file": "source/parts/15.png",
+      "sha256": "7c901c00d256d5e57581bbb6ca35a4d19fd35450b313c198b5c3a8c984e9787c"
+    },
+    {
+      "file": "source/parts/16.png",
+      "sha256": "29a3a29594e46f1d8df00c735ffc1dfa78eba66c02a16469dfe65887bdb59c21"
+    },
+    {
+      "file": "source/parts/17.png",
+      "sha256": "285d954774a4a95a1afd65014a634f9f9a125e5bb16ab7cfe1f48e9960eb895e"
+    },
+    {
+      "file": "source/parts/18.png",
+      "sha256": "ae4f90247fc09312f74b51ea83cf7db76a58612898d1d00543aa46aab6321507"
+    },
+    {
+      "file": "source/parts/19.png",
+      "sha256": "e31712c27129903840ffcab6f5910ab5d857ca96f2d59122a3bda984ccfba6d2"
+    },
+    {
+      "file": "source/parts/20.png",
+      "sha256": "106e18f9e9d755e87dbc26d54937b7537eef6c9bf8781af2c1c39e524ec1cbbd"
+    },
+    {
+      "file": "source/parts/21.png",
+      "sha256": "1614004eb8494964cf3be1ae8dc81b43efd2866ab8883f353b88f41d1ffdaa7b"
+    },
+    {
+      "file": "source/parts/22.png",
+      "sha256": "9dd939b72de0af3cf0c987ce2bfdcf1746a1d620f26304e8cef4d3e8ba64bfce"
+    },
+    {
+      "file": "source/parts/23.png",
+      "sha256": "57a9b6bcc49f8a68c6b60ec3cc2dc62bcab2fee51e114dcb457ac138ca1bc0d2"
+    },
+    {
+      "file": "source/parts/24.png",
+      "sha256": "5da38c60a760e6d9b8e9b34eb66b9e8d315a81c6f28e5c610f940e0bad4a0047"
+    },
+    {
+      "file": "source/parts_atlas.png",
+      "sha256": "719134ae90c0ba8ece83e59d8f3150645764bf4e9de26addfe20f5ba56678f29"
+    },
+    {
+      "file": "walk_8.apng",
+      "sha256": "739fa1ee71dfd6605ec46f3ab57e7a73eaab046849b7bc11b9d05030636213be"
+    },
+    {
+      "file": "walk_leg_audit.gif",
+      "sha256": "fb16e536a4ab23fdd02912a9258860250eccc3f29e3fee8112c0aabcf5fe70c9"
+    },
+    {
+      "file": "walk_leg_audit.png",
+      "sha256": "037a40b72d3b4f5dce08698dd52934b4456ef590b5f892790b8c851feda48072"
+    },
+    {
+      "file": "walk_preview.gif",
+      "sha256": "d0d287f6e76d7b7c3fccb633dcfec4641e961af3c3362ad3bb9f399f1dfb23bf"
+    },
+    {
+      "file": "walk_sheet.png",
+      "sha256": "7c81206675912e7da9452ba97b0a1ce6c6d8f21b2c7ad0440789323fa1b3a20d"
+    },
+    {
+      "file": "walk_slow.gif",
+      "sha256": "12a62b77ad812dacc3bace5361e87b36fd510b372b0429151542136610c3720d"
+    }
+  ],
+  "verification_scope": "Tests check real rig transforms, file integrity, pixel sizes, alpha, head stability, fixed layering and lossless APNG playback. Naturalness and fidelity additionally require visual review.",
+  "rig_frames": 8
+}

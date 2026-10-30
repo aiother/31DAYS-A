@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>初页 · 8 帧步行动画检查</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#f2f0e9;color:#343833;font:15px system-ui,sans-serif}
+  main{max-width:1020px;margin:auto;padding:28px}h1{font-size:25px;margin:0 0 9px}
+  p{line-height:1.7;margin:10px 0;color:#62665f}.stage{display:flex;justify-content:center;
+  background:#dad8d1;border:1px solid #cac8bf;border-radius:10px;margin:22px 0 16px;overflow:hidden}
+  .stage img{width:min(100%,384px);height:auto;display:block}.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  button,select{font:inherit;padding:9px 15px;border:1px solid #bbbdb4;border-radius:6px;background:#fffdf8;color:inherit}
+  button{cursor:pointer}button:hover{background:#e5e8dc}input{accent-color:#63806d}label{display:flex;gap:7px;align-items:center}
+  .timeline{display:flex;gap:6px;margin:18px 0}.timeline button{flex:1;padding:10px 3px}.timeline button[aria-current=true]{background:#425e50;color:white}
+  .phase{min-height:48px;font-variant-numeric:tabular-nums}.legend{display:flex;gap:22px}.left{color:#bd5f24}.right{color:#246bab}
+  a{color:#365f50}footer{margin-top:20px;border-top:1px solid #d4d4ca;padding-top:12px}
+</style>
+<main>
+  <h1>初页 · 8 帧步行</h1>
+  <p>角色朝右。左腿始终在近景，右腿始终在远景；前后跨步不改变遮挡层级。每帧 768 × 1024，8 fps，1 秒循环。</p>
+  <div class="legend"><span class="left">● L / 左腿 / 近景</span><span class="right">● R / 右腿 / 远景</span></div>
+  <div class="stage"><img id="sprite" src="audit_frames/walk_01.png" alt="初页步行动画第1帧，左腿在近景、右腿在远景"></div>
+  <div class="controls">
+    <button id="play" type="button">暂停</button><button id="previous" type="button">上一帧</button><button id="next" type="button">下一帧</button>
+    <label>速度 <select id="speed"><option value="125">正常 / 8 fps</option><option value="250">慢放 / 4 fps</option><option value="500">检查 / 2 fps</option></select></label>
+    <label><input id="audit" type="checkbox" checked>显示左右腿标记</label>
+  </div>
+  <div class="timeline" id="timeline" aria-label="逐帧选择"></div>
+  <p class="phase" id="phase" aria-live="off"></p>
+  <footer><a href="walk_preview.gif">循环 GIF</a> · <a href="walk_8.apng">无损透明 APNG</a> · <a href="walk_sheet.png">透明序列图</a> · <a href="walk_leg_audit.png">左右腿检查图</a> · <a href="README.md">制作说明</a></footer>
+</main>
+<script>
+const sprite=document.getElementById('sprite'), play=document.getElementById('play');
+const audit=document.getElementById('audit'), speed=document.getElementById('speed');
+const phase=document.getElementById('phase'), timeline=document.getElementById('timeline');
+let frame=0, playing=true, timer;
+const phases=['左腿前伸接触；右腿后蹬离地','左腿承重下沉；右腿开始摆动','左腿支撑；右腿从后方经过','左腿后蹬；右腿前摆上升',
+              '右腿前伸接触；左腿后蹬离地','右腿承重下沉；左腿开始摆动','右腿支撑；左腿从前方经过','右腿后蹬；左腿前摆，衔接第 1 帧'];
+for(let i=0;i<8;i++){
+  const b=document.createElement('button');b.type='button';b.textContent=String(i+1).padStart(2,'0');
+  b.onclick=()=>{playing=false;frame=i;update();restart()};timeline.append(b);
+  for(const folder of ['frames','audit_frames']){const im=new Image();im.src=`${folder}/walk_${String(i+1).padStart(2,'0')}.png`}
+}
+function update(){
+  sprite.src=`${audit.checked?'audit_frames':'frames'}/walk_${String(frame+1).padStart(2,'0')}.png`;
+  sprite.alt=`初页步行动画第${frame+1}帧：${phases[frame]}`;
+  phase.textContent=`${frame+1} / 8　${phases[frame]}`;play.textContent=playing?'暂停':'播放';
+  [...timeline.children].forEach((b,i)=>b.setAttribute('aria-current',String(i===frame)));
+}
+function restart(){clearInterval(timer);if(playing)timer=setInterval(()=>{frame=(frame+1)%8;update()},Number(speed.value))}
+play.onclick=()=>{playing=!playing;update();restart()};audit.onchange=update;speed.onchange=restart;
+document.getElementById('previous').onclick=()=>{playing=false;frame=(frame+7)%8;update();restart()};
+document.getElementById('next').onclick=()=>{playing=false;frame=(frame+1)%8;update();restart()};
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select'))return;if(e.key===' '){e.preventDefault();play.click()}if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('previous').click()});
+update();restart();
+</script>
+</html>

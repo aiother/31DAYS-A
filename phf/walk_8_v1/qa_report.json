@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-30",
+  "result": "passed",
+  "scope": "Art deliverables, skeletal animation invariants, all discovered repository Python tests, offline review controls. No Godot runtime integration was changed or claimed.",
+  "tests": [
+    {
+      "command": "python -m unittest discover -s tests -v",
+      "passed": 154,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m unittest discover -s codexandclaude/tests -v",
+      "passed": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node tests/test_phf_preview.cjs",
+      "result": "passed",
+      "coverage": [
+        "play/pause",
+        "previous/next",
+        "seek frame",
+        "speed",
+        "L/R labels",
+        "keyboard",
+        "8 to 1 loop",
+        "no external dependency"
+      ]
+    },
+    {
+      "command": "node --check scripts/render_phf_walk.cjs",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "measured": {
+    "frame_count": 8,
+    "frame_size": [
+      768,
+      1024
+    ],
+    "sheet_size": [
+      3072,
+      2048
+    ],
+    "cycle_ms": 1000,
+    "ground_alpha_bbox_bottom_all_frames": 901,
+    "apng_pixel_exact_round_trip": true,
+    "leg_identity": "left near orange L in audit; right far blue R in audit; complete 8 phases each",
+    "render_depth": "all right leg components below all left leg components, every frame",
+    "fixed_asset_and_uniform_scale_per_part": true,
+    "bone_lengths": [
+      84,
+      86
+    ],
+    "head_pixels": "identical after accounting for planned vertical bob",
+    "missing_bound_components": 0,
+    "loop": "all adjacent ankle/knee displacements checked including frame8 -> frame1"
+  },
+  "visual_review": {
+    "images": [
+      "frames/walk_01.png",
+      "frames/walk_03.png",
+      "walk_sheet.png",
+      "walk_leg_audit.png"
+    ],
+    "observations": [
+      "Single white-haired character with one ahoge, folded collar and diamond clasp.",
+      "Three cape panels, both sleeves/hands, shorts, two complete thigh/shin/boot chains are bound in every pose.",
+      "Near left remains above shaded far right at crossing; identity labels exist in audit only.",
+      "Low swing-foot lift, planted support, arm counter-swing and delayed cape rotation.",
+      "Same camera, fixed body-part scales and cell framing; silhouette changes follow pose."
+    ],
+    "limit": "Visual review does not mathematically prove subjective naturalness. Output is rigid cutout animation with exported discrete frames, not eight independently hand-redrawn poses."
+  },
+  "generation": {
+    "tool": "image_gen",
+    "mode": "built-in",
+    "prompts": "prompts.json"
+  }
+}
