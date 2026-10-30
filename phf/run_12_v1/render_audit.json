@@ -1,0 +1,436 @@
+{
+  "frame_count": 12,
+  "cell_size": [
+    448,
+    512
+  ],
+  "source_cell_size": [
+    384,
+    512
+  ],
+  "grid": [
+    4,
+    3
+  ],
+  "fps": 20,
+  "frame_ms": 50,
+  "cycle_ms": 600,
+  "common_ground_bbox_bottom": 488,
+  "background": [
+    106,
+    107,
+    107
+  ],
+  "processing": "One uniform whole-sheet resample, fixed-cell crops, integer root registration, encoding only. No joint deformation or individual scaling.",
+  "scope": "Marker centers and rendered framing measured from actual artwork. Control skeleton joints are a separate guide; not claimed as exact generated-art measurements.",
+  "frames": [
+    {
+      "frame": 1,
+      "translation_x": 32,
+      "translation_y": 1,
+      "scale": 1.0,
+      "bounds": [
+        56,
+        58,
+        376,
+        488
+      ],
+      "head_top": 58,
+      "flight": false,
+      "support": "right",
+      "markers": {
+        "right_orange": {
+          "x": 312.87786259541986,
+          "y": 439.6412213740458,
+          "pixels": 131,
+          "components": [
+            131
+          ]
+        },
+        "left_blue": {
+          "x": 139.38532110091742,
+          "y": 341.9449541284404,
+          "pixels": 109,
+          "components": [
+            58,
+            51
+          ]
+        }
+      }
+    },
+    {
+      "frame": 2,
+      "translation_x": 32,
+      "translation_y": -2,
+      "scale": 1.0,
+      "bounds": [
+        63,
+        64,
+        376,
+        488
+      ],
+      "head_top": 64,
+      "flight": false,
+      "support": "right",
+      "markers": {
+        "right_orange": {
+          "x": 239.2265625,
+          "y": 441.71875,
+          "pixels": 128,
+          "components": [
+            128
+          ]
+        },
+        "left_blue": {
+          "x": 186.32380952380953,
+          "y": 350.4095238095238,
+          "pixels": 105,
+          "components": [
+            54,
+            51
+          ]
+        }
+      }
+    },
+    {
+      "frame": 3,
+      "translation_x": 32,
+      "translation_y": -10,
+      "scale": 1.0,
+      "bounds": [
+        55,
+        47,
+        382,
+        454
+      ],
+      "head_top": 48,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 124.93233082706767,
+          "y": 387.29323308270676,
+          "pixels": 133,
+          "components": [
+            133
+          ]
+        },
+        "left_blue": {
+          "x": 275.1885245901639,
+          "y": 378.28688524590166,
+          "pixels": 122,
+          "components": [
+            65,
+            57
+          ]
+        }
+      }
+    },
+    {
+      "frame": 4,
+      "translation_x": 32,
+      "translation_y": -13,
+      "scale": 1.0,
+      "bounds": [
+        38,
+        39,
+        401,
+        434
+      ],
+      "head_top": 39,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 80.112,
+          "y": 347.768,
+          "pixels": 125,
+          "components": [
+            125
+          ]
+        },
+        "left_blue": {
+          "x": 336.25,
+          "y": 382.65909090909093,
+          "pixels": 132,
+          "components": [
+            68,
+            64
+          ]
+        }
+      }
+    },
+    {
+      "frame": 5,
+      "translation_x": 32,
+      "translation_y": 5,
+      "scale": 1.0,
+      "bounds": [
+        63,
+        35,
+        413,
+        444
+      ],
+      "head_top": 35,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 119.408,
+          "y": 318.112,
+          "pixels": 125,
+          "components": [
+            125
+          ]
+        },
+        "left_blue": {
+          "x": 342.6825396825397,
+          "y": 393.75396825396825,
+          "pixels": 126,
+          "components": [
+            68,
+            58
+          ]
+        }
+      }
+    },
+    {
+      "frame": 6,
+      "translation_x": 32,
+      "translation_y": 10,
+      "scale": 1.0,
+      "bounds": [
+        63,
+        43,
+        380,
+        460
+      ],
+      "head_top": 43,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 161.15126050420167,
+          "y": 285.15966386554624,
+          "pixels": 119,
+          "components": [
+            119
+          ]
+        },
+        "left_blue": {
+          "x": 309.3125,
+          "y": 409.2986111111111,
+          "pixels": 144,
+          "components": [
+            74,
+            70
+          ]
+        }
+      }
+    },
+    {
+      "frame": 7,
+      "translation_x": 32,
+      "translation_y": 23,
+      "scale": 1.0,
+      "bounds": [
+        62,
+        56,
+        372,
+        488
+      ],
+      "head_top": 56,
+      "flight": false,
+      "support": "left",
+      "markers": {
+        "right_orange": {
+          "x": 144.4102564102564,
+          "y": 330.70940170940173,
+          "pixels": 117,
+          "components": [
+            117
+          ]
+        },
+        "left_blue": {
+          "x": 308.03968253968253,
+          "y": 441.2142857142857,
+          "pixels": 126,
+          "components": [
+            68,
+            58
+          ]
+        }
+      }
+    },
+    {
+      "frame": 8,
+      "translation_x": 32,
+      "translation_y": 26,
+      "scale": 1.0,
+      "bounds": [
+        61,
+        60,
+        377,
+        488
+      ],
+      "head_top": 60,
+      "flight": false,
+      "support": "left",
+      "markers": {
+        "right_orange": {
+          "x": 184.70689655172413,
+          "y": 327.1034482758621,
+          "pixels": 116,
+          "components": [
+            116
+          ]
+        },
+        "left_blue": {
+          "x": 256.8225806451613,
+          "y": 439.1532258064516,
+          "pixels": 124,
+          "components": [
+            65,
+            59
+          ]
+        }
+      }
+    },
+    {
+      "frame": 9,
+      "translation_x": 32,
+      "translation_y": 38,
+      "scale": 1.0,
+      "bounds": [
+        54,
+        47,
+        385,
+        466
+      ],
+      "head_top": 48,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 269.9485294117647,
+          "y": 349.43382352941177,
+          "pixels": 136,
+          "components": [
+            136
+          ]
+        },
+        "left_blue": {
+          "x": 100.45985401459853,
+          "y": 397.3065693430657,
+          "pixels": 137,
+          "components": [
+            75,
+            62
+          ]
+        }
+      }
+    },
+    {
+      "frame": 10,
+      "translation_x": 32,
+      "translation_y": 27,
+      "scale": 1.0,
+      "bounds": [
+        44,
+        39,
+        393,
+        444
+      ],
+      "head_top": 39,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 300.0,
+          "y": 340.6842105263158,
+          "pixels": 133,
+          "components": [
+            133
+          ]
+        },
+        "left_blue": {
+          "x": 82.84426229508196,
+          "y": 371.8360655737705,
+          "pixels": 122,
+          "components": [
+            66,
+            56
+          ]
+        }
+      }
+    },
+    {
+      "frame": 11,
+      "translation_x": 32,
+      "translation_y": 26,
+      "scale": 1.0,
+      "bounds": [
+        56,
+        35,
+        414,
+        470
+      ],
+      "head_top": 35,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 348.89130434782606,
+          "y": 417.82608695652175,
+          "pixels": 138,
+          "components": [
+            138
+          ]
+        },
+        "left_blue": {
+          "x": 151.93965517241378,
+          "y": 288.55172413793105,
+          "pixels": 116,
+          "components": [
+            58,
+            58
+          ]
+        }
+      }
+    },
+    {
+      "frame": 12,
+      "translation_x": 32,
+      "translation_y": 29,
+      "scale": 1.0,
+      "bounds": [
+        60,
+        43,
+        392,
+        473
+      ],
+      "head_top": 43,
+      "flight": true,
+      "support": "none",
+      "markers": {
+        "right_orange": {
+          "x": 328.1666666666667,
+          "y": 420.1969696969697,
+          "pixels": 132,
+          "components": [
+            132
+          ]
+        },
+        "left_blue": {
+          "x": 169.91603053435114,
+          "y": 300.4580152671756,
+          "pixels": 131,
+          "components": [
+            66,
+            65
+          ]
+        }
+      }
+    }
+  ]
+}

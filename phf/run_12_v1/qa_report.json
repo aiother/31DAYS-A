@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-30",
+  "result": "passed",
+  "artifact": "12-frame right-facing sprint cycle",
+  "frame_count": 12,
+  "cell_size": [
+    448,
+    512
+  ],
+  "sheet_size": [
+    1792,
+    1536
+  ],
+  "fps": 20,
+  "frame_ms": 50,
+  "cycle_ms": 600,
+  "identity": {
+    "right": "orange dot; bright outer/near",
+    "left": "blue double bar; dark inner/far"
+  },
+  "tests": [
+    {
+      "command": "python -m unittest discover -s tests -q",
+      "passed": 183,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python -m unittest discover -s codexandclaude/tests -q",
+      "passed": 83,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "git diff --check -- scripts/build_phf_run12.py tests/test_phf_run12.py phf/run_12_v1",
+      "result": "passed"
+    }
+  ],
+  "measured_art_checks": {
+    "orange_dot_components_per_frame": 1,
+    "blue_stroke_components_per_frame": 2,
+    "marks_present_in_all_frames": true,
+    "contact_frames": [
+      1,
+      2,
+      7,
+      8
+    ],
+    "contact_alpha_equivalent_bright_bbox_bottom": 488,
+    "flight_frames": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11,
+      12
+    ],
+    "all_flight_foot_bounds_above_ground": true,
+    "uniform_frame_scale": 1,
+    "common_horizontal_padding_per_side": 32,
+    "no_sprite_clipping": true,
+    "twelve_unique_frames": true,
+    "lossless_apng_pixel_round_trip": true,
+    "sheet_crops_pixel_exact": true,
+    "frame12_to_frame1_same_identity_marker_displacements_below": 75
+  },
+  "control_checks": {
+    "bone_lengths": [
+      84,
+      86
+    ],
+    "fixed_lengths": true,
+    "forward_knee_branch": true,
+    "right_phase_indices": "0..11",
+    "left_phase_offset": 6,
+    "near": "right",
+    "far": "left"
+  },
+  "visual_review": {
+    "image": "run_sheet_12.png",
+    "observations": [
+      "Forward-pitched torso, deep compression, rear toe release, split flight, heel recovery and forward knee drive.",
+      "White-haired youthful character, single ahoge, folded collar, diamond clasp, short clothing and flaring paper cape retained.",
+      "Orange right leg remains light, blue left leg remains shaded; no duplicate orange/blue boot marks.",
+      "Full twelve-frame cycle retains clothing details, with a clean gray background and no speed-line FX or glow."
+    ],
+    "scope": "The fixed-length control skeleton is guidance, not a claim that each generated-art joint was measured at the control coordinates. Artwork framing, mark positions, ground/flight and animation encoding were measured."
+  },
+  "generation": {
+    "tool": "image_gen",
+    "mode": "built-in",
+    "prompts": "prompts.json"
+  },
+  "git": {
+    "status": "not_committed",
+    "reason": "Git writes were repeatedly declined earlier in this chat; that permission boundary is preserved without requesting the same capability again."
+  }
+}
