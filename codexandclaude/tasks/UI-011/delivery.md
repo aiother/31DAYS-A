@@ -29,7 +29,7 @@
 
 ## 检查证据
 
-- **完整检查**：`python codexandclaude/tools/run_checks.py full --jobs 4`，被测 SHA `5332d03`，工作区干净，`content_stable=true`，**通过**。G2 引擎套件 102 项（含 `FORMAL_HUD_TESTS checks=55`、`HUD_LAYOUT_TESTS checks=247`、`DAY_CLOCK_SESSION_TESTS checks=43`、`PAUSE_MENU_TESTS checks=53`），无脚本错误；G3 `tests/` 188 + `codexandclaude/tests/` 83 项。摘要 `codexandclaude/runs/20261031T093518.139955Z/summary.json`（运行目录不入库）。
+- **完整检查**：`python codexandclaude/tools/run_checks.py full --jobs 4`，被测 SHA `5332d03`，工作区干净，`content_stable=true`，**通过**。G2 引擎登记 100 项（98 套件 + 导入 + 主场景，含 `FORMAL_HUD_TESTS checks=55`、`HUD_LAYOUT_TESTS checks=247`、`DAY_CLOCK_SESSION_TESTS checks=43`、`PAUSE_MENU_TESTS checks=53`），无脚本错误（此处原写 102 项，是笔误，审查 N2 已指出）；G3 `tests/` 188 + `codexandclaude/tests/` 83 项。摘要 `codexandclaude/runs/20261031T093518.139955Z/summary.json`（运行目录不入库）。
 - **实际渲染**：`Godot --path game --resolution 1920x1080 --script res://../codexandclaude/tasks/UI-011/capture_day_change.gd`，`captures/` 下 0.2 / 0.45 / 0.7 / 1.0 / 1.6 / 3.4 秒六张截图；用户已看过两倍版并认可（“可以”）。
 
 ## 交给审查者（Codex）

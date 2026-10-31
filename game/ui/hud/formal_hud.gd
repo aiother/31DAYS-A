@@ -122,7 +122,13 @@ func _process(delta: float) -> void:
 		clock += delta
 		deny_left = maxf(0.0, deny_left - delta)
 		gain_pulse = maxf(0.0, gain_pulse - delta)
-		banner_left = maxf(0.0, banner_left - delta)
+		# UI-011 review R1: while a field dialogue or the opening intro is up, the
+		# date animation waits at its start, then plays in full once it closes.
+		if day_change_held():
+			if banner_left > 0.0:
+				banner_left = DayClock.CONFIG.announcement_seconds
+		else:
+			banner_left = maxf(0.0, banner_left - delta)
 		accelerate_left = maxf(0.0, accelerate_left - delta)
 		var landed: Array[Dictionary] = []
 		for flyer: Dictionary in flyers:
@@ -183,7 +189,7 @@ func _draw() -> void:
 	if bool(time.get("has_session", false)):
 		if SHOW_HORIZON:
 			_draw_horizon(time)
-		if banner_left > 0.0 and not bool(time.get("final_active", false)):
+		if banner_left > 0.0 and not bool(time.get("final_active", false)) and not day_change_held():
 			_draw_banner(time)
 		if bool(time.get("day_warning", false)) and not bool(time.get("final_active", false)):
 			_draw_warning(time)
@@ -318,6 +324,17 @@ func _draw_horizon(time: Dictionary) -> void:
 	var date_text: String = "第%d日 · 末日前%d天" % [day, days_left(day)]
 	ink_text(date.position + Vector2(0, 21), date_text, UiTheme.SIZE_SMALL - 1, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, date.size.x)
 	drawn["horizon"] = {"clock": at, "sun_x": x, "date": date_text, "sun": DuskStyle.SUN, "glow": glow, "rect": Rect2(0, tag.position.y, size.x, size.y - tag.position.y)}
+
+## The date animation shares the upper middle with the field dialogue slip and
+## draws on a higher layer, so it holds while a dialogue (or the opening intro)
+## is up, the same rule the centre notices follow (UI-011 review R1).
+func day_change_held() -> bool:
+	if session == null:
+		return false
+	if bool(session.get("intro_active")):
+		return true
+	var talk: Variant = session.get("dialogue_ui")
+	return talk is FieldDialogue and (talk as FieldDialogue).active
 
 ## "第 二 日": the day in Chinese numerals, spaced like the reference title.
 static func day_name(day: int) -> String:

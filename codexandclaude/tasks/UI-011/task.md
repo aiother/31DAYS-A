@@ -18,7 +18,7 @@
 ## 允许修改的文件
 
 - `game/ui/hud/formal_hud.gd`（时间轴开关、换日动画）。
-- `game/tests/test_formal_hud.gd`、`game/tests/test_day_clock_session.gd`（时间轴与换日相关断言）。
+- `game/tests/test_formal_hud.gd`、`game/tests/test_day_clock_session.gd`、`game/tests/acceptance/ui002_hud.gd`（时间轴与换日相关断言）；`game/tests/test_day_change_dialogue.gd`（新增，换日后立即对话的回归，审查 R1）。
 - `Words/T4_3天倒计时系统.md`（第 2 节与变更记录）、`Words/待决事项总表.md`（A-015 裁决记录的修订说明）、`game/docs/formal_hud_implementation.md`。
 - `codexandclaude/references/日期切换.mp4`（用户提供的参考，LFS）。
 - `codexandclaude/tasks/UI-011/`（截图脚本与截图）、`codexandclaude/BOARD.md`（登记本任务）。
@@ -27,7 +27,7 @@
 
 1. 日常不绘制地平线、时刻纸签与日期纸签，HUD 不再发布 `horizon` 区域；绘制代码保留，一个常量即可恢复。游戏内时刻照常推进。
 2. 换日时画面中上部播放动画：半个太阳升起 → 细弧展开 → 竖线升起 → “第 N 日”（中文数字）与“末日前 N 天”淡入，约 4 秒（沿用 `announcement_seconds`）后淡出；读档、选槽不播放（沿用原换日纸签的触发规则）。
-3. 动画按用户要求放大一倍（用户 2026-10-31：“这个换日的需要再大100%”），全部尺寸由一个缩放常量 `DAY_SCALE` 控制，方便再调。区域在保存错误行之上，与其他 HUD 区域、提示、对话、敌人介绍卡在各分辨率下都不重叠（`test_hud_layout.gd` 等）；最终战期间不播放（最终战只在第 3 日开始，换日最多到第 3 日，两者不会同时出现）。
+3. 动画按用户要求放大一倍（用户 2026-10-31：“这个换日的需要再大100%”），全部尺寸由一个缩放常量 `DAY_SCALE` 控制，方便再调。区域在保存错误行之上，与其他 HUD 区域、提示、对话、敌人介绍卡在各分辨率下都不重叠（`test_hud_layout.gd` 等）；最终战期间不播放（最终战只在第 3 日开始，换日最多到第 3 日，两者不会同时出现）；对话或开场演出期间延后、结束后从头完整播放，不遮挡对话（审查 R1）。
 4. 其余避让 HUD 的界面沿用 HUD 发布的矩形，不需要改代码；对应测试全部通过。
 5. G2、G3 通过；实际渲染截图确认。
 
