@@ -87,3 +87,15 @@
 - 独立变异：把第 4 节恢复原定稿的句子改回“角色不加暖色边光”，world 风格测试失败；把任务板历史记录句改回“下一批建议”，动画路线测试失败。两次均断言失败，随后 finally 恢复原始字节。日志：`codexandclaude/runs/pln004-r2-{light,board}.txt`。
 
 本轮只留下一个明确的检查条件同步问题，交 Claude 最小修订后复核。第 1 轮补审结论与本轮已通过项一并保留；不合并、不推送。
+
+## 第 3 轮复核（2026-10-31）
+
+结论：**通过**。第 2 轮唯一残留的 R2 检查条件矛盾已关闭，原 R1～R3 均已完成修订。
+
+- 固定交付 `dae39da`、实现 `6684b16`；确认两者仅 delivery.md 与任务卡首部有差异。实现相对本轮审查基线 862eb5a 只改 EXP-006 的 G2 文字及相关规格测试。
+- G2 现分别检查不烧穿与烧穿对比方案：前者无破损遮罩，后者允许遮罩和星空，两者地形网格及碰撞均不变；与完成标准一致，没有增加方案数量或玩法，也没有代用户选择视觉方案。
+- 干净交付运行 `python codexandclaude/tools/run_checks.py focused --python-all`，**189 + 83 = 272** 项通过，内容稳定。摘要为本工作区 `codexandclaude/runs/` 中本轮固定 dae39da 的运行；工具仍为 Python 3.12.14 / openpyxl 3.1.5、Node v24.22.1、Git 2.56.0.windows.2。
+- 独立变异：把 EXP-006 的 G2 改回无条件“可行走层无破损遮罩”，运行 `tests.test_art_spec.ArtSpecTests.test_world_is_layered_faded_photographs` 后断言失败；按原始字节恢复后同一项通过。日志 `codexandclaude/runs/pln004-r3-mutation.txt`。
+- 本轮为文档复核，未跑 G2；追加记录后复跑 G3。通过不等于用户已认可“可行走层不烧穿”，该视觉决定仍交 EXP-006 对比与用户裁定。
+
+无新增阻断问题。保留前两轮记录与补审历史；等待统一集成授权，不合并、不推送。
