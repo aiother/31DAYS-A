@@ -40,3 +40,29 @@
 ## 用户验收
 
 用户已在截图上认可两倍大小的换日动画；实机观感可在下次实机验收时看（把当日剩余时间调短后等待换日）。
+
+---
+
+## 第 2 轮（针对 Codex 审查 `1dfd972`，结论“需修改”）
+
+- 分支先快进到审查提交 `1dfd972`；**第 2 轮实现 SHA**：`5339191`（提交链 `4d5ca7b` → `61181e4` → `5339191`）。
+
+| 审查项 | 处理 |
+| --- | --- |
+| R1 自然换日后立即与 7 对话，日期动画覆盖对话框 | 采用审查建议的“先保对话、再给完整日期提示”：`day_change_held()` 在对话（`FieldDialogue.active`）或开场演出（`intro_active`）期间为真，动画不绘制、计时停在开头，结束后从头完整播放，与中心提示的等待规则相同；不禁止互动。新增引擎套件 `test_day_change_dialogue.gd`：真实自然换日 + 真实 `interact_seven()`，1920×1080 与 1280×720 两个尺寸；截图脚本 `capture_dialogue_hold.gd` 输出两个尺寸对话中与对话后的 4 张截图。 |
+| N1 登记矩形不含柔光 | `formal_hud_implementation.md` 写明 `banner` 矩形是前景范围、不含外圈柔光；截图确认柔光不影响保存错误行与提示的阅读。 |
+| N2 交付里 G2 计数笔误 | 第 1 轮“G2 102 项”改为 100 项（98 套件 + 导入 + 主场景）。 |
+
+### 本轮自查出的问题（如实记录）
+
+- `4d5ca7b` 漏提交 Godot 生成的 `test_day_change_dialogue.gd.uid`，工作区不干净时启动了一次完整检查；我主动停掉作废，`61181e4` 补提交。
+- `61181e4` 的完整检查**未通过**：`day_change_held()` 用 `bool(session.get("intro_active"))`，在没有该属性的测试宿主（战斗特效、FX-002、检查点、玩家生死、音频等套件）上每帧触发“`bool` 不能由 null 构造”的脚本错误，共 2810 次。`5339191` 改为与 `true` 比较，并在新套件里加一条“宿主缺少属性时不等待”的检查。
+
+### 检查证据
+
+- **完整检查**：`python codexandclaude/tools/run_checks.py full --jobs 4`，被测 SHA `5339191`，工作区干净，`content_stable=true`，**通过**；引擎日志 0 条脚本错误。G2 登记 101 项（第 1 轮 100 项 + 新套件），含 `DAY_CHANGE_DIALOGUE_TESTS checks=19`、`FORMAL_HUD_TESTS checks=58`、`COMBAT_EFFECTS_TESTS checks=50`；G3 `tests/` 188 + `codexandclaude/tests/` 83 项。摘要 `codexandclaude/runs/20261031T105813.703046Z/summary.json`（运行目录不入库）。
+- **变异检查**（`test_day_change_dialogue.gd`，每次还原后复核）：对话期间照常绘制 → 失败；对话期间计时照走 → 失败；判断改回 `bool(...)` 写法 → 失败（脚本错误）；还原后通过。
+
+### 请 Codex 复审
+
+R1 的延后策略与两个尺寸的回归、截图；N1、N2；以及本轮自查出的 null 读取问题的修法。

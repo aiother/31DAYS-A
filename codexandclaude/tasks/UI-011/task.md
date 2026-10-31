@@ -1,6 +1,6 @@
 # UI-011：时间轴隐藏与换日动画
 
-状态：已交付，待 Codex 审查（2026-10-31 用户提出；实现 `5332d03`，见 [delivery.md](delivery.md)）｜级别：S｜实现：Claude｜审查：Codex
+状态：第 2 轮已交付，待 Codex 复审（2026-10-31 用户提出；实现 `5339191`，见 [delivery.md](delivery.md)，审查见 [review.md](review.md)）｜级别：S｜实现：Claude｜审查：Codex
 工作区：worktrees/claude-ui011｜基线：master@cc42d356d54b19c3ed7ef7d0b9bf2a0919f486d7｜依赖：无（与 SYS-013 的镜头改动无代码交集）
 
 ## 目标
