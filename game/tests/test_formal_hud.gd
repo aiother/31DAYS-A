@@ -210,7 +210,8 @@ func time_cases() -> void:
 	var settled: Dictionary = drawn()["banner"]
 	check(is_equal_approx(float(settled["sun"]), 1.0) and float(settled["rings"]) > 0.95 and float(settled["title_alpha"]) > 0.95, "after a second and a half the sun, rings and day name are all shown")
 	var area: Rect2 = settled["rect"]
-	check(absf(area.get_center().x - 960.0) < 1.0 and area.position.y >= 166.0 and area.end.y <= 360.0, "the animation sits in the upper middle, below the final countdown and above the save error line (%s)" % area)
+	check(absf(area.get_center().x - 960.0) < 1.0 and area.position.y >= 0.0 and area.end.y <= 360.0, "the animation sits in the upper middle, above the save error line (%s)" % area)
+	check(is_equal_approx(float(settled["scale"]), 2.0) and area.size.y > 340.0, "the animation is drawn at twice the first size (user 2026-10-31)")
 	check(FormalHud.day_name(3) == "第 三 日" and FormalHud.day_name(12) == "第 12 日", "day names use Chinese numerals with a numeric fallback")
 	await frames(160)
 	check(not drawn().has("banner"), "banner leaves after the announcement time")
@@ -262,6 +263,12 @@ func final_cases() -> void:
 	var short: Dictionary = drawn()["final"]
 	check(short["label"] == "最终战倒计时 · 余时不足" and short["color"] == DuskStyle.LIFE, "short budget warns in vermilion with no spin-down")
 	check(short["digits"] == "09:12" or short["digits"] == "09:11", "short budget shows the real remainder")
+	# UI-011: no new day can arrive during the final battle, so the date animation never shares the top with its countdown.
+	hud().banner_day = 3
+	hud().banner_left = 2.0
+	await frames(2)
+	check(not drawn().has("banner"), "the date-change animation does not play over the final countdown")
+	hud().banner_left = 0.0
 	var box: Rect2 = short["rect"]
 	check(not box.intersects(drawn()["emblem"]["rect"]) and not box.intersects(drawn()["horizon"]["rect"]), "final countdown keeps clear of the emblem and horizon")
 	# Exactly 15:00 left is neither "more than" (no spin-down) nor "less than" (no warning).

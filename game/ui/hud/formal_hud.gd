@@ -25,9 +25,13 @@ const SHOW_HORIZON: bool = false
 ## UI-011: the date change is a short animation in the upper middle of the screen
 ## (reference `codexandclaude/references/日期切换.mp4`): a half sun rises from a
 ## short horizon line, thin rings with ticks sweep open around it, a vertical line
-## rises through its centre, and the day name fades in beneath. It fits between
-## the final countdown (ends at 166) and the save error line (starts at 360).
-const DAY_CENTER: Vector2 = Vector2(960, 274)
+## rises through its centre, and the day name fades in beneath. User 2026-10-31:
+## "需要再大100%" -> DAY_SCALE 2.0 (one knob for the whole animation). It spans the
+## top of the screen down to just above the save error line (starts at 360). It
+## never plays during the final battle: the final battle only starts on day 3,
+## the last day, so a new day cannot arrive while its countdown is on screen.
+const DAY_SCALE: float = 2.0
+const DAY_CENTER: Vector2 = Vector2(960, 206)
 const DAY_RADIUS: float = 54.0
 const DAY_NUMERALS: Array[String] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 ## Distortion under the HUD only, so the HUD itself stays crisp.
@@ -179,7 +183,7 @@ func _draw() -> void:
 	if bool(time.get("has_session", false)):
 		if SHOW_HORIZON:
 			_draw_horizon(time)
-		if banner_left > 0.0:
+		if banner_left > 0.0 and not bool(time.get("final_active", false)):
 			_draw_banner(time)
 		if bool(time.get("day_warning", false)) and not bool(time.get("final_active", false)):
 			_draw_warning(time)
@@ -324,8 +328,10 @@ func _draw_banner(time: Dictionary) -> void:
 	var total: float = DayClock.CONFIG.announcement_seconds
 	var t: float = total - banner_left
 	var fade: float = clampf(banner_left / 0.9, 0.0, 1.0)
+	var s: float = DAY_SCALE
 	var c: Vector2 = DAY_CENTER
-	var r: float = DAY_RADIUS
+	var r: float = DAY_RADIUS * s
+	var line_width: float = 1.4 * s
 	# 1. The half sun rises from behind a short horizon line.
 	var rise: float = ease(clampf(t / 0.7, 0.0, 1.0), 0.4)
 	var lift: float = (1.0 - rise) * r * 0.6
@@ -339,45 +345,50 @@ func _draw_banner(time: Dictionary) -> void:
 			var reach: float = r * float(layer[0])
 			half_disc.append(Vector2(c.x + cos(a) * reach, minf(c.y + sin(a) * reach + lift, c.y)))
 		draw_colored_polygon(half_disc, Color(layer[1] as Color, float(layer[2]) * rise * fade))
-	InkDraw.rough_line(self, c - Vector2(r + 70, 0), c + Vector2(r + 70, 0), Color(DuskStyle.PAPER_DAY, 0.6 * rise * fade), 1.6, 71, DuskStyle.WOBBLE)
+	InkDraw.rough_line(self, c - Vector2(r + 70.0 * s, 0), c + Vector2(r + 70.0 * s, 0), Color(DuskStyle.PAPER_DAY, 0.6 * rise * fade), 1.6 * s, 71, DuskStyle.WOBBLE)
 	# 2. Thin rings sweep open from the top, the outer one ticked like a dial.
+	var ring_top: float = r + 36.0 * s
 	for k: int in range(3):
 		var open: float = ease(clampf((t - 0.25 - 0.15 * k) / 0.8, 0.0, 1.0), 0.5)
 		if open <= 0.0:
 			continue
-		var radius: float = r + 12.0 + 12.0 * k
+		var radius: float = r + (12.0 + 12.0 * k) * s
 		var half: float = PI * 0.5 * open
 		var ring: Color = Color(DuskStyle.PAPER_DAY, (0.55 - 0.12 * k) * fade)
-		draw_arc(c, radius, -PI * 0.5 - half, -PI * 0.5 + half, 48, ring, 1.4, true)
+		draw_arc(c, radius, -PI * 0.5 - half, -PI * 0.5 + half, 64, ring, line_width, true)
 		if k == 2:
 			for step: int in range(-7, 8):
 				var a: float = -PI * 0.5 + step * PI / 15.0
 				if absf(a + PI * 0.5) > half:
 					continue
-				var length: float = 10.0 if step % 3 == 0 else 5.0
+				var length: float = (10.0 if step % 3 == 0 else 5.0) * s
 				var dir: Vector2 = Vector2(cos(a), sin(a))
-				draw_line(c + dir * radius, c + dir * (radius + length), ring, 1.2, true)
-	# 3. A vertical line rises through the centre to a small diamond.
+				draw_line(c + dir * radius, c + dir * (radius + length), ring, 1.2 * s, true)
+	# 3. A vertical line rises through the centre to a small diamond on the outer ring.
 	var grow: float = ease(clampf((t - 0.4) / 0.6, 0.0, 1.0), 0.4)
 	if grow > 0.0:
-		var top: float = c.y - (r + 44.0) * grow
-		draw_line(c, Vector2(c.x, top), Color(DuskStyle.PAPER_DAY, 0.75 * fade), 1.4, true)
+		var top: float = c.y - ring_top * grow
+		draw_line(c, Vector2(c.x, top), Color(DuskStyle.PAPER_DAY, 0.75 * fade), line_width, true)
 		if grow > 0.95:
-			draw_arc(Vector2(c.x, c.y - r - 36.0), 3.5, 0.0, TAU, 12, Color(DuskStyle.PEARL, 0.8 * fade), 1.2, true)
-			var tip: Vector2 = Vector2(c.x, top)
-			draw_colored_polygon(PackedVector2Array([tip + Vector2(0, -6), tip + Vector2(4, 0), tip + Vector2(0, 6), tip + Vector2(-4, 0)]), Color(DuskStyle.PEARL, 0.85 * fade))
+			draw_arc(Vector2(c.x, c.y - r - 24.0 * s), 3.5 * s, 0.0, TAU, 16, Color(DuskStyle.PEARL, 0.8 * fade), 1.2 * s, true)
+			var tip: Vector2 = Vector2(c.x, top - 6.0 * s)
+			draw_colored_polygon(PackedVector2Array([tip + Vector2(0, -6) * s, tip + Vector2(4, 0) * s, tip + Vector2(0, 6) * s, tip + Vector2(-4, 0) * s]), Color(DuskStyle.PEARL, 0.85 * fade))
 	# 4. The day name fades in beneath, settling upward.
 	var shown: float = clampf((t - 0.5) / 0.6, 0.0, 1.0)
 	var alpha: float = shown * fade
-	var settle: float = (1.0 - shown) * 10.0
+	var settle: float = (1.0 - shown) * 10.0 * s
 	var title: String = day_name(banner_day)
-	var line_box: Rect2 = Rect2(Vector2(c.x - 300.0, 0), Vector2(600, 0))
-	ink_text(Vector2(line_box.position.x + 2.0, c.y + 52.0 + settle), title, 46, Color(DuskStyle.INK, 0.45 * alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
-	ink_text(Vector2(line_box.position.x, c.y + 50.0 + settle), title, 46, Color(DuskStyle.PEARL, alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
-	ink_text(Vector2(line_box.position.x, c.y + 76.0 + settle), "末日前 %d 天" % days_left(banner_day), 22, Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
-	# From the diamond tip (r + 50 above the centre) down to the subtitle's descent.
-	var box: Rect2 = Rect2(Vector2(c.x - r - 70.0, c.y - r - 52.0), Vector2((r + 70.0) * 2.0, r + 52.0 + 84.0))
-	drawn["banner"] = {"day": banner_day, "text": title, "rect": box, "elapsed": t, "sun": rise, "rings": ease(clampf((t - 0.55) / 0.8, 0.0, 1.0), 0.5), "title_alpha": alpha}
+	var span: float = 600.0 * s
+	var x0: float = c.x - span * 0.5
+	var title_size: int = int(46.0 * s)
+	ink_text(Vector2(x0 + 2.0 * s, c.y + 50.0 * s + 2.0 * s + settle), title, title_size, Color(DuskStyle.INK, 0.45 * alpha), HORIZONTAL_ALIGNMENT_CENTER, span)
+	ink_text(Vector2(x0, c.y + 48.0 * s + settle), title, title_size, Color(DuskStyle.PEARL, alpha), HORIZONTAL_ALIGNMENT_CENTER, span)
+	ink_text(Vector2(x0, c.y + 70.0 * s + settle), "末日前 %d 天" % days_left(banner_day), int(18.0 * s), Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, span)
+	# From the top ticks (r + 46s above the centre) down to the subtitle's descent.
+	var above: float = r + 46.0 * s
+	var below: float = 75.0 * s
+	var box: Rect2 = Rect2(Vector2(c.x - r - 70.0 * s, c.y - above), Vector2((r + 70.0 * s) * 2.0, above + below))
+	drawn["banner"] = {"day": banner_day, "text": title, "rect": box, "elapsed": t, "scale": s, "sun": rise, "rings": ease(clampf((t - 0.55) / 0.8, 0.0, 1.0), 0.5), "title_alpha": alpha}
 
 func _draw_warning(time: Dictionary) -> void:
 	var left: int = ceili(float(time.get("day_warning_remaining", 0.0)))
