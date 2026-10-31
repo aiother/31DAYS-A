@@ -19,7 +19,7 @@
 
 1. 第 1 次（被测 `8cbed30`，干净、内容稳定）：**未通过**。G2 103/103、`tests/` 208 项通过；`codexandclaude/tests` 的 Markdown 链接检查失败——Claude 在 ENV-008 第 2 轮审查记录里把正则写成了 `[0-9]` 后紧跟括号的形式，被当成链接。该记录是在 Claude 自己跑完 G3 之后写的，当时没有复跑。摘要 `codexandclaude/runs/20261031T114845.348410Z/summary.json`。
 2. 修正：改写那段文字，不改结论；同一提交更新四张卡的任务卡状态、任务板四行、待办 BL-127（进行中）与 BL-128（已完成），并新增四份集成记录。
-3. 第 2 次：见下方补记。
+3. 第 2 次（被测 `b18ce7c`，干净、`content_stable=true`）：**通过**。G2 103/103，G3 `tests/` 208 + `codexandclaude/tests/` 83 项，引擎日志 0 条脚本错误。摘要 `codexandclaude/runs/20261031T120532.575814Z/summary.json`（运行目录不入库）。
 
 ## 收尾
 
