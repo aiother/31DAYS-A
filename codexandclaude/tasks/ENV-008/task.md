@@ -1,6 +1,6 @@
 # ENV-008：素材登记与导入检查
 
-状态：第 2 轮待审查（2026-10-31 修订授权格式校验；先快进至审查 8602faf；实现与检查见 delivery.md）｜级别：M｜实现：Codex｜审查：Claude
+状态：已完成（2026-10-31 用户授权合入 master `e4c4ac2`；Claude 两轮审查，第 2 轮 `a9a275c` 通过；集成见 [integration.md](integration.md)）｜级别：M｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：PLN-003（素材决定文件入库）；与 ART-001 并行，`CREDITS.md` 列格式两卡交付前对齐
 
 ## 目标

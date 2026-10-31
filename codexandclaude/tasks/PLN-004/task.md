@@ -1,6 +1,6 @@
 # PLN-004：规划刷新（第十一批收尾）与动画路线入规格
 
-状态：第 3 轮已交付，待 Codex 复核（2026-10-30 用户批准，第十二批；实现 `6684b16`，见 [delivery.md](delivery.md)，审查见 [review.md](review.md)）
+状态：已完成（2026-10-31 用户授权合入 master `7976e97`；Codex 三轮审查，第 3 轮 `c242d5a` 通过；集成见 [integration.md](integration.md)）｜级别：M｜实现：Claude｜审查：Codex
 工作区：worktrees/claude｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；第十二批中最先做
 
 ## 目标

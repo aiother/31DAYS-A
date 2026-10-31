@@ -58,14 +58,14 @@
 | SYS-012 | L | 关键演出流程框架 | Codex | Claude | 已完成 | [tasks/SYS-012](tasks/SYS-012/task.md) |
 | PLN-003 | M | 规划刷新（第十批收尾）与 M3 素材决定入库 | Claude | Codex | 已完成 | [tasks/PLN-003](tasks/PLN-003/task.md) |
 | ART-001 | M | 风格说明与素材规格 | Claude | Codex | 已完成（第十一批；2026-10-27 合入 master，玩家部分已于 2026-10-29 废弃、2026-10-30 改写为「初页」） | [tasks/ART-001](tasks/ART-001/task.md) |
-| ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 已批准（第十一批），转入第十二批，未开工 | [tasks/ENV-008](tasks/ENV-008/task.md) |
+| ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 已完成（第十一批批准，第十二批完成） | [tasks/ENV-008](tasks/ENV-008/task.md) |
 | ART-002 | L | 玩家素材流程试做 | Claude | Codex | 已取消（2026-10-29 原玩家方案废弃；由 ART-003 取代，PLN-004） | [tasks/ART-002](tasks/ART-002/task.md) |
-| PLN-004 | M | 规划刷新（第十一批收尾）与动画路线入规格 | Claude | Codex | 进行中（第十二批） | [tasks/PLN-004](tasks/PLN-004/task.md) |
+| PLN-004 | M | 规划刷新（第十一批收尾）与动画路线入规格 | Claude | Codex | 已完成（第十二批） | [tasks/PLN-004](tasks/PLN-004/task.md) |
 | ART-003 | L | 主角「初页」逐帧动画试做（待机 + 跑步） | Claude | Codex | 已批准（第十二批） | [tasks/ART-003](tasks/ART-003/task.md) |
 | EXP-006 | M | 照片背景探索原型 | Claude | Codex | 已批准（第十二批） | [tasks/EXP-006](tasks/EXP-006/task.md) |
-| SYS-013 | M | 镜头后续（大型战斗拉远、实验场景镜头） | Codex | Claude | 已批准（第十二批） | [tasks/SYS-013](tasks/SYS-013/task.md) |
+| SYS-013 | M | 镜头后续（大型战斗拉远、实验场景镜头） | Codex | Claude | 已完成（第十二批；用户 G4 通过，参数暂定） | [tasks/SYS-013](tasks/SYS-013/task.md) |
 | CLN-002 | S | 仓库清理（旧 worktree 与分支） | Claude | Codex | 已批准（第十二批） | [tasks/CLN-002](tasks/CLN-002/task.md) |
-| UI-011 | S | 时间轴隐藏与换日动画 | Claude | Codex | 已交付，待审查（2026-10-31 用户在 SYS-013 实机验收时提出） | [tasks/UI-011](tasks/UI-011/task.md) |
+| UI-011 | S | 时间轴隐藏与换日动画 | Claude | Codex | 已完成（2026-10-31 用户提出，第十二批内完成） | [tasks/UI-011](tasks/UI-011/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 

@@ -1,6 +1,6 @@
 # SYS-013：镜头后续（大型战斗拉远、实验场景镜头）
 
-状态：待复审（2026-10-31 用户 G4 通过后，按“暂时别写死”补可调参数；基线 master@cc42d35；验证与交接见 delivery.md 第 2 轮）｜级别：M｜实现：Codex｜审查：Claude
+状态：已完成（2026-10-31 用户授权合入 master `c81becf`；Claude 两轮审查，第 2 轮 `a0d058a` 通过；用户 G4 通过，参数暂定；集成见 [integration.md](integration.md)）｜级别：M｜实现：Codex｜审查：Claude
 工作区：worktrees/codex｜基线：本任务卡合入后的 master 最新提交（实现者在交付记录中写明完整 SHA）｜依赖：无；与 ENV-008 并行
 
 ## 目标
