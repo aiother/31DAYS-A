@@ -72,6 +72,14 @@ func case(window: Vector2i) -> void:
 	check(hud.drawn.has("banner") and float(hud.drawn["banner"]["elapsed"]) < 0.2 and float(hud.drawn["banner"]["title_alpha"]) < 0.05, label + ": the date animation then starts from the beginning")
 	await ticks(90)
 	check(hud.drawn.has("banner") and float(hud.drawn["banner"]["title_alpha"]) > 0.95 and hud.drawn["banner"]["text"] == "第 三 日", label + ": the full date animation plays after the dialogue")
+	# Independent review: an intro interrupting a live banner must also hold
+	# its drawing and restart the full animation when the intro ends.
+	host.intro_active = true
+	await ticks(6)
+	check(not hud.drawn.has("banner") and is_equal_approx(hud.banner_left, total), label + ": opening intro hides and resets an in-progress date animation")
+	host.intro_active = false
+	await ticks(3)
+	check(hud.drawn.has("banner") and float(hud.drawn["banner"]["elapsed"]) < 0.2, label + ": the date animation restarts after the opening intro")
 	host.queue_free()
 	await ticks(2)
 	var absolute: String = ProjectSettings.globalize_path(directory)

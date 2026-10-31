@@ -44,3 +44,28 @@
 - 完整检查结束后独立变异：DAY_SCALE 从 2.0 改回 1.0，用 Godot 的 `--headless --path game --fixed-fps 60 --script res://tests/test_formal_hud.gd` 运行，尺寸断言“twice the first size”失败；finally 按原始字节还原。日志 `codexandclaude/runs/ui011-scale-mutation.txt`。追加本记录后重跑 G3。
 
 请 Claude 先快进到本审查提交，修复 R1、同步相应回归与交付说明后复审。截图上的大小认可不代表 R1 场景已通过实机验收；本轮不合并、不推送。
+
+---
+
+## 第 2 轮复审（2026-10-31）
+
+结论：**通过**。R1 已关闭，N1、N2 已落实；本轮未发现阻断项。
+
+固定实现 `5339191`，交付 `ea791cd`；独立 worktree `codexandclaude/worktrees/codex-ui011-r2` 从交付 SHA detached 审查，再建立 `codex/UI-011-review-r2`。`git diff 5339191 ea791cd` 仅涉及 `delivery.md` 与任务卡首部，没有运行时代码变化。未操作 Claude 的 worktree，未合并、未推送。
+
+### 修复核对
+
+- R1：`day_change_held()` 在 `FieldDialogue.active` 或开场演出期间同时阻止绘制、将尚未结束的日期动画计时恢复到完整时长；结束后从头播放，不禁止 `interact_seven()`。真实自然换日后立即交谈的两个尺寸回归通过。已逐张核对 1920×1080、1280×720 下对话中及对话后的四张交付截图：对话中日期动画消失，对话结束后正常显示，纸笺及提示文字可读。
+- 缺失属性：`session.get("intro_active") == true` 对不存在属性得到的 null 安全返回假，`dialogue_ui` 也经类型判断；新套件的裸 Node 宿主检查通过。UID 已跟踪；本次完整运行起止均干净，没有使用先前作废或失败运行充当证据。
+- N1：实施说明已明确 `banner` 是前景矩形，不含外圈柔光；渲染中的提示纸笺文字可读。矩形断言不能证明柔光全部像素的边界，后续调整柔光仍应保留实际渲染核对。
+- N2：第 1 轮计数已修正为 100；本轮新增一个套件，独立登记为 101，没有混用 SYS-013 的计数。
+
+### 独立检查与测试补充
+
+- 干净 `ea791cd`：`python codexandclaude/tools/run_checks.py full --jobs 4` **通过**，`content_stable=true`；G2 **101/101**，`DAY_CHANGE_DIALOGUE_TESTS checks=19`；G3 **188 + 83**；引擎日志脚本错误 0 条，未检出泄漏或超时。
+- 完整摘要：`codexandclaude/runs/20261031T112856.875428Z/summary.json`；引擎报告 SHA256 `ce49f136abb880c7f8998dde78a051b3ccf80723a4d59e3d8a4aae8719c511c1`。Godot 4.7.2.stable.official.ed1daf0bf、Python 3.12.14 / openpyxl 3.1.5、Node v24.22.1、Git 2.56.0.windows.2。
+- 完整检查后独立变异，每次只改一处并按原始字节还原：移除绘制等待 → 套件退出 1；移除计时等待 → 套件退出 1；恢复 `bool(session.get("intro_active"))` → 裸宿主触发脚本错误。最后一种进程退出 0，但日志含 `SCRIPT ERROR`，按验证器规则仍失败，不能仅看退出码。日志为 `codexandclaude/runs/ui011-r2-mutation-{draw,timer,null}.txt`。
+- 审查补充测试：在同一真实会话的动画播放中启用开场演出，两个尺寸均断言不绘制且恢复完整时长，演出结束后从头播放；不修改生产代码。新增 4 条断言，套件变为 **23** 项。
+- 补充后运行 `python codexandclaude/tools/run_checks.py focused --godot-script res://tests/test_day_change_dialogue.gd --python-all` **通过**，内容稳定；引擎导入、新套件 23 项及 G3 188 + 83 全通过。摘要 `codexandclaude/runs/20261031T114132.371240Z/summary.json`。此运行明确包含未提交的测试补充，不冒称干净交付全量；上面的完整检查对应原始交付。追加审查记录后再复核 G3 与 diff 格式。
+
+UI-011 可进入用户批准后的统一合入流程；本次技术复审不代替用户实机观感验收。SYS-013 第 2 轮通过记录 `a0d058a` 已确认，本轮未改动；ART-003 认可标准未确认，未生成动作帧。
