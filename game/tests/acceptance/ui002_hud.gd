@@ -68,7 +68,7 @@ func self_test() -> void:
 	check((panel == null) or ((panel.get_node("ReadOnlyStatus") as Label).position == PANEL_POSITION), "slot menu instructions sit clear of the HUD")
 	await load_slot(1)
 	check((panel == null) or ((panel.get_node("ReadOnlyStatus") as Label).position == PLAY_PANEL_POSITION and not (panel.get_node("ReadOnlyStatus") as Label).text.contains("槽2")), "in play the panel keeps only live fields on the right")
-	check(hud().drawn["horizon"]["date"] == "第1日 · 末日前3天" and not hud().drawn.has("banner"), "slot 1 shows the first day without a load banner")
+	check(not hud().drawn.has("horizon") and int(hud().time_state()["day"]) == 1 and not hud().drawn.has("banner"), "slot 1 is on the first day without a load banner, time axis hidden (UI-011)")
 	session.data["day_remaining"] = 170.0
 	await frames(3)
 	check(hud().drawn.has("warning"), "slot 1 reaches the next-day warning")

@@ -270,7 +270,7 @@ func final_cases() -> void:
 	check(not drawn().has("banner"), "the date-change animation does not play over the final countdown")
 	hud().banner_left = 0.0
 	var box: Rect2 = short["rect"]
-	check(not box.intersects(drawn()["emblem"]["rect"]) and not box.intersects(drawn()["horizon"]["rect"]), "final countdown keeps clear of the emblem and horizon")
+	check(not box.intersects(drawn()["emblem"]["rect"]) and not drawn().has("horizon"), "final countdown keeps clear of the emblem, with the time axis hidden (UI-011)")
 	# Exactly 15:00 left is neither "more than" (no spin-down) nor "less than" (no warning).
 	await start_final(2, 900.0)
 	var even: Dictionary = drawn()["final"]
