@@ -137,6 +137,10 @@ func cinematic_state() -> Dictionary:
 	result["story_music"] = bool(result["story_music"]) or talking
 	return result
 
+## Read-only presentation request, never advances combat, clocks or save data.
+func gameplay_camera_state() -> Dictionary:
+	return {"cinematic": cinematics.active(), "battle": false}
+
 func _apply_cinematic_state() -> void:
 	if not is_instance_valid(player) or not is_instance_valid(ui): return
 	var state: Dictionary = cinematic_state()

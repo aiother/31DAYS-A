@@ -1,0 +1,1960 @@
+{
+  "bosses": [
+    {
+      "actor": [
+        960.0,
+        920.0
+      ],
+      "case": "near",
+      "cue": [
+        960.0,
+        872.0
+      ],
+      "cue_visible": true,
+      "feet": [
+        800.0,
+        1280.0
+      ],
+      "id": "HD_10004_1",
+      "screenshot": "captures/HD_10004_1_near.png",
+      "view": [
+        216.0,
+        646.400024414063,
+        1280.0,
+        720.0
+      ],
+      "zoom": 1.5
+    },
+    {
+      "actor": [
+        1760.0,
+        920.0
+      ],
+      "case": "far",
+      "cue": [
+        1760.0,
+        872.0
+      ],
+      "cue_visible": false,
+      "feet": [
+        160.0,
+        1280.0
+      ],
+      "id": "HD_10004_1",
+      "screenshot": "captures/HD_10004_1_far.png",
+      "view": [
+        80.0,
+        646.400024414063,
+        1280.0,
+        720.0
+      ],
+      "zoom": 1.5
+    },
+    {
+      "actor": [
+        960.0,
+        1536.0
+      ],
+      "case": "near",
+      "cue": [
+        960.0,
+        1488.0
+      ],
+      "cue_visible": true,
+      "feet": [
+        800.0,
+        1536.0
+      ],
+      "id": "HD_20003_1",
+      "screenshot": "captures/HD_20003_1_near.png",
+      "view": [
+        216.0,
+        902.400024414063,
+        1280.0,
+        720.0
+      ],
+      "zoom": 1.5
+    },
+    {
+      "actor": [
+        1760.0,
+        1536.0
+      ],
+      "case": "far",
+      "cue": [
+        1760.0,
+        1488.0
+      ],
+      "cue_visible": false,
+      "feet": [
+        160.0,
+        1536.0
+      ],
+      "id": "HD_20003_1",
+      "screenshot": "captures/HD_20003_1_far.png",
+      "view": [
+        80.0,
+        902.400024414063,
+        1280.0,
+        720.0
+      ],
+      "zoom": 1.5
+    }
+  ],
+  "method": "static production Room/platform probes; gameplay disabled; not a traversal or AI timing proof",
+  "rooms": [
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1728.0
+      ],
+      "id": "HD_10002_2",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            400.0,
+            1376.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            624.0,
+            1216.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            848.0,
+            1056.0
+          ]
+        },
+        {
+          "name": "Platforms/Step3",
+          "point": [
+            1072.0,
+            896.0
+          ]
+        },
+        {
+          "name": "Platforms/Step4",
+          "point": [
+            1296.0,
+            736.0
+          ]
+        },
+        {
+          "name": "Platforms/UpperLanding",
+          "point": [
+            1632.0,
+            640.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [
+            "Platforms/Step3",
+            "Platforms/Step4",
+            "Platforms/UpperLanding"
+          ],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            128.0,
+            1536.0
+          ],
+          "screenshot": "captures/HD_10002_2_0.png",
+          "view": [
+            0.0,
+            1029.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step4",
+            "Platforms/UpperLanding"
+          ],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            400.0,
+            1376.0
+          ],
+          "view": [
+            0.0,
+            869.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/UpperLanding"
+          ],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            624.0,
+            1216.0
+          ],
+          "view": [
+            112.0,
+            709.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            848.0,
+            1056.0
+          ],
+          "view": [
+            336.0,
+            549.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step3",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2"
+          ],
+          "feet": [
+            1072.0,
+            896.0
+          ],
+          "view": [
+            560.0,
+            389.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step4",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3"
+          ],
+          "feet": [
+            1296.0,
+            736.0
+          ],
+          "view": [
+            784.0,
+            229.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/UpperLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            1632.0,
+            640.0
+          ],
+          "screenshot": "captures/HD_10002_2_6.png",
+          "view": [
+            896.0,
+            133.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        2560.0,
+        1792.0
+      ],
+      "id": "HD_10002_3",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            400.0,
+            1376.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            624.0,
+            1216.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            848.0,
+            1056.0
+          ]
+        },
+        {
+          "name": "Platforms/TurnLanding",
+          "point": [
+            1072.0,
+            896.0
+          ]
+        },
+        {
+          "name": "Platforms/UpperArm",
+          "point": [
+            1456.0,
+            896.0
+          ]
+        },
+        {
+          "name": "Platforms/Step4",
+          "point": [
+            1776.0,
+            752.0
+          ]
+        },
+        {
+          "name": "Platforms/Step5",
+          "point": [
+            2000.0,
+            600.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            2336.0,
+            520.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [
+            "Platforms/TurnLanding",
+            "Platforms/UpperArm",
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            128.0,
+            1536.0
+          ],
+          "screenshot": "captures/HD_10002_3_0.png",
+          "view": [
+            0.0,
+            1029.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            400.0,
+            1376.0
+          ],
+          "view": [
+            0.0,
+            869.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            624.0,
+            1216.0
+          ],
+          "view": [
+            112.0,
+            709.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            848.0,
+            1056.0
+          ],
+          "view": [
+            336.0,
+            549.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/TurnLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2"
+          ],
+          "feet": [
+            1072.0,
+            896.0
+          ],
+          "view": [
+            560.0,
+            389.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/UpperArm",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2"
+          ],
+          "feet": [
+            1456.0,
+            896.0
+          ],
+          "view": [
+            944.0,
+            389.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step4",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/TurnLanding",
+            "Platforms/UpperArm"
+          ],
+          "feet": [
+            1776.0,
+            752.0
+          ],
+          "view": [
+            1264.0,
+            245.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step5",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/TurnLanding",
+            "Platforms/UpperArm",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            2000.0,
+            600.0
+          ],
+          "view": [
+            1488.0,
+            93.1199951171875,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/TurnLanding",
+            "Platforms/UpperArm",
+            "Platforms/Step4",
+            "Platforms/Step5"
+          ],
+          "feet": [
+            2336.0,
+            520.0
+          ],
+          "screenshot": "captures/HD_10002_3_8.png",
+          "view": [
+            1536.0,
+            13.1199951171875,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1536.0
+      ],
+      "id": "HD_10004_1",
+      "platforms": [
+        {
+          "name": "ExitLanding",
+          "point": [
+            1344.0,
+            848.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/HD_10004_1_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "ExitLanding",
+          "below": [],
+          "feet": [
+            1344.0,
+            848.0
+          ],
+          "screenshot": "captures/HD_10004_1_1.png",
+          "view": [
+            832.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        2560.0,
+        1536.0
+      ],
+      "id": "HD_20001_1",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            1424.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            1648.0,
+            992.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            1872.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            2236.0,
+            848.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/HD_20001_1_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            1424.0,
+            1136.0
+          ],
+          "view": [
+            912.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            1648.0,
+            992.0
+          ],
+          "view": [
+            1136.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            1872.0,
+            848.0
+          ],
+          "screenshot": "captures/HD_20001_1_3.png",
+          "view": [
+            1360.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            2236.0,
+            848.0
+          ],
+          "view": [
+            1536.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1280.0
+      ],
+      "id": "HD_20001_2",
+      "platforms": [
+        {
+          "name": "Step0",
+          "point": [
+            576.0,
+            992.0
+          ]
+        },
+        {
+          "name": "Step1",
+          "point": [
+            800.0,
+            848.0
+          ]
+        },
+        {
+          "name": "RescueLanding",
+          "point": [
+            1088.0,
+            720.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1152.0
+          ],
+          "screenshot": "captures/HD_20001_2_0.png",
+          "view": [
+            0.0,
+            645.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step0",
+          "below": [],
+          "feet": [
+            576.0,
+            992.0
+          ],
+          "view": [
+            64.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step1",
+          "below": [
+            "Step0"
+          ],
+          "feet": [
+            800.0,
+            848.0
+          ],
+          "view": [
+            288.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "RescueLanding",
+          "below": [
+            "Step0",
+            "Step1"
+          ],
+          "feet": [
+            1088.0,
+            720.0
+          ],
+          "screenshot": "captures/HD_20001_2_3.png",
+          "view": [
+            576.0,
+            213.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1536.0
+      ],
+      "id": "HD_20001_3",
+      "platforms": [
+        {
+          "name": "Step0",
+          "point": [
+            576.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Step1",
+          "point": [
+            800.0,
+            992.0
+          ]
+        },
+        {
+          "name": "RescueLanding",
+          "point": [
+            1120.0,
+            880.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/HD_20001_3_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step0",
+          "below": [],
+          "feet": [
+            576.0,
+            1136.0
+          ],
+          "view": [
+            64.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step1",
+          "below": [
+            "Step0"
+          ],
+          "feet": [
+            800.0,
+            992.0
+          ],
+          "view": [
+            288.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "RescueLanding",
+          "below": [
+            "Step0",
+            "Step1"
+          ],
+          "feet": [
+            1120.0,
+            880.0
+          ],
+          "screenshot": "captures/HD_20001_3_3.png",
+          "view": [
+            608.0,
+            373.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        3072.0,
+        1536.0
+      ],
+      "id": "HD_20002_1",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            1424.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            1648.0,
+            992.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            1872.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            2120.0,
+            848.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/HD_20002_1_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            1424.0,
+            1136.0
+          ],
+          "view": [
+            912.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            1648.0,
+            992.0
+          ],
+          "view": [
+            1136.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            1872.0,
+            848.0
+          ],
+          "screenshot": "captures/HD_20002_1_3.png",
+          "view": [
+            1360.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            2120.0,
+            848.0
+          ],
+          "view": [
+            1608.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1536.0
+      ],
+      "id": "HD_20002_2",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            768.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            1024.0,
+            992.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/HD_20002_2_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            768.0,
+            1136.0
+          ],
+          "view": [
+            256.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            1024.0,
+            992.0
+          ],
+          "screenshot": "captures/HD_20002_2_2.png",
+          "view": [
+            512.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        1792.0
+      ],
+      "id": "HD_20003_1",
+      "platforms": [
+        {
+          "name": "ExitLanding",
+          "point": [
+            1408.0,
+            1056.0
+          ]
+        },
+        {
+          "name": "Step0",
+          "point": [
+            608.0,
+            1344.0
+          ]
+        },
+        {
+          "name": "Step1",
+          "point": [
+            832.0,
+            1200.0
+          ]
+        },
+        {
+          "name": "Step2",
+          "point": [
+            1056.0,
+            1056.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1536.0
+          ],
+          "screenshot": "captures/HD_20003_1_0.png",
+          "view": [
+            0.0,
+            1029.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "ExitLanding",
+          "below": [
+            "Step0",
+            "Step1"
+          ],
+          "feet": [
+            1408.0,
+            1056.0
+          ],
+          "screenshot": "captures/HD_20003_1_1.png",
+          "view": [
+            896.0,
+            549.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step0",
+          "below": [],
+          "feet": [
+            608.0,
+            1344.0
+          ],
+          "view": [
+            96.0,
+            837.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step1",
+          "below": [
+            "Step0"
+          ],
+          "feet": [
+            832.0,
+            1200.0
+          ],
+          "view": [
+            320.0,
+            693.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Step2",
+          "below": [
+            "Step0",
+            "Step1"
+          ],
+          "feet": [
+            1056.0,
+            1056.0
+          ],
+          "view": [
+            544.0,
+            549.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        3072.0,
+        1536.0
+      ],
+      "id": "NSZC_10001_1",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            1424.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            1648.0,
+            992.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            1872.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            2120.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ChallengeFloor",
+          "point": [
+            2480.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ChallengeRoof",
+          "point": [
+            2480.0,
+            720.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [
+            "Platforms/ChallengeRoof"
+          ],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1280.0
+          ],
+          "screenshot": "captures/NSZC_10001_1_0.png",
+          "view": [
+            0.0,
+            773.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            1424.0,
+            1136.0
+          ],
+          "view": [
+            912.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            1648.0,
+            992.0
+          ],
+          "view": [
+            1136.0,
+            485.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            1872.0,
+            848.0
+          ],
+          "view": [
+            1360.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            2120.0,
+            848.0
+          ],
+          "view": [
+            1608.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ChallengeFloor",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            2480.0,
+            848.0
+          ],
+          "view": [
+            1968.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ChallengeRoof",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/ExitLanding",
+            "Platforms/ChallengeFloor"
+          ],
+          "feet": [
+            2480.0,
+            720.0
+          ],
+          "screenshot": "captures/NSZC_10001_1_6.png",
+          "view": [
+            1968.0,
+            213.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        2048.0
+      ],
+      "id": "NSZC_10002_1",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            448.0,
+            1648.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            672.0,
+            1488.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            896.0,
+            1328.0
+          ]
+        },
+        {
+          "name": "Platforms/Step3",
+          "point": [
+            1120.0,
+            1168.0
+          ]
+        },
+        {
+          "name": "Platforms/Step4",
+          "point": [
+            1344.0,
+            1008.0
+          ]
+        },
+        {
+          "name": "Platforms/Step5",
+          "point": [
+            1568.0,
+            848.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            1696.0,
+            848.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [
+            "Platforms/Step3",
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            1792.0
+          ],
+          "screenshot": "captures/NSZC_10002_1_0.png",
+          "view": [
+            0.0,
+            1285.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            448.0,
+            1648.0
+          ],
+          "view": [
+            0.0,
+            1141.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step5",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            672.0,
+            1488.0
+          ],
+          "view": [
+            160.0,
+            981.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            896.0,
+            1328.0
+          ],
+          "view": [
+            384.0,
+            821.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step3",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2"
+          ],
+          "feet": [
+            1120.0,
+            1168.0
+          ],
+          "view": [
+            608.0,
+            661.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step4",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3"
+          ],
+          "feet": [
+            1344.0,
+            1008.0
+          ],
+          "view": [
+            832.0,
+            501.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step5",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            1568.0,
+            848.0
+          ],
+          "screenshot": "captures/NSZC_10002_1_6.png",
+          "view": [
+            896.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            1696.0,
+            848.0
+          ],
+          "view": [
+            896.0,
+            341.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    },
+    {
+      "bounds": [
+        0.0,
+        0.0,
+        1920.0,
+        2304.0
+      ],
+      "id": "NSZC_10002_2",
+      "platforms": [
+        {
+          "name": "Platforms/Step0",
+          "point": [
+            448.0,
+            1904.0
+          ]
+        },
+        {
+          "name": "Platforms/Step1",
+          "point": [
+            672.0,
+            1712.0
+          ]
+        },
+        {
+          "name": "Platforms/Step2",
+          "point": [
+            448.0,
+            1520.0
+          ]
+        },
+        {
+          "name": "Platforms/Step3",
+          "point": [
+            672.0,
+            1328.0
+          ]
+        },
+        {
+          "name": "Platforms/Step4",
+          "point": [
+            448.0,
+            1136.0
+          ]
+        },
+        {
+          "name": "Platforms/Step5",
+          "point": [
+            672.0,
+            944.0
+          ]
+        },
+        {
+          "name": "Platforms/Step6",
+          "point": [
+            896.0,
+            944.0
+          ]
+        },
+        {
+          "name": "Platforms/CorridorFloor",
+          "point": [
+            1312.0,
+            944.0
+          ]
+        },
+        {
+          "name": "Platforms/ExitLanding",
+          "point": [
+            1832.0,
+            944.0
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "above": [
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/Step6",
+            "Platforms/CorridorFloor",
+            "Platforms/ExitLanding"
+          ],
+          "at": "entry",
+          "below": [],
+          "feet": [
+            224.0,
+            2048.0
+          ],
+          "screenshot": "captures/NSZC_10002_2_0.png",
+          "view": [
+            0.0,
+            1541.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step3",
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/Step6",
+            "Platforms/CorridorFloor",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step0",
+          "below": [],
+          "feet": [
+            448.0,
+            1904.0
+          ],
+          "view": [
+            0.0,
+            1397.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step4",
+            "Platforms/Step5",
+            "Platforms/Step6",
+            "Platforms/CorridorFloor",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step1",
+          "below": [
+            "Platforms/Step0"
+          ],
+          "feet": [
+            672.0,
+            1712.0
+          ],
+          "view": [
+            160.0,
+            1205.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [
+            "Platforms/Step5",
+            "Platforms/Step6",
+            "Platforms/CorridorFloor",
+            "Platforms/ExitLanding"
+          ],
+          "at": "Platforms/Step2",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1"
+          ],
+          "feet": [
+            448.0,
+            1520.0
+          ],
+          "view": [
+            0.0,
+            1013.11999511719,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step3",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2"
+          ],
+          "feet": [
+            672.0,
+            1328.0
+          ],
+          "view": [
+            160.0,
+            821.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step4",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3"
+          ],
+          "feet": [
+            448.0,
+            1136.0
+          ],
+          "view": [
+            0.0,
+            629.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step5",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            672.0,
+            944.0
+          ],
+          "screenshot": "captures/NSZC_10002_2_6.png",
+          "view": [
+            160.0,
+            437.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/Step6",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            896.0,
+            944.0
+          ],
+          "view": [
+            384.0,
+            437.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/CorridorFloor",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            1312.0,
+            944.0
+          ],
+          "view": [
+            800.0,
+            437.119995117188,
+            1024.0,
+            576.0
+          ]
+        },
+        {
+          "above": [],
+          "at": "Platforms/ExitLanding",
+          "below": [
+            "Platforms/Step0",
+            "Platforms/Step1",
+            "Platforms/Step2",
+            "Platforms/Step3",
+            "Platforms/Step4"
+          ],
+          "feet": [
+            1832.0,
+            944.0
+          ],
+          "view": [
+            896.0,
+            437.119995117188,
+            1024.0,
+            576.0
+          ]
+        }
+      ]
+    }
+  ],
+  "viewport": [
+    1920,
+    1080
+  ]
+}

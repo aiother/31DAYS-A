@@ -11,6 +11,12 @@ PROMPTS = ROOT / "codexandclaude" / "tasks" / "ART-001" / "prompts"
 DEPRECATED = "> **已废弃，永不采用（用户 2026-10-29）**"
 
 
+def gameplay_camera_defaults():
+    source = (GAME / "world" / "gameplay_camera.gd").read_text(encoding="utf-8")
+    return {name: float(value) for name, value in re.findall(
+        r"@export_range\([^\n]+\) var (normal_zoom|ground_ratio|battle_zoom|transition_seconds): float = ([\d.]+)", source)}
+
+
 def dusk_constants():
     source = (GAME / "ui" / "style" / "dusk_style.gd").read_text(encoding="utf-8")
     return {name: value.lower() for name, value in re.findall(r'^const (\w+): Color = Color\("([0-9a-fA-F]{6})"\)', source, re.M)}
@@ -43,10 +49,13 @@ class ArtSpecTests(unittest.TestCase):
 
     def test_heights_follow_t6e_and_double_delivery(self):
         player = 112
-        zoom = float(re.search(r"const ZOOM: float = ([\d.]+)",
-                               (GAME / "world" / "gameplay_camera.gd").read_text(encoding="utf-8")).group(1))
-        self.assertEqual(zoom, 1.875)
-        self.assertIn("**游戏镜头 ×1.875**", self.spec)
+        defaults = gameplay_camera_defaults()
+        zoom = defaults["normal_zoom"]
+        self.assertIn(f"**游戏镜头 ×{zoom:g}**", self.spec)
+        self.assertIn("暂定默认值，可调", self.spec)
+        for parameter in ("normal_zoom", "ground_ratio", "battle_zoom", "transition_seconds"):
+            self.assertIn(f"`{parameter}`", self.spec)
+        self.assertIn("35% 也为暂定值", self.spec)
         rows = re.findall(r"^\| [^|]+ \| (\d+)% \| (\d+) px \| (\d+) px[^|]*\| (\d+) px \|$", self.spec, re.M)
         self.assertEqual([int(r[0]) for r in rows], [100, 80, 200, 250])
         for percent, shown, on_screen, delivered in rows:
