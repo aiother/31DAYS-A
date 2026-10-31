@@ -60,11 +60,11 @@
 | ART-001 | M | 风格说明与素材规格 | Claude | Codex | 已完成（第十一批；2026-10-27 合入 master，玩家部分已于 2026-10-29 废弃、2026-10-30 改写为「初页」） | [tasks/ART-001](tasks/ART-001/task.md) |
 | ENV-008 | M | 素材登记与导入检查 | Codex | Claude | 已批准（第十一批），转入第十二批，未开工 | [tasks/ENV-008](tasks/ENV-008/task.md) |
 | ART-002 | L | 玩家素材流程试做 | Claude | Codex | 暂停（2026-10-29 原玩家方案废弃；以「初页」重做前须改写任务卡） | [tasks/ART-002](tasks/ART-002/task.md) |
-| PLN-004 | M | 规划刷新（第十一批收尾）与动画路线入规格 | Claude | Codex | 待批准（第十二批） | [tasks/PLN-004](tasks/PLN-004/task.md) |
-| ART-003 | L | 主角「初页」逐帧动画试做（待机 + 跑步） | Claude | Codex | 待批准（第十二批） | [tasks/ART-003](tasks/ART-003/task.md) |
-| EXP-006 | M | 照片背景探索原型 | Claude | Codex | 待批准（第十二批） | [tasks/EXP-006](tasks/EXP-006/task.md) |
-| SYS-013 | M | 镜头后续（大型战斗拉远、实验场景镜头） | Codex | Claude | 待批准（第十二批） | [tasks/SYS-013](tasks/SYS-013/task.md) |
-| CLN-002 | S | 仓库清理（旧 worktree 与分支） | Claude | Codex | 待批准（第十二批，可选） | [tasks/CLN-002](tasks/CLN-002/task.md) |
+| PLN-004 | M | 规划刷新（第十一批收尾）与动画路线入规格 | Claude | Codex | 已批准（第十二批） | [tasks/PLN-004](tasks/PLN-004/task.md) |
+| ART-003 | L | 主角「初页」逐帧动画试做（待机 + 跑步） | Claude | Codex | 已批准（第十二批） | [tasks/ART-003](tasks/ART-003/task.md) |
+| EXP-006 | M | 照片背景探索原型 | Claude | Codex | 已批准（第十二批） | [tasks/EXP-006](tasks/EXP-006/task.md) |
+| SYS-013 | M | 镜头后续（大型战斗拉远、实验场景镜头） | Codex | Claude | 已批准（第十二批） | [tasks/SYS-013](tasks/SYS-013/task.md) |
+| CLN-002 | S | 仓库清理（旧 worktree 与分支） | Claude | Codex | 已批准（第十二批） | [tasks/CLN-002](tasks/CLN-002/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 
@@ -87,6 +87,6 @@
 
 下一批建议：ART-003 任务卡（以「初页」部件绑骨、接入 SYS-010，取代暂停的 ART-002）、ENV-008 开工，以及 A-021 裁决后的场景方向。
 
-第十二批（2026-10-30 起草，待用户批准）：PLN-004、ART-003、EXP-006、SYS-013，ENV-008 从第十一批延续，CLN-002 可选。PLN-004 先做（动画路线入规格、ART-002 终止、ART-003 立项、补审当天未审查的规格改写）；Claude 的 ART-003 与 EXP-006 交替进行，Codex 的 ENV-008 与 SYS-013 并行。批准时由用户确认：关键敌人名单（起草建议两场 Boss）与 ART-003 的生图方。
+第十二批（2026-10-30 用户批准）：PLN-004、ART-003、EXP-006、SYS-013，ENV-008 从第十一批延续，CLN-002 可选。PLN-004 先做（动画路线入规格、ART-002 终止、ART-003 立项、补审当天未审查的规格改写）；Claude 的 ART-003 与 EXP-006 交替进行，Codex 的 ENV-008 与 SYS-013 并行。用户批准时确认：关键敌人为两场 Boss（渴望俯视、寄生同伴者）；ART-003 的逐帧图由 Codex 用 image_gen 生成。
 
 阶段 1 与阶段 2 复盘已完成，协作规范 V2.3 生效。尚未立项的事项见 [待办清单](BACKLOG.md)，先后顺序见 [V0.1 开发路线](ROADMAP.md)。
