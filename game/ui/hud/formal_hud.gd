@@ -331,7 +331,8 @@ func _draw_horizon(time: Dictionary) -> void:
 func day_change_held() -> bool:
 	if session == null:
 		return false
-	if bool(session.get("intro_active")):
+	# Labs and test hosts have no intro_active; a missing property reads as null.
+	if session.get("intro_active") == true:
 		return true
 	var talk: Variant = session.get("dialogue_ui")
 	return talk is FieldDialogue and (talk as FieldDialogue).active

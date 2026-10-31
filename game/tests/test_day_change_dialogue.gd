@@ -24,6 +24,12 @@ func ticks(count: int) -> void:
 		await process_frame
 
 func run() -> void:
+	# Labs and test hosts own a HUD without intro_active or dialogue_ui.
+	var bare: FormalHud = FormalHud.new()
+	bare.session = Node.new()
+	check(not bare.day_change_held(), "a host without intro or dialogue never holds the date animation")
+	bare.session.free()
+	bare.free()
 	for window: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 720)]:
 		await case(window)
 	print("DAY_CHANGE_DIALOGUE_TESTS checks=%d failures=%d" % [checks, failures])
