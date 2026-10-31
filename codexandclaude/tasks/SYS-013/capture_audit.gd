@@ -84,8 +84,8 @@ func run() -> void:
 		for index: int in range(probes.size()):
 			var probe: Dictionary = probes[index]
 			session.player.global_position = probe["point"]
-			camera.zoom = Vector2(GameplayCamera.ZOOM,GameplayCamera.ZOOM)
-			camera.position = Vector2(0,-GameplayCamera.feet_lift(1080.0))
+			camera.zoom = Vector2(camera.normal_zoom,camera.normal_zoom)
+			camera.position = Vector2(0,-camera.feet_lift(1080.0))
 			camera.reset_smoothing()
 			await frame()
 			var visible: Rect2 = view()
@@ -95,7 +95,7 @@ func run() -> void:
 				if destination.y < visible.position.y: sample["above"].append(target["name"])
 				elif destination.y > visible.end.y: sample["below"].append(target["name"])
 			if index == 0 or index == highest:
-				sample["screenshot"] = await screenshot(id + "_" + str(index), "%s | %s feet=%s | zoom=1.875\nStatic platform probe: above=%s below=%s" % [id,probe["name"],str(probe["point"]),str(sample["above"]),str(sample["below"])])
+				sample["screenshot"] = await screenshot(id + "_" + str(index), "%s | %s feet=%s | zoom=%s\nStatic platform probe: above=%s below=%s" % [id,probe["name"],str(probe["point"]),str(camera.normal_zoom),str(sample["above"]),str(sample["below"])])
 			item["samples"].append(sample)
 		report["rooms"].append(item)
 	for id: String in [BossSession.BOSS_ID, ParasiteSession.PARASITE_ID]:
@@ -112,7 +112,7 @@ func run() -> void:
 			else: (actor as ParasiteBoss).state = ParasiteBoss.State.WINDUP
 			actor.queue_redraw()
 			camera.zoom = Vector2(camera.battle_zoom,camera.battle_zoom)
-			camera.position = Vector2((actor_x - session.player.position.x) * 0.35, -(GameplayCamera.GROUND_RATIO-0.5)*1080/camera.battle_zoom)
+			camera.position = Vector2((actor_x - session.player.position.x) * 0.35, -camera.feet_lift(1080.0, camera.battle_zoom))
 			camera.reset_smoothing()
 			await frame()
 			var visible: Rect2 = view()

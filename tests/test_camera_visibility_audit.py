@@ -6,6 +6,7 @@ import re
 import unittest
 
 from PIL import Image
+from tests.test_art_spec import gameplay_camera_defaults
 
 ROOT = Path(__file__).resolve().parents[1]
 BUNDLE = ROOT / 'codexandclaude/tasks/SYS-013'
@@ -36,8 +37,8 @@ class CameraVisibilityAuditTests(unittest.TestCase):
             for sample in room['samples']:
                 with self.subTest(room=room['id'], at=sample['at']):
                     x, y, width, height = sample['view']
-                    self.assertAlmostEqual(width, 1024)
-                    self.assertAlmostEqual(height, 576)
+                    self.assertAlmostEqual(width, 1920 / gameplay_camera_defaults()["normal_zoom"])
+                    self.assertAlmostEqual(height, 1080 / gameplay_camera_defaults()["normal_zoom"])
                     self.assertGreaterEqual(x, bx - 1)
                     self.assertGreaterEqual(y, by - 1)
                     self.assertLessEqual(x + width, bx + bw + 1)
@@ -64,7 +65,7 @@ class CameraVisibilityAuditTests(unittest.TestCase):
             x, y, width, height = sample['view']
             cx, cy = sample['cue']
             self.assertEqual(sample['cue_visible'], x <= cx < x + width and y <= cy < y + height)
-            self.assertAlmostEqual(sample['zoom'], 1.5)
+            self.assertAlmostEqual(sample['zoom'], gameplay_camera_defaults()["battle_zoom"])
         self.assertTrue(any(not sample['cue_visible'] for sample in samples))
 
 

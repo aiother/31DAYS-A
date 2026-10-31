@@ -36,18 +36,18 @@ func run() -> void:
 	check(session.start_slot(1, false), "entry checkpoint loads")
 	for actor: Node in session.room.get_node("Enemies").get_children():
 		actor.process_mode = Node.PROCESS_MODE_DISABLED
-	var camera: Camera2D = session.player.get_node("Camera2D") as Camera2D
+	var camera: GameplayCamera = session.player.get_node("Camera2D") as GameplayCamera
 	await ticks(3)
 	camera.reset_smoothing()
 	await ticks(2)
-	check(camera is GameplayCamera and camera.zoom == Vector2(1.875, 1.875), "sessions use the gameplay camera at x1.875")
+	check(camera is GameplayCamera and camera.zoom == Vector2.ONE * camera.normal_zoom, "sessions use the exported normal zoom")
 	check(camera.offset == Vector2.ZERO, "framing leaves offset free for cinematics and shake")
-	check(is_equal_approx(GameplayCamera.feet_lift(1080.0), 218.88), "camera sits 218.88 world px above the feet")
+	check(is_equal_approx(camera.feet_lift(1080.0), (camera.ground_ratio - 0.5) * 1080.0 / camera.normal_zoom), "feet lift follows the instance defaults")
 	var canvas: Transform2D = session.get_viewport().get_canvas_transform()
 	var feet: Vector2 = canvas * session.player.global_position
-	check(session.player.is_on_floor() and absf(feet.y - 950.4) < 1.0, "standing feet sit at 88%% of a 1080p screen (y %.1f)" % feet.y)
+	check(session.player.is_on_floor() and absf(feet.y - camera.get_viewport_rect().size.y * camera.ground_ratio) < 1.0, "standing feet follow the exported ratio (y %.1f)" % feet.y)
 	var head: Vector2 = canvas * (session.player.global_position + Vector2(0, -112))
-	check(absf((feet.y - head.y) - 210.0) < 0.5, "the 112 px player reads 210 px tall on screen")
+	check(absf((feet.y - head.y) - 112.0 * camera.normal_zoom) < 0.5, "player screen height follows the default zoom")
 	var capsule: CapsuleShape2D = (session.player.get_node("BodyCollision") as CollisionShape2D).shape as CapsuleShape2D
 	check(capsule.height == 88.0 and session.player.movement.jump_speed == 850.0, "collision and movement keep their world values")
 	var view: Vector2 = camera.get_viewport_rect().size / camera.zoom
@@ -64,6 +64,20 @@ func run() -> void:
 		peak = maxf(peak, camera.offset.length() * camera.zoom.x)
 	check(peak > 0.0 and peak <= director.config.hurt_shake + 0.01 and camera.offset == Vector2.ZERO,
 		"hurt shake keeps its screen amplitude under the zoom (peak %.2f px)" % peak)
+	var default_zoom: float = camera.normal_zoom
+	var default_ratio: float = camera.ground_ratio
+	camera.normal_zoom = 1.6
+	camera.ground_ratio = 0.76
+	await ticks(95)
+	camera.reset_smoothing()
+	await ticks(3)
+	feet = session.get_viewport().get_canvas_transform() * session.player.global_position
+	check(absf(camera.zoom.x - camera.normal_zoom) < 0.002, "normal zoom updates from instance configuration")
+	check(absf(feet.y - camera.get_viewport_rect().size.y * camera.ground_ratio) < 1.0, "feet position updates from instance configuration")
+	check(is_equal_approx(camera.world_length(160.0), 100.0) and is_equal_approx(camera.world_length(160.0, 2.0), 80.0), "distance helper uses instance zoom or an explicit framing zoom")
+	check(is_equal_approx(camera.feet_lift(1000.0, 2.0), 130.0), "feet helper combines instance ratio and explicit zoom")
+	camera.normal_zoom = default_zoom
+	camera.ground_ratio = default_ratio
 	session.queue_free()
 	await process_frame
 	await process_frame

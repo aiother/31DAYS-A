@@ -19,24 +19,24 @@ func settle() -> void:
 
 func self_test() -> void:
 	var host: FinalBattleSession = session as FinalBattleSession
-	var camera: Camera2D = host.player.get_node("Camera2D") as Camera2D
+	var camera: GameplayCamera = host.player.get_node("Camera2D") as GameplayCamera
 	host.room.process_mode = Node.PROCESS_MODE_DISABLED
 	host.player.set_physics_process(false)
 	check(host.room is BossRoom, "default adapter enters overlook Boss")
 	await settle()
-	check(absf(camera.zoom.x - 1.5) < 0.005, "real Boss fight requests battle zoom")
+	check(absf(camera.zoom.x - camera.battle_zoom) < 0.005, "real Boss fight requests battle zoom")
 	await capture("boss-battle")
 	(host.room.get_node("Boss") as OverlookBoss).mark_defeated()
 	await settle()
-	check(absf(camera.zoom.x - 1.875) < 0.005, "Boss defeat restores normal framing")
+	check(absf(camera.zoom.x - camera.normal_zoom) < 0.005, "Boss defeat restores normal framing")
 	await capture("boss-finished")
 	host._change_room(CampWavesSession.WAVES_ID)
 	host.room.process_mode = Node.PROCESS_MODE_DISABLED
 	var camp: CampWavesRoom = host.room as CampWavesRoom
 	check(camp.start_waves(), "real camp wave warning starts")
 	await settle()
-	check(absf(camera.zoom.x - 1.5) < 0.005, "wave warning requests battle zoom")
+	check(absf(camera.zoom.x - camera.battle_zoom) < 0.005, "wave warning requests battle zoom")
 	await capture("wave-warning")
 	camp.phase = CampWavesRoom.Phase.COMPLETE
 	await settle()
-	check(absf(camera.zoom.x - 1.875) < 0.005, "completed waves restore normal framing")
+	check(absf(camera.zoom.x - camera.normal_zoom) < 0.005, "completed waves restore normal framing")

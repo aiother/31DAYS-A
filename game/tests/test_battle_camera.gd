@@ -38,26 +38,43 @@ func run() -> void:
 	check(session.store.save_slot(1, snapshot) and session.start_slot(1, false), "isolated boss checkpoint entered")
 	session.room.process_mode = Node.PROCESS_MODE_DISABLED
 	session.player.set_physics_process(false)
-	var camera: Camera2D = session.player.get_node("Camera2D") as Camera2D
+	var camera: GameplayCamera = session.player.get_node("Camera2D") as GameplayCamera
+	var default_battle: float = camera.battle_zoom
+	var default_normal: float = camera.normal_zoom
 	var actor: OverlookBoss = session.room.get_node("Boss") as OverlookBoss
 	actor.set_physics_process(false)
 	var initial: float = camera.zoom.x
 	await ticks(3)
-	check(camera.zoom.x < initial and camera.zoom.x > 1.5, "battle enters smoothly, without snapping (%.3f -> %.3f)" % [initial, camera.zoom.x])
+	check(camera.zoom.x < initial and camera.zoom.x > default_battle, "battle enters smoothly, without snapping (%.3f -> %.3f)" % [initial, camera.zoom.x])
 	await ticks(95)
-	check(absf(camera.zoom.x - 1.5) < 0.002 and inside(camera), "overlook battle settles at x1.5 inside Room")
+	check(absf(camera.zoom.x - default_battle) < 0.002 and inside(camera), "overlook battle settles at the default battle zoom inside Room")
 	camera.set("battle_zoom", 1.6)
 	await ticks(95)
 	check(absf(camera.zoom.x - 1.6) < 0.002, "battle zoom is configurable")
-	camera.set("battle_zoom", 1.5)
+	camera.battle_zoom = default_battle
 	await ticks(95)
+	session.player.position = Vector2(800, 1280)
+	actor.position = Vector2(1200, 920)
+	await ticks(95)
+	camera.reset_smoothing()
+	await ticks(3)
+	check(absf(camera.get_screen_center_position().x - (800.0 + (1200.0 - 800.0) * 0.35)) < 2.0, "battle view biases 35 percent toward the live Boss")
+	session.player.life.protection_remaining = 0.0
+	session.player.life.hurt_remaining = 0.0
+	session.player.possibility.invincible_remaining = 0.0
+	check(session.player.life.take_hit(session.player.life.health), "real fatal hit enters player death")
+	await ticks(95)
+	check(not session.player.life.is_alive() and absf(camera.zoom.x - default_normal) < 0.002, "player death restores normal framing while Boss is alive")
+	session.player.life.revive()
+	await ticks(95)
+	check(absf(camera.zoom.x - default_battle) < 0.002, "reviving resumes the active Boss framing")
 	var data_before: Dictionary = session.data.duplicate(true)
 	for i: int in range(3): session.gameplay_camera_state()
 	check(session.data == data_before, "camera policy queries preserve save data")
 	camera.set("battle_zoom", 0.5)
 	await ticks(95)
 	check(camera.zoom.x >= 1.0 and inside(camera), "custom zoom cannot make a view larger than Room bounds")
-	camera.set("battle_zoom", 1.5)
+	camera.battle_zoom = default_battle
 	await ticks(95)
 	var zoom_before: Vector2 = camera.zoom
 	var position_before: Vector2 = camera.position
@@ -82,23 +99,23 @@ func run() -> void:
 	check(peak > 0.0 and peak <= director.config.hurt_shake + 0.01 and camera.offset == Vector2.ZERO, "battle zoom preserves shake amplitude in screen pixels")
 	actor.mark_defeated()
 	await ticks(1)
-	check(camera.zoom.x > 1.5 and camera.zoom.x < 1.875, "battle exits smoothly")
+	check(camera.zoom.x > default_battle and camera.zoom.x < default_normal, "battle exits smoothly")
 	await ticks(95)
-	check(absf(camera.zoom.x - 1.875) < 0.002, "defeated boss restores ordinary framing")
+	check(absf(camera.zoom.x - default_normal) < 0.002, "defeated boss restores ordinary framing")
 	session._change_room(CampWavesSession.WAVES_ID)
 	session.room.process_mode = Node.PROCESS_MODE_DISABLED
 	var camp: CampWavesRoom = session.room as CampWavesRoom
 	check(camp.start_waves(), "real camp warning starts")
 	await ticks(80)
-	check(absf(camera.zoom.x - 1.5) < 0.005, "camp warning/active wave zooms out")
+	check(absf(camera.zoom.x - default_battle) < 0.005, "camp warning/active wave zooms out")
 	camp.phase = CampWavesRoom.Phase.COMPLETE
 	await ticks(80)
-	check(absf(camera.zoom.x - 1.875) < 0.005, "completed camp returns to normal zoom")
+	check(absf(camera.zoom.x - default_normal) < 0.005, "completed camp returns to normal zoom")
 	session._change_room(ParasiteSession.PARASITE_ID)
 	session.room.process_mode = Node.PROCESS_MODE_DISABLED
 	(session.room.get_node("Boss") as ParasiteBoss).set_physics_process(false)
 	await ticks(80)
-	check(absf(camera.zoom.x - 1.5) < 0.005, "parasite fight also zooms out")
+	check(absf(camera.zoom.x - default_battle) < 0.005, "parasite fight also zooms out")
 	session._change_room(BattlefieldSession.BATTLEFIELD_ID)
 	session.room.process_mode = Node.PROCESS_MODE_DISABLED
 	session.cinematics.reset()
@@ -107,11 +124,11 @@ func run() -> void:
 	battlefield.started = true
 	battlefield.stopped = false
 	await ticks(80)
-	check(absf(camera.zoom.x - 1.5) < 0.005, "final battlefield fight zooms out")
+	check(absf(camera.zoom.x - default_battle) < 0.005, "final battlefield fight zooms out")
 	battlefield.stopped = true
 	battlefield.wave_state = FinalBattlefieldRoom.WaveState.WARNING
 	await ticks(3)
-	check(absf(camera.zoom.x - 1.5) < 0.005, "next-wave warning retains the battle view")
+	check(absf(camera.zoom.x - default_battle) < 0.005, "next-wave warning retains the battle view")
 	paused = true
 	zoom_before = camera.zoom
 	await ticks(3)
