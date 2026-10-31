@@ -218,7 +218,7 @@ class ArtSpecTests(unittest.TestCase):
         for rule in ("**与同伴建立关系**", "**始终留白**", "脸与胸前不染", "独立颜色遮罩"):
             self.assertIn(rule, tint)
         bones = ("forelock", "hair_front", "hair_back", "collar", "clasp", "cape_back", "cape_front_near", "cape_front_far")
-        extra = re.search(r"^- 可选附加骨骼：玩家用 (.*)$", self.style, re.M).group(1)
+        extra = re.search(r"^- 可选附加骨骼：玩家动画全逐帧(.*)$", self.style, re.M).group(1)
         for bone in bones:
             with self.subTest(bone=bone):
                 self.assertIn("`%s`" % bone, extra)
@@ -235,6 +235,43 @@ class ArtSpecTests(unittest.TestCase):
         register = (ROOT / "Words" / "待决事项总表.md").read_text(encoding="utf-8")
         self.assertRegex(register, r"(?m)^\| A-021 \| 白色玩家「初页」与已定稿世界风格如何统一 \|.*\| 已裁决 \|$")
         self.assertRegex(register, r"(?m)^\| A-021 \| 2026-10-30 \| 世界风格改为叠放的褪色老照片")
+
+    def test_animation_route_is_frame_by_frame_for_player_and_bosses(self):
+        # 用户 2026-10-30：玩家与部分关键敌人全逐帧，杂兵骨骼；关键敌人 = 两场 Boss（PLN-004）。
+        t6 = (ROOT / "Words" / "T6_素材来源与规格决定.md").read_text(encoding="utf-8")
+        route = t6.split("### 4.4 动画清单")[1].split("### 4.5")[0]
+        self.assertIn("**玩家与关键敌人全部逐帧**", route)
+        self.assertIn("渴望俯视、寄生同伴者", route)
+        self.assertIn("**其余敌人与 NPC**", route)
+        player = route.split("**玩家**（T6-B1）")[1].split("**NPC 与敌人**")[0]
+        rows = re.findall(r"^\| [^|]+ \| [^|]+ \| ([^|]+) \|$", player, re.M)[1:]
+        self.assertTrue(rows)
+        for how in rows:
+            with self.subTest(how=how):
+                self.assertNotIn("骨骼", how)
+        groups = re.findall(r"^\| ([^|]+) \| [^|]+ \| [^|]+ \|$", player, re.M)[1:]
+        for group in ("待机", "行走、跑步", "转向", "跳跃", "落地、重落地", "普通攻击 1、2 段", "向上攻击", "向下攻击",
+                      "闪避（充足 / 不足）", "受击", "死亡", "恢复", "复活"):
+            self.assertIn(group, [g.strip() for g in groups], group)
+        npc = route.split("**NPC 与敌人**")[1]
+        self.assertIn("做法：渴望俯视、寄生同伴者全逐帧；其余骨骼 + 少量关键帧", npc)
+        self.assertIn("`<对象>_frames_<状态>_<两位序号>.png`", t6)
+        self.assertIn("`<对象>_frames_<状态>_<两位序号>.png`", self.spec)
+        # 审查 R1：任务板不能保留指向废案与旧路线的现行表述
+        board = (ROOT / "codexandclaude" / "BOARD.md").read_text(encoding="utf-8")
+        self.assertNotIn("待用户验收", board)
+        self.assertNotIn("部件绑骨", board)
+        self.assertNotIn("取代暂停的 ART-002", board)
+        self.assertIn("跑步 v1～v3 均未通过，已作废", board)
+        self.assertIn("以上四项是 2026-10-30 的历史记录", board)
+        self.assertIn("**全逐帧对象**（玩家、渴望俯视、寄生同伴者", self.spec)
+        self.assertIn("可选附加骨骼：玩家动画全逐帧", self.style)
+        animation = (GAME / "docs" / "character_animation.md").read_text(encoding="utf-8")
+        self.assertIn("**纯逐帧对象（PLN-004，用户 2026-10-30）**", animation)
+        cancelled = (ROOT / "codexandclaude" / "tasks" / "ART-002" / "task.md").read_text(encoding="utf-8")
+        self.assertIn("状态：已取消", cancelled)
+        readme = (ROOT / "phf" / "README.md").read_text(encoding="utf-8")
+        self.assertRegex(readme, r"(?m)^\| `run_12_v1/` \|.*\| 废案（用户 2026-10-30 未通过")
 
     def test_player_parts_list_is_complete(self):
         # ART-001 review R1: every player part has a file, contents, bone, layer,
@@ -326,7 +363,13 @@ class ArtSpecTests(unittest.TestCase):
         light = self.style.split("## 4. 光")[1].split("## 5.")[0]
         self.assertIn("**没有统一的黄昏主光**", light)
         self.assertIn("**主角是画面里唯一会发光的形象**", light)
-        self.assertNotIn("#f4b860", light)
+        # 审查 R3：角色光照沿用原定稿，不能与 T6 和已认可的 Boss 设定矛盾
+        self.assertIn("**角色的光照沿用原定稿，A-021 没有改动**", light)
+        self.assertIn("暖色边光", light)
+        self.assertNotIn("不加暖色边光", self.style)
+        t6_light = (ROOT / "Words" / "T6_素材来源与规格决定.md").read_text(encoding="utf-8")
+        self.assertIn("角色亮面带暖色边光", t6_light)
+        self.assertIn("保留暖色边光", self.style.split("### 6.2 各角色")[1].split("## 7.")[0])
         self.assertIn("**褪色老照片**", self.style.split("## 3. 上色")[1].split("## 4.")[0])
         self.assertIn("**颜色说明是否被同化**", self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0])
         scene = self.style.split("## 7. 场景")[1].split("## 8.")[0]
@@ -334,9 +377,21 @@ class ArtSpecTests(unittest.TestCase):
         self.assertEqual(rows, ["荒地 HD", "田野 TY", "逆时战场 NSZC"])
         for mark in ("**层层叠放的照片**", "**相片框是区域划分的重点**", "**褪色感**", "**三日灼烧**", "**烧焦的痕迹**",
                      "**破损之下是一片混沌的星空**", "**只作用于背景层**", "**不画三套背景**", "**可行走层的地形不烧穿**", "**可读性**",
+                     "**Claude 的可读性建议，用户尚未确认**",
                      "`phf/原案v0.1.png`"):
             with self.subTest(mark=mark):
                 self.assertIn(mark, scene)
+        # 审查 R2：用户没有确认的建议要带草案身份，并交原型验证
+        self.assertIn("待用户经 EXP-006 确认", self.spec)
+        exp = (ROOT / "codexandclaude" / "tasks" / "EXP-006" / "task.md").read_text(encoding="utf-8")
+        self.assertIn("“可行走层不烧穿”是 Claude 的可读性建议", exp)
+        # 复审 R2 残留：G2 检查条件要与“同时提供烧穿对比做法”一致，不能无条件要求无破损遮罩
+        gate = exp.split("## 检查")[1].split("## 验收入口")[0]
+        self.assertIn("分别验证两种灼烧做法", gate)
+        self.assertIn("“可行走层也烧穿”对比做法允许该层显示遮罩与星空", gate)
+        self.assertNotIn("可行走层无破损遮罩、镜头", gate)
+        self.assertIn("主角尚未被侵蚀，是纯白发光的人", self.style)
+        self.assertNotIn("唯一尚未被侵蚀", self.style)
         for gone in ("**世界随日子褪色（D）**", "**天空顶端有墨往下渗**", "饱和度约 60%"):
             self.assertNotIn(gone, scene)
         for name in ("`<区域>_frame_<名称>.png`", "_burn_1.png", "_burn_2.png", "`void_starfield.png`"):

@@ -51,6 +51,8 @@ Animation 轨道路径以 **VisualRoot** 为根；允许视觉子树中 Node2D �
 
 正式资源放在 VisualRoot 内独立的 `Art` 子树，保留 Animator 与现有 GameplayRoot 路径。可在 Art 下放 Skeleton2D / Bone2D / Polygon2D 绑定，在关键爆发帧放 Sprite2D，通过同一个 Animation 的骨骼节点 position / rotation / scale 和 Sprite2D frame / texture / visible 轨道混用。约定关键逐帧只覆盖对应肢体或阶段，骨骼继续负责其余姿态；切换时显式设置双方 visible，避免双重轮廓。可在资源接入任务中新增 Art 节点并隐藏旧占位 Sprite；不需要修改玩法脚本。
 
+**纯逐帧对象（PLN-004，用户 2026-10-30）**：玩家与两场 Boss（渴望俯视、寄生同伴者）的动作全部逐帧（`Words/T6_素材来源与规格决定.md` 第 4.4 节）。它们的片段用 `Art` 下 **Sprite2D** 的 `frame`、`frame_coords`、`texture`、`visible` 轨道（AnimatedSprite2D 没有 `texture`、`frame_coords`，不用于此）——都在上文允许的属性内，驱动还会检查节点上确有该属性；不需要 Skeleton2D，也不改驱动代码；光晕等效果层作为 `Art` 下的独立节点。
+
 **朝向与根变换约定（审查 N1）**：本驱动不自动镜像角色。现有玩家朝向由 PlaceholderSprite.flip_h 处理，敌人由绘制代码读取 facing。切换状态或片段时，驱动会将 VisualRoot.transform 还原为 ready 时的初始值；不要在 VisualRoot.scale.x 上保存朝向。正式资源接入时在 VisualRoot 下设置专用 `Facing` 子节点，其下再放 Art，由视觉接入层读取查询的 facing 并更新 Facing.scale.x。动画轨道只写 Facing 下的 Art / 骨骼 / 逐帧节点，不写 Facing 的镜像变换；这样片段恢复和根变换重置均不会冲掉朝向。此约定不要求更改玩法朝向或转身计时。
 
 **移动档位说明（审查 N2）**：当前 walk / run 的投影在有水平速度时区分是否按住 run，并不是控制器发布的独立运动模式。受击状态有更高显示优先级；特殊位移时它仍只是视觉档位。正式资源接入如需区分实际速度档，再另行评估投影接口；本轮不改变现有查询、速度或控制规则。

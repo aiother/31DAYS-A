@@ -1,6 +1,6 @@
 # 玩家角色重新设计：暗室、白纸与相遇之色
 
-日期：2026-10-30。状态：三个探索方案，供用户选择或组合；推荐 A「初页」作为主方向。
+日期：2026-10-30。**结论（用户 2026-10-30）：选定 A「初页」**，写入 `game/docs/art_style.md` 第 6.2 节；本提案随 ART-003 立项从 `proposals/` 移入（PLN-004），图片与素材仍在 `codexandclaude/proposals/ART-003/`。状态：三个探索方案，供用户选择或组合；推荐 A「初页」作为主方向。
 
 依据：用户本轮补充的世界观。未来乌托邦崩塌，暗室如同摄影暗房，把彩色的立体世界冲洗、压缩为黑白照片。基础关卡呈灰调黑白；主角尚未被侵蚀，以纯白发光的形象象征白纸般的未来，并在与同伴相会时逐步染上颜色。
 
@@ -20,7 +20,7 @@
 
 ## A · 初页：承接颜色的人
 
-![A · 初页](ART-003/a_first_page.png)
+![A · 初页](../../proposals/ART-003/a_first_page.png)
 
 **核心意象：世界被洗成照片，主角还像一页未被写定的纸。**
 
@@ -36,7 +36,7 @@
 
 ## B · 余曝：尚未被定影的光
 
-![B · 余曝](ART-003/b_after_exposure.png)
+![B · 余曝](../../proposals/ART-003/b_after_exposure.png)
 
 **核心意象：暗室可以把世界定格，却还留不住这个人。**
 
@@ -52,7 +52,7 @@
 
 ## C · 缝明：把相遇缝成未来
 
-![C · 缝明](ART-003/c_mended_dawn.png)
+![C · 缝明](../../proposals/ART-003/c_mended_dawn.png)
 
 **核心意象：未来不是预先画好的，是人与人一起接起来的。**
 
@@ -81,8 +81,8 @@
 ## 产物、来源与验证
 
 - 生成方式：内置 image_gen，三次独立生成；最终原图直接复制入本仓库，无程序改绘。
-- 最终提示词：[prompts.md](ART-003/prompts.md)。
-- 素材清单与身份校验：[manifest.json](ART-003/manifest.json)；记录尺寸、SHA256、工具与日期。
-- 自动检查：[test_player_redesign_concepts.py](../tests/test_player_redesign_concepts.py)，验证三张 PNG 可完整解码、画幅与尺寸、文件哈希、初态区域无彩色、画面灰调占主导且包含局部彩色，以及提案链接完整。
+- 最终提示词：[prompts.md](../../proposals/ART-003/prompts.md)。
+- 素材清单与身份校验：[manifest.json](../../proposals/ART-003/manifest.json)；记录尺寸、SHA256、工具与日期。
+- 自动检查：[test_player_redesign_concepts.py](../../tests/test_player_redesign_concepts.py)，验证三张 PNG 可完整解码、画幅与尺寸、文件哈希、初态区域无彩色、画面灰调占主导且包含局部彩色，以及提案链接完整。
 - 目视检查另核对：每张方案的初态为白色，四肢与动作清楚，三阶段颜色递增，场景为层叠黑白照片；自动图像统计不代替这些艺术判断。
 
