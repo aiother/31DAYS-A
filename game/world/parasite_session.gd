@@ -13,6 +13,14 @@ var _parasite_intro_remaining: float:
 	set(value): cinematics.duration(&"boss.parasite", value)
 var _parasite_victory_pending: bool = false
 
+func gameplay_camera_state() -> Dictionary:
+	var state: Dictionary = super.gameplay_camera_state()
+	if room is ParasiteRoom and has_session() and player.life.is_alive():
+		var actor: ParasiteBoss = room.get_node("Boss") as ParasiteBoss
+		state["battle"] = actor.state not in [ParasiteBoss.State.WAITING, ParasiteBoss.State.DEAD]
+		state["focus"] = actor.global_position
+	return state
+
 func _room_scenes() -> Dictionary:
 	var scenes: Dictionary = super._room_scenes().duplicate()
 	scenes[PARASITE_ID] = PARASITE_ROOM

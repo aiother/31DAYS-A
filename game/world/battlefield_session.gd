@@ -4,6 +4,16 @@ const BATTLEFIELD_ID: String = "NSZC_10003_1"
 const BATTLEFIELD_ROOM: PackedScene = preload("res://world/rooms/nszc_10003_1.tscn")
 var stage_notified: bool = false
 
+func gameplay_camera_state() -> Dictionary:
+	var state: Dictionary = super.gameplay_camera_state()
+	if room is BattlefieldRoom and has_session() and player.life.is_alive():
+		var area: BattlefieldRoom = room as BattlefieldRoom
+		state["battle"] = area.started and not area.stopped and not area.completed
+		if area is FinalBattlefieldRoom:
+			var final_area: FinalBattlefieldRoom = area as FinalBattlefieldRoom
+			state["battle"] = bool(state["battle"]) or (final_area.wave_state == FinalBattlefieldRoom.WaveState.WARNING and not final_area.victory)
+	return state
+
 func _room_scenes() -> Dictionary:
 	var scenes: Dictionary = super._room_scenes().duplicate()
 	scenes[BATTLEFIELD_ID] = BATTLEFIELD_ROOM

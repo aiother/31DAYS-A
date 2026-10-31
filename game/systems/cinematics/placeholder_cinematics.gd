@@ -6,8 +6,10 @@ func begin(host: Node, flow: RefCounted) -> void:
 	var id: String = flow.state()["id"]
 	if id == "seven.first":
 		var bounds: Rect2 = host.room.config.bounds
-		var center: float = clampf(host.player.position.x, bounds.position.x + 960.0, bounds.end.x - 960.0)
-		var target: float = clampf(host.room.get_node("Seven").position.x, bounds.position.x + 960.0, bounds.end.x - 960.0)
+		var camera: Camera2D = host.player.get_node("Camera2D") as Camera2D
+		var half_width: float = camera.get_viewport_rect().size.x * 0.5 / camera.zoom.x
+		var center: float = clampf(host.player.position.x + camera.position.x, bounds.position.x + half_width, bounds.end.x - half_width)
+		var target: float = clampf(host.room.get_node("Seven").position.x, bounds.position.x + half_width, bounds.end.x - half_width)
 		flow.set_value("camera_target", target - center)
 	elif id == "ten.rescue":
 		host.rescue_overlay.show_drop()

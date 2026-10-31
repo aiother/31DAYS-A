@@ -4,6 +4,12 @@ const WAVES_ID: String = "HD_20002_2"
 const WAVES_CHECKPOINT: String = "HD_20002_2_N001"
 const WAVES_ROOM: PackedScene = preload("res://world/rooms/hd_20002_2.tscn")
 
+func gameplay_camera_state() -> Dictionary:
+	var state: Dictionary = super.gameplay_camera_state()
+	if room is CampWavesRoom and has_session() and player.life.is_alive():
+		state["battle"] = (room as CampWavesRoom).phase in [CampWavesRoom.Phase.WARNING, CampWavesRoom.Phase.ACTIVE, CampWavesRoom.Phase.INTERVAL]
+	return state
+
 func _room_scenes() -> Dictionary:
 	var scenes: Dictionary = super._room_scenes().duplicate()
 	scenes[WAVES_ID] = WAVES_ROOM

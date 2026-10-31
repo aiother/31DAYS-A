@@ -20,6 +20,14 @@ var _boss_intro_remaining: float:
 	set(value): cinematics.duration(&"boss.overlook", value)
 var _victory_pending: bool = false
 
+func gameplay_camera_state() -> Dictionary:
+	var state: Dictionary = super.gameplay_camera_state()
+	if room is BossRoom and has_session() and player.life.is_alive():
+		var actor: OverlookBoss = room.get_node("Boss") as OverlookBoss
+		state["battle"] = actor.state not in [OverlookBoss.State.WAITING, OverlookBoss.State.DEAD]
+		state["focus"] = actor.global_position
+	return state
+
 func _room_scenes() -> Dictionary:
 	return BOSS_ROOMS
 
