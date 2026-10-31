@@ -27,6 +27,25 @@ class PhfIndexTests(unittest.TestCase):
         self.assertEqual(digest(PHF / "步行逐帧图1.png"), digest(PHF / "walk_no_halo_v3" / "approved_source.png"))
         self.assertIn("**当前确认的 8 帧步行**", self.readme)
 
+    def test_rejected_run_variants_and_scripts_are_removed(self):
+        # User rejected all run variants; retain v1 assets for Claude's
+        # planning update, but remove all five generation/packaging scripts.
+        rejected_paths = (
+            "phf/run_12_v2",
+            "phf/run_12_v3",
+            "scripts/build_phf_run12.py",
+            "scripts/build_phf_run12_v2.py",
+            "scripts/export_phf_run12_v2.cjs",
+            "scripts/build_phf_run12_v3.cjs",
+            "scripts/package_phf_run12_v3.py",
+            "tests/test_phf_run12_v2.py",
+            "tests/test_phf_run12_v3.cjs",
+            "tests/test_phf_run12_v3.py",
+        )
+        for relative in rejected_paths:
+            with self.subTest(path=relative):
+                self.assertFalse((ROOT / relative).exists(), relative)
+
 
 if __name__ == "__main__":
     unittest.main()
