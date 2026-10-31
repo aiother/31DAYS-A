@@ -233,7 +233,8 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("现行玩家形象为第 6.2 节的「初页」", self.style.split("### 6.3 已废弃的玩家方案")[1])
         self.assertIn("A-021", self.style.split("## 2.")[0])
         register = (ROOT / "Words" / "待决事项总表.md").read_text(encoding="utf-8")
-        self.assertRegex(register, r"(?m)^\| A-021 \| 白色玩家「初页」与已定稿世界风格如何统一 \|.*\| 待裁决 \|$")
+        self.assertRegex(register, r"(?m)^\| A-021 \| 白色玩家「初页」与已定稿世界风格如何统一 \|.*\| 已裁决 \|$")
+        self.assertRegex(register, r"(?m)^\| A-021 \| 2026-10-30 \| 世界风格改为叠放的褪色老照片")
 
     def test_player_parts_list_is_complete(self):
         # ART-001 review R1: every player part has a file, contents, bone, layer,
@@ -314,17 +315,37 @@ class ArtSpecTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, tian)
 
-    def test_regions_carry_dark_room_traces_and_day_fade(self):
+    def test_world_is_layered_faded_photographs(self):
+        # 用户 2026-10-30 裁决 A-021：叠放的褪色老照片、相片框分区、三日灼烧露出星空、UI 暂留。
+        lore = (ROOT / "Words" / "暗室设定.md").read_text(encoding="utf-8")
+        for fact in ("暗室取自现实中冲洗照片的暗室", "不是在黑白中加颜色", "相片框是区域划分的重点", "破损之下是一片混沌的星空",
+                     "纯白、散发光晕", "UI 由美术重新设计"):
+            self.assertIn(fact, lore)
+        self.assertIn("**叠放的褪色老照片 · 发光的白纸**", self.style.split("## 2.")[0])
+        self.assertIn("A-021 已裁决", self.style.split("## 2.")[0])
+        light = self.style.split("## 4. 光")[1].split("## 5.")[0]
+        self.assertIn("**没有统一的黄昏主光**", light)
+        self.assertIn("**主角是画面里唯一会发光的形象**", light)
+        self.assertNotIn("#f4b860", light)
+        self.assertIn("**褪色老照片**", self.style.split("## 3. 上色")[1].split("## 4.")[0])
+        self.assertIn("**颜色说明是否被同化**", self.style.split("### 6.0 比例与气质")[1].split("### 6.1")[0])
         scene = self.style.split("## 7. 场景")[1].split("## 8.")[0]
         rows = re.findall(r"^\| (荒地 HD|田野 TY|逆时战场 NSZC) \|", scene, re.M)
         self.assertEqual(rows, ["荒地 HD", "田野 TY", "逆时战场 NSZC"])
-        for mark in ("**天空顶端有墨往下渗**", "**夕阳是一张扁平的纸剪太阳**", "**时间倒着走**", "**灰暗的暖灰**",
-                     "**世界随日子褪色（D）**", "**只作用于背景层**", "**不画三套背景**", "**可读性**"):
+        for mark in ("**层层叠放的照片**", "**相片框是区域划分的重点**", "**褪色感**", "**三日灼烧**", "**烧焦的痕迹**",
+                     "**破损之下是一片混沌的星空**", "**只作用于背景层**", "**不画三套背景**", "**可行走层的地形不烧穿**", "**可读性**",
+                     "`phf/原案v0.1.png`"):
             with self.subTest(mark=mark):
                 self.assertIn(mark, scene)
-        self.assertNotIn("淡蓝 → 白日纸色", scene)
+        for gone in ("**世界随日子褪色（D）**", "**天空顶端有墨往下渗**", "饱和度约 60%"):
+            self.assertNotIn(gone, scene)
+        for name in ("`<区域>_frame_<名称>.png`", "_burn_1.png", "_burn_2.png", "`void_starfield.png`"):
+            self.assertIn(name, self.spec)
+        self.assertIn("UI 暂时保留，待美术重新设计", self.style)
+        t6 = (ROOT / "Words" / "T6_素材来源与规格决定.md").read_text(encoding="utf-8")
+        self.assertIn("**2026-10-30 起世界风格改为“叠放的褪色老照片”**", t6)
         hd = (PROMPTS / "02_hd_background.md").read_text(encoding="utf-8")
-        self.assertIn("dark ink (#2b2420) seeps down into the picture", hd)
+        self.assertIn("**已过时（用户 2026-10-30 裁决 A-021）**", hd.splitlines()[2])
 
     def test_colorless_prompt_follows_the_framework(self):
         template = (PROMPTS / "template.md").read_text(encoding="utf-8")
