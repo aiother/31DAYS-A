@@ -190,34 +190,29 @@ func time_cases() -> void:
 	await frames(70)
 	var day_one: Dictionary = await key_colours()
 	check(day_one == CHOSEN, "day one draws life, possibility, growth and overdraft in the chosen colours")
-	var horizon: Dictionary = drawn()["horizon"]
-	check(horizon["date"] == "第1日 · 末日前3天" and str(horizon["clock"]).begins_with("06:"), "horizon shows time of day and date tag")
+	# UI-011 (user 2026-10-31): the horizon, time tag and date tag are hidden.
+	check(not FormalHud.SHOW_HORIZON and not drawn().has("horizon"), "the time axis is hidden")
 	session.data["day_remaining"] = 900.0
 	await frames(2)
-	horizon = drawn()["horizon"]
-	var midday: float = lerpf(float(horizon["left"]), float(horizon["right"]), 0.5)
-	check(str(horizon["clock"]).begins_with("15:0") and absf(float(horizon["sun_x"]) - midday) < 2.0, "sun and time tag follow the real day progress")
-	# UI-011 (user 2026-10-31): the horizon moved to the top so it no longer covers the
-	# ground under the player's feet; it stays right of the emblem and above the enemy card.
-	var band: Rect2 = horizon["rect"]
-	check(band.end.y <= 100.0 and band.position.y >= 0.0 and band.position.x >= 440.0, "horizon band sits along the top, right of the emblem, above the enemy card (%s)" % band)
-	check(not band.intersects(drawn()["emblem"]["rect"]), "horizon keeps clear of the emblem")
-	session.data["day_remaining"] = 1.0
-	await frames(2)
-	var dusk: Dictionary = drawn()["horizon"]
-	check(float(dusk["sun_x"]) + 8.0 < float(dusk["right"]) + 12.0, "at the end of the day the sun stops short of the date tag")
-	session.data["day_remaining"] = 900.0
-	await frames(2)
-	check(band.end.y < hud().size.y * 0.5, "horizon is no longer along the bottom")
+	check(not drawn().has("horizon") and hud().clock_text(hud().time_state()).begins_with("15:0"), "time of day still advances under the hidden axis")
 	session.data["day_remaining"] = 180.0
 	await frames(2)
 	check(drawn().has("warning") and drawn()["warning"]["text"] == "即将进入第 2 日 · 3:00", "three minutes before the next day shows the lower-right warning")
 	var early_dusk: float = drawn()["dusk"]
 	session.data["day_remaining"] = 0.01
 	await frames(4)
-	check(int(session.data["day"]) == 2 and drawn().has("banner") and drawn()["banner"]["text"] == "第 2 日", "natural rollover shows the top-centre day banner")
+	check(int(session.data["day"]) == 2 and drawn().has("banner") and drawn()["banner"]["text"] == "第 二 日", "natural rollover starts the date-change animation")
 	check(not drawn().has("warning"), "warning ends with the new day")
-	await frames(250)
+	# UI-011: the half sun rises first, the rings sweep open, then the day name settles.
+	var opening: Dictionary = drawn()["banner"]
+	check(float(opening["sun"]) < 1.0 and float(opening["title_alpha"]) < 0.05, "the animation opens with the sun still rising and no title yet")
+	await frames(90)
+	var settled: Dictionary = drawn()["banner"]
+	check(is_equal_approx(float(settled["sun"]), 1.0) and float(settled["rings"]) > 0.95 and float(settled["title_alpha"]) > 0.95, "after a second and a half the sun, rings and day name are all shown")
+	var area: Rect2 = settled["rect"]
+	check(absf(area.get_center().x - 960.0) < 1.0 and area.position.y >= 166.0 and area.end.y <= 360.0, "the animation sits in the upper middle, below the final countdown and above the save error line (%s)" % area)
+	check(FormalHud.day_name(3) == "第 三 日" and FormalHud.day_name(12) == "第 12 日", "day names use Chinese numerals with a numeric fallback")
+	await frames(160)
 	check(not drawn().has("banner"), "banner leaves after the announcement time")
 	check(await key_colours() == CHOSEN, "key colours are identical on day two")
 	check(session.store.save_slot(2, fixture(3, 300)) and session.start_slot(2, false), "late third-day slot loads")

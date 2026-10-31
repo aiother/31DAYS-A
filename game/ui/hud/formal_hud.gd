@@ -5,10 +5,9 @@ extends Control
 ## the session's SYS-005 interface; it never changes game state.
 ##
 ## Layout in 1920x1080 canvas units: emblem top-left (life shards, possibility
-## ring, growth arc, pearls, reach and medkit tags), horizon along the top to the
-## right of the emblem with the date tag just past its right end (UI-011: the bottom
-## edge sits under the player's feet at the x1.875 camera), day banner and final
-## countdown top-centre below the horizon.
+## ring, growth arc, pearls, reach and medkit tags), horizon along the bottom
+## (hidden, UI-011), date-change animation in the upper middle and final countdown
+## top-centre.
 const CENTER: Vector2 = Vector2(150, 150)
 const RING: float = 86.0
 const OUTER: float = 108.0
@@ -20,16 +19,17 @@ const MAX_FLYERS: int = 6
 ## keeps running underneath it.
 const ACCELERATE_SECONDS: float = 2.5
 const FINAL_BUDGET: float = 900.0
-## UI-011 (user 2026-10-31): the horizon runs along the top, from just right of
-## the emblem and its tags to the right edge; its band ends above the enemy card
-## (top 100) and the final countdown sits right under it, ending where the day
-## banner (top 190) begins.
-const HORIZON_Y: float = 34.0
-const HORIZON_LEFT: float = 470.0
-const HORIZON_MARGIN: float = 24.0
-## The date tag sits past the end of the line, so the sun never slides under it.
-const DATE_WIDTH: float = 210.0
-const FINAL_TOP: float = 78.0
+## UI-011 (user 2026-10-31): the horizon, its time tag and the date tag are hidden
+## ("不太好看……先隐藏吧"); the drawing stays so it can be turned back on.
+const SHOW_HORIZON: bool = false
+## UI-011: the date change is a short animation in the upper middle of the screen
+## (reference `codexandclaude/references/日期切换.mp4`): a half sun rises from a
+## short horizon line, thin rings with ticks sweep open around it, a vertical line
+## rises through its centre, and the day name fades in beneath. It fits between
+## the final countdown (ends at 166) and the save error line (starts at 360).
+const DAY_CENTER: Vector2 = Vector2(960, 274)
+const DAY_RADIUS: float = 54.0
+const DAY_NUMERALS: Array[String] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 ## Distortion under the HUD only, so the HUD itself stays crisp.
 const FILTER_LAYER: int = 10
 const DISTORTION: Shader = preload("res://ui/hud/overdraft_distortion.gdshader")
@@ -177,7 +177,8 @@ func _draw() -> void:
 	_draw_emblem(time)
 	_draw_hint(time)
 	if bool(time.get("has_session", false)):
-		_draw_horizon(time)
+		if SHOW_HORIZON:
+			_draw_horizon(time)
 		if banner_left > 0.0:
 			_draw_banner(time)
 		if bool(time.get("day_warning", false)) and not bool(time.get("final_active", false)):
@@ -296,39 +297,87 @@ func _draw_hint(time: Dictionary) -> void:
 	drawn["hint"] = {"text": hint.text, "rect": box}
 
 func _draw_horizon(time: Dictionary) -> void:
-	var y: float = HORIZON_Y
-	var left: float = HORIZON_LEFT
-	var right: float = size.x - HORIZON_MARGIN - DATE_WIDTH - 12.0
-	var x: float = lerpf(left, right, float(time.get("day_progress", 0.0)))
+	var y: float = size.y - 40
+	var x: float = size.x * float(time.get("day_progress", 0.0))
 	var glow: float = DuskStyle.glow_strength(time) * DuskStyle.breath(time, clock)
-	InkDraw.rough_line(self, Vector2(left, y), Vector2(right, y), Color(DuskStyle.PAPER_DAY, 0.45), 2.0, 61, DuskStyle.WOBBLE)
-	InkDraw.rough_line(self, Vector2(left, y), Vector2(x, y), Color(DuskStyle.SUN, 0.8), 2.6, 62, DuskStyle.WOBBLE)
+	InkDraw.rough_line(self, Vector2(0, y), Vector2(size.x, y), Color(DuskStyle.PAPER_DAY, 0.45), 2.0, 61, DuskStyle.WOBBLE)
+	InkDraw.rough_line(self, Vector2(0, y), Vector2(x, y), Color(DuskStyle.SUN, 0.8), 2.6, 62, DuskStyle.WOBBLE)
 	InkDraw.glow(self, Vector2(x, y), 12, DuskStyle.SUN, glow)
 	draw_circle(Vector2(x, y), 8, DuskStyle.SUN)
-	# The time tag hangs under the line; the date tag closes the line on the right.
-	var tag: Rect2 = Rect2(Vector2(clampf(x - 46, left - 8, right - 92), y + 8), Vector2(92, 34))
+	var tag: Rect2 = Rect2(Vector2(clampf(x - 46, 8, size.x - 100), y - 52), Vector2(92, 34))
 	DuskStyle.panel(self, tag, time, 63)
 	var at: String = clock_text(time)
 	ink_text(tag.position + Vector2(0, 25), at, UiTheme.SIZE_BODY - 2, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, tag.size.x)
 	var day: int = int(time["day"])
-	var date: Rect2 = Rect2(Vector2(right + 12.0, y - 14.0), Vector2(DATE_WIDTH, 28))
+	var date: Rect2 = Rect2(Vector2(size.x - 230, y + 6), Vector2(210, 28))
 	DuskStyle.panel(self, date, time, 64)
 	var date_text: String = "第%d日 · 末日前%d天" % [day, days_left(day)]
 	ink_text(date.position + Vector2(0, 21), date_text, UiTheme.SIZE_SMALL - 1, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, date.size.x)
-	var band: Rect2 = Rect2(Vector2(left - 8, y - 20.0), Vector2(date.end.x - left + 8, tag.end.y - (y - 20.0)))
-	drawn["horizon"] = {"clock": at, "sun_x": x, "left": left, "right": right, "date": date_text, "sun": DuskStyle.SUN, "glow": glow, "rect": band}
+	drawn["horizon"] = {"clock": at, "sun_x": x, "date": date_text, "sun": DuskStyle.SUN, "glow": glow, "rect": Rect2(0, tag.position.y, size.x, size.y - tag.position.y)}
+
+## "第 二 日": the day in Chinese numerals, spaced like the reference title.
+static func day_name(day: int) -> String:
+	var numeral: String = DAY_NUMERALS[day] if day >= 0 and day < DAY_NUMERALS.size() else str(day)
+	return "第 %s 日" % numeral
 
 func _draw_banner(time: Dictionary) -> void:
 	var total: float = DayClock.CONFIG.announcement_seconds
 	var t: float = total - banner_left
-	var alpha: float = clampf(minf(t / 0.6, banner_left / 0.9), 0.0, 1.0)
-	var box: Rect2 = Rect2(Vector2((size.x - 520) * 0.5, 190 + (1.0 - alpha) * 12.0), Vector2(520, 124))
-	InkDraw.glow(self, box.get_center(), 120, DuskStyle.SUN, DuskStyle.glow_strength(time) * alpha)
-	DuskStyle.panel(self, box, time, 71)
-	var title: String = "第 %d 日" % banner_day
-	ink_text(box.position + Vector2(0, 66), title, 52, Color(DuskStyle.INK, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
-	ink_text(box.position + Vector2(0, 106), "末日前 %d 天" % days_left(banner_day), 26, Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, box.size.x)
-	drawn["banner"] = {"day": banner_day, "text": title, "rect": box}
+	var fade: float = clampf(banner_left / 0.9, 0.0, 1.0)
+	var c: Vector2 = DAY_CENTER
+	var r: float = DAY_RADIUS
+	# 1. The half sun rises from behind a short horizon line.
+	var rise: float = ease(clampf(t / 0.7, 0.0, 1.0), 0.4)
+	var lift: float = (1.0 - rise) * r * 0.6
+	InkDraw.glow(self, c, r * 1.5, DuskStyle.SUN, 0.4 * rise * fade)
+	# Three translucent layers, densest at the core, so the sun reads as light
+	# rather than a flat disc and the scene still shows through its rim.
+	for layer: Array in [[1.0, DuskStyle.SUN, 0.22], [0.82, DuskStyle.SUN, 0.26], [0.6, DuskStyle.DUSK_BOTTOM, 0.34]]:
+		var half_disc: PackedVector2Array = []
+		for i: int in range(33):
+			var a: float = PI + PI * i / 32.0
+			var reach: float = r * float(layer[0])
+			half_disc.append(Vector2(c.x + cos(a) * reach, minf(c.y + sin(a) * reach + lift, c.y)))
+		draw_colored_polygon(half_disc, Color(layer[1] as Color, float(layer[2]) * rise * fade))
+	InkDraw.rough_line(self, c - Vector2(r + 70, 0), c + Vector2(r + 70, 0), Color(DuskStyle.PAPER_DAY, 0.6 * rise * fade), 1.6, 71, DuskStyle.WOBBLE)
+	# 2. Thin rings sweep open from the top, the outer one ticked like a dial.
+	for k: int in range(3):
+		var open: float = ease(clampf((t - 0.25 - 0.15 * k) / 0.8, 0.0, 1.0), 0.5)
+		if open <= 0.0:
+			continue
+		var radius: float = r + 12.0 + 12.0 * k
+		var half: float = PI * 0.5 * open
+		var ring: Color = Color(DuskStyle.PAPER_DAY, (0.55 - 0.12 * k) * fade)
+		draw_arc(c, radius, -PI * 0.5 - half, -PI * 0.5 + half, 48, ring, 1.4, true)
+		if k == 2:
+			for step: int in range(-7, 8):
+				var a: float = -PI * 0.5 + step * PI / 15.0
+				if absf(a + PI * 0.5) > half:
+					continue
+				var length: float = 10.0 if step % 3 == 0 else 5.0
+				var dir: Vector2 = Vector2(cos(a), sin(a))
+				draw_line(c + dir * radius, c + dir * (radius + length), ring, 1.2, true)
+	# 3. A vertical line rises through the centre to a small diamond.
+	var grow: float = ease(clampf((t - 0.4) / 0.6, 0.0, 1.0), 0.4)
+	if grow > 0.0:
+		var top: float = c.y - (r + 44.0) * grow
+		draw_line(c, Vector2(c.x, top), Color(DuskStyle.PAPER_DAY, 0.75 * fade), 1.4, true)
+		if grow > 0.95:
+			draw_arc(Vector2(c.x, c.y - r - 36.0), 3.5, 0.0, TAU, 12, Color(DuskStyle.PEARL, 0.8 * fade), 1.2, true)
+			var tip: Vector2 = Vector2(c.x, top)
+			draw_colored_polygon(PackedVector2Array([tip + Vector2(0, -6), tip + Vector2(4, 0), tip + Vector2(0, 6), tip + Vector2(-4, 0)]), Color(DuskStyle.PEARL, 0.85 * fade))
+	# 4. The day name fades in beneath, settling upward.
+	var shown: float = clampf((t - 0.5) / 0.6, 0.0, 1.0)
+	var alpha: float = shown * fade
+	var settle: float = (1.0 - shown) * 10.0
+	var title: String = day_name(banner_day)
+	var line_box: Rect2 = Rect2(Vector2(c.x - 300.0, 0), Vector2(600, 0))
+	ink_text(Vector2(line_box.position.x + 2.0, c.y + 52.0 + settle), title, 46, Color(DuskStyle.INK, 0.45 * alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
+	ink_text(Vector2(line_box.position.x, c.y + 50.0 + settle), title, 46, Color(DuskStyle.PEARL, alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
+	ink_text(Vector2(line_box.position.x, c.y + 76.0 + settle), "末日前 %d 天" % days_left(banner_day), 22, Color(DuskStyle.LIFE, alpha), HORIZONTAL_ALIGNMENT_CENTER, line_box.size.x)
+	# From the diamond tip (r + 50 above the centre) down to the subtitle's descent.
+	var box: Rect2 = Rect2(Vector2(c.x - r - 70.0, c.y - r - 52.0), Vector2((r + 70.0) * 2.0, r + 52.0 + 84.0))
+	drawn["banner"] = {"day": banner_day, "text": title, "rect": box, "elapsed": t, "sun": rise, "rings": ease(clampf((t - 0.55) / 0.8, 0.0, 1.0), 0.5), "title_alpha": alpha}
 
 func _draw_warning(time: Dictionary) -> void:
 	var left: int = ceili(float(time.get("day_warning_remaining", 0.0)))
@@ -341,7 +390,7 @@ func _draw_warning(time: Dictionary) -> void:
 	drawn["warning"] = {"text": text, "rect": box}
 
 func _draw_final(time: Dictionary) -> void:
-	var box: Rect2 = Rect2(Vector2((size.x - 470) * 0.5, FINAL_TOP), Vector2(470, 112))
+	var box: Rect2 = Rect2(Vector2((size.x - 470) * 0.5, 54), Vector2(470, 112))
 	var real: float = float(time.get("final_remaining", 0.0))
 	var value: float = real
 	var label: String = "最终战倒计时"
