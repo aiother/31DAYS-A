@@ -69,6 +69,45 @@ class AssetRegistryTests(unittest.TestCase):
         self.credits([self.row])
         self.assertIn('未知或不允许', self.errors())
 
+    def test_license_suffixes_cannot_be_erased_into_allowed_labels(self):
+        self.row[3] = 'Example Author'
+        for value in ('CC-BY-4.0（不可商用）', 'CC-BY 4.0 仅限个人学习',
+                      'CC-BY 4.0（非商用）', 'CC BY 4.0 不得商用',
+                      'CC-BY 4.0 （禁止二次创作）', 'CC-BY-4.0（无额外限制）'):
+            with self.subTest(license=value):
+                self.row[2] = value
+                self.credits([self.row])
+                self.assertTrue(checker.license_errors(value, self.row[3]))
+                self.assertIn('characters/test.svg:', self.errors())
+
+    def test_unrecognized_words_do_not_report_an_embedded_nd_as_a_license(self):
+        for value in ('CC-BY-4.0 (Candy)', 'CC-BY-4.0 Fonds'):
+            with self.subTest(license=value):
+                errors = '\n'.join(checker.license_errors(value, 'Example Author'))
+                self.assertIn('未知或不允许', errors)
+                self.assertNotIn('禁止 NC/ND', errors)
+
+    def test_normalized_license_whitelist_and_version_formats(self):
+        for value in ('CC0', 'cc0', 'ＣＣ０', 'OFL-1.1', 'ofl-1.1', '免版税可商用',
+                      'AI 生成', 'ai 生成', '自制', 'CC-BY-4.0', 'CC BY 3',
+                      'cc_by_4.0', 'ccby4.0', 'ＣＣ－ＢＹ－４．０'):
+            with self.subTest(allowed=value):
+                self.assertEqual([], checker.license_errors(value, 'Example Author'))
+        for value in ('CC-BY', 'CC0-1.0', 'CCBY40', 'CC-BY-4..0', 'CC-BY-4.0.1',
+                      'CC-BY-SA-4.0', 'MIT', 'Apache-2.0', 'CC  BY 4.0'):
+            with self.subTest(rejected=value):
+                errors = '\n'.join(checker.license_errors(value, 'Example Author'))
+                self.assertIn('未知或不允许', errors)
+                self.assertIn('版本号', errors)
+        self.assertIn('CC-BY 缺少', '\n'.join(checker.license_errors('ＣＣ－ＢＹ－４．０', '—')))
+
+    def test_normalized_ai_labels_still_require_generation_metadata(self):
+        for value in ('AI 生成', 'ai 生成', 'ＡＩ 生成'):
+            with self.subTest(license=value):
+                self.row[2] = value
+                self.credits([self.row])
+                self.assertIn('AI 备注缺少工具', self.errors())
+
     def test_ai_metadata_requires_tool_date_plan_and_prompt(self):
         self.row[2] = 'AI 生成'
         valid = ['工具：GPT Image 2', '日期：2026-10-30', '套餐：付费', '提示词：tasks/prompt.md']

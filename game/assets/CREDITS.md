@@ -32,4 +32,6 @@
 
 `python codexandclaude/tools/check_assets.py`；G3 的 `tests/test_asset_registry.py` 同样执行实际仓库检查。只核对登记与配置，不替代公开发布前的授权复核。
 
+授权栏经过 NFKC 归一、忽略大小写后，整体必须匹配上述白名单；CC-BY 必须带版本号，格式为 `cc[ _-]?by[ _-]?[0-9](\.[0-9])?`（例如 `CC-BY-4.0`、`CC BY 3`、`cc_by_4.0`）。不能附加中文或英文后缀；说明、限定词放备注列，备注不能豁免 T6 禁用 NC/ND 的要求。白名单之外的授权（包括 CC-BY-SA、MIT、Apache-2.0 等）须先经用户批准再扩充。
+
 Godot 4 的线性过滤来自项目默认 `rendering/textures/canvas_textures/default_texture_filter=1`（未设置时引擎默认同为 1），不是图片的 `.import` 选项；若项目默认改成最近邻，检查失败。characters/environments 下每张 PNG 必须有已导入的 `.import`，其中 `mipmaps/generate=false` 且 `source_file` 与图片一致。场景或脚本主动覆盖 CanvasItem 过滤的情况由接入任务复核。本次未修改导入或项目设置。

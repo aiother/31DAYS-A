@@ -25,17 +25,18 @@ def normalized(value):
 
 
 def license_errors(license_name, attribution):
-    value = normalized(license_name)
-    compact = re.sub(r'[^a-z0-9]', '', value)
+    value = normalized(license_name).strip()
+    # These patterns only improve diagnostics. Acceptance below always matches
+    # the complete normalized field, including every non-ASCII character.
     if (re.search(r'(?<![a-z])(nc|nd)(?![a-z])', value)
-            or any(word in compact for word in ('noncommercial', 'noderivatives', 'noderivs'))
-            or re.search(r'^cc.*(?:nc|nd)', compact)
+            or re.search(r'(?<![a-z])(?:non[ _-]?commercial|no[ _-]?(?:derivatives|derivs))(?![a-z])', value)
+            or re.search(r'^cc[ _-]?by[ _-]?(?:nc|nd)(?:[ _-]|[0-9]|$)', value)
             or any(word in value for word in ('禁止商用', '非商业', '禁止改编', '禁止演绎'))):
         return ['禁止 NC/ND 授权']
-    allowed = license_name in ('CC0', 'OFL-1.1', '免版税可商用', 'AI 生成', '自制')
-    by = re.fullmatch(r'ccby\d+\d', compact) is not None
+    allowed = value in ('cc0', 'ofl-1.1', '免版税可商用', 'ai 生成', '自制')
+    by = re.fullmatch(r'cc[ _-]?by[ _-]?[0-9](?:\.[0-9])?', value) is not None
     if not allowed and not by:
-        return [f'未知或不允许的授权：{license_name}']
+        return [f'未知或不允许的授权：{license_name}；须使用白名单格式，CC-BY 须写版本号（如 CC-BY-4.0），说明写备注列']
     if by and not present(attribution):
         return ['CC-BY 缺少作者 / 署名']
     return []
@@ -110,7 +111,7 @@ def validate_assets(root, tracked_paths, inbox_ignored):
             errors.append(f'{relative}: 日期必须是有效的 YYYY-MM-DD')
         if not (row['改动'] == '否' or re.fullmatch(r'是[：:]\s*\S.*', row['改动'])):
             errors.append(f'{relative}: 改动须为“否”或“是：说明”')
-        if row['授权'] == 'AI 生成':
+        if normalized(row['授权']).strip() == 'ai 生成':
             for field in ('工具', '日期', '套餐', '提示词'):
                 match = re.search(field + r'[：:]\s*([^；;]+)', row['备注'])
                 if not match or not present(match[1]):
