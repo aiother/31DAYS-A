@@ -8,7 +8,7 @@ from pathlib import Path
 from PIL import Image
 
 COLLAB = Path(__file__).resolve().parents[1]
-PROPOSAL = COLLAB / "proposals" / "ART-003.md"
+PROPOSAL = COLLAB / "tasks" / "ART-003" / "proposal.md"
 ART = COLLAB / "proposals" / "ART-003"
 EXPECTED = {
     "A": ("初页", "a_first_page.png"),

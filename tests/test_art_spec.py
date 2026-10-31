@@ -218,7 +218,7 @@ class ArtSpecTests(unittest.TestCase):
         for rule in ("**与同伴建立关系**", "**始终留白**", "脸与胸前不染", "独立颜色遮罩"):
             self.assertIn(rule, tint)
         bones = ("forelock", "hair_front", "hair_back", "collar", "clasp", "cape_back", "cape_front_near", "cape_front_far")
-        extra = re.search(r"^- 可选附加骨骼：玩家用 (.*)$", self.style, re.M).group(1)
+        extra = re.search(r"^- 可选附加骨骼：玩家动画全逐帧(.*)$", self.style, re.M).group(1)
         for bone in bones:
             with self.subTest(bone=bone):
                 self.assertIn("`%s`" % bone, extra)
@@ -235,6 +235,30 @@ class ArtSpecTests(unittest.TestCase):
         register = (ROOT / "Words" / "待决事项总表.md").read_text(encoding="utf-8")
         self.assertRegex(register, r"(?m)^\| A-021 \| 白色玩家「初页」与已定稿世界风格如何统一 \|.*\| 已裁决 \|$")
         self.assertRegex(register, r"(?m)^\| A-021 \| 2026-10-30 \| 世界风格改为叠放的褪色老照片")
+
+    def test_animation_route_is_frame_by_frame_for_player_and_bosses(self):
+        # 用户 2026-10-30：玩家与部分关键敌人全逐帧，杂兵骨骼；关键敌人 = 两场 Boss（PLN-004）。
+        t6 = (ROOT / "Words" / "T6_素材来源与规格决定.md").read_text(encoding="utf-8")
+        route = t6.split("### 4.4 动画清单")[1].split("### 4.5")[0]
+        self.assertIn("**玩家与关键敌人全部逐帧**", route)
+        self.assertIn("渴望俯视、寄生同伴者", route)
+        self.assertIn("**其余敌人与 NPC**", route)
+        player = route.split("**玩家**（T6-B1）")[1].split("**NPC 与敌人**")[0]
+        rows = re.findall(r"^\| [^|]+ \| [^|]+ \| ([^|]+) \|$", player, re.M)[1:]
+        self.assertTrue(rows)
+        for how in rows:
+            with self.subTest(how=how):
+                self.assertNotIn("骨骼", how)
+        self.assertIn("`<对象>_frames_<状态>_<两位序号>.png`", t6)
+        self.assertIn("`<对象>_frames_<状态>_<两位序号>.png`", self.spec)
+        self.assertIn("**全逐帧对象**（玩家、渴望俯视、寄生同伴者", self.spec)
+        self.assertIn("可选附加骨骼：玩家动画全逐帧", self.style)
+        animation = (GAME / "docs" / "character_animation.md").read_text(encoding="utf-8")
+        self.assertIn("**纯逐帧对象（PLN-004，用户 2026-10-30）**", animation)
+        cancelled = (ROOT / "codexandclaude" / "tasks" / "ART-002" / "task.md").read_text(encoding="utf-8")
+        self.assertIn("状态：已取消", cancelled)
+        readme = (ROOT / "phf" / "README.md").read_text(encoding="utf-8")
+        self.assertRegex(readme, r"(?m)^\| `run_12_v1/` \|.*\| 废案（用户 2026-10-30 未通过")
 
     def test_player_parts_list_is_complete(self):
         # ART-001 review R1: every player part has a file, contents, bone, layer,
