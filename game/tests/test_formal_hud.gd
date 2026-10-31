@@ -195,7 +195,20 @@ func time_cases() -> void:
 	session.data["day_remaining"] = 900.0
 	await frames(2)
 	horizon = drawn()["horizon"]
-	check(str(horizon["clock"]).begins_with("15:0") and absf(float(horizon["sun_x"]) - 960.0) < 2.0, "sun and time tag follow the real day progress")
+	var midday: float = lerpf(float(horizon["left"]), float(horizon["right"]), 0.5)
+	check(str(horizon["clock"]).begins_with("15:0") and absf(float(horizon["sun_x"]) - midday) < 2.0, "sun and time tag follow the real day progress")
+	# UI-011 (user 2026-10-31): the horizon moved to the top so it no longer covers the
+	# ground under the player's feet; it stays right of the emblem and above the enemy card.
+	var band: Rect2 = horizon["rect"]
+	check(band.end.y <= 100.0 and band.position.y >= 0.0 and band.position.x >= 440.0, "horizon band sits along the top, right of the emblem, above the enemy card (%s)" % band)
+	check(not band.intersects(drawn()["emblem"]["rect"]), "horizon keeps clear of the emblem")
+	session.data["day_remaining"] = 1.0
+	await frames(2)
+	var dusk: Dictionary = drawn()["horizon"]
+	check(float(dusk["sun_x"]) + 8.0 < float(dusk["right"]) + 12.0, "at the end of the day the sun stops short of the date tag")
+	session.data["day_remaining"] = 900.0
+	await frames(2)
+	check(band.end.y < hud().size.y * 0.5, "horizon is no longer along the bottom")
 	session.data["day_remaining"] = 180.0
 	await frames(2)
 	check(drawn().has("warning") and drawn()["warning"]["text"] == "即将进入第 2 日 · 3:00", "three minutes before the next day shows the lower-right warning")

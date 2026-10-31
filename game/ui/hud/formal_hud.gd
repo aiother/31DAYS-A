@@ -5,8 +5,10 @@ extends Control
 ## the session's SYS-005 interface; it never changes game state.
 ##
 ## Layout in 1920x1080 canvas units: emblem top-left (life shards, possibility
-## ring, growth arc, pearls, reach and medkit tags), horizon along the bottom,
-## date tag bottom-right, day banner and final countdown top-centre.
+## ring, growth arc, pearls, reach and medkit tags), horizon along the top to the
+## right of the emblem with the date tag just past its right end (UI-011: the bottom
+## edge sits under the player's feet at the x1.875 camera), day banner and final
+## countdown top-centre below the horizon.
 const CENTER: Vector2 = Vector2(150, 150)
 const RING: float = 86.0
 const OUTER: float = 108.0
@@ -18,6 +20,16 @@ const MAX_FLYERS: int = 6
 ## keeps running underneath it.
 const ACCELERATE_SECONDS: float = 2.5
 const FINAL_BUDGET: float = 900.0
+## UI-011 (user 2026-10-31): the horizon runs along the top, from just right of
+## the emblem and its tags to the right edge; its band ends above the enemy card
+## (top 100) and the final countdown sits right under it, ending where the day
+## banner (top 190) begins.
+const HORIZON_Y: float = 34.0
+const HORIZON_LEFT: float = 470.0
+const HORIZON_MARGIN: float = 24.0
+## The date tag sits past the end of the line, so the sun never slides under it.
+const DATE_WIDTH: float = 210.0
+const FINAL_TOP: float = 78.0
 ## Distortion under the HUD only, so the HUD itself stays crisp.
 const FILTER_LAYER: int = 10
 const DISTORTION: Shader = preload("res://ui/hud/overdraft_distortion.gdshader")
@@ -284,23 +296,27 @@ func _draw_hint(time: Dictionary) -> void:
 	drawn["hint"] = {"text": hint.text, "rect": box}
 
 func _draw_horizon(time: Dictionary) -> void:
-	var y: float = size.y - 40
-	var x: float = size.x * float(time.get("day_progress", 0.0))
+	var y: float = HORIZON_Y
+	var left: float = HORIZON_LEFT
+	var right: float = size.x - HORIZON_MARGIN - DATE_WIDTH - 12.0
+	var x: float = lerpf(left, right, float(time.get("day_progress", 0.0)))
 	var glow: float = DuskStyle.glow_strength(time) * DuskStyle.breath(time, clock)
-	InkDraw.rough_line(self, Vector2(0, y), Vector2(size.x, y), Color(DuskStyle.PAPER_DAY, 0.45), 2.0, 61, DuskStyle.WOBBLE)
-	InkDraw.rough_line(self, Vector2(0, y), Vector2(x, y), Color(DuskStyle.SUN, 0.8), 2.6, 62, DuskStyle.WOBBLE)
+	InkDraw.rough_line(self, Vector2(left, y), Vector2(right, y), Color(DuskStyle.PAPER_DAY, 0.45), 2.0, 61, DuskStyle.WOBBLE)
+	InkDraw.rough_line(self, Vector2(left, y), Vector2(x, y), Color(DuskStyle.SUN, 0.8), 2.6, 62, DuskStyle.WOBBLE)
 	InkDraw.glow(self, Vector2(x, y), 12, DuskStyle.SUN, glow)
 	draw_circle(Vector2(x, y), 8, DuskStyle.SUN)
-	var tag: Rect2 = Rect2(Vector2(clampf(x - 46, 8, size.x - 100), y - 52), Vector2(92, 34))
+	# The time tag hangs under the line; the date tag closes the line on the right.
+	var tag: Rect2 = Rect2(Vector2(clampf(x - 46, left - 8, right - 92), y + 8), Vector2(92, 34))
 	DuskStyle.panel(self, tag, time, 63)
 	var at: String = clock_text(time)
 	ink_text(tag.position + Vector2(0, 25), at, UiTheme.SIZE_BODY - 2, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, tag.size.x)
 	var day: int = int(time["day"])
-	var date: Rect2 = Rect2(Vector2(size.x - 230, y + 6), Vector2(210, 28))
+	var date: Rect2 = Rect2(Vector2(right + 12.0, y - 14.0), Vector2(DATE_WIDTH, 28))
 	DuskStyle.panel(self, date, time, 64)
 	var date_text: String = "第%d日 · 末日前%d天" % [day, days_left(day)]
 	ink_text(date.position + Vector2(0, 21), date_text, UiTheme.SIZE_SMALL - 1, DuskStyle.INK, HORIZONTAL_ALIGNMENT_CENTER, date.size.x)
-	drawn["horizon"] = {"clock": at, "sun_x": x, "date": date_text, "sun": DuskStyle.SUN, "glow": glow, "rect": Rect2(0, tag.position.y, size.x, size.y - tag.position.y)}
+	var band: Rect2 = Rect2(Vector2(left - 8, y - 20.0), Vector2(date.end.x - left + 8, tag.end.y - (y - 20.0)))
+	drawn["horizon"] = {"clock": at, "sun_x": x, "left": left, "right": right, "date": date_text, "sun": DuskStyle.SUN, "glow": glow, "rect": band}
 
 func _draw_banner(time: Dictionary) -> void:
 	var total: float = DayClock.CONFIG.announcement_seconds
@@ -325,7 +341,7 @@ func _draw_warning(time: Dictionary) -> void:
 	drawn["warning"] = {"text": text, "rect": box}
 
 func _draw_final(time: Dictionary) -> void:
-	var box: Rect2 = Rect2(Vector2((size.x - 470) * 0.5, 54), Vector2(470, 112))
+	var box: Rect2 = Rect2(Vector2((size.x - 470) * 0.5, FINAL_TOP), Vector2(470, 112))
 	var real: float = float(time.get("final_remaining", 0.0))
 	var value: float = real
 	var label: String = "最终战倒计时"
