@@ -31,7 +31,7 @@
 
 ## 检查
 
-- G2：`test_exp006_photo_layers.gd`（三区域与三日切换不报错、可行走层无破损遮罩、镜头为 `GameplayCamera`）。
+- G2：`test_exp006_photo_layers.gd`（三区域与三日切换不报错、镜头为 `GameplayCamera`；**分别验证两种灼烧做法**：“可行走层不烧穿”做法下可行走层无破损遮罩；“可行走层也烧穿”对比做法允许该层显示遮罩与星空；两种做法下地形网格与碰撞都不变）。
 - G3：`python codexandclaude/tools/run_checks.py full --jobs 4`。
 
 ## 验收入口

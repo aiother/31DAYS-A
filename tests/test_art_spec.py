@@ -385,6 +385,11 @@ class ArtSpecTests(unittest.TestCase):
         self.assertIn("待用户经 EXP-006 确认", self.spec)
         exp = (ROOT / "codexandclaude" / "tasks" / "EXP-006" / "task.md").read_text(encoding="utf-8")
         self.assertIn("“可行走层不烧穿”是 Claude 的可读性建议", exp)
+        # 复审 R2 残留：G2 检查条件要与“同时提供烧穿对比做法”一致，不能无条件要求无破损遮罩
+        gate = exp.split("## 检查")[1].split("## 验收入口")[0]
+        self.assertIn("分别验证两种灼烧做法", gate)
+        self.assertIn("“可行走层也烧穿”对比做法允许该层显示遮罩与星空", gate)
+        self.assertNotIn("可行走层无破损遮罩、镜头", gate)
         self.assertIn("主角尚未被侵蚀，是纯白发光的人", self.style)
         self.assertNotIn("唯一尚未被侵蚀", self.style)
         for gone in ("**世界随日子褪色（D）**", "**天空顶端有墨往下渗**", "饱和度约 60%"):
