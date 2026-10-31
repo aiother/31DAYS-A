@@ -65,6 +65,7 @@
 | EXP-006 | M | 照片背景探索原型 | Claude | Codex | 已批准（第十二批） | [tasks/EXP-006](tasks/EXP-006/task.md) |
 | SYS-013 | M | 镜头后续（大型战斗拉远、实验场景镜头） | Codex | Claude | 已批准（第十二批） | [tasks/SYS-013](tasks/SYS-013/task.md) |
 | CLN-002 | S | 仓库清理（旧 worktree 与分支） | Claude | Codex | 已批准（第十二批） | [tasks/CLN-002](tasks/CLN-002/task.md) |
+| UI-011 | S | 时间轴隐藏与换日动画 | Claude | Codex | 已交付，待审查（2026-10-31 用户在 SYS-013 实机验收时提出） | [tasks/UI-011](tasks/UI-011/task.md) |
 
 第七批收尾（2026-10-23）：UI-008、UI-009、UI-010、CLN-001 均已完成，M2-c 已收尾。UI-010 在最终修复与复审通过后完成用户 G4，证据见 [UI-010 集成记录](tasks/UI-010/integration.md)。后续路线图与待办清单由规划维护者统一刷新。
 

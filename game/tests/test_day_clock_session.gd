@@ -44,7 +44,8 @@ func run() -> void:
 	session.player.reset_kinematics()
 	await ticks(12)
 	check(amount()<1800 and amount()>1799,"actual first-day physics frames consume natural time")
-	check((session.ui.get("_hud") as FormalHud).drawn["horizon"]["date"]=="第1日 · 末日前3天" and not session.get_node("DayUI").visible,"one readable HUD shows first day and time of day")
+	var hud_now: FormalHud = session.ui.get("_hud") as FormalHud
+	check(not hud_now.drawn.has("horizon") and int(hud_now.time_state()["day"])==1 and not session.get_node("DayUI").visible,"one HUD tracks the first day with the time axis hidden (UI-011)")
 	var before: float = amount()
 	paused = true
 	await ticks(6)
