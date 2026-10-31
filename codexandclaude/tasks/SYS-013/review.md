@@ -48,3 +48,36 @@
 
 - N5：`GameplayCamera` 里普通倍率 `ZOOM = 1.875` 与脚底位置 `GROUND_RATIO = 0.88` 仍是 `const`，只有 `battle_zoom`、`transition_seconds` 可调。建议改成导出参数（默认值不变），静态辅助函数 `feet_lift()`、`world_length()` 改为读取实例值或接收参数；`game/docs/asset_spec.md` 第 1 节与 `tests/test_art_spec.py` 中“×1.875”的表述注明“暂定，可调”，测试读取默认值而不是写死数字。
 - 已有的 `battle_zoom 1.5`、`transition_seconds 0.25`、Boss 偏移 35% 同样视为暂定，后续测试可直接调。
+
+---
+
+## 第 2 轮复审（2026-10-31，针对 N5 与 N1、N2）
+
+结论：**通过**。
+
+- 固定交付 `732ccc7`；实现 `8569ee3`。`git diff 8569ee3 732ccc7` 只有 `delivery.md`；`git diff 4427940 8569ee3` 涉及镜头脚本、规格、测试与截图采集脚本，与交付说明一致。审查分支已快进到交付提交，保留两轮历史。
+
+### 核对
+
+- **N5（暂时别写死）已落实**：`ZOOM`、`GROUND_RATIO` 改为导出参数 `normal_zoom`（默认 1.875）、`ground_ratio`（默认 0.88），默认值不变；`feet_lift()`、`world_length()` 改为实例方法，可接收实际倍率，战斗拉远时用当前倍率计算脚底位置。`asset_spec.md` 第 1 节注明“暂定默认值，可调”并记下用户原话；`tests/test_art_spec.py` 从脚本读取默认值，不再写死数字；Boss 偏移 35% 注明为暂定值。
+- **N1、N2 已补断言**：Boss 战中玩家真实受到致命一击后镜头回到普通倍率、复活后恢复战斗倍率；镜头中心按 35% 朝 Boss 偏移。
+
+### 变异（每次改一处后立即还原，工作区复核干净）
+
+1. Boss 战忽略玩家死亡 → `test_battle_camera.gd` **失败**（第 1 轮存活，现被抓住）。
+2. Boss 偏移系数 0.35 → 0 → `test_battle_camera.gd` **失败**（第 1 轮存活，现被抓住）。
+3. `world_length()` 忽略传入的实际倍率（战斗拉远时脚底位置算错）→ `test_battle_camera.gd` 仍通过，`test_gameplay_camera.gd` **失败**（有覆盖）。
+
+### 非阻断建议
+
+- N6：`battle_zoom` 的导出范围上限仍是 1.875，而 `normal_zoom` 已可调到 4.0；若以后把普通倍率调高，编辑器里战斗倍率的上限会不一致。可把上限放宽或改为运行时按 `normal_zoom` 钳制（现在已有钳制，只是编辑器范围）。
+- N7：35% 偏移仍是常量，若之后要调，可同样改为导出参数。
+- N8：战斗套件没有直接断言“拉远后脚底仍在画面 88%”，目前靠普通镜头套件覆盖辅助函数。
+
+### 检查证据
+
+- 固定 `732ccc7`、工作区干净：`python codexandclaude/tools/run_checks.py full --jobs 4` **通过**，`content_stable=true`，引擎日志 0 条脚本错误。G2 登记 102 项，含 `BATTLE_CAMERA_TESTS checks=27`、`GAMEPLAY_CAMERA_TESTS checks=13`、`CINEMATIC_CAMERA_ZOOM_TESTS checks=4`；G3 `tests/` 192 + `codexandclaude/tests/` 83 项。摘要 `codexandclaude/runs/20261031T111326.465359Z/summary.json`（运行目录不入库）。
+
+### 合入前提
+
+审查通过、用户 G4 通过（2026-10-31，参数暂定）。可在用户批准时与其他卡一起合入；任务分支不推送。
