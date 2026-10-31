@@ -117,10 +117,10 @@ func run() -> void:
 	await ticks(3)
 	check(camera.zoom == zoom_before, "pause freezes framing")
 	paused = false
-	for scene: String in ["movement_lab", "enemy_lab", "combat_lab", "checkpoint_lab"]:
-		var lab: Node = (load("res://debug/%s.tscn" % scene) as PackedScene).instantiate()
+	for path: String in ["res://debug/movement_lab.tscn", "res://debug/enemy_lab.tscn", "res://debug/combat_lab.tscn", "res://debug/checkpoint_lab.tscn"]:
+		var lab: Node = (load(path) as PackedScene).instantiate()
 		root.add_child(lab)
-		check(lab.get_node("Player/Camera2D") is GameplayCamera, scene + " inherits GameplayCamera")
+		check(lab.get_node("Player/Camera2D") is GameplayCamera, path.get_file() + " inherits GameplayCamera")
 		lab.queue_free()
 		await ticks(2)
 	session.queue_free()
